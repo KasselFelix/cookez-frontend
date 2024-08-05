@@ -7,11 +7,11 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 
 import AddRecipeScreen from './screens/AddRecipeScreen';
-import HomeAsGuestScreen from './screens/HomeAsGuestScreen';
+import HomeScreen from './screens/HomeScreen';
 import KickoffScreen from './screens/KickoffScreen';
 import LoadingScreen from './screens/LoadingScreen';
 import LoginScreen from './screens/LoginScreen';
-import MessageScreen from './screens/MessageScreen';
+import MessageScreen from './screens/messageScreen';
 import MoreFeaturesScreen from './screens/MoreFeaturesScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import RecapScreen from './screens/RecapScreen';
@@ -63,7 +63,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={({headersShown:false})}>
-        <Stack.Screen name='HomeAsGuest' component={HomeAsGuestScreen}/>
+        <Stack.Screen name='Home' component={HomeScreen}/>
         <Stack.Screen name='loginPage' component={LoginScreen}/>
         <Stack.Screen name='Kickoff' component={KickoffScreen}/>
         <Stack.Screen name='recap' component={RecapScreen}/>
