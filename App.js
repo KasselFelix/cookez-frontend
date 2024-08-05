@@ -6,6 +6,22 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 
+import AddRecipeScreen from './screens/AddRecipeScreen';
+import HomeAsGuestScreen from './screens/HomeAsGuestScreen';
+import KickoffScreen from './screens/KickoffScreen';
+import LoadingScreen from './screens/LoadingScreen';
+import LoginScreen from './screens/LoginScreen';
+import MessageScreen from './screens/MessageScreen';
+import MoreFeaturesScreen from './screens/MoreFeaturesScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import RecapScreen from './screens/RecapScreen';
+import RecipeScreen from './screens/RecipeScreen';
+import ResultScreen from './screens/ResultScreen';
+import SearchRecipeScreen from './screens/SearchRecipeScreen';
+import UserDashboardScreen from './screens/UserDashboardScreen';
+import WishListScreen from './screens/WishListScreen';
+
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -17,27 +33,28 @@ const TabNavigator =() => {
 
     let iconName='';
     if (route.name==='profile') {
-      iconName='faUser'
+      iconName='user';
     } else if (route.name==='message') {
-        iconName='faMessage'
+        iconName='comment-o';
     } else if (route.name==='addRecipe') {
-      iconName='faPlus'
-    } else if (route.name==='whishList') {
-      iconName='faHeart'
+      iconName='plus';
+    } else if (route.name==='wishList') {
+      iconName='heart-o';
     } else if(route.name==='searchRecipe') {
-      iconName='faMagnifyingGlass'
+      iconName='search';
     }
 
-return <FontAwesome icon={iconName} name='iconTabBar' />
+return <FontAwesome name={iconName} color={color} size={size} />
   },
-  headersShown:false;
-  TabBarActivetintColor:
+  headersShown:false,
+  TabBarActiveTintColor:'#FFFFFF',
+  TabBarInactiveTintColor:'#ABD1C6',
 })}>
-  <Tab.Screen name='profile' component={messageScreen}/>
-  <Tab.Screen name='message' component={mesage}/>
-  <Tab.Screen name='addRecipe' component={addRecipe}/>
-  <Tab.Screen name='wishList' component={wishList}/>
-  <Tab.Screen name='searchRecipe' component={searchRecipe}/>
+  <Tab.Screen name='profile' component={ProfileScreen}/>
+  <Tab.Screen name='message' component={MessageScreen}/>
+  <Tab.Screen name='addRecipe' component={AddRecipeScreen}/>
+  <Tab.Screen name='wishList' component={WishListScreen}/>
+  <Tab.Screen name='searchRecipe' component={SearchRecipeScreen}/>
 </Tab.Navigator>
   )
 }
@@ -47,17 +64,16 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={({headersShown:false})}>
-        <Stack.Screen name='HomeAsGuest' component={HomeAsGuest}/>
-        <Stack.Screen name='loginPage' component={loginPage}/>
-        <Stack.Screen name='Kickoff' component={kickoff}/>
-        <Stack.Screen name='recap' component={recap}/>
-        <Stack.Screen name='loading' component={loading}/>
-        <Stack.Screen name='result' component={result}/>
-        <Stack.Screen name='recipe' component={recipe}/>
-        <Stack.Screen name='moreFeatures' component={moreFeatures}/>
-        <Stack.Screen name='userDashboard' component={userDashboard}/>
-        <Stack.Screen name='userDashboard' component={userDashboard}/>
-        <Stack.Screen name='favorites' component={fa}/>
+        <Stack.Screen name='HomeAsGuest' component={HomeAsGuestScreen}/>
+        <Stack.Screen name='loginPage' component={LoginScreen}/>
+        <Stack.Screen name='Kickoff' component={KickoffScreen}/>
+        <Stack.Screen name='recap' component={RecapScreen}/>
+        <Stack.Screen name='loading' component={LoadingScreen}/>
+        <Stack.Screen name='result' component={ResultScreen}/>
+        <Stack.Screen name='recipe' component={RecipeScreen}/>
+        <Stack.Screen name='moreFeatures' component={MoreFeaturesScreen}/>
+        <Stack.Screen name='userDashboard' component={UserDashboardScreen}/>
+        <Stack.Screen name='TabNavigator' component={TabNavigator}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
