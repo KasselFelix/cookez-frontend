@@ -59,7 +59,6 @@ return <FontAwesome name={iconName} color={color} size={size} />
   )
 }
 
-
 export default function App() {
   return (
     <NavigationContainer>
