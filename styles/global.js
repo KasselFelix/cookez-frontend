@@ -4,7 +4,7 @@ const css = {
   activeIconColor: '#ffff',
   iconColor: '#6246ea',
   activeButtonColor: '#004643',
-  gradientColor: linear-gradient(45deg, #f9bc60, #6246ea);
+  gradientColor: 'linear-gradient(45deg, #f9bc60, #6246ea)',
   fontSizeOne: 96,
   fontSizeTwo: 60,
   fontSizeThree: 48,
