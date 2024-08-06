@@ -1,22 +1,37 @@
-import { StyleSheet, Text, View, Button } from 'react-native'
-import React from 'react'
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import css from '../styles/global';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Animated,
+} from "react-native";
+import React, { useRef } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import css from "../styles/Global";
+import buttonStyles from "../styles/Button";
+import LinearGradient from "react-native-linear-gradient";
+// import { LinearGradient } from "expo-linear-gradient";
+import MyButton from "../modules/MyButton";
 
-export default function HomeAsGuest({navigation}) {
-
-
-
+export default function HomeAsGuest({ navigation }) {
   return (
-    <View>
-      <Text></Text>
-      <Button title='Go To LoginScreen' onPress={()=> navigation.navigate('TabNavigator')}/>
+    <View style={styles.container}>
+      <MyButton
+        navigation={navigation}
+        navigate={"Message"}
+        text={"START"}
+        buttonType={buttonStyles.buttonTwo}
+      />
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
-  
-
-})
+  container: {
+    flex: 1,
+    justifyContent: "flex-end",
+    aI: "center",
+    paddingBottom: 30,
+  },
+});
