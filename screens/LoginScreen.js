@@ -95,6 +95,11 @@ const handleSignup =() => {
           </View>
         </View>
       </Modal>
+      <View>
+        <TouchableOpacity name='Go to HomePage' onPress={()=> navigation.navigate('TabNavigator')}>
+          <Text>Go to HomePage</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   )
 }
