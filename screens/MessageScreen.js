@@ -13,7 +13,7 @@ export default function MessageScreen() {
 const styles = StyleSheet.create({
   container: {
     display:'flex',
-    backgroundColor: '#fbdd74',
+    backgroundColor: css.backgroundColorTwo,
     flex:1,
   },
   text:{

@@ -52,11 +52,11 @@ return <FontAwesome name={iconName} color={color} size={size} />
   TabBarInactiveTintColor:'#ABD1C6',
   activeBackgroundColor:css.backgroundColorTwo,
 })}>
-  <Tab.Screen name='profile' component={ProfileScreen}/>
-  <Tab.Screen name='message' component={MessageScreen}/>
-  <Tab.Screen name='addRecipe' component={AddRecipeScreen}/>
-  <Tab.Screen name='wishList' component={WishListScreen}/>
-  <Tab.Screen name='searchRecipe' component={SearchRecipeScreen}/>
+  <Tab.Screen name='Profile' component={ProfileScreen}/>
+  <Tab.Screen name='Message' component={MessageScreen}/>
+  <Tab.Screen name='AddRecipe' component={AddRecipeScreen}/>
+  <Tab.Screen name='WishList' component={WishListScreen}/>
+  <Tab.Screen name='SearchRecipe' component={SearchRecipeScreen}/>
 </Tab.Navigator>
   )
 }
@@ -66,14 +66,14 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={({headersShown:false})}>
         <Stack.Screen name='Home' component={HomeScreen}/>
-        <Stack.Screen name='loginPage' component={LoginScreen}/>
+        <Stack.Screen name='Login' component={LoginScreen}/>
         <Stack.Screen name='Kickoff' component={KickoffScreen}/>
-        <Stack.Screen name='recap' component={RecapScreen}/>
-        <Stack.Screen name='loading' component={LoadingScreen}/>
-        <Stack.Screen name='result' component={ResultScreen}/>
-        <Stack.Screen name='recipe' component={RecipeScreen}/>
-        <Stack.Screen name='moreFeatures' component={MoreFeaturesScreen}/>
-        <Stack.Screen name='userDashboard' component={UserDashboardScreen}/>
+        <Stack.Screen name='Recap' component={RecapScreen}/>
+        <Stack.Screen name='Loading' component={LoadingScreen}/>
+        <Stack.Screen name='Result' component={ResultScreen}/>
+        <Stack.Screen name='Recipe' component={RecipeScreen}/>
+        <Stack.Screen name='MoreFeatures' component={MoreFeaturesScreen}/>
+        <Stack.Screen name='UserDashboard' component={UserDashboardScreen}/>
         <Stack.Screen name='TabNavigator' component={TabNavigator}/>
       </Stack.Navigator>
     </NavigationContainer>
