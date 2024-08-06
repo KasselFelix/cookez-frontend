@@ -12,7 +12,7 @@ import HomeScreen from './screens/HomeScreen';
 import KickoffScreen from './screens/KickoffScreen';
 import LoadingScreen from './screens/LoadingScreen';
 import LoginScreen from './screens/LoginScreen';
-import MessageScreen from './screens/messageScreen';
+import MessageScreen from './screens/MessageScreen';
 import MoreFeaturesScreen from './screens/MoreFeaturesScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import RecapScreen from './screens/RecapScreen';

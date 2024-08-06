@@ -6,7 +6,7 @@ export default function MessageScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Search Recipe Screen</Text>
-      <Image
+      <Image/>
     </View>
   )
 }
