@@ -1,19 +1,16 @@
 import {
-  StyleSheet,
   Text,
   View,
   TouchableOpacity,
   Animated,
 } from "react-native";
 import React, { useRef } from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
 import LinearGradient from "react-native-linear-gradient";
 // import { LinearGradient } from "expo-linear-gradient";
 
-export default function MyButton({ navigation, navigate, text, buttonType }) {
+export default function MyButton({ dataFlow, text, buttonType }) {
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
   const handlePressIn = () => {
@@ -29,7 +26,7 @@ export default function MyButton({ navigation, navigate, text, buttonType }) {
       duration: 0,
       useNativeDriver: false,
       activeIconColor: css.activeButtonColor,
-    }).start(() => navigation.navigate("TabNavigator", { screen: "Message" }));
+    }).start(dataFlow());
   };
 
   return (

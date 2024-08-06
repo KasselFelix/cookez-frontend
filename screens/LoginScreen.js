@@ -1,82 +1,87 @@
 import { Modal, StyleSheet, TextInput, Text, View, TouchableOpacity } from 'react-native';
 import React, {useState} from 'react';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
+import SignIn from './SignIn';
+import SignUp from './SignUp';
+import MyButton from '../modules/MyButton';
+import buttonStyles from '../styles/Button';
 
 export default function LoginScreen({navigation}) {
 
-// signin states for the signin inputs & the modal
-const [username, setUsername]=useState('');
-const [password, setPassword]=useState('');
-const [modalVisible1, setModalVisible1]=useState(false);
+// // signin states for the signin inputs & the modal
+// const [username, setUsername]=useState('');
+// const [password, setPassword]=useState('');
+// const [modalVisible1, setModalVisible1]=useState(false);
 
-// signup states for the signup inputs & the modal
-const [email, setEmail]=useState('');
-const [firstname, setFirstname]=useState('');
-const [lastname, setLastname]=useState('');
-const [username2, setUsername2]=useState('');
-const [age, setAge]=useState(0); 
-const [password2, setPassword2]=useState('');
-const [image, setImage]=useState('');
-const [modalVisible2, setModalVisible2]=useState(false);
+// // signup states for the signup inputs & the modal
+// const [email, setEmail]=useState('');
+// const [firstname, setFirstname]=useState('');
+// const [lastname, setLastname]=useState('');
+// const [username2, setUsername2]=useState('');
+// const [age, setAge]=useState(0); 
+// const [password2, setPassword2]=useState('');
+// const [image, setImage]=useState('');
+// const [modalVisible2, setModalVisible2]=useState(false);
 
 
 
-// funtion to handle the signin
-const handleSignin =()=> {
-  fetch('http://192.168.100.155:3000/users/signin', {
-    method:'POST',
-    headers:{'Content-Type':'Application/json'},
-    body:JSON.stringify({
-      username,password
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('user',data)
-  })
-  setUsername('')
-  setPassword('')
-  navigation.navigate('Home')
-}
+// // funtion to handle the signin
+// const handleSignin =()=> {
+//   fetch('http://192.168.100.155:3000/users/signin', {
+//     method:'POST',
+//     headers:{'Content-Type':'Application/json'},
+//     body:JSON.stringify({
+//       username,password
+//     })
+//   })
+//   .then(res => res.json())
+//   .then(data => {
+//     console.log('user',data)
+//   })
+//   setUsername('')
+//   setPassword('')
+//   navigation.navigate('Home')
+// }
 
-const handleSignup =() => {
-  fetch('http://192.168.100.155:3000/users/signup', {
-    method:'POST',
-    headers:{'Content-Type': 'Application/json'}, 
-    body:JSON.stringify({
-      email:email,
-      firstname:firstname,
-      lastname:lastname,
-      username: username2,
-      age:age,
-      password: password2,
-      image:image,
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('user', data)
-  })
-  navigation.navigate('Home')
+// const handleSignup =() => {
+//   fetch('http://192.168.100.155:3000/users/signup', {
+//     method:'POST',
+//     headers:{'Content-Type': 'Application/json'}, 
+//     body:JSON.stringify({
+//       email:email,
+//       firstname:firstname,
+//       lastname:lastname,
+//       username: username2,
+//       age:age,
+//       password: password2,
+//       image:image,
+//     })
+//   })
+//   .then(res => res.json())
+//   .then(data => {
+//     console.log('user', data)
+//   })
+//   navigation.navigate('Home')
 
-}
+// }
 
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity title='Signin' onPress={()=> setModalVisible1(true)}>
+    <SafeAreaView style={styles.container}>
+      {/*lire la doc pour specifier les options manquante */}
+      {/* <TouchableOpacity title='Signin' onPress={()=> setModalVisible1(true)}>
       <Text>SignUp</Text>
       </TouchableOpacity>
       <Modal visible={modalVisible1} animationtType="fade" transparent>
       <View style={styles.modal1}>
         <View style={styles.modalContainer1}>
-            <TextInput placeholder='email' value={email} onChangeText={(value)=> setEmail(value)}/>
-            <TextInput placeholder='firstname' value={firstname} onChangeText={(value)=> setFirstname(value)}/>
-            <TextInput placeholder='lastname' value={lastname} onChangeText={(value)=> setLastname(value)}/>
-            <TextInput placeholder='username2' value={username2} onChangeText={(value)=> setUsername2(value)}/>
-            <TextInput placeholder='age' value={age} onChangeText={(value)=> setAge(value)}/>
-            <TextInput placeholder='password2' value={password2} onChangeText={(value)=> setPassword2(value)}/>
-            <TextInput placeholder='image' value={image} onChangeText={(value)=> setImage(value)}/>
+            <TextInput placeholder='email' placeholderTextColor={'grey'}  KeyboardType={'email-address'} InputModeOptions={'email'} textContentType={'emailAddress'} autoCapitalize={'email'} value={email} onChangeText={(value)=> setEmail(value)}/>
+            <TextInput placeholder='firstname' placeholderTextColor={'grey'} value={firstname} onChangeText={(value)=> setFirstname(value)}/>
+            <TextInput placeholder='lastname' placeholderTextColor={'grey'} value={lastname} onChangeText={(value)=> setLastname(value)}/>
+            <TextInput placeholder='username2' placeholderTextColor={'grey'} value={username2} onChangeText={(value)=> setUsername2(value)}/>
+            <TextInput placeholder='age' placeholderTextColor={'grey'} value={age} onChangeText={(value)=> setAge(value)}/>
+            <TextInput placeholder='password2' placeholderTextColor={'grey'} textContentType='password' autoComplete='new-password' secureTextEntry={true} value={password2} onChangeText={(value)=> setPassword2(value)}/>
+            <TextInput placeholder='image' placeholderTextColor={'grey'} value={image} onChangeText={(value)=> setImage(value)}/>
             <TouchableOpacity title='Signup' onPress={()=> handleSignup()}>
               <Text>Signup</Text>
             </TouchableOpacity>
@@ -92,8 +97,8 @@ const handleSignup =() => {
       <Modal visible={modalVisible2} animationtType="fade" transparent>
       <View style={styles.modal2}>
         <View style={styles.modalContainer2}>
-            <TextInput placeholder='username' value={username} onChangeText={(value)=> setUsername(value)}/>
-            <TextInput placeholder='password' value={password} onChangeText={(value)=> setPassword(value)}/>
+            <TextInput placeholder='username' placeholderTextColor={'grey'} KeyboardType={'email-address'} InputModeOptions={'email'} textContentType={'emailAddress'} autoCapitalize={'email'} value={username} onChangeText={(value)=> setUsername(value)}/>
+            <TextInput placeholder='password' placeholderTextColor={'grey'} textContentType='password' autoComplete='new-password' secureTextEntry={true} value={password} onChangeText={(value)=> setPassword(value)}/>
             <TouchableOpacity title='Signin' onPress={()=>handleSignin()}>
               <Text>Signin</Text>
             </TouchableOpacity>
@@ -102,13 +107,15 @@ const handleSignup =() => {
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-      <View>
-        <TouchableOpacity name='Go to HomePage' onPress={()=> navigation.navigate('TabNavigator')}>
-          <Text>Go to HomePage</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      </Modal> */}
+      <SignIn navigation={navigation}/>
+      <SignUp navigation={navigation}/>
+      <MyButton
+        dataFlow={()=>navigation.navigate('TabNavigator')}
+        text={"Go to HomePage"}
+        buttonType={buttonStyles.buttonOne}
+      />
+    </SafeAreaView>
   )
 }
 
@@ -117,7 +124,6 @@ container: {
   flex:1,
   textAlign:'center',
   alignItems:'center',
-  
 },
 modal1:{
   display:'flex',
