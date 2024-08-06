@@ -20,6 +20,7 @@ const [image, setImage]=useState('');
 const [modalVisible2, setModalVisible2]=useState(false);
 
 
+
 // funtion to handle the signin
 const handleSignin =()=> {
   fetch('http://192.168.100.155:3000/users/signin', {
@@ -32,10 +33,10 @@ const handleSignin =()=> {
   .then(res => res.json())
   .then(data => {
     console.log('user',data)
-    .catch(error => console.error(error));
   })
   setUsername('')
   setPassword('')
+  navigation.navigate('Home')
 }
 
 const handleSignup =() => {
@@ -43,13 +44,20 @@ const handleSignup =() => {
     method:'POST',
     headers:{'Content-Type': 'Application/json'}, 
     body:JSON.stringify({
-      email,firstname,lastname,username,age,password,image
+      email:email,
+      firstname:firstname,
+      lastname:lastname,
+      username: username2,
+      age:age,
+      password: password2,
+      image:image,
     })
   })
   .then(res => res.json())
   .then(data => {
-    console.log({NewUser: data})
-  });
+    console.log('user', data)
+  })
+  navigation.navigate('Home')
 
 }
 
@@ -69,7 +77,7 @@ const handleSignup =() => {
             <TextInput placeholder='age' value={age} onChangeText={(value)=> setAge(value)}/>
             <TextInput placeholder='password2' value={password2} onChangeText={(value)=> setPassword2(value)}/>
             <TextInput placeholder='image' value={image} onChangeText={(value)=> setImage(value)}/>
-            <TouchableOpacity title='Signup' onPress={()=>handleSignup()}>
+            <TouchableOpacity title='Signup' onPress={()=> handleSignup()}>
               <Text>Signup</Text>
             </TouchableOpacity>
             <TouchableOpacity title='hide' onPress={()=> setModalVisible1(false)}>
@@ -89,7 +97,7 @@ const handleSignup =() => {
             <TouchableOpacity title='Signin' onPress={()=>handleSignin()}>
               <Text>Signin</Text>
             </TouchableOpacity>
-            <TouchableOpacity title='hide' onPress={()=> setModalVisible2(false)}>
+            <TouchableOpacity title='hide' onPress={()=> {setModalVisible2(false); navigation.navigate('Home')}}>
             <Text>Hide</Text>
             </TouchableOpacity>
           </View>
