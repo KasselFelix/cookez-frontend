@@ -11,7 +11,7 @@ export default function HomeAsGuest({navigation}) {
   return (
     <View>
       <Text></Text>
-      <Button title='Go To LoginScreen' onPress={()=> navigation.navigate('TabNavigator')}/>
+      <Button title='Go To LoginScreen' onPress={()=> navigation.navigate('loginPage')}/>
     </View>
   )
 }
