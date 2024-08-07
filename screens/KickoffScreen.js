@@ -1,9 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native'
-import { Camera, CameraType, FlashMode } from "expo-camera/legacy";
+import { Camera, CameraType, FlashMode,TouchableOpacity } from "expo-camera/legacy";
+import { useEffect, useState, useRef } from 'react';
 import React from 'react'
 
 export default function KickoffScreen() {
-  const [hasPermission, setHasPermission] = useState(false);
+  	const [hasPermission, setHasPermission] = useState(false);
 	const [type, setType] = useState(CameraType.back);
 	const [flashMode, setFlashMode] = useState(FlashMode.off);
 
@@ -12,7 +13,7 @@ export default function KickoffScreen() {
   return (
     <View>
       <Text>KickoffScreen</Text>
-      <Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
+      {/* <Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
 			  <View style={styles.buttonsContainer}>
 				  <TouchableOpacity onPress={() => setType(type === CameraType.back ? CameraType.front : CameraType.back)} style={styles.button}>
 					  <FontAwesome name="rotate-right" size={25} color="#ffffff" />
@@ -28,7 +29,7 @@ export default function KickoffScreen() {
 					  <FontAwesome name="circle-thin" size={95} color="#ffffff" />
 				  </TouchableOpacity>
 			  </View>
-		  </Camera>
+		  </Camera> */}
     </View>
   )
 }
