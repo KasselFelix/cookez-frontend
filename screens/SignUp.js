@@ -37,7 +37,7 @@ export default function SignUp({navigation}) {
     <View>
        <MyButton
         dataFlow={()=>setModalVisible(true)}
-        text={"SIGN IN"}
+        text={"SIGN UP"}
         buttonType={buttonStyles.buttonOne}
       />
       <Modal visible={modalVisible} animationtType="fade" transparent>
