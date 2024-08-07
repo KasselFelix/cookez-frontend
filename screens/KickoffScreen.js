@@ -3,10 +3,18 @@ import React from 'react'
 
 export default function KickoffScreen() {
   return (
-    <View>
+    <View style={styles.container}>
       <Text>KickoffScreen</Text>
     </View>
   )
 }
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+  }
+
+})

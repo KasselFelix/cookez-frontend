@@ -1,10 +1,22 @@
+/////////////////////////////////////////////////////////////////////////////
+///App.js
+
 import { StatusBar } from "expo-status-bar";
+
+// NAVIGATION SETTINGS
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
+// STYLES
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import css from "./styles/Global";
 
+// STORE SETTINGS
+import { Provider } from 'react-redux';
+import { configureStore } from "@reduxjs/toolkit";
+
+// ALL SCREENS IMPORTS
 import AddRecipeScreen from "./screens/AddRecipeScreen";
 import HomeScreen from "./screens/HomeScreen";
 import KickoffScreen from "./screens/KickoffScreen";
@@ -20,8 +32,17 @@ import SearchRecipeScreen from "./screens/SearchRecipeScreen";
 import UserDashboardScreen from "./screens/UserDashboardScreen";
 import WishListScreen from "./screens/WishListScreen";
 
+// ALL REDUCERS IMPORTS
+import user from './reducers/user';
+import recipe from './reducers/recipe';
+import comment from './reducers/comment';
+
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+
+const store = configureStore({
+  reducer: { user, recipe, comment },
+});
 
 const TabNavigator = () => {
   return (
@@ -63,20 +84,21 @@ const TabNavigator = () => {
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{headerShown: false}} >
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Kickoff" component={KickoffScreen} />
-        <Stack.Screen name="Recap" component={RecapScreen} />
-        <Stack.Screen name="Loading" component={LoadingScreen} />
-        <Stack.Screen name="Result" component={ResultScreen} />
-        <Stack.Screen name="Recipe" component={RecipeScreen} />
-        <Stack.Screen name="MoreFeatures" component={MoreFeaturesScreen} />
-        <Stack.Screen name="UserDashboard" component={UserDashboardScreen} />
-        <Stack.Screen name="TabNavigator" component={TabNavigator} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    // <Provider store={store}>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{headerShown: false}} >
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Kickoff" component={KickoffScreen} />
+          <Stack.Screen name="Recap" component={RecapScreen} />
+          <Stack.Screen name="Loading" component={LoadingScreen} />
+          <Stack.Screen name="Result" component={ResultScreen} />
+          <Stack.Screen name="Recipe" component={RecipeScreen} />
+          <Stack.Screen name="MoreFeatures" component={MoreFeaturesScreen} />
+          <Stack.Screen name="UserDashboard" component={UserDashboardScreen} />
+          <Stack.Screen name="TabNavigator" component={TabNavigator} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    // </Provider>
   );
 }
-
