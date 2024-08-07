@@ -13,6 +13,11 @@ export default function HomeAsGuest({ navigation }) {
   return (
     <View style={styles.container}>
       <MyButton
+        dataFlow={()=>navigation.navigate("Result")}
+        text={"RECIP"}
+        buttonType={buttonStyles.buttonTwo}
+      />
+      <MyButton
         dataFlow={()=>navigation.navigate("Kickoff")}
         text={"START"}
         buttonType={buttonStyles.buttonTwo}

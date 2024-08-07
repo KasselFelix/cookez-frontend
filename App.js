@@ -1,6 +1,3 @@
-/////////////////////////////////////////////////////////////////////////////
-///App.js
-
 import { StatusBar } from "expo-status-bar";
 
 // NAVIGATION SETTINGS
@@ -84,7 +81,7 @@ const TabNavigator = () => {
 
 export default function App() {
   return (
-    // <Provider store={store}>
+    <Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown: false}} >
           <Stack.Screen name="Home" component={HomeScreen} />
@@ -99,6 +96,6 @@ export default function App() {
           <Stack.Screen name="TabNavigator" component={TabNavigator} />
         </Stack.Navigator>
       </NavigationContainer>
-    // </Provider>
+    </Provider>
   );
 }
