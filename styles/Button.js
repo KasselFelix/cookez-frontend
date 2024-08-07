@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-import css from "./Global";
+import css from "./Global.js";
 
 const buttonStyles = StyleSheet.create({
   buttonOne: {
