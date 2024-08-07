@@ -1,12 +1,15 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, View } from "react-native";
+import React from "react";
+import LoadingPageOne from "../modules/LoadingPages";
 
 export default function LoadingScreen() {
-  return (
-    <View>
-      <Text>loadingScreen</Text>
-    </View>
-  )
+  return <View style={styles.container}>{LoadingPageOne}</View>;
 }
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});

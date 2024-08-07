@@ -1,22 +1,41 @@
-import { StyleSheet, Text, View, Button } from 'react-native'
-import React from 'react'
-import css from '../styles/global';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+} from "react-native";
+import React, { useRef } from "react";
+import css from "../styles/Global";
+import buttonStyles from "../styles/Button";
+import MyButton from "../modules/MyButton";
 
-export default function HomeAsGuest({navigation}) {
-
-
-
+export default function HomeAsGuest({ navigation }) {
   return (
-    <View>
-      <Text></Text>
-      <Button title='Go To LoginScreen' onPress={()=> navigation.navigate('loginPage')}/>
-      <Button title='Go To Kickoff' onPress={()=> navigation.navigate('TabNavigator')}/>
-      <Button title='Go To message' onPress={()=> navigation.navigate('message')}/>
+    <View style={styles.container}>
+      <MyButton
+        dataFlow={()=>navigation.navigate("Kickoff")}
+        text={"START"}
+        buttonType={buttonStyles.buttonTwo}
+      />
+      <MyButton
+        dataFlow={()=>navigation.navigate("TabNavigator", {screen: 'Profil'})}
+        text={"PROFIL"}
+        buttonType={buttonStyles.buttonTwo}
+      />
+      <MyButton
+        dataFlow={()=>navigation.navigate("Login")}
+        text={"LOGIN"}
+        buttonType={buttonStyles.buttonOne}
+      />
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
-  
-
-})
+  container: {
+    flex: 1,
+    justifyContent: "flex-end",
+    aI: "center",
+    paddingBottom: 30,
+  },
+});
