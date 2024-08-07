@@ -1,19 +1,50 @@
 import { StyleSheet, Text, View } from 'react-native'
 import { Camera, CameraType, FlashMode,TouchableOpacity } from "expo-camera/legacy";
 import { useEffect, useState, useRef } from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { useSelector,useDispatch } from 'react-redux';
 import React from 'react'
 
 export default function KickoffScreen() {
   	const [hasPermission, setHasPermission] = useState(false);
 	const [type, setType] = useState(CameraType.back);
 	const [flashMode, setFlashMode] = useState(FlashMode.off);
+	const isFocused = useIsFocused();
 
 	let cameraRef= useRef(null);
+
+	useEffect(() => {
+		(async () => {
+			const result = await Camera.requestCameraPermissionsAsync();
+			if(result){
+			   setHasPermission(result.status === 'granted');
+			 }
+		  })();
+  
+	},[]);
+
+	const takePicture = async () => {
+		const photo = await cameraRef.takePictureAsync({ quality: 0.3 });
+		if(photo !== undefined){
+		  //dispatch(addPicture(photo.uri))
+		  console.log(photo.uri)
+		}
+	}
+	   
+	if (!hasPermission || !isFocused) {
+	  return (
+		<View>
+		  <Text style={styles.title}> SnapScreen </Text>
+		</View>
+	  )
+	}
 
   return (
     <View>
       <Text>KickoffScreen</Text>
-      {/* <Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
+      <Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
 			  <View style={styles.buttonsContainer}>
 				  <TouchableOpacity onPress={() => setType(type === CameraType.back ? CameraType.front : CameraType.back)} style={styles.button}>
 					  <FontAwesome name="rotate-right" size={25} color="#ffffff" />
@@ -29,7 +60,7 @@ export default function KickoffScreen() {
 					  <FontAwesome name="circle-thin" size={95} color="#ffffff" />
 				  </TouchableOpacity>
 			  </View>
-		  </Camera> */}
+		  </Camera>
     </View>
   )
 }
