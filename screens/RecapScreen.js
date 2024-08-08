@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Image,
   SafeAreaView,
@@ -9,8 +9,8 @@ import {
   View,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { removePhoto} from '../reducers/ingredient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { removeIngredient ,removeAllIngredient} from "../reducers/ingredient";
 
 import MyButton from "../modules/MyButton";
 import buttonStyles from "../styles/Button";
@@ -25,11 +25,17 @@ export default function RecapScreen({navigation}) {
   const dispatch = useDispatch();
   const ingredients = useSelector((state) => state.ingredient.value);
 
+  useEffect(()=>{
+    dispatch(removeAllIngredient())
+    return ;
+  },[])
+
   //food_info.display_name
-  const listIngredients=<></>;
+  let listIngredients=<></>;
   if(ingredients.length>0){
+    console.log('ingredient',ingredients)
     listIngredients=ingredients.map((e,i)=>{
-      console.log('ok')
+      console.log(e.data.display_name)
       return <View key={i}>
         <View style={styles.photoContainer}>
           <TouchableOpacity onPress={() => dispatch(removeIngredient(e))}>

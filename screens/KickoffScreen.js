@@ -13,6 +13,7 @@ import css from "../styles/Global";
 
 export default function KickoffScreen({navigation}) {
 	const saveMoney=false;
+	const API_KEY="mSeaV4aq.Axso3cnBL87KFbdLY13THCKi1LFViTT4"
 
 	const [hasPermission, setHasPermission] = useState(false);
 	const [type, setType] = useState(CameraType.back);
@@ -34,17 +35,11 @@ export default function KickoffScreen({navigation}) {
 	}, []);
 
 	function handleBtn () {
-		console.log('PASS')
 		if(!saveMoney){
-
 			for (let imagePath of pictures){
-
-				imagePath=pictures[0];
 				console.log(imagePath)
-				
-				
 				// Make the request
-				const handleFetch = async ()=>{
+				const handleFetch = async (cpt=0)=>{
 					try{
 						
 						//Create FormData	
@@ -52,7 +47,7 @@ export default function KickoffScreen({navigation}) {
 						formData.append('image', {
 							uri: imagePath,
 							type: 'image/jpeg',
-							name: 'image.jpg',
+							name: `image${cpt++}.jpg`,
 						});
 		
 							const response= await fetch("https://vision.foodvisor.io/api/1.0/en/analysis", {
@@ -84,6 +79,7 @@ export default function KickoffScreen({navigation}) {
 				}
 				handleFetch();	 
 			}
+			
 		}
 		navigation.navigate('Recap')
 	}

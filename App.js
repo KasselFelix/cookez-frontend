@@ -1,4 +1,3 @@
-require("dotenv").config();
 import { StatusBar } from "expo-status-bar";
 
 // NAVIGATION SETTINGS
