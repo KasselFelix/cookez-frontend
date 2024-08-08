@@ -1,6 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
+// STYLES
+import css from "../styles/Global";
+import buttonStyles from "../styles/Button";
+import MyButton from "../modules/MyButton";
+
 export default function SearchRecipeScreen() {
   return (
     <View>
@@ -9,4 +14,6 @@ export default function SearchRecipeScreen() {
   )
 }
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  
+})
