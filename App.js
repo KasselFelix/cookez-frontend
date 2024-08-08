@@ -33,12 +33,13 @@ import WishListScreen from "./screens/WishListScreen";
 import user from './reducers/user';
 import recipe from './reducers/recipe';
 import comment from './reducers/comment';
+import ingredient from "./reducers/ingredient";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const store = configureStore({
-  reducer: { user, recipe, comment },
+  reducer: { user, recipe, comment ,ingredient},
 });
 
 const TabNavigator = () => {

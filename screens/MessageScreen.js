@@ -12,9 +12,9 @@ export default function MessageScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    display: "flex",
-    backgroundColor: "#fbdd74",
-    flex: 1,
+    display:'flex',
+    backgroundColor: css.backgroundColorTwo,
+    flex:1,
   },
   text: {
     fontSize: 35,
