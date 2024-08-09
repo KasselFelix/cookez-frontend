@@ -3,9 +3,8 @@ import React from 'react';
 import css from "../styles/Global";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 
-function Recipe(props) {
+export default function Recipe( props ) {
   
-
     const voteRecipe= () => {
       let stars = [];
 
@@ -86,5 +85,3 @@ const styles = StyleSheet.create({
     fontSize: css.fontSizeSix,
   },
 })
-
-export default Recipe;

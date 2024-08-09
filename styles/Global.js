@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 
 const css = {
+  paddingTop: '15%',
   backgroundColorOne: "#fbdd74",
   backgroundColorTwo: "#abd1c6",
   activeIconColor: "#E45858",

@@ -1,24 +1,24 @@
 import { createSlice} from '@reduxjs/toolkit';
 
 const initialState={
-  value: [],
+  ingredient: [],
 };
 
 export const ingredientSlice = createSlice({
   name: 'ingredient',
   initialState,
   reducers: {
-    addIngredient: (state, action) => {
-      state.value.push(action.payload);
+    addIngredientToStore: (state, action) => {
+      state.ingredient.push(action.payload);
     },
-    removeIngredient: (state, action) => {
-      state.value= state.value.filter((e) => e.data.display_name !== action.payload.data.display_name);
+    removeIngredientToStore: (state, action) => {
+      state.ingredient= state.ingredient.filter((e) => e.data.display_name !== action.payload.data.display_name);
     },
-    removeAllIngredient: (state, action) =>{
-      state.value=[];
+    removeAllIngredientToStore: (state, action) =>{
+      state.ingredient=[];
     }
   },
 });
 
-export const { addIngredient, removeIngredient, removeAllIngredient} = ingredientSlice.actions;
+export const { addIngredientToStore, removeIngredientToStore, removeAllIngredientToStore } = ingredientSlice.actions;
 export default ingredientSlice.reducer;

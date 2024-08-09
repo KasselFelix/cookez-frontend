@@ -2,18 +2,19 @@ import React, { useState, useEffect, useRef } from "react";
 import { SafeAreaView, StyleSheet, TouchableOpacity, ScrollView, View, Image} from "react-native";
 import { Camera, CameraType, FlashMode } from "expo-camera/legacy";
 import { useDispatch,useSelector } from "react-redux";
-import { addIngredient,removeIngredient } from "../reducers/ingredient";
+import { addIngredientToStore,removeIngredientToStore } from "../reducers/ingredient";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { useIsFocused } from "@react-navigation/native";
 
 import MyButton from '../modules/MyButton';
+import MySmallButton from "../modules/MyButton";
 import buttonStyles from '../styles/Button';
 import css from "../styles/Global";
 
 
 export default function KickoffScreen({navigation}) {
 	const saveMoney=false;
-	const API_KEY="mSeaV4aq.Axso3cnBL87KFbdLY13THCKi1LFViTT4"
+	const API_KEY="qD5sB6nb.BaYym0RxgqgmXQb5GEGgUZJshGNQhYby"
 
 	const [hasPermission, setHasPermission] = useState(false);
 	const [type, setType] = useState(CameraType.back);
@@ -37,9 +38,10 @@ export default function KickoffScreen({navigation}) {
 	function handleBtn () {
 		if(!saveMoney){
 			for (let imagePath of pictures){
-				console.log(imagePath)
+				console.log('LAAAA', imagePath)
 				// Make the request
 				const handleFetch = async (cpt=0)=>{
+
 					try{
 						
 						//Create FormData	
@@ -60,10 +62,10 @@ export default function KickoffScreen({navigation}) {
 							if (response.ok) {
 								const data = await response.json();
 								if(data){
-									console.log(data);
+									console.log('SALUT: ', data);
 									if (data.items && data.items.length > 0 && data.items[0].food.length > 0) {
-										console.log(data.items[0].food[0]);
-										dispatch(addIngredient({photo:imagePath,data:data.items[0].food[0].food_info}))
+										console.log('NOW: ', data.items[0].food[0]);
+										dispatch(addIngredientToStore({photo:imagePath,data:data.items[0].food[0].food_info}))
 									}
 								}else{
 									console.log('no data')
@@ -87,25 +89,25 @@ export default function KickoffScreen({navigation}) {
 	const takePicture = async () => {
 		const photo = await cameraRef.takePictureAsync({ quality: 0.3 });
 		if (photo) {
-			//const formData = new FormData();
-			// formData.append('photoFromFront', {
-			// 	uri: photo.uri,
-			// 	name: 'photo.jpg',
-			// 	type: 'image/jpeg',
-			// });
-			// fetch('http://192.168.1.11:3000/upload', {
-			// 	method: 'POST',
-			// 	body: formData,
-			//    })
-			//    .then((response) => response.json())
-			// 	.then((data) => {
-			// 		if(data.result){
-			// 			console.log(data.url)
-			// 		}
-			// })
-			// .catch(error => console.error('There has been a problem with your fetch operation:', error));
+			const formData = new FormData();
+			formData.append('photoFromFront', {
+				uri: photo.uri,
+				name: 'photo.jpg',
+				type: 'image/jpeg',
+			});
+			fetch('http://192.168.100.20:3000/upload', {
+				method: 'POST',
+				body: formData,
+			   })
+			   .then((response) => response.json())
+				.then((data) => {
+					if(data.result){
+						console.log('NOW: ', data.url)
+					}
+			})
+			.catch(error => console.error('There has been a problem with your fetch operation:', error));
 			
-			//console.log(photo.uri)
+			console.log(photo.uri)
 			setPictures([...pictures,photo.uri])
 		}
 
@@ -118,12 +120,14 @@ export default function KickoffScreen({navigation}) {
 	const photos = pictures.map((data, i) => {
 		return (
 		  <View key={i} style={styles.photoContainer}>
-			<TouchableOpacity onPress={() => {
-				let copyPictures = pictures.filter(e=>e!==data);
-				setPictures(copyPictures)
-				}}>
-			  <FontAwesome name='times' size={20} color='red' style={styles.deleteIcon} />
-			</TouchableOpacity>
+			<View style={styles.deleteIcon}>
+				<TouchableOpacity onPress={() => {
+					let copyPictures = pictures.filter(e=>e!==data);
+					setPictures(copyPictures)
+					}}>
+				  <FontAwesome name='times' size={20} color='red'/>
+				</TouchableOpacity>
+			</View>
 			<Image source={{ uri: data }} style={styles.photo} />
 		  </View>
 		);
@@ -133,48 +137,69 @@ export default function KickoffScreen({navigation}) {
   return (
 	<SafeAreaView style={styles.container} >
 		<Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
-				<View style={styles.buttonsContainer}>
-					<TouchableOpacity onPress={() => setType(type === CameraType.back ? CameraType.front : CameraType.back)} style={styles.button}>
+				<View style={styles.buttonsCameraContainer}>
+					<TouchableOpacity onPress={() => setType(type === CameraType.back ? CameraType.front : CameraType.back)} style={styles.buttonsCamera}>
 						<FontAwesome name="rotate-right" size={25} color="#ffffff" />
 					</TouchableOpacity>
 
-					<TouchableOpacity onPress={() => setFlashMode(flashMode === FlashMode.off ? FlashMode.torch : FlashMode.off)} style={styles.button}>
+					<TouchableOpacity onPress={() => setFlashMode(flashMode === FlashMode.off ? FlashMode.torch : FlashMode.off)} style={styles.buttonsCamera}>
 						<FontAwesome name="flash" size={25} color={flashMode === FlashMode.off ? "#ffffff" : "#e8be4b"} />
 					</TouchableOpacity>
 				</View>
 
-				<View style={styles.snapContainer}>
+				{/* <View style={styles.snapContainer}>
 					<TouchableOpacity onPress={() => cameraRef && takePicture()}>
 						<FontAwesome name="circle-thin" size={95} color="#ffffff" />
 					</TouchableOpacity>
-				</View>
+				</View> */}
 		</Camera>
 		
-        	<ScrollView horizontal  contentContainerStyle={styles.galleryContainer}>
-				{photos}
-        	</ScrollView>
+        <ScrollView horizontal  contentContainerStyle={styles.galleryContainer}>
+			{photos}
+			{/* <View style={sytle= }></View> */}
+        </ScrollView>
 		
-		<MyButton
-			dataFlow={()=>handleBtn()}
-			text={">>"}
-			buttonType={buttonStyles.buttonTwo}
-		/>
+		<View style={styles.containerButtonBottom}>
+			<View style={styles.buttonSearch}>
+				<MyButton
+					dataFlow={()=>handleBtn()}
+					text={"Search"}
+        			buttonType={buttonStyles.buttonTwo}
+				/>
+			</View>
+			<View style={styles.buttonNext}>
+				<MyButton
+					dataFlow={()=>handleBtn()}
+					text={"Suivant"}
+        			buttonType={buttonStyles.buttonTwo}
+				/>
+			</View>
+		</View>
+
+		<View style={styles.snapContainer}>
+			<TouchableOpacity onPress={() => cameraRef && takePicture()}>
+				<FontAwesome name="circle-thin" size={95} color="#ffffff" />
+			</TouchableOpacity>
+		</View>
 	</SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
 	container:{
-		flex:1,
+		flex: 1,
 		alignItems:'center',
 		backgroundColor:css.backgroundColorTwo,
+		paddingTop: css.paddingTop,
 	},
+
 	camera: {
 		height:'50%',
 		width:'90%',
 		marginBottom:10,
 	},
-	buttonsContainer: {
+
+	buttonsCameraContainer: {
 		flex: 0.1,
 		flexDirection: "row",
 		alignItems: "flex-end",
@@ -183,7 +208,8 @@ const styles = StyleSheet.create({
 		paddingLeft: 20,
 		paddingRight: 20,
 	},
-	button: {
+
+	buttonsCamera: {
 		width: 44,
 		height: 44,
 		alignItems: "center",
@@ -191,25 +217,52 @@ const styles = StyleSheet.create({
 		backgroundColor: "rgba(0, 0, 0, 0.2)",
 		borderRadius: 50,
 	},
-	snapContainer: {
-		flex: 1,
-		alignItems: "center",
-		justifyContent: "flex-end",
-		paddingBottom: 25,
-	},
-	photoContainer: {
-		alignItems: 'flex-end',
-	},
-	photo: {
-		margin: 10,
-		width: 150,
-		height: 150,
-	},
-	deleteIcon: {
-		marginRight: 10,
-	},
+
 	galleryContainer: {
 		flexWrap: 'wrap',
 		alignItems:'center',
-	}
+	},
+
+	deleteIcon: {
+        width: '95%',
+        alignItems: 'flex-end',
+        position: 'absolute',
+        zIndex: 1,
+        paddingTop: '3%',
+      },
+
+	photo: {
+		width: 150,
+		height: 150,
+		margin: 5
+	},
+
+	containerButtonBottom: {
+		flex: 0,
+		flexDirection: 'row',
+		justifyContent:'space-around',
+		width: '100%',
+		height: 50,
+		marginBottom: 25,
+	},
+
+	buttonSearch: {
+		width: '100%',
+		paddingRight: 30,
+	},
+
+	buttonNext: {
+		width: '100%',
+		paddingLeft: 30,
+	},
+
+	snapContainer: {
+		flex: 0,
+		alignItems: "center",
+		justifyContent: "flex-end",
+		backgroundColor: css.inactiveButtonColor,
+		width: 100,
+		borderRadius: 100,
+		marginBottom: '6%'
+	},
 })

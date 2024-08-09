@@ -3,6 +3,7 @@ import { StyleSheet } from "react-native";
 import css from "./Global.js";
 
 const buttonStyles = StyleSheet.create({
+  
   buttonOne: {
     paddingVertical: 15,
     paddingHorizontal: 30,
@@ -16,6 +17,7 @@ const buttonStyles = StyleSheet.create({
     alignItems: "center",
     width: "80%",
   },
+
   buttonTwo: {
     paddingVertical: 15,
     paddingHorizontal: 30,
@@ -27,8 +29,20 @@ const buttonStyles = StyleSheet.create({
     fontWeight: "bold",
     position: "relative",
     alignItems: "center",
-    width: "40%",
+    width: '"40%"',
   },
+
+  buttonSmall: {
+    flex: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 30,
+    backgroundColor: css.inactiveButtonColor,
+    color: css.backgroundColorOne,
+    marginBottom: '4%',
+    borderRadius: 10,
+  },
+
   hoverOverlay: {
     position: "absolute",
     top: 0,
@@ -38,15 +52,16 @@ const buttonStyles = StyleSheet.create({
     backgroundColor: "rgba(213, 247, 239, 0.25)",
     borderRadius: 10,
   },
+
   buttonText: {
     color: css.backgroundColorOne,
     fontWeight: "bold",
     fontFamily: css.fontFamilyOne,
   },
+
   buttonContainer: {
     width: "100%",
     alignItems: "center",
-    marginBottom: 30,
   },
 });
 

@@ -15,7 +15,6 @@ export default function ResultScreen({ navigation }) {
   // const [selectedRecipe, setSelecedRecipe] = useState([]);
 
   const results = recipeData.map((data, i) => {
-    // return  <Recipe key={i} name={data.name} picture={data.picture} difficulty={data.difficulty} preparationTime={data.preparationTime} />;
     return  <Recipe key={i} {...data} />;
   })
 
