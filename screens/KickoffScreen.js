@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { SafeAreaView, StyleSheet, TouchableOpacity, ScrollView, View, Image} from "react-native";
+import {
+  SafeAreaView,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  View,
+  Image,
+} from "react-native";
 import { Camera, CameraType, FlashMode } from "expo-camera/legacy";
 import { useDispatch,useSelector } from "react-redux";
 import { addIngredientToStore,removeIngredientToStore } from "../reducers/ingredient";
@@ -16,24 +23,24 @@ export default function KickoffScreen({navigation}) {
 	const saveMoney=false;
 	const API_KEY="qD5sB6nb.BaYym0RxgqgmXQb5GEGgUZJshGNQhYby"
 
-	const [hasPermission, setHasPermission] = useState(false);
-	const [type, setType] = useState(CameraType.back);
-	const [flashMode, setFlashMode] = useState(FlashMode.off);
-	const [pictures, setPictures] = useState([]);
+  const [hasPermission, setHasPermission] = useState(false);
+  const [type, setType] = useState(CameraType.back);
+  const [flashMode, setFlashMode] = useState(FlashMode.off);
+  const [pictures, setPictures] = useState([]);
 
-	const dispatch = useDispatch();
-	const isFocused = useIsFocused();
+  const dispatch = useDispatch();
+  const isFocused = useIsFocused();
 
-	let cameraRef = useRef(null);
+  let cameraRef = useRef(null);
 
-	useEffect(() => {
-		(async () => {
-			const result = await Camera.requestCameraPermissionsAsync();
-			if (result) {
-				setHasPermission(result.status === "granted");
-			}
-		})();
-	}, []);
+  useEffect(() => {
+    (async () => {
+      const result = await Camera.requestCameraPermissionsAsync();
+      if (result) {
+        setHasPermission(result.status === "granted");
+      }
+    })();
+  }, []);
 
 	function handleBtn () {
 		if(!saveMoney){
