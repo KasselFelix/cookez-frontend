@@ -15,7 +15,7 @@ const css = {
   fontSizeFour: 34,
   fontSizeFive: 24,
   fontSizeSix: 20,
-  fontFamilyOne: Platform.OS === "ios" ? "Fira Sans" : "FiraSans.ttf",
+  fontFamilyOne: Platform.OS === "ios" ? "Fira Sans" : '',
   fontFamilyTwo: "Varela",
   fontFamilyThree: "Varela Round",
 };

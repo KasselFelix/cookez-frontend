@@ -73,11 +73,13 @@ export default function RecapScreen({navigation}) {
       <ScrollView contentContainerStyle={styles.galleryContainer}>
           {listIngredients}
       </ScrollView>
-      <MyButton
-			  dataFlow={()=>navigation.navigate('Result')}
-			  text="Valider"
-			  buttonType={buttonStyles.buttonTwo}
-		  />
+      <View style={styles.buttonBottom}>
+        <MyButton
+			    dataFlow={()=>navigation.navigate('Result')}
+			    text="Valider"
+			    buttonType={buttonStyles.buttonTwo}
+		    />
+      </View>
     </SafeAreaView>
   );
 }
@@ -102,20 +104,13 @@ const styles = StyleSheet.create({
     fontSize: css.fontSizeFive,
   },
 
-  // btnReturn: {
-  //   flex: 0,
-  //   alignItems: 'center',
-  //   justifyContent: 'center',
-  //   width: 30,
-  //   backgroundColor: css.inactiveButtonColor,
-  //   color: css.backgroundColorOne,
-  //   marginBottom: '4%',
-  //   borderRadius: 10,
-  // },
-
   scrollView: {
     alignItems: 'center',
     paddingBottom: 20,
   },
+
+  buttonBottom: {
+    marginBottom: 30,
+  }
 
 });
