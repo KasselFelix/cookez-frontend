@@ -1,9 +1,4 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-} from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import React, { useRef } from "react";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
@@ -13,22 +8,29 @@ export default function HomeAsGuest({ navigation }) {
   return (
     <View style={styles.container}>
       <MyButton
-        dataFlow={()=>navigation.navigate("Result")}
+        dataFlow={() => navigation.navigate("Recipe")}
+        text={"SELECTED"}
+        buttonType={buttonStyles.buttonTwo}
+      />
+      <MyButton
+        dataFlow={() => navigation.navigate("Result")}
         text={"RECIP"}
         buttonType={buttonStyles.buttonTwo}
       />
       <MyButton
-        dataFlow={()=>navigation.navigate("Kickoff")}
+        dataFlow={() => navigation.navigate("Kickoff")}
         text={"START"}
         buttonType={buttonStyles.buttonTwo}
       />
       <MyButton
-        dataFlow={()=>navigation.navigate("TabNavigator", {screen: 'Profil'})}
+        dataFlow={() =>
+          navigation.navigate("TabNavigator", { screen: "Profil" })
+        }
         text={"PROFIL"}
         buttonType={buttonStyles.buttonTwo}
       />
       <MyButton
-        dataFlow={()=>navigation.navigate("Login")}
+        dataFlow={() => navigation.navigate("Login")}
         text={"LOGIN"}
         buttonType={buttonStyles.buttonOne}
       />
