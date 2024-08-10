@@ -21,7 +21,7 @@ import css from "../styles/Global";
 
 export default function KickoffScreen({navigation}) {
 	const saveMoney=false;
-	const API_KEY="qD5sB6nb.BaYym0RxgqgmXQb5GEGgUZJshGNQhYby"
+	const API_KEY="nKioHJBC.19QEbASSU209IAgn3MSa4ogSVk6sOk1D"
 
   const [hasPermission, setHasPermission] = useState(false);
   const [type, setType] = useState(CameraType.back);
@@ -204,6 +204,8 @@ const styles = StyleSheet.create({
 		height:'50%',
 		width:'90%',
 		marginBottom:10,
+		borderRadius:40,
+		overflow:'hidden'
 	},
 
 	buttonsCameraContainer: {
