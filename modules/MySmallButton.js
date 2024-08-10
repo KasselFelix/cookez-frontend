@@ -10,13 +10,13 @@ import {
 
   export default function MyBackButton({ dataFlow, text, buttonType }) {
 
-    const handleReturn = () => {
+    const handlePress = () => {
       dataFlow();
     }
 
     return (
-        <TouchableOpacity style={buttonType} activeOpacity={0.8} onPress={() => handleReturn()}>
-          <Text>{text}</Text>
+        <TouchableOpacity style={buttonType} activeOpacity={0.8} onPress={() => handlePress()}>
+          <Text style={buttonStyles.buttonText}>{text}</Text>
         </TouchableOpacity>
       );
   };
