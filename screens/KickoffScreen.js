@@ -6,40 +6,91 @@ import { addIngredientToStore, removeIngredientToStore } from "../reducers/ingre
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { useIsFocused } from "@react-navigation/native";
 
-import MySmallButton from '../modules/MySmallButton'
+import ListIngredients from "../components/ListIngredients";
+import SearchIngredients from "../components/SearchIngredients";
+import MySmallButton from "../modules/MySmallButton";
 import MyButton from '../modules/MyButton';
 import buttonStyles from '../styles/Button';
 import css from "../styles/Global";
 
-
 export default function KickoffScreen({navigation}) {
-	const saveMoney=false;
-	const API_KEY="RLHrFgPo.2X82YIPeHdDihfr4QvianSMMCg1aX4Hi"
+  	const saveMoney=false;
+  	const API_KEY="RLHrFgPo.2X82YIPeHdDihfr4QvianSMMCg1aX4Hi"
 
-  const [hasPermission, setHasPermission] = useState(false);
-  const [type, setType] = useState(CameraType.back);
-  const [flashMode, setFlashMode] = useState(FlashMode.off);
-  const [pictures, setPictures] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
+  	const [hasPermission, setHasPermission] = useState(false);
+  	const [type, setType] = useState(CameraType.back);
+  	const [flashMode, setFlashMode] = useState(FlashMode.off);
+  	const [pictures, setPictures] = useState([]);
+  	const [modalVisible, setModalVisible] = useState(false);
+	const [searchInput, setSearchInput] = useState('');
+	const [clicked, setClicked] = useState(false);
+	const [dataListIngredient, setDataListIngredient] = useState();
+	const [validatedIngredient, setValidatedIngredient] = useState(false);
+	const [selectedIngredient, setSelectedIngredient] = useState([]);
+	
+	// console.log('INPUT: ', searchInput);
+	// console.log('OUIIIIIIIIIII: ', selectedIngredient);
+	console.log('DATA: ', dataListIngredient);
+	// console.log('VALIDER ?: ', validatedIngredient);
 
-  const dispatch = useDispatch();
-  const isFocused = useIsFocused();
+  	const dispatch = useDispatch();
+  	const isFocused = useIsFocused();
 
-  let cameraRef = useRef(null);
-  const background = [];
-  useEffect(() => {
-    (async () => {
-      const result = await Camera.requestCameraPermissionsAsync();
-      if (result) {
-        setHasPermission(result.status === "granted");
-      }
-    })();
-  }, []);
+  	let cameraRef = useRef(null);
+
+  	const background = [];
+
+  	useEffect(() => {
+  	  (async () => {
+  	    const result = await Camera.requestCameraPermissionsAsync();
+  	    if (result) {
+  	      setHasPermission(result.status === "granted");
+  	    }
+  	  })();
+  	}, []);
+
+	// function handleSearch () {
+	// 	if (searchInput.length > 0) {
+	// 		const handleFetchIngredients = async () => {
+	// 			const response = await fetch(`http://192.168.1.3:3000/ingredients/${searchInput}`);
+	// 			const data =  await response.json();
+	// 			console.log(data)
+	// 		}
+	// 		handleFetchIngredients()
+	// 	}
+	// };
+
+	// useEffect(() => {
+    // const getData = async () => {
+    //   const apiResponse = await fetch(
+    //     "https://my-json-server.typicode.com/kevintomas1995/logRocket_searchBar/languages"
+    //   );
+    //   const data = await apiResponse.json();
+    //   setListIngredient(data);
+    // };
+    // getData();
+    // }, []);
+
+	useEffect(() => {
+		if (searchInput.length > 0) {
+			const handleFetchIngredients = async () => {
+				const response = await fetch(`http://192.168.1.3:3000/ingredients/${searchInput}`);
+				const data =  await response.json();
+				// console.log('JSON: ', data)
+				if (data.result) {
+					setDataListIngredient(data.ingredients.map((e, i) => {return {id: i, name: e.name, display_name: e.name, photo: e.image, g_per_serving: e.quantity }}));
+				} else {
+					setDataListIngredient(data.error);
+				}
+			}
+			handleFetchIngredients()
+		};
+	}, [searchInput]);
 
 	function handleBtn () {
 		if(!saveMoney){
 			for (let imagePath of pictures){
-				console.log('LAAAA', imagePath)
+				// console.log('LAAAA', imagePath)
 				// Make the request
 				const handleFetch = async (cpt=0)=>{
 
@@ -63,10 +114,11 @@ export default function KickoffScreen({navigation}) {
 							if (response.ok) {
 								const data = await response.json();
 								if(data){
-									console.log('SALUT: ', data);
+									// console.log('SALUT: ', data);
 									if (data.items && data.items.length > 0 && data.items[0].food.length > 0) {
 										console.log('NOW: ', data.items[0].food[0]);
-										dispatch(addIngredientToStore({photo:imagePath,data:data.items[0].food[0].food_info}))
+										dispatch(addIngredientToStore({photo: dataListIngredient[0].photo, data: {display_name: dataListIngredient[0].name, g_per_serving: dataListIngredient[0].g_per_serving }}));
+										dispatch(addIngredientToStore({photo:imagePath, data:data.items[0].food[0].food_info}))
 									}
 								}else{
 									console.log('no data')
@@ -85,7 +137,7 @@ export default function KickoffScreen({navigation}) {
 			
 		}
 		navigation.navigate('Recap')
-	}
+	};
 
 	const takePicture = async () => {
 		const photo = await cameraRef.takePictureAsync({ quality: 0.3 });
@@ -144,9 +196,13 @@ export default function KickoffScreen({navigation}) {
 		}	
 		return  background;
 	  }
+
+	  const handleAddIngredient = () => {
+		dispatch(addIngredientToStore({photo: dataListIngredient.photo, data: {display_name: dataListIngredient[0].name, g_per_serving: 100}}));
+	  }
 	
 
-  return (
+  	return (
 	// <ScrollView  contentContainerStyle={styles.scrollView} automaticallyAdjustKeyboardInsets={true}>
 		<SafeAreaView style={styles.container} >
 			<Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
@@ -169,16 +225,35 @@ export default function KickoffScreen({navigation}) {
 			<View style={styles.containerButtonBottom}>
 				<Modal visible={modalVisible} animationtType="fade" transparent>
        		 		<View style={styles.modal}>
-       		 		    <View style={styles.modalContainer}>
-							<View style={styles.searchInput}>
-       		 		        	<TextInput placeholder='Ingrédient' placeholderTextColor={'grey'}/>
+       		 		    <View  style={styles.modalBackgound}>
+							{/* <View style={styles.searchInput}>
+								<TextInput placeholder='Ingrédient' placeholderTextColor={'grey'} value={searchInput} onChangeText={(value) => setSearchInput(value)}/>
+							</View> */}
+							<View style={styles.modalContainer}>
+
+							<SearchIngredients
+								searchInput={searchInput}
+								setSearchInput={setSearchInput}
+								setDataListIngredient={setDataListIngredient}
+								clicked={clicked}
+								setClicked={setClicked}
+							/>
+							   
+							<ListIngredients
+							  searchInput={searchInput}
+							  data={dataListIngredient}
+							  setClicked={setClicked}
+							  validatedIngredient={validatedIngredient}
+							  setValidatedIngredient={setValidatedIngredient}
+							/>
 							</View>
-								{/* <View style={styles.modalButtons}>
-								</View> */}
+									
 							<View style={styles.modalButtons}>
 								<View style={styles.validButton}>
 									<MySmallButton 
-										dataFlow={()=> setModalVisible(false)}
+										// dataFlow={()=> {/*handleSearch();*/searchInput.length === 0 ? setModalVisible(true) : setModalVisible(false); setSearchInput(""); dispatch(addIngredientToStore([...dataListIngredient, dataListIngredient])) }}
+										// dataFlow={()=> {/*handleSearch();*/searchInput.length === 0 ? setModalVisible(true) : setModalVisible(false); setSearchInput(""); setSelectedIngredient([...selectedIngredient, searchInput])/*dispatch(addIngredientToStore([...dataListIngredient, dataListIngredient]))*/ }}
+										dataFlow={()=> {/*handleSearch();*/searchInput.length === 0 ? setModalVisible(true) : setModalVisible(false); setSearchInput(""); handleAddIngredient()}}
 										text={'Ajouter'}
 										buttonType={buttonStyles.buttonTwo}
 									/>
@@ -186,9 +261,10 @@ export default function KickoffScreen({navigation}) {
 								<View style={styles.backRetour}>
 									<MySmallButton 
 										dataFlow={()=> setModalVisible(false)}
-										// textType={}
 										text={'Retour'}
 										buttonType={buttonStyles.buttonTwo}
+										setSearchInput={setSearchInput}
+										setDataListIngredient={setDataListIngredient}
 									/>
 								</View>
 							</View>
@@ -221,7 +297,7 @@ export default function KickoffScreen({navigation}) {
 			</View>
 		</SafeAreaView>
 	// </ScrollView>
-  )
+   )
 }
 
 const styles = StyleSheet.create({
@@ -237,6 +313,15 @@ const styles = StyleSheet.create({
 	// 	paddingBottom: 20,
 	// }, 
 
+	modalBackgound: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		width: '100%',
+		height: '100%',
+		backgroundColor: 'rgba(255,255,255,0.8)',
+	},
+
 	modal: {
 		flex: 1,
 		justifyContent: 'center',
@@ -250,7 +335,7 @@ const styles = StyleSheet.create({
 		backgroundColor: css.backgroundColorOne,
 		borderRadius: 20,
 		height: 210,
-		width: 150,
+		width:350,
 		alignItems: 'center',
 		shadowColor: '#000',
 		shadowOffset: {
@@ -260,6 +345,7 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.25,
 		shadowRadius: 4,
 		elevation: 5,
+		marginBottom: 15,
 	},
 
 	modalButtons: {
