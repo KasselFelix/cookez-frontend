@@ -46,7 +46,7 @@ export default function HomeAsGuest({ navigation }) {
         <View style={styles.buttons}>
           <MyButton
             dataFlow={() => navigation.navigate("Result")}
-            text={"RECIP"}
+            text={"RECIPE"}
             buttonType={buttonStyles.buttonTwo}
           />
         </View>

@@ -12,7 +12,7 @@ export const commentSlice = createSlice({
         addCommentToStore: (state, action) => {
             state.comment = action.payload;
         },
-        removeCommentToStore: (state, action) => {
+        removeCommentFromStore: (state, action) => {
             state.comment = state.comment.filter((e) => e.comment !== action.payload.comment )
         },
     },

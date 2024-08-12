@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import React from "react";
+import React, {useState} from "react";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
 import MyButton from "../modules/MyButton";
@@ -14,7 +14,12 @@ import MySmallButton from "../modules/MySmallButton";
 
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 
+
+
 export default function RecipeScreen({ navigation }) {
+  /* HOOK STATE FOR THE HEART LOGO ON THE RECIPE*/
+  const [like, setLike] = useState(false);
+
   const selectedRecipe = {
     id: "idrecipe",
     name: "Tacos Al Pastor",
@@ -70,6 +75,14 @@ export default function RecipeScreen({ navigation }) {
     );
   }
 
+  const handleLikeRecipe =() => {
+    setLike(!like);
+  }
+  let heartIcon = {};
+  if (like) {
+    heartIcon = {color:'#E45858'}
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -88,8 +101,8 @@ export default function RecipeScreen({ navigation }) {
         <Text style={styles.sectionsTitle}>{selectedRecipe.name}</Text>
         <View style={styles.imageContainer}>
           <View style={styles.imagePlaceholder} />
-          <TouchableOpacity style={styles.favoriteButton}>
-            <FontAwesome name="heart-o" size={24} color="grey" />
+          <TouchableOpacity style={styles.favoriteButton} onPress={()=> handleLikeRecipe()}>
+            <FontAwesome style={heartIcon} name="heart" size={24} color="grey" />
           </TouchableOpacity>
         </View>
         <View style={styles.stars}>{stars}</View>

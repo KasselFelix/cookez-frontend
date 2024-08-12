@@ -15,7 +15,9 @@ const buttonStyles = StyleSheet.create({
     fontWeight: "bold",
     position: "relative",
     alignItems: "center",
+    justifyContent: "center",
     width: "80%",
+    minWidth: 200,
   },
 
   buttonTwo: {
@@ -28,10 +30,27 @@ const buttonStyles = StyleSheet.create({
     overflow: "hidden",
     fontWeight: "bold",
     position: "relative",
+    justifyContent: "center",
     alignItems: "center",
-    width: '"40%"',
+    width: '40%',
+    minWidth: 200,
   },
-
+  buttonThree: {
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    backgroundColor: css.inactiveButtonColor,
+    color: css.backgroundColorOne,
+    fontSize: 19.2,
+    borderRadius: 10,
+    overflow: "hidden",
+    fontWeight: "bold",
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
+    width: '40%',
+    minWidth: 200,
+    marginBottom: 5,
+  },
   buttonSmall: {
     flex: 0,
     alignItems: 'center',
@@ -65,4 +84,4 @@ const buttonStyles = StyleSheet.create({
   },
 });
 
-export default buttonStyles;
+export default buttonStyles; 

@@ -1,5 +1,6 @@
-import { Modal, StyleSheet, TextInput, Text, View, TouchableOpacity } from 'react-native';
+import { Modal, StyleSheet, TextInput, Text, View} from 'react-native';
 import React, {useState} from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import MyButton from '../modules/MyButton';
 import buttonStyles from '../styles/Button';
@@ -28,7 +29,7 @@ export default function SignIn({navigation}) {
     }
 
   return (
-    <View>
+    <SafeAreaView style={styles.buttonWrapper}>
       <MyButton
         dataFlow={()=>setModalVisible(true)}
         text={"SIGN IN"}
@@ -37,38 +38,71 @@ export default function SignIn({navigation}) {
       <Modal visible={modalVisible} animationtType="fade" transparent>
       <View style={styles.modal}>
         <View style={styles.modalContainer}>
-            <TextInput placeholder='username' placeholderTextColor={'grey'} KeyboardType={'email-address'} InputModeOptions={'email'} textContentType={'emailAddress'} autoCapitalize={'email'} value={username} onChangeText={(value)=> setUsername(value)}/>
-            <TextInput placeholder='password' placeholderTextColor={'grey'} textContentType='password' autoComplete='new-password' secureTextEntry={true} value={password} onChangeText={(value)=> setPassword(value)}/>
-            <TouchableOpacity title='Signin' onPress={()=>handleSignin()}>
-              <Text>Signin</Text>
-            </TouchableOpacity>
-            <TouchableOpacity title='hide' onPress={()=> {setModalVisible(false)}}>
-            <Text>Hide</Text>
-            </TouchableOpacity>
+          <View style={styles.shadowView}>
+            <TextInput placeholder='username' placeholderTextColor={'grey'} style={styles.formStyle} value={username} onChangeText={(value)=> setUsername(value)}/>
+            <TextInput placeholder='password' placeholderTextColor={'grey'} textContentType='password' secureTextEntry={true} style={styles.formStyle} value={password} onChangeText={(value)=> setPassword(value)}/>
+            <MyButton
+              dataFlow={handleSignin}
+              text="Signin"
+              buttonType={buttonStyles.buttonThree}
+            />
+            <MyButton
+              dataFlow={() => setModalVisible(false)}
+              text="Close"
+              buttonType={buttonStyles.buttonThree}
+            />
+          </View>
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
+  buttonWrapper: {
+    marginBottom: 5, 
+  },
   modal:{
-    display:'flex',
     flex:1,
     justifyContent:'center',
     alignItems:'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContainer:{
     backgroundColor:'#abd1c6',
-    borderRadius: 10,
-    justifyContent:'center',
+    borderRadius: 20,
+    padding: 20,
     alignItems:'center',
-    height:'30%',
-    width:'60%',
-    shadowOpacity:'10px',
+    width:'80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
   },
-  modalContainerhover:{
-    scale:'1.3',
+  shadowView:{
+    backgroundColor: '#abd1c6',
+        borderRadius: 20,
+        padding: 20,
+        width: '100%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 2,
+        elevation: 5,
+  },
+
+  // modalContainerhover:{
+  //   scale:'1.3',
+  // },
+  formStyle: {
+    width: '100%',
+    borderWidth: 2,
+    borderColor: '#264143',
+    borderRadius: 10,
+    padding: 12,
+    marginVertical: 10,
+    fontSize: 15,
   },
 })
