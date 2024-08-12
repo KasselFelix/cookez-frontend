@@ -24,14 +24,12 @@ export default function KickoffScreen({navigation}) {
   	const [modalVisible, setModalVisible] = useState(false);
 	const [searchInput, setSearchInput] = useState('');
 	const [clicked, setClicked] = useState(false);
-	const [dataListIngredient, setDataListIngredient] = useState();
+	const [dataListIngredient, setDataListIngredient] = useState([]);
 	const [validatedIngredient, setValidatedIngredient] = useState(false);
 	const [selectedIngredient, setSelectedIngredient] = useState([]);
 	
-	// console.log('INPUT: ', searchInput);
-	// console.log('OUIIIIIIIIIII: ', selectedIngredient);
-	console.log('DATA: ', dataListIngredient);
-	// console.log('VALIDER ?: ', validatedIngredient);
+	const ingredients=  useSelector((state)=>state.ingredient.ingredient)
+	
 
   	const dispatch = useDispatch();
   	const isFocused = useIsFocused();
@@ -49,16 +47,10 @@ export default function KickoffScreen({navigation}) {
   	  })();
   	}, []);
 
-	// function handleSearch () {
-	// 	if (searchInput.length > 0) {
-	// 		const handleFetchIngredients = async () => {
-	// 			const response = await fetch(`http://192.168.1.3:3000/ingredients/${searchInput}`);
-	// 			const data =  await response.json();
-	// 			console.log(data)
-	// 		}
-	// 		handleFetchIngredients()
-	// 	}
-	// };
+	function handleSearch () {
+		setSearchInput(""); 
+		handleAddIngredient();
+	};
 
 	// useEffect(() => {
     // const getData = async () => {
@@ -74,7 +66,7 @@ export default function KickoffScreen({navigation}) {
 	useEffect(() => {
 		if (searchInput.length > 0) {
 			const handleFetchIngredients = async () => {
-				const response = await fetch(`http://192.168.1.3:3000/ingredients/${searchInput}`);
+				const response = await fetch(`http://192.168.100.246:3000/ingredients/${searchInput}`);
 				const data =  await response.json();
 				// console.log('JSON: ', data)
 				if (data.result) {
@@ -117,7 +109,6 @@ export default function KickoffScreen({navigation}) {
 									// console.log('SALUT: ', data);
 									if (data.items && data.items.length > 0 && data.items[0].food.length > 0) {
 										console.log('NOW: ', data.items[0].food[0]);
-										dispatch(addIngredientToStore({photo: dataListIngredient[0].photo, data: {display_name: dataListIngredient[0].name, g_per_serving: dataListIngredient[0].g_per_serving }}));
 										dispatch(addIngredientToStore({photo:imagePath, data:data.items[0].food[0].food_info}))
 									}
 								}else{
@@ -148,19 +139,19 @@ export default function KickoffScreen({navigation}) {
 				name: 'photo.jpg',
 				type: 'image/jpeg',
 			});
-			fetch('http://192.168.1.3:3000/upload', {
-				method: 'POST',
-				body: formData,
-			   })
-			   .then((response) => response.json())
-				.then((data) => {
-					if(data.result){
-						console.log('NOW: ', data.url)
-					}
-			})
-			.catch(error => console.error('There has been a problem with your fetch operation:', error));
+			// fetch('http://192.168.100.246:3000/upload', {
+			// 	method: 'POST',
+			// 	body: formData,
+			//    })
+			//    .then((response) => response.json())
+			// 	.then((data) => {
+			// 		if(data.result){
+			// 			console.log('NOW: ', data.url)
+			// 		}
+			// })
+			// .catch(error => console.error('There has been a problem with your fetch operation:', error));
 			
-			console.log(photo.uri)
+			//console.log(photo.uri)
 			setPictures([...pictures,photo.uri])
 		}
 
@@ -198,12 +189,15 @@ export default function KickoffScreen({navigation}) {
 	  }
 
 	  const handleAddIngredient = () => {
-		dispatch(addIngredientToStore({photo: dataListIngredient.photo, data: {display_name: dataListIngredient[0].name, g_per_serving: 100}}));
-	  }
+		console.log('dataListIngredient before: ', dataListIngredient);
+		console.log('reducer ingredients before:',ingredients)
+		dispatch(addIngredientToStore({photo: dataListIngredient[0].photo, data: {display_name: dataListIngredient[0].name, g_per_serving: dataListIngredient[0].g_per_serving}}));
+		console.log('dataListIngredient after: ', dataListIngredient);
+		console.log('reducer ingredients after:',ingredients)
+	}
 	
 
   	return (
-	// <ScrollView  contentContainerStyle={styles.scrollView} automaticallyAdjustKeyboardInsets={true}>
 		<SafeAreaView style={styles.container} >
 			<Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
 					<View style={styles.buttonsCameraContainer}>
@@ -226,9 +220,6 @@ export default function KickoffScreen({navigation}) {
 				<Modal visible={modalVisible} animationtType="fade" transparent>
        		 		<View style={styles.modal}>
        		 		    <View  style={styles.modalBackgound}>
-							{/* <View style={styles.searchInput}>
-								<TextInput placeholder='Ingrédient' placeholderTextColor={'grey'} value={searchInput} onChangeText={(value) => setSearchInput(value)}/>
-							</View> */}
 							<View style={styles.modalContainer}>
 
 							<SearchIngredients
@@ -251,16 +242,14 @@ export default function KickoffScreen({navigation}) {
 							<View style={styles.modalButtons}>
 								<View style={styles.validButton}>
 									<MySmallButton 
-										// dataFlow={()=> {/*handleSearch();*/searchInput.length === 0 ? setModalVisible(true) : setModalVisible(false); setSearchInput(""); dispatch(addIngredientToStore([...dataListIngredient, dataListIngredient])) }}
-										// dataFlow={()=> {/*handleSearch();*/searchInput.length === 0 ? setModalVisible(true) : setModalVisible(false); setSearchInput(""); setSelectedIngredient([...selectedIngredient, searchInput])/*dispatch(addIngredientToStore([...dataListIngredient, dataListIngredient]))*/ }}
-										dataFlow={()=> {/*handleSearch();*/searchInput.length === 0 ? setModalVisible(true) : setModalVisible(false); setSearchInput(""); handleAddIngredient()}}
+										dataFlow={()=> {handleSearch(); ; setDataListIngredient([])}}
 										text={'Ajouter'}
 										buttonType={buttonStyles.buttonTwo}
 									/>
 								</View>
 								<View style={styles.backRetour}>
 									<MySmallButton 
-										dataFlow={()=> setModalVisible(false)}
+										dataFlow={()=> {setModalVisible(false) ; setDataListIngredient([])}}
 										text={'Retour'}
 										buttonType={buttonStyles.buttonTwo}
 										setSearchInput={setSearchInput}
@@ -296,7 +285,6 @@ export default function KickoffScreen({navigation}) {
 				</TouchableOpacity>
 			</View>
 		</SafeAreaView>
-	// </ScrollView>
    )
 }
 

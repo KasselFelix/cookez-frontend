@@ -29,7 +29,7 @@ export default function SearchIngredients ({clicked, searchInput, setSearchInput
         {clicked && (
           <Entypo name="cross" size={20} color="black" style={{ padding: 1 }} onPress={() => {
               setSearchInput("");
-              setDataListIngredient("");
+              setDataListIngredient([]);
           }}/>
         )}
       </View>

@@ -32,10 +32,10 @@ export default function RecapScreen({navigation}) {
   const ingredients = useSelector((state) => state.ingredient.ingredient);
   console.log('LIST INGREDIENTS TO SOTRE: ', ingredients);
 
-  useEffect(()=>{
-    dispatch(removeAllIngredientToStore())
-    return ;
-  },[])
+  // useEffect(()=>{
+  //   dispatch(removeAllIngredientToStore())
+  //   return ;
+  // },[])
 
   let listIngredients=<></>;
   // if(dataBase.length>0){
