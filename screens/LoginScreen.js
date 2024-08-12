@@ -3,8 +3,13 @@ import React, {useState} from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SignIn from './SignIn';
 import SignUp from './SignUp';
-import MyButton from '../modules/MyButton';
-import buttonStyles from '../styles/Button';
+import css from "../styles/Global";
+import buttonStyles from "../styles/Button";
+import MyButton from "../modules/MyButton";
+import MySmallButton from "../modules/MySmallButton";
+
+import FontAwesome from "react-native-vector-icons/FontAwesome";
+
 
 export default function LoginScreen({navigation}) {
 
@@ -68,6 +73,16 @@ export default function LoginScreen({navigation}) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <MySmallButton
+          dataFlow={() => navigation.goBack()}
+          text={
+            <FontAwesome name="angle-double-left" size={30} color={"white"} />
+          }
+          buttonType={buttonStyles.buttonSmall}
+        />
+      </View>
+
       {/*lire la doc pour specifier les options manquante */}
       {/* <TouchableOpacity title='Signin' onPress={()=> setModalVisible1(true)}>
       <Text>SignUp</Text>
@@ -124,6 +139,10 @@ container: {
   flex:1,
   textAlign:'center',
   alignItems:'center',
+},
+header:{
+  justifyContent:'flex-start'
+
 },
 modal1:{
   display:'flex',
