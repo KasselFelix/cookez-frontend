@@ -6,19 +6,28 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
 import MyButton from "../modules/MyButton";
 import MySmallButton from "../modules/MySmallButton";
 
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import Popover from "react-native-popover-view";
 
 
 
 export default function RecipeScreen({ navigation }) {
   /* HOOK STATE FOR THE HEART LOGO ON THE RECIPE*/
-  const [like, setLike] = useState(false);
+  // const [like, setLike] = useState(false);
+
+  const [showPopover, setShowPopover]=useState(false);
+
+
+// auto close the popover 
+  useEffect(() => {
+    setTimeout(() => setShowPopover(false), 5500);
+  }, [])
 
   const selectedRecipe = {
     id: "idrecipe",
@@ -74,14 +83,14 @@ export default function RecipeScreen({ navigation }) {
       />
     );
   }
-
-  const handleLikeRecipe =() => {
-    setLike(!like);
-  }
-  let heartIcon = {};
-  if (like) {
-    heartIcon = {color:'#E45858'}
-  }
+// CONDITIONAL FUNCTION TO CHANGE HEART COLOR UPON CLICKING FOR LOGGED IN USER VERSION
+  // const handleLikeRecipe =() => {
+  //   setLike(!like);
+  // }
+  // let heartIcon = {};
+  // if (like) {
+  //   heartIcon = {color:'#E45858'}
+  // }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -101,9 +110,19 @@ export default function RecipeScreen({ navigation }) {
         <Text style={styles.sectionsTitle}>{selectedRecipe.name}</Text>
         <View style={styles.imageContainer}>
           <View style={styles.imagePlaceholder} />
-          <TouchableOpacity style={styles.favoriteButton} onPress={()=> handleLikeRecipe()}>
-            <FontAwesome style={heartIcon} name="heart" size={24} color="grey" />
-          </TouchableOpacity>
+          <Popover 
+          isVisible={showPopover}
+          onRequestClose={()=> setShowPopover(false)}
+            from={(
+              <TouchableOpacity style={styles.favoriteButton} onPress={()=> setShowPopover(true)}>
+                <FontAwesome name="heart" size={24} color="grey" />
+              </TouchableOpacity>
+            )}>
+            <View
+            style={styles.popover}>
+              <Text>You can unlock this feature by Signing in ❤️</Text>
+            </View>
+          </Popover>
         </View>
         <View style={styles.stars}>{stars}</View>
         <View style={styles.textUnder}>
@@ -209,6 +228,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#ddd",
     borderRadius: 8,
   },
+
+  popover:{
+    width:300,
+    height:50,
+    textAlign:'center',
+    alignItems:'center',
+    justifyContent:'center',
+  },
+
   favoriteButton: {
     position: "absolute",
     top: 5,

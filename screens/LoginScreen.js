@@ -10,6 +10,13 @@ import css from '../styles/Global';
 export default function LoginScreen({navigation}) {
    return (
     <SafeAreaView style={styles.container}>
+      <MySmallButton
+          dataFlow={() => navigation.goBack()}
+          text={
+            <FontAwesome name="angle-double-left" size={30} color={"white"} />
+          }
+          buttonType={buttonStyles.buttonSmall}
+        />
       <View style={styles.buttonContainer}>
         <SignIn navigation={navigation} />
         <SignUp navigation={navigation} />
