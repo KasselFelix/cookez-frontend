@@ -3,6 +3,8 @@ import React, {useState} from 'react';
 
 import MyButton from '../modules/MyButton';
 import buttonStyles from '../styles/Button';
+import user, { addUserToStore } from '../reducers/user';
+import { useDispatch } from 'react-redux';
 
 export default function SignUp({navigation}) {
     const [email, setEmail]=useState('');
@@ -14,8 +16,10 @@ export default function SignUp({navigation}) {
     const [image, setImage]=useState('');
     const [modalVisible, setModalVisible]=useState(false);
 
+    const dispatch =useDispatch();
+
     const handleSignup =() => {
-        fetch('http://192.168.100.155:3000/users/signup', {
+        fetch('http://192.168.100.246:3000/users/signup', {
             method:'POST',
             headers:{'Content-Type': 'Application/json'}, 
             body:JSON.stringify({
@@ -29,7 +33,7 @@ export default function SignUp({navigation}) {
             })
         })
         .then(res => res.json())
-        .then(data => {console.log('user', data)})
+        .then(data => {dispatch(addUserToStore(data.userLogged))})
         navigation.navigate('Home')
     }
 

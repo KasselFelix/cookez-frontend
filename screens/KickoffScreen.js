@@ -39,7 +39,6 @@ export default function KickoffScreen({navigation}) {
 	function handleBtn () {
 		if(!saveMoney){
 			for (let imagePath of pictures){
-				console.log('LAAAA', imagePath)
 				// Make the request
 				const handleFetch = async (cpt=0)=>{
 
@@ -96,17 +95,17 @@ export default function KickoffScreen({navigation}) {
 				name: 'photo.jpg',
 				type: 'image/jpeg',
 			});
-			fetch('http://192.168.1.3:3000/upload', {
-				method: 'POST',
-				body: formData,
-			   })
-			   .then((response) => response.json())
-				.then((data) => {
-					if(data.result){
-						console.log('NOW: ', data.url)
-					}
-			})
-			.catch(error => console.error('There has been a problem with your fetch operation:', error));
+			// fetch('http://192.168.1.3:3000/upload', {
+			// 	method: 'POST',
+			// 	body: formData,
+			//    })
+			//    .then((response) => response.json())
+			// 	.then((data) => {
+			// 		if(data.result){
+			// 			console.log('NOW: ', data.url)
+			// 		}
+			// })
+			// .catch(error => console.error('There has been a problem with your fetch operation:', error));
 			
 			console.log(photo.uri)
 			setPictures([...pictures,photo.uri])

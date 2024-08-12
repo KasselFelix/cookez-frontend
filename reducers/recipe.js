@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    recipe: [],
+    recipes: [],
 }; 
 
 export const recipeSlice = createSlice({
@@ -10,10 +10,13 @@ export const recipeSlice = createSlice({
     initialState,
     reducers: {
         addRecipeToStore: (state, action) => {
-            state.recipe.push(action.payload);
+            state.recipes.push(action.payload);
+        },
+        updateRecipeToStore: (state, action) => {
+            state.recipes=action.payload;
         },
         removeRecipeToStore: (state, action) => {
-            state.recipe = state.recipe.filter((e) => e.recipe !== action.payload.recipe)
+            state.recipes = state.recipes.filter((e) => e._id !== action.payload._id)
         },
     },
 });
