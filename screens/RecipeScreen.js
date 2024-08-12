@@ -14,14 +14,16 @@ import MySmallButton from "../modules/MySmallButton";
 
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Popover from "react-native-popover-view";
+import { useSelector } from "react-redux";
+import ingredient from "../reducers/ingredient";
 
 
 
-export default function RecipeScreen({ navigation }) {
+export default function RecipeScreen({ route, navigation }) {
   /* HOOK STATE FOR THE HEART LOGO ON THE RECIPE*/
-  // const [like, setLike] = useState(false);
-
+  const [like, setLike] = useState(false);
   const [showPopover, setShowPopover]=useState(false);
+  const user=useSelector((state)=>{state.user.user})
 
 
 // auto close the popover 
@@ -29,48 +31,8 @@ export default function RecipeScreen({ navigation }) {
     setTimeout(() => setShowPopover(false), 5500);
   }, [])
 
-  const selectedRecipe = {
-    id: "idrecipe",
-    name: "Tacos Al Pastor",
-    origin: "Mexique",
-    ingredients: [
-      {
-        name: "Porc",
-        image: "porc.jpg",
-        quantity: 500,
-        nutrition: {
-          vitamine_A: 0,
-          vitamine_B: 1.3,
-          glycemic_index: 0,
-          calories: 242,
-        },
-      },
-      {
-        name: "Ananas",
-        image: "ananas.jpg",
-        quantity: 200,
-        nutrition: {
-          vitamine_A: 3,
-          vitamine_B: 0.1,
-          glycemic_index: 66,
-          calories: 50,
-        },
-      },
-    ],
-    difficulty: 3,
-    note: 4,
-    votes: ["iduser1", "iduser2"],
-    picture: "Tacos_Al_Pastor.jpg",
-    preparationTime: 60,
-    description:
-      "Un plat traditionnel mexicain avec du porc mariné et de l'ananas.",
-    steps: [
-      "Mariner le porc avec les épices.",
-      "Faire cuire le porc et l'ananas.",
-      "Servir dans des tortillas chaudes.",
-    ],
-    Comments: [],
-  };
+  const selectedRecipe= route.params.props
+  
 
   const stars = [];
   for (let i = 0; i < 5; i++) {
@@ -79,19 +41,31 @@ export default function RecipeScreen({ navigation }) {
         key={i}
         name="star"
         size={25}
-        color={i < selectedRecipe.note ? "#d4b413" : "#9c9c98"}
+        color={i < route.params.note ? "#d4b413" : "#9c9c98"}
       />
     );
   }
-// CONDITIONAL FUNCTION TO CHANGE HEART COLOR UPON CLICKING FOR LOGGED IN USER VERSION
-  // const handleLikeRecipe =() => {
-  //   setLike(!like);
-  // }
-  // let heartIcon = {};
-  // if (like) {
-  //   heartIcon = {color:'#E45858'}
-  // }
+  // CONDITIONAL FUNCTION TO CHANGE HEART COLOR UPON CLICKING FOR LOGGED IN USER VERSION
+  const handleLikeRecipe =() => {
+    if(user && user.token){
+      setLike(!like);
+    }
+  }
+  
+  const ingredients=selectedRecipe.ingredients.map((e,i)=>{
+      return <Text key={i}> {e.quantity}g {e.name}</Text>
+  })
+  
+  const steps=selectedRecipe.steps.map((text,i)=>{
+    return <Text key={i}>{i+1}. {text}</Text>
+  })
 
+  const comments=selectedRecipe.comments.map((e,i)=>{
+    return <View key={i} style={styles.content}>
+          <Text>{e.username}   {e.date}</Text>
+          <Text>{e.message}</Text>
+    </View>
+  })
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -115,7 +89,7 @@ export default function RecipeScreen({ navigation }) {
           onRequestClose={()=> setShowPopover(false)}
             from={(
               <TouchableOpacity style={styles.favoriteButton} onPress={()=> setShowPopover(true)}>
-                <FontAwesome name="heart" size={24} color="grey" />
+                <FontAwesome name="heart" size={24} color={like?"#E45858":"grey"} onPress={()=>{handleLikeRecipe()}}/>
               </TouchableOpacity>
             )}>
             <View
@@ -141,12 +115,7 @@ export default function RecipeScreen({ navigation }) {
         <Text style={styles.sectionsTitle}>Ingredients</Text>
         <ScrollView style={styles.scrollView}>
           <View style={styles.content}>
-            <Text> 200g de poulet,</Text>
-            <Text> 300g de chou</Text>
-            <Text> 300g de riz</Text>
-            <Text> 2cc de sel</Text>
-            <Text> 2càs de sauce soja</Text>
-            <Text> 1càs de nuoc mâm</Text>
+            {ingredients}
           </View>
         </ScrollView>
       </View>
@@ -157,12 +126,7 @@ export default function RecipeScreen({ navigation }) {
         <Text style={styles.sectionsTitle}>Étapes</Text>
         <ScrollView style={styles.scrollView}>
           <View style={styles.content}>
-            <Text>1. Mariner le poulet avec les épices.</Text>
-            <Text>2. Faire cuire le poulet et l'ananas.</Text>
-            <Text>3. Ajouter les épices et bien mélanger.</Text>
-            <Text>4. Laisser mijoter 5 minutes.</Text>
-            <Text>5. Servir dans des tortillas chaudes.</Text>
-            <Text>6. Bon app!.</Text>
+            {steps}
           </View>
         </ScrollView>
       </View>
@@ -173,10 +137,7 @@ export default function RecipeScreen({ navigation }) {
 
       <View style={styles.commentsBloc}>
         <Text style={styles.sectionsTitle}>Commentaires</Text>
-        <View style={styles.content}>
-          <Text>Cette recette est blablablaaaaa</Text>
-          <Text>blablablaaaaaaaaaaa</Text>
-        </View>
+        {comments}
       </View>
 
       {/* BOUTON  */}
@@ -271,7 +232,6 @@ const styles = StyleSheet.create({
   },
   commentsBloc: {
     width: "90%",
-    height: 100,
     backgroundColor: css.backgroundColorTwo,
     padding: 10,
     borderRadius: 8,

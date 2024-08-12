@@ -21,7 +21,7 @@ export default function ResultScreen({ navigation }) {
 
   useEffect(()=>{
     console.log(user)
-    console.log('ing before',ingredients)
+    //console.log('ing before',ingredients)
     const ingredientSelected=ingredients.map((e)=> {
       return e={name: e.data.display_name ,
       image: e.photo,
@@ -29,7 +29,7 @@ export default function ResultScreen({ navigation }) {
       nutrition: e.data.nutrition};
     })
 
-    console.log('body',ingredientSelected)
+    //console.log('body',ingredientSelected)
     fetch('http://192.168.100.246:3000/recipes/result', {
           method:'POST',
           headers: {
@@ -42,9 +42,9 @@ export default function ResultScreen({ navigation }) {
       }).then((response) => response.json())
 			.then((data) => {
 					if(data.result){
-            console.log('fetch:',data.recipes)
+            //console.log('fetch:',data.recipes)
 						dispatch(updateRecipeToStore(data.recipes))
-            console.log('reducer',recipeData)
+            //console.log('reducer',recipeData)
 
 					}
 			})
@@ -54,7 +54,7 @@ export default function ResultScreen({ navigation }) {
 
  
   const recipes = recipeData.map((data, i) => {
-    return  <Recipe key={i} {...data} />;
+    return  <Recipe key={i} {...data} navigation={navigation} />;
   })
 
   const handleReturn = () => {
@@ -62,20 +62,19 @@ export default function ResultScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.btnReturn} activeOpacity={0.8} onPress={() => handleReturn()}>
           <FontAwesome name='angle-double-left' size={30} color={'white'}/>
         </TouchableOpacity>
         <Text style={styles.titlePage}>Résultats</Text>
       </View>
-      {recipes.length>0?recipes: <View><Text> try with more ingredient again 🤔  </Text><Text> maybe it's time to go shopping!  </Text></View>}
       <ScrollView contentContainerStyle={styles.scrollView}>
-        {recipes.length>0 && recipes}
+        {recipes.length>0 ? recipes: <View><Text> try with more ingredient again 🤔  </Text><Text> maybe it's time to go shopping!  </Text></View>}
       </ScrollView>
       
 
-    </SafeAreaView>
+    </View>
   )
 }
 

@@ -38,14 +38,16 @@ export default function KickoffScreen({navigation}) {
 
   	const background = [];
 
-  	useEffect(() => {
-  	  (async () => {
-  	    const result = await Camera.requestCameraPermissionsAsync();
-  	    if (result) {
-  	      setHasPermission(result.status === "granted");
-  	    }
-  	  })();
-  	}, []);
+	  useEffect(() => {
+		(async () => {
+			const result = await Camera.requestCameraPermissionsAsync();
+			if(result){
+			   setHasPermission(result.status === 'granted');
+			 }
+		  })();
+  
+	},[]);
+
 
 	function handleSearch () {
 		setSearchInput(""); 
@@ -114,7 +116,6 @@ export default function KickoffScreen({navigation}) {
 									console.log('no data')
 								}
 
-
 							  } else {
 								throw new Error(`HTTP status ${response.status}`);
 							  }						
@@ -157,8 +158,12 @@ export default function KickoffScreen({navigation}) {
 	};
 
 	if (!hasPermission || !isFocused) {
-		return <View />;
-	}
+		return (
+		  <View>
+			<Text style={styles.title}> SnapScreen </Text>
+		  </View>
+		)
+	  }
 	
 	const photos = pictures.map((data, i) => {
 		return (
