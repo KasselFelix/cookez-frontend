@@ -266,7 +266,7 @@ export default function KickoffScreen({navigation}) {
 					<MyButton
 						dataFlow={()=> setModalVisible(true)}
 						text={"Chercher"}
-        				buttonType={buttonStyles.buttonTwo}
+        				buttonType={buttonStyles.buttonFour}
 					/>
 				</View>
 
@@ -274,7 +274,7 @@ export default function KickoffScreen({navigation}) {
 					<MyButton
 						dataFlow={()=>handleBtn()}
 						text={"Suivant"}
-        				buttonType={buttonStyles.buttonTwo}
+        				buttonType={buttonStyles.buttonFour}
 					/>
 				</View>
 			</View>
