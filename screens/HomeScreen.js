@@ -71,7 +71,7 @@ export default function HomeAsGuest({ navigation }) {
               navigation.navigate("TabNavigator", { screen: "Profil" })
             }
             text={"PROFIL"}
-            buttonType={buttonStyles.buttonTwo}
+            buttonType={buttonStyles.buttonTwo}à
           />
         </View>
 
