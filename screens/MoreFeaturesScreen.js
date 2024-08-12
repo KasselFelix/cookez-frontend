@@ -1,6 +1,5 @@
 import { StyleSheet, Text, View, Image } from 'react-native'
 import React from 'react'
-import { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import css from "../styles/Global"
 import buttonStyles from "../styles/Button";
