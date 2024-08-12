@@ -3,6 +3,7 @@ import React, { useRef } from "react";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
 import MyButton from "../modules/MyButton";
+import LottieView from "lottie-react-native";
 
 // import { useFonts, } from '@expo-google-fonts/inter';
 // import * as SplashScreen from 'expo-splash-screen';
@@ -35,6 +36,11 @@ export default function HomeAsGuest({ navigation }) {
           source={require("../assets/logo/cookez logo.png")}
         />
       </View>
+      <LottieView style={styles.lottieAnim} source={require("../assets/Animation - 1723436591199.json")}
+      autoPlay
+      loop
+      />
+      
       <View style={styles.buttonsContainer}>
         <View style={styles.buttons}>
           <MyButton
@@ -97,28 +103,32 @@ const styles = StyleSheet.create({
 
   logoContainer: {
     flex: 0,
-    justifyContent: "center",
-    height: "50%",
+    height: "60%",
     backgroundColor: css.backgroundColorOne,
     borderBottomLeftRadius: 180,
   },
 
   logo: {
-    marginTop: 50,
+    marginTop:90,
     marginLeft: 40,
     width: 320,
     height: 80,
   },
+  lottieAnim:{
+    height:'80%',
+    width:'95%',
+    position:'absolute',
+  },
 
   buttonsContainer: {
     flex: 0,
-    paddingTop: 70,
+    paddingTop: 50,
     height: "100%",
     backgroundColor: css.backgroundColorTwo,
     borderTopRightRadius: 180,
   },
 
   buttons: {
-    marginBottom: 15,
+    marginBottom: 9,
   },
 });
