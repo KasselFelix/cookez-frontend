@@ -2,7 +2,8 @@ import { StyleSheet, View } from "react-native";
 import React from "react";
 import LoadingPageOne from "../modules/LoadingPages";
 
-export default function LoadingScreen({navigation}) {
+
+export default function LoadingScreen() {
   return <View style={styles.container}>{LoadingPageOne}</View>;
 }
 

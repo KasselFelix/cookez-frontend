@@ -3,9 +3,12 @@ import React from 'react'
 
 export default function UserDashboardScreen() {
   return (
-    <View>
-      <Text>userDashboardScreen</Text>
-    </View>
+    <View style={styles.logoContainer}>
+    <Image
+        style={styles.logo}
+        source={require("../assets/logo/cookez logo.png")}
+      />
+  </View>
   )
 }
 

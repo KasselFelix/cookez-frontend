@@ -8,8 +8,15 @@ import MySmallButton from '../modules/MySmallButton';
 import buttonStyles from '../styles/Button';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import css from '../styles/Global';
+import LottieView from 'lottie-react-native';
 
 export default function LoginScreen({navigation}) {
+const [submitted, setSubmitted]=useState(false);
+
+
+const handleSubmit =() => {
+  setSubmit(true);
+}
    return (
     <SafeAreaView style={styles.container}>
       <View style={styles.btn}>
@@ -22,8 +29,11 @@ export default function LoginScreen({navigation}) {
         />
       </View>
       <View style={styles.buttonContainer}>
+
         <SignIn navigation={navigation} />
+
         <SignUp navigation={navigation} />
+        
       </View>
       <MyButton
         dataFlow={() => navigation.navigate('TabNavigator')}
