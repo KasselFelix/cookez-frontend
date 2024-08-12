@@ -82,7 +82,6 @@ export default function KickoffScreen({navigation}) {
 	function handleBtn () {
 		if(!saveMoney){
 			for (let imagePath of pictures){
-				// console.log('LAAAA', imagePath)
 				// Make the request
 				const handleFetch = async (cpt=0)=>{
 
@@ -139,7 +138,7 @@ export default function KickoffScreen({navigation}) {
 				name: 'photo.jpg',
 				type: 'image/jpeg',
 			});
-			// fetch('http://192.168.100.246:3000/upload', {
+			// fetch('http://192.168.1.3:3000/upload', {
 			// 	method: 'POST',
 			// 	body: formData,
 			//    })
