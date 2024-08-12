@@ -123,8 +123,8 @@ export default function LoginScreen({navigation}) {
           </View>
         </View>
       </Modal> */}
-      <SignIn navigation={navigation}/>
-      <SignUp navigation={navigation}/>
+      <SignIn navigation={navigation} style={styles.signin}/>
+      <SignUp navigation={navigation} style={styles.signup}/>
       <MyButton
         dataFlow={()=>navigation.navigate('TabNavigator')}
         text={"Go to HomePage"}
@@ -138,11 +138,23 @@ const styles = StyleSheet.create({
 container: {
   flex:1,
   textAlign:'center',
-  alignItems:'center',
-},
-header:{
-  justifyContent:'flex-start'
+  justifyContent:'center',
+  backgroundColor:css.backgroundColorOne,
+  padding:7,
 
+},
+
+header:{
+  flex:0,
+  flexDirection:'col',
+  justifyContent:'flex-start',
+
+},
+signin:{
+  margin:5,
+},
+signup:{
+  margin:6,
 },
 modal1:{
   display:'flex',
