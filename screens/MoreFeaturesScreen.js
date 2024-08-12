@@ -14,7 +14,7 @@ export default function MoreFeaturesScreen({navigation}) {
 
 
 
-
+  
   return (
     <SafeAreaView style={styles.container}>
        <MySmallButton
