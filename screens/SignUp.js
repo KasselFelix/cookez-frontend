@@ -1,8 +1,9 @@
-import { Modal, StyleSheet, TextInput, Text, View, TouchableOpacity } from 'react-native';
+import {Modal, StyleSheet, TextInput, Text, View, ScrollView} from 'react-native';
 import React, {useState} from 'react';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MyButton from '../modules/MyButton';
 import buttonStyles from '../styles/Button';
+import css from '../styles/Global';
 
 export default function SignUp({navigation}) {
     const [email, setEmail]=useState('');
@@ -29,12 +30,21 @@ export default function SignUp({navigation}) {
             })
         })
         .then(res => res.json())
-        .then(data => {console.log('user', data)})
-        navigation.navigate('Home')
+        .then(data => {
+          console.log('user', data);
+          navigation.navigate('Home');
+        });
+        setEmail('');
+    setFirstname('');
+    setLastname('');
+    setUsername('');
+    setAge(0);
+    setPassword('');
+    setImage('');
     }
 
   return (
-    <View>
+    <SafeAreaView style={styles.buttonWrapper}>
        <MyButton
         dataFlow={()=>setModalVisible(true)}
         text={"SIGN UP"}
@@ -42,45 +52,87 @@ export default function SignUp({navigation}) {
       />
       <Modal visible={modalVisible} animationtType="fade" transparent>
         <View style={styles.modal}>
-            <View style={styles.modalContainer}>
+            <View  style={styles.modalContainer}>
+            <ScrollView style={styles.scroll} automaticallyAdjustKeyboardInsets={true}>
+              <Text style={styles.modalTitle}>Register</Text>
                 {/*lire la doc pour specifier les options manquante */}
-                <TextInput placeholder='email' placeholderTextColor={'grey'}  KeyboardType={'email-address'} InputModeOptions={'email'} textContentType={'emailAddress'} autoCapitalize={'email'} value={email} onChangeText={(value)=> setEmail(value)}/>
-                <TextInput placeholder='firstname' placeholderTextColor={'grey'} value={firstname} onChangeText={(value)=> setFirstname(value)}/>
-                <TextInput placeholder='lastname' placeholderTextColor={'grey'} value={lastname} onChangeText={(value)=> setLastname(value)}/>
-                <TextInput placeholder='username' placeholderTextColor={'grey'} value={username} onChangeText={(value)=> setUsername(value)}/>
-                <TextInput placeholder='age' placeholderTextColor={'grey'} value={age} onChangeText={(value)=> setAge(value)}/>
-                <TextInput placeholder='password' placeholderTextColor={'grey'} textContentType='password' autoComplete='new-password' secureTextEntry={true} value={password} onChangeText={(value)=> setPassword(value)}/>
-                <TextInput placeholder='image' placeholderTextColor={'grey'} value={image} onChangeText={(value)=> setImage(value)}/>
-                <TouchableOpacity title='Signup' onPress={()=> handleSignup()}>
-                <Text>Signup</Text>
-                </TouchableOpacity>
-                <TouchableOpacity title='hide' onPress={()=> setModalVisible(false)}>
-                <Text>Hide</Text>
-                </TouchableOpacity>
+                <TextInput placeholder='firstname' placeholderTextColor={'grey'}  style={styles.formStyle} value={firstname} onChangeText={(value)=> setFirstname(value)}/>
+                <TextInput placeholder='lastname' placeholderTextColor={'grey'}  style={styles.formStyle} value={lastname} onChangeText={(value)=> setLastname(value)}/>
+                <TextInput placeholder='username' placeholderTextColor={'grey'}  style={styles.formStyle} value={username} onChangeText={(value)=> setUsername(value)}/>
+                <TextInput placeholder='age' placeholderTextColor={'grey'}  style={styles.formStyle} value={age} onChangeText={(value)=> setAge(value)}/>
+                <TextInput placeholder='email' placeholderTextColor={'grey'}  KeyboardType={'email-address'} InputModeOptions={'email'} textContentType={'emailAddress'} autoCapitalize={'email'}  style={styles.formStyle} value={email} onChangeText={(value)=> setEmail(value)}/>
+                <TextInput placeholder='password' placeholderTextColor={'grey'} textContentType='password' autoComplete='new-password' secureTextEntry={true}  style={styles.formStyle} value={password} onChangeText={(value)=> setPassword(value)}/>
+                <TextInput placeholder='image' placeholderTextColor={'grey'}  style={styles.formStyle} value={image} onChangeText={(value)=> setImage(value)}/>
+                <MyButton
+                  dataFlow={handleSignup}
+                  text="Signup"
+                  buttonType={buttonStyles.buttonThree}
+                 />
+                <MyButton
+                  dataFlow={() => setModalVisible(false)}
+                  text="Close"
+                  buttonType={buttonStyles.buttonThree}
+                />
+                </ScrollView>
             </View>
         </View>
       </Modal>
-    </View>
-  )
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
+  buttonWrapper: {
+    marginBottom: 5, 
+  },
     modal:{
-        display:'flex',
         flex:1,
         justifyContent:'center',
         alignItems:'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
       },
-      modalContainer:{
-        backgroundColor:'#abd1c6',
-        borderRadius:10,
-        justifyContent:'center',
+      modalContainer: {
+        backgroundColor: '#abd1c6',
+        borderRadius: 20,
+        padding: 20,
+        alignItems: 'center',
+        width: '80%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 2,
+        elevation: 5,
+      },
+      scroll:{
+        backgroundColor: '#abd1c6',
+        borderRadius: 20,
+        padding: 20,
+        width: '100%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 2,
+        elevation: 5,
+      },
+      modalTitle:{
+        justifyContent: 'center',
         alignItems:'center',
-        height:'30%',
-        width:'60%',
-        shadowOpacity:'10px',
+        color: css.inactiveButtonColor,
+        fontWeight: "bold",
+        fontFamily: css.fontFamilyOne,
+        marginBottom: 5,
+        
       },
-      modalContainerhover:{
-        scale:'1.3',
+      formStyle: {
+        width: '100%',
+        borderWidth: 2,
+        borderColor: '#264143',
+        borderRadius: 10,
+        padding: 12,
+        marginVertical: 10,
+        fontSize: 15,
       },
+      // modalContainerhover:{
+      //   scale:'1.3',
+      // },
 })
