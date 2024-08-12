@@ -10,14 +10,17 @@ import css from '../styles/Global';
 export default function ListIngredients ({ searchInput, setClicked, data, validatedIngredient, setValidatedIngredient }) {
 
     const Item = ({ name }) => (
-        <TouchableOpacity activeOpacity={0.8} onPress={() => validatedIngredient ? setValidatedIngredient(false) : setValidatedIngredient(true)} style={ validatedIngredient ? styles.validated : styles.nonValidated}>
+    <View style={ validatedIngredient ? styles.validated : styles.nonValidated}>
+
+        {/* <TouchableOpacity activeOpacity={0.8} onPress={() => validatedIngredient ? setValidatedIngredient(false) : setValidatedIngredient(true)} style={ validatedIngredient ? styles.validated : styles.nonValidated}> */}
           <View style={styles.item}>
             <Text style={styles.name}>{name}</Text>
-            <TouchableOpacity activeOpacity={0.8} onPress={() => validatedIngredient ? setValidatedIngredient(false) : setValidatedIngredient(true)} style={ validatedIngredient ? styles.validatedBtn : styles.nonValidatedBtn}>
+            {/* <TouchableOpacity activeOpacity={0.8} onPress={() => validatedIngredient ? setValidatedIngredient(false) : setValidatedIngredient(true)} style={ validatedIngredient ? styles.validatedBtn : styles.nonValidatedBtn}>
                 <FontAwesome name={'check'} size={22} color={'white'}/>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
-        </TouchableOpacity>
+        {/* </TouchableOpacity> */}
+      </View>
     );
 
     const renderItem = ({ item }) => {
@@ -50,58 +53,60 @@ export default function ListIngredients ({ searchInput, setClicked, data, valida
 };
 
 const styles = StyleSheet.create({
-  listContainer: {
-    margin: 10,
-    height: "85%",
-    width: "100%",
-  },
+listContainer: {
+  margin: 10,
+  height: "65%",
+  width: "100%",
+  // marginBottom: 70,
+},
 
-  nonValidated: {
-    backgroundColor: "white",
-    borderRadius: 50,
-    marginBottom: 10,
-  },
+nonValidated: {
+  backgroundColor: "white",
+  borderRadius: 50,
+  marginBottom: 10,
+},
 
-  validated: {
-    backgroundColor: "green",
-        borderRadius: 50,
-    marginBottom: 10,
-  },
+validated: {
+  backgroundColor: "green",
+      borderRadius: 50,
+  marginBottom: 10,
+},
 
-  nonValidatedBtn: {
-    flex: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 30,
-    height: 30,
-    backgroundColor: "grey",
-    borderRadius: 100,
-  },
+nonValidatedBtn: {
+  flex: 0,
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: 30,
+  height: 30,
+  backgroundColor: "grey",
+  borderRadius: 100,
+},
 
-  validatedBtn: {
-    flex: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 30,
-    height: 30,
-    backgroundColor: "green",
-    borderRadius: 100,
-  },
+validatedBtn: {
+  flex: 0,
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: 30,
+  height: 30,
+  backgroundColor: "green",
+  borderRadius: 100,
+},
 
-  item: {
-    flex: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    margin: 30,
-    borderBottomWidth: 2,
-    borderBottomColor: 'black',
-  },
+item: {
+  flex: 0,
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  margin: 30,
+  borderBottomWidth: 2,
+  borderBottomColor: 'black',
+},
 
-  name: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 5,
-    fontStyle: "italic",
-  },
+name: {
+  fontSize: 20,
+  fontWeight: "bold",
+  marginBottom: 5,
+  fontStyle: "italic",
+},
+
 });

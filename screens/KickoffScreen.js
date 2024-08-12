@@ -198,7 +198,7 @@ export default function KickoffScreen({navigation}) {
 	
 
   	return (
-		<SafeAreaView style={styles.container} >
+		<View style={styles.container} >
 			<Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
 					<View style={styles.buttonsCameraContainer}>
 						<TouchableOpacity onPress={() => setType(type === CameraType.back ? CameraType.front : CameraType.back)} style={styles.buttonsCamera}>
@@ -240,20 +240,20 @@ export default function KickoffScreen({navigation}) {
 							</View>
 									
 							<View style={styles.modalButtons}>
-								<View style={styles.validButton}>
-									<MySmallButton 
-										dataFlow={()=> {handleSearch(); ; setDataListIngredient([])}}
-										text={'Ajouter'}
-										buttonType={buttonStyles.buttonTwo}
-									/>
-								</View>
 								<View style={styles.backRetour}>
 									<MySmallButton 
 										dataFlow={()=> {setModalVisible(false) ; setDataListIngredient([])}}
 										text={'Retour'}
-										buttonType={buttonStyles.buttonTwo}
+										buttonType={buttonStyles.buttonFour}
 										setSearchInput={setSearchInput}
 										setDataListIngredient={setDataListIngredient}
+									/>
+								</View>
+								<View style={styles.validButton}>
+									<MySmallButton 
+										dataFlow={()=> {handleSearch(); ; setDataListIngredient([])}}
+										text={'Ajouter'}
+										buttonType={buttonStyles.buttonFour}
 									/>
 								</View>
 							</View>
@@ -284,7 +284,7 @@ export default function KickoffScreen({navigation}) {
 					<FontAwesome name="circle-thin" size={95} color="#ffffff" />
 				</TouchableOpacity>
 			</View>
-		</SafeAreaView>
+		</View>
    )
 }
 
@@ -303,7 +303,8 @@ const styles = StyleSheet.create({
 
 	modalBackgound: {
 		flex: 1,
-		justifyContent: 'center',
+		paddingTop:'30%',
+		justifyContent: 'flex-start',
 		alignItems: 'center',
 		width: '100%',
 		height: '100%',
@@ -314,6 +315,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
+		
 	},
 
 	modalContainer: {
@@ -322,9 +324,8 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		backgroundColor: css.backgroundColorOne,
 		borderRadius: 20,
-		height: 210,
+		height: 310,
 		width:350,
-		alignItems: 'center',
 		shadowColor: '#000',
 		shadowOffset: {
 		  width: 0,
@@ -337,8 +338,10 @@ const styles = StyleSheet.create({
 	},
 
 	modalButtons: {
-	flex: 0, 
-	justifyContent: 'space-between',
+		flex: 0, 
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		width: '60%',
 	},
 
 	validButton: {
