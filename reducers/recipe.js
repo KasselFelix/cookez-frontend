@@ -21,5 +21,5 @@ export const recipeSlice = createSlice({
     },
 });
 
-export const { addRecipeToStore, removeRecipeToStore } = recipeSlice.actions;
+export const { addRecipeToStore, updateRecipeToStore,removeRecipeToStore } = recipeSlice.actions;
 export default recipeSlice.reducer;

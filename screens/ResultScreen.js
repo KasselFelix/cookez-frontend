@@ -10,33 +10,50 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import user from '../reducers/user';
 import ingredient from '../reducers/ingredient';
-import recipe, { addRecipeToStore } from '../reducers/recipe';
+import recipe, { addRecipeToStore, updateRecipeToStore } from '../reducers/recipe';
 
 export default function ResultScreen({ navigation }) {
   //const recipeData = recipes;
   const user =useSelector((state)=>state.user.user);
-  const recipes = useSelector((state)=>state.recipe.recipes);
+  const recipeData= useSelector((state)=>state.recipe.recipes);
   const ingredients= useSelector((state)=>state.ingredient.ingredient)
   const dispatch= useDispatch();
 
   useEffect(()=>{
+    console.log(user)
+    console.log('ing before',ingredients)
+    const ingredientSelected=ingredients.map((e)=> {
+      return e={name: e.data.display_name ,
+      image: e.photo,
+      quantity: e.data.g_per_serving,
+      nutrition: e.data.nutrition};
+    })
+
+    console.log('body',ingredientSelected)
     fetch('http://192.168.100.246:3000/recipes/result', {
-				method: 'POST',
-				body: {username:user.username},
-			   })
-			   .then((response) => response.json())
-				.then((data) => {
+          method:'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username:user?user.username:'',ingredients:ingredientSelected,
+            excludeIngredients:[]
+          })
+      }).then((response) => response.json())
+			.then((data) => {
 					if(data.result){
-						dispatch(addRecipeToStore(data.recipes))
+            console.log('fetch:',data.recipes)
+						dispatch(updateRecipeToStore(data.recipes))
+            console.log('reducer',recipeData)
+
 					}
 			})
 			.catch(error => console.error('There has been a problem with your fetch operation:', error));
   },[])
  
 
-  // const [selectedRecipe, setSelecedRecipe] = useState([]);
-
-  recipes = recipeData.map((data, i) => {
+ 
+  const recipes = recipeData.map((data, i) => {
     return  <Recipe key={i} {...data} />;
   })
 
@@ -52,10 +69,11 @@ export default function ResultScreen({ navigation }) {
         </TouchableOpacity>
         <Text style={styles.titlePage}>Résultats</Text>
       </View>
-      
+      {recipes.length>0?recipes: <View><Text> try with more ingredient again 🤔  </Text><Text> maybe it's time to go shopping!  </Text></View>}
       <ScrollView contentContainerStyle={styles.scrollView}>
-        {results}
+        {recipes.length>0 && recipes}
       </ScrollView>
+      
 
     </SafeAreaView>
   )
