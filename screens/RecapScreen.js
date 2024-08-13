@@ -22,7 +22,6 @@ import Recap from "../components/Recap";
 
 export default function RecapScreen({navigation}) {
 
-  
   const dataBase =[
     {photo: 'C:\Users\andre\Desktop\Deployment\mvp\cookez-frontend\images\/665dea568f97ab001d3861a4.jpg', data: {display_name: 'HelloLePeople', g_per_serving: 100}},
     {photo: '665dec84e83b9f001d0faf10.jpg', data: {display_name: 'World', g_per_serving: 1000}},
@@ -30,7 +29,6 @@ export default function RecapScreen({navigation}) {
 
   const dispatch = useDispatch();
   const ingredients = useSelector((state) => state.ingredient.ingredient);
-  console.log('LIST INGREDIENTS TO SOTRE: ', ingredients);
 
   // useEffect(()=>{
   //   dispatch(removeAllIngredientToStore())
@@ -53,15 +51,12 @@ export default function RecapScreen({navigation}) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        {/* <TouchableOpacity style={styles.btnReturn} activeOpacity={0.8} onPress={() => handleReturn()}>
-          <FontAwesome name='angle-double-left' size={30} color={'white'}/>
-        </TouchableOpacity> */}
         <MySmallButton
         	dataFlow={()=>navigation.navigate("Kickoff")}
           text={<FontAwesome name='angle-double-left' size={30} color={'white'}/>}
           buttonType={buttonStyles.buttonSmall}
         />
-        <Text style={styles.titlePage}>Ingrédients</Text>
+        <Text style={styles.titlePage}>{ingredients.length > 1 ? 'Ingredients' : 'Ingredient'}</Text>
       </View>
       <ScrollView contentContainerStyle={styles.galleryContainer}>
           {listIngredients}
@@ -69,7 +64,7 @@ export default function RecapScreen({navigation}) {
       <View style={styles.buttonBottom}>
         <MyButton
 			    dataFlow={()=>navigation.navigate('Result')}
-			    text="Valider"
+			    text="Recipes >>"
 			    buttonType={buttonStyles.buttonTwo}
 		    />
       </View>
