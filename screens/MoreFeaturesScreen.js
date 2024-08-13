@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import css from "../styles/Global"
@@ -7,14 +7,10 @@ import MyButton from "../modules/MyButton";
 import MySmallButton from "../modules/MySmallButton";
 import LottieView from "lottie-react-native";
 
-
 import FontAwesome from "react-native-vector-icons/FontAwesome"
 
 export default function MoreFeaturesScreen({navigation}) {
 
-
-
-  
   return (
     <SafeAreaView style={styles.container}>
        <MySmallButton

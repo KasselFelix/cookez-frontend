@@ -1,11 +1,4 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  SafeAreaView,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView} from "react-native";
 import React, {useState, useEffect} from "react";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
@@ -15,9 +8,6 @@ import MySmallButton from "../modules/MySmallButton";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Popover from "react-native-popover-view";
 import { useSelector } from "react-redux";
-import ingredient from "../reducers/ingredient";
-
-
 
 export default function RecipeScreen({ route, navigation }) {
   /* HOOK STATE FOR THE HEART LOGO ON THE RECIPE*/
@@ -25,14 +15,12 @@ export default function RecipeScreen({ route, navigation }) {
   const [showPopover, setShowPopover]=useState(false);
   const user=useSelector((state)=>{state.user.user})
 
-
 // auto close the popover 
   useEffect(() => {
     setTimeout(() => setShowPopover(false), 5500);
   }, [])
 
   const selectedRecipe= route.params.props
-  
 
   const stars = [];
   for (let i = 0; i < 5; i++) {
@@ -45,27 +33,31 @@ export default function RecipeScreen({ route, navigation }) {
       />
     );
   }
+
   // CONDITIONAL FUNCTION TO CHANGE HEART COLOR UPON CLICKING FOR LOGGED IN USER VERSION
   const handleLikeRecipe =() => {
     if(user && user.token){
       setLike(!like);
+    }else{
+      setShowPopover(true)
     }
   }
   
-  const ingredients=selectedRecipe.ingredients.map((e,i)=>{
+  const ingredients= selectedRecipe.ingredients.map((e,i)=>{
       return <Text key={i}> {e.quantity}g {e.name}</Text>
   })
   
-  const steps=selectedRecipe.steps.map((text,i)=>{
+  const steps= selectedRecipe.steps.map((text,i)=>{
     return <Text key={i}>{i+1}. {text}</Text>
   })
 
-  const comments=selectedRecipe.comments.map((e,i)=>{
+  const comments= selectedRecipe.comments.map((e,i)=>{
     return <View key={i} style={styles.content}>
           <Text>{e.username}   {e.date}</Text>
           <Text>{e.message}</Text>
     </View>
   })
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -79,26 +71,25 @@ export default function RecipeScreen({ route, navigation }) {
       </View>
 
       {/* BLOC RECETTE SELECTED  */}
-
       <View style={styles.pictureBloc}>
         <Text style={styles.sectionsTitle}>{selectedRecipe.name}</Text>
         <View style={styles.imageContainer}>
           <View style={styles.imagePlaceholder} />
-          <Popover 
-          isVisible={showPopover}
-          onRequestClose={()=> setShowPopover(false)}
-            from={(
-              <TouchableOpacity style={styles.favoriteButton} onPress={()=> setShowPopover(true)}>
-                <FontAwesome name="heart" size={24} color={like?"#E45858":"grey"} onPress={()=>{handleLikeRecipe()}}/>
+            <Popover 
+              isVisible={showPopover}
+              onRequestClose={()=> setShowPopover(false)}
+              from={(
+              <TouchableOpacity style={styles.favoriteButton} onPress={()=> {handleLikeRecipe();}}>
+                <FontAwesome name="heart" size={24} color={like?"#E45858":"grey"} />
               </TouchableOpacity>
-            )}>
-            <View
-            style={styles.popover}>
-              <Text>You can unlock this feature by Signing in ❤️</Text>
-            </View>
-          </Popover>
-        </View>
+              )}>
+              <View style={styles.popover}>
+                <Text>You can unlock this feature by Signing in ❤️</Text>
+              </View>
+            </Popover>
+          </View>
         <View style={styles.stars}>{stars}</View>
+
         <View style={styles.textUnder}>
           <Text style={styles.infos}>
             Prep: {selectedRecipe.preparationTime} min
@@ -110,7 +101,6 @@ export default function RecipeScreen({ route, navigation }) {
       </View>
 
       {/* BLOC INGREDIENTS */}
-
       <View style={styles.recipeBloc}>
         <Text style={styles.sectionsTitle}>Ingredients</Text>
         <ScrollView style={styles.scrollView}>
@@ -121,7 +111,6 @@ export default function RecipeScreen({ route, navigation }) {
       </View>
 
       {/* BLOC STEPS */}
-
       <View style={styles.recipeBloc}>
         <Text style={styles.sectionsTitle}>Étapes</Text>
         <ScrollView style={styles.scrollView}>
@@ -134,7 +123,6 @@ export default function RecipeScreen({ route, navigation }) {
       <View style={styles.separator} />
 
       {/* BLOC COMMENTAIRES */}
-
       <View style={styles.commentsBloc}>
         <Text style={styles.sectionsTitle}>Commentaires</Text>
         {comments}
@@ -179,10 +167,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 2,
   },
+
   imageContainer: {
-    // position: "relative",
     marginBottom: 5,
   },
+
   imagePlaceholder: {
     width: "100%",
     height: 80,
@@ -207,14 +196,17 @@ const styles = StyleSheet.create({
   stars: {
     flexDirection: "row",
   },
+
   textUnder: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 5,
   },
+
   infos: {
     fontSize: 12,
   },
+
   recipeBloc: {
     width: "90%",
     height: 150,
@@ -230,6 +222,7 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
     marginVertical: 16,
   },
+
   commentsBloc: {
     width: "90%",
     backgroundColor: css.backgroundColorTwo,
@@ -237,9 +230,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 10,
   },
+
   content: {
     paddingBottom: 10,
   },
+
   scrollView: {
     flex: 1,
   },

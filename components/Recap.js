@@ -11,7 +11,7 @@ export default function Recap( props ) {
     const [modalVisible, setModalVisible] = useState(false);
     
     const dispatch = useDispatch((state) => state.ingredient.ingredient)
-
+  console.log('PROPS: ', props)
     return (
       <View style={styles.ingredientContainer}>
           <View style={styles.photoContainer}>
@@ -29,7 +29,7 @@ export default function Recap( props ) {
           </View>
           <View style={styles.infoGramsContainer}>
             <View style={styles.infoGrams}>
-            <TextInput keyboardType="numeric" maxLength={4} placeholder={props.data.g_per_serving.toString()} placeholderTextColor={'black'} value={grammes} onChangeText={(value) => setGrammes(value)}/>
+            <TextInput keyboardType="numeric" maxLength={4} placeholder={`${props.data.g_per_serving}`} placeholderTextColor={'black'} value={grammes} onChangeText={(value) => setGrammes(value)}/>
             <Text>g</Text>
             </View>
           </View>
@@ -52,27 +52,27 @@ export default function Recap( props ) {
                       <View style={styles.aLineContainer}>
                           <Text>⚫ </Text> 
                           <Text style={styles.text}>Calories:</Text>
-                          <Text>{props.data.nutrition.calories_100g}</Text>
+                          <Text>{props.data.nutrition.calories_100g || 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
                         <Text>⚫ </Text> 
                         <Text style={styles.text}>Sugars:</Text>
-                        <Text>{props.data.nutrition.sugars_100g}</Text>
+                        <Text>{props.data.nutrition.sugars_100g || 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
                         <Text>⚫ </Text> 
                         <Text style={styles.text}>Proteins:</Text>
-                        <Text> {props.data.nutrition.proteins_100g}</Text>
+                        <Text> {props.data.nutrition.proteins_100g || 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
                         <Text>⚫ </Text>
                         <Text style={styles.text}>Fat:</Text>
-                        <Text> {props.data.nutrition.fat_100g}</Text>
+                        <Text> {props.data.nutrition.fat_100g || 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
                         <Text>⚫ </Text> 
                         <Text style={styles.text}>Fibers:</Text>
-                        <Text>{props.data.nutrition.fibers_100g}</Text>
+                        <Text>{props.data.nutrition.fibers_100g || 0}</Text>
                       </View>
                 </View>
               </View>
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
       modalBackground: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'ce,nter',
+        alignItems: 'center',
       },
     
       modalContainer: {

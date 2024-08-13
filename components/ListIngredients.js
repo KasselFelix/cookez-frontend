@@ -40,7 +40,7 @@ export default function ListIngredients ({ searchInput, setClicked, data, valida
             setClicked(false);
           }}
         >
-          {!data && <Text>Waiting for your search...</Text>}
+          {data.length === 0 && <Text>Waiting for your search...</Text>}
           {data === "No ingredients found"  && <Text>{data}</Text>}
           <FlatList
             data={data}

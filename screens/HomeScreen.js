@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
     width: 320,
     height: 80,
   },
+
   lottieAnim:{
     height:'80%',
     width:'95%',
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
 
   buttonsContainer: {
     flex: 0,
-    paddingTop: 50,
+    paddingTop: 20,
     height: "100%",
     backgroundColor: css.backgroundColorTwo,
     borderTopRightRadius: 180,

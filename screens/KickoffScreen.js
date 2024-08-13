@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { SafeAreaView, StyleSheet, TouchableOpacity, ScrollView, View, Image, Text, Modal, TextInput} from "react-native";
+import { StyleSheet, TouchableOpacity, ScrollView, View, Image, Text, Modal } from "react-native";
 import { Camera, CameraType, FlashMode } from "expo-camera/legacy";
 import { useDispatch, useSelector } from "react-redux";
-import { addIngredientToStore, removeIngredientToStore } from "../reducers/ingredient";
+import { addIngredientToStore } from "../reducers/ingredient";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { useIsFocused } from "@react-navigation/native";
 
+import addressIp from "../modules/addressIp";
 import ListIngredients from "../components/ListIngredients";
 import SearchIngredients from "../components/SearchIngredients";
 import MySmallButton from "../modules/MySmallButton";
@@ -26,7 +27,6 @@ export default function KickoffScreen({navigation}) {
 	const [clicked, setClicked] = useState(false);
 	const [dataListIngredient, setDataListIngredient] = useState([]);
 	const [validatedIngredient, setValidatedIngredient] = useState(false);
-	const [selectedIngredient, setSelectedIngredient] = useState([]);
 	
 	const ingredients=  useSelector((state)=>state.ingredient.ingredient)
 
@@ -47,12 +47,6 @@ export default function KickoffScreen({navigation}) {
   
 	},[]);
 
-
-	function handleSearch () {
-		setSearchInput(""); 
-		handleAddIngredient();
-	};
-
 	// useEffect(() => {
     // const getData = async () => {
     //   const apiResponse = await fetch(
@@ -67,11 +61,13 @@ export default function KickoffScreen({navigation}) {
 	useEffect(() => {
 		if (searchInput.length > 0) {
 			const handleFetchIngredients = async () => {
-				const response = await fetch(`http://192.168.100.20:3000/ingredients/${searchInput}`);
+				const response = await fetch(`http://${addressIp}:3000/ingredients/${searchInput}`);
 				const data =  await response.json();
 				// console.log('JSON: ', data)
 				if (data.result) {
-					setDataListIngredient(data.ingredients.map((e, i) => {return {id: i, name: e.name, display_name: e.name, photo: e.image, g_per_serving: e.quantity }}));
+					console.log('search',data);
+					setDataListIngredient(data.ingredients.map((e, i) => {return {id: i, name: e.name, display_name: e.name, photo: e.image, g_per_serving: e.quantity, nutrition: e.nutrition }}));
+					console.log('datalist: ', dataListIngredient)
 				} else {
 					setDataListIngredient(data.error);
 				}
@@ -85,9 +81,7 @@ export default function KickoffScreen({navigation}) {
 			for (let imagePath of pictures){
 				// Make the request
 				const handleFetch = async (cpt=0)=>{
-
-					try{
-						
+					try{						
 						//Create FormData	
 						const formData = new FormData();
 						formData.append('image', {
@@ -95,7 +89,6 @@ export default function KickoffScreen({navigation}) {
 							type: 'image/jpeg',
 							name: `image${cpt++}.jpg`,
 						});
-		
 							const response= await fetch("https://vision.foodvisor.io/api/1.0/en/analysis", {
 										method: 'POST',
 										headers: {
@@ -123,7 +116,6 @@ export default function KickoffScreen({navigation}) {
 				}
 				handleFetch();	 
 			}
-			
 		}
 		navigation.navigate('Recap')
 	};
@@ -137,7 +129,7 @@ export default function KickoffScreen({navigation}) {
 				name: 'photo.jpg',
 				type: 'image/jpeg',
 			});
-			// fetch('http://192.168.100.20:3000/upload', {
+			// fetch('http://${addressIp}:3000/upload', {
 			// 	method: 'POST',
 			// 	body: formData,
 			//    })
@@ -150,7 +142,7 @@ export default function KickoffScreen({navigation}) {
 			// .catch(error => console.error('There has been a problem with your fetch operation:', error));
 			
 			//console.log(photo.uri)
-			setPictures([...pictures,photo.uri])
+			setPictures([...pictures, photo.uri])
 		}
 
 	};
@@ -191,15 +183,20 @@ export default function KickoffScreen({navigation}) {
 	}
 
 	const handleAddIngredient = () => {
-		dispatch(addIngredientToStore({photo: dataListIngredient[0].photo, data: {display_name: dataListIngredient[0].name, g_per_serving: dataListIngredient[0].g_per_serving}}));
+		dispatch(addIngredientToStore({photo: dataListIngredient[0].photo, data: {display_name: dataListIngredient[0].name, g_per_serving: dataListIngredient[0].g_per_serving, nutrition: dataListIngredient[0].nutrition }}));
+		console.log('reducer',ingredients)
 	}
+
+	function handleSearch () {
+		setSearchInput(""); 
+		handleAddIngredient();
+	};
 
 	const displayAddedIngredients = () => {
 		const nameIngredientsAdded = ingredients.map((e, i) => e.data.display_name)
 		return nameIngredientsAdded.join(', ');
 	}
 	
-
   	return (
 		<View style={styles.container} >
 			<Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
@@ -233,9 +230,8 @@ export default function KickoffScreen({navigation}) {
 				</View>
 				</ScrollView>
 			</View>
-				}
-			
-
+			}
+		
 			<View style={styles.containerButtonBottom}>
 				<Modal visible={modalVisible} animationtType="fade" transparent>
        		 		<View style={styles.modal}>
@@ -281,7 +277,6 @@ export default function KickoffScreen({navigation}) {
        		 		</View>
        			</Modal> 
 								
-
 				<View style={styles.buttonSearch}>
 					<MyButton
 						dataFlow={()=> setModalVisible(true)}
@@ -316,11 +311,6 @@ const styles = StyleSheet.create({
 		paddingTop: css.paddingTop,
 	},
 
-	// scrollView: {
-	// 	alignItems: 'center',
-	// 	paddingBottom: 20,
-	// }, 
-
 	modalBackgound: {
 		flex: 1,
 		paddingTop:'30%',
@@ -334,8 +324,7 @@ const styles = StyleSheet.create({
 	modal: {
 		flex: 1,
 		justifyContent: 'center',
-		alignItems: 'center',
-		
+		alignItems: 'center',	
 	},
 
 	modalContainer: {
@@ -450,7 +439,6 @@ const styles = StyleSheet.create({
 		marginBottom: 15,
 		paddingLeft: 10,
 	},
-
 
 	ingredientsAdded: {
 		paddingLeft: 6,

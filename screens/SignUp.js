@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MyButton from '../modules/MyButton';
 import buttonStyles from '../styles/Button';
 import css from '../styles/Global';
-import user, { addUserToStore } from '../reducers/user';
+import { addUserToStore } from '../reducers/user';
 import { useDispatch } from 'react-redux';
+import addressIp from '../modules/addressIp';
 
 export default function SignUp({navigation}) {
     const [email, setEmail]=useState('');
@@ -20,7 +21,7 @@ export default function SignUp({navigation}) {
     const dispatch =useDispatch();
 
     const handleSignup =() => {
-        fetch('http://192.168.100.246:3000/users/signup', {
+        fetch(`http://${addressIp}:3000/users/signup`, {
             method:'POST',
             headers:{'Content-Type': 'Application/json'}, 
             body:JSON.stringify({
@@ -137,7 +138,4 @@ const styles = StyleSheet.create({
         marginVertical: 10,
         fontSize: 15,
       },
-      // modalContainerhover:{
-      //   scale:'1.3',
-      // },
 })
