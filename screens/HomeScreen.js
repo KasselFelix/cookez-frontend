@@ -71,7 +71,7 @@ export default function HomeAsGuest({ navigation }) {
               navigation.navigate("TabNavigator", { screen: "Profil" })
             }
             text={"PROFIL"}
-            buttonType={buttonStyles.buttonTwo}à
+            buttonType={buttonStyles.buttonTwo}
           />
         </View>
 
@@ -82,6 +82,14 @@ export default function HomeAsGuest({ navigation }) {
             buttonType={buttonStyles.buttonOne}
           />
         </View>
+{/* 
+        <View style={styles.buttons}>
+          <MyButton
+            dataFlow={() => navigation.navigate("Favorite")}
+            text={"FAVORITE"}
+            buttonType={buttonStyles.buttonOne}
+          />
+        </View> */}
       </View>
     </View>
   );
@@ -103,7 +111,7 @@ const styles = StyleSheet.create({
 
   logoContainer: {
     flex: 0,
-    height: "60%",
+    height: "55%",
     backgroundColor: css.backgroundColorOne,
     borderBottomLeftRadius: 180,
   },
@@ -122,8 +130,6 @@ const styles = StyleSheet.create({
   },
 
   buttonsContainer: {
-    flex: 0,
-    paddingTop: 20,
     height: "100%",
     backgroundColor: css.backgroundColorTwo,
     borderTopRightRadius: 180,

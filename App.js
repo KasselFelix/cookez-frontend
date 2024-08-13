@@ -28,6 +28,7 @@ import ResultScreen from "./screens/ResultScreen";
 import SearchRecipeScreen from "./screens/SearchRecipeScreen";
 import UserDashboardScreen from "./screens/UserDashboardScreen";
 import WishListScreen from "./screens/WishListScreen";
+// import FavoriteScreen from "./screens/FavoriteScreen";
 
 // ALL REDUCERS IMPORTS
 import user from './reducers/user';
@@ -82,9 +83,10 @@ const TabNavigator = () => {
 
 export default function App() {
   return (
-    <Provider store={store}>
+    <Provider store={store}>w
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown: false}} >
+          {/* <Stack.Screen name="Favorite" component={FavoriteScreen}/> */}
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Kickoff" component={KickoffScreen} />
