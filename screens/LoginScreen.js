@@ -15,7 +15,10 @@ const [submitted, setSubmitted]=useState(false);
 
 
 const handleSubmit =() => {
-  setSubmit(true);
+  return  <LottieView style={styles.lottieAnim} source={require("../assets/LXUw0SHQFD.json")}
+  autoPlay
+  loop
+  />
 }
    return (
     <SafeAreaView style={styles.container}>
@@ -29,11 +32,10 @@ const handleSubmit =() => {
         />
       </View>
       <View style={styles.buttonContainer}>
-
         <SignIn navigation={navigation} />
-
-        <SignUp navigation={navigation} />
-        
+        <TouchableOpacity onPress={()=>handleSubmit()}>
+          <SignUp navigation={navigation} />
+        </TouchableOpacity>
       </View>
       <MyButton
         dataFlow={() => navigation.navigate('TabNavigator')}
@@ -51,6 +53,10 @@ container: {
   backgroundColor: css.backgroundColorTwo ,
   alignItems:'center',
   padding: 20,
+},
+lottieAnim:{
+    width:'97%',
+    height:'98%',
 },
 buttonContainer:{
   marginBottom: 30,
