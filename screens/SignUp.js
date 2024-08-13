@@ -1,9 +1,10 @@
-import {Modal, StyleSheet, TextInput, Text, View, ScrollView} from 'react-native';
+import {Modal, StyleSheet, TextInput, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import React, {useState} from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MyButton from '../modules/MyButton';
 import buttonStyles from '../styles/Button';
 import css from '../styles/Global';
+import LottieView from "lottie-react-native";
 
 export default function SignUp({navigation}) {
     const [email, setEmail]=useState('');
@@ -15,33 +16,52 @@ export default function SignUp({navigation}) {
     const [image, setImage]=useState('');
     const [modalVisible, setModalVisible]=useState(false);
 
-    const handleSignup =() => {
-        fetch('http://192.168.100.155:3000/users/signup', {
-            method:'POST',
-            headers:{'Content-Type': 'Application/json'}, 
-            body:JSON.stringify({
-            email:email,
-            firstname:firstname,
-            lastname:lastname,
-            username: username,
-            age:age,
-            password: password,
-            image:image,
-            })
+  // LOGIC FOR GENERATING THE ANIMATION ON SUCCESSFULL SIGNUP AND THEN NAVIGATE TO USERDASHBOARD
+  const [submitted, setSubmitted]=useState(false);
+  // const [loading, setLoading] = useState(true);
+  // const [animationFinished, setAnimationFinished]=useState(false);
+
+
+
+  const signUpUser = () => {
+      // setLoading(true);
+
+      fetch('http://192.168.100.155:3000/users/signup', {
+        method:'POST',
+        headers: {'Content-Type': 'Application/json'}, 
+        body: JSON.stringify({
+          email:email,
+          firstname:firstname,
+          lastname:lastname,
+          username: username,
+          age:age,
+          password: password,
+          image:image,
         })
-        .then(res => res.json())
-        .then(data => {
-          console.log('user', data);
-          navigation.navigate('Home');
-        });
-        setEmail('');
-    setFirstname('');
-    setLastname('');
-    setUsername('');
-    setAge(0);
-    setPassword('');
-    setImage('');
-    }
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        if (data.result) {
+          setSubmitted(true);
+        } else {
+          throw new Error(data.message || 'Something went wrong 🧐');      
+        }
+      })
+      .catch((error) => {
+        console.error('Sign-up failed', error.message);
+        Alert.alert("Error", data.message)
+      })
+      // .finally(() => setLoading(false))
+  };
+  
+  const handleAnimationFinish =() => {
+    setSubmitted(false)
+    setModalVisible(false)
+    setTimeout(() => {
+      navigation.navigate('UserDashboard');
+    }, 900);
+  };
 
   return (
     <SafeAreaView style={styles.buttonWrapper}>
@@ -53,27 +73,43 @@ export default function SignUp({navigation}) {
       <Modal visible={modalVisible} animationtType="fade" transparent>
         <View style={styles.modal}>
             <View  style={styles.modalContainer}>
-            <ScrollView style={styles.scroll} automaticallyAdjustKeyboardInsets={true}>
-              <Text style={styles.modalTitle}>Register</Text>
-                {/*lire la doc pour specifier les options manquante */}
-                <TextInput placeholder='firstname' placeholderTextColor={'grey'}  style={styles.formStyle} value={firstname} onChangeText={(value)=> setFirstname(value)}/>
-                <TextInput placeholder='lastname' placeholderTextColor={'grey'}  style={styles.formStyle} value={lastname} onChangeText={(value)=> setLastname(value)}/>
-                <TextInput placeholder='username' placeholderTextColor={'grey'}  style={styles.formStyle} value={username} onChangeText={(value)=> setUsername(value)}/>
-                <TextInput placeholder='age' placeholderTextColor={'grey'}  style={styles.formStyle} value={age} onChangeText={(value)=> setAge(value)}/>
-                <TextInput placeholder='email' placeholderTextColor={'grey'}  KeyboardType={'email-address'} InputModeOptions={'email'} textContentType={'emailAddress'} autoCapitalize={'email'}  style={styles.formStyle} value={email} onChangeText={(value)=> setEmail(value)}/>
-                <TextInput placeholder='password' placeholderTextColor={'grey'} textContentType='password' autoComplete='new-password' secureTextEntry={true}  style={styles.formStyle} value={password} onChangeText={(value)=> setPassword(value)}/>
-                <TextInput placeholder='image' placeholderTextColor={'grey'}  style={styles.formStyle} value={image} onChangeText={(value)=> setImage(value)}/>
-                <MyButton
-                  dataFlow={handleSignup}
+              {
+                submitted ? 
+                <LottieView
+                source={require('../assets/Animation - 1723553895120.json')}
+                autoPlay
+                loop={false}
+                onAnimationFinish={handleAnimationFinish}
+                style={styles.lottieAnim}/> 
+                :    
+                <ScrollView style={styles.scroll} automaticallyAdjustKeyboardInsets={true}>
+                <Text style={styles.modalTitle}>Register</Text>
+                
+                  {/*lire la doc pour specifier les options manquante */}
+                  <TextInput placeholder='firstname' placeholderTextColor={'grey'}  style={styles.formStyle} value={firstname} onChangeText={(value)=> setFirstname(value)}/>
+                  <TextInput placeholder='lastname' placeholderTextColor={'grey'}  style={styles.formStyle} value={lastname} onChangeText={(value)=> setLastname(value)}/>
+                  <TextInput placeholder='username' placeholderTextColor={'grey'}  style={styles.formStyle} value={username} onChangeText={(value)=> setUsername(value)}/>
+                  <TextInput placeholder='age' placeholderTextColor={'grey'}  style={styles.formStyle} value={age} onChangeText={(value)=> setAge(value)}/>
+                  <TextInput placeholder='email' placeholderTextColor={'grey'}  KeyboardType={'email-address'} InputModeOptions={'email'} textContentType={'emailAddress'} autoCapitalize={'email'}  style={styles.formStyle} value={email} onChangeText={(value)=> setEmail(value)}/>
+                  <TextInput placeholder='password' placeholderTextColor={'grey'} textContentType='password' autoComplete='new-password' secureTextEntry={true}  style={styles.formStyle} value={password} onChangeText={(value)=> setPassword(value)}/>
+                  <TextInput placeholder='image' placeholderTextColor={'grey'}  style={styles.formStyle} value={image} onChangeText={(value)=> setImage(value)}/>
+                  {/*Conditionally render the Lottie animation */}
+
+                  <MyButton
+                  dataFlow={() => signUpUser()}
                   text="Signup"
-                  buttonType={buttonStyles.buttonThree}
-                 />
-                <MyButton
-                  dataFlow={() => setModalVisible(false)}
-                  text="Close"
-                  buttonType={buttonStyles.buttonThree}
-                />
-                </ScrollView>
+                  buttonType={buttonStyles.buttonThree}/>
+
+            
+                  
+                  <MyButton
+                    dataFlow={() => setModalVisible(false)}
+                    text="Close"
+                    buttonType={buttonStyles.buttonThree}
+                  />
+                  </ScrollView>
+              }
+         
             </View>
         </View>
       </Modal>
@@ -131,6 +167,17 @@ const styles = StyleSheet.create({
         padding: 12,
         marginVertical: 10,
         fontSize: 15,
+      },
+      button:{
+        backgroundColor: '#2196F3',
+        borderRadius: 20,
+        padding: 10,
+        elevation: 2,
+      },
+      lottieAnim:{
+        width:'100%',
+        height:'100%',
+
       },
       // modalContainerhover:{
       //   scale:'1.3',

@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import MyButton from '../modules/MyButton';
 import buttonStyles from '../styles/Button';
+import css from '../styles/Global';
+import LottieView from "lottie-react-native";
 
 
 export default function SignIn({navigation}) {
@@ -11,6 +13,9 @@ export default function SignIn({navigation}) {
     const [username, setUsername]=useState('');
     const [password, setPassword]=useState('');
     const [modalVisible, setModalVisible]=useState(false);
+
+    // hook state to launch the animation
+    const [submitted, setSubmitted]=useState(false);
 
     // funtion to handle the signin
     const handleSignin =()=> {
@@ -22,11 +27,26 @@ export default function SignIn({navigation}) {
         })
         })
         .then(res => res.json())
-        .then(data => {console.log('user',data)})
-        setUsername('')
-        setPassword('')
-        navigation.navigate('Home')
-    }
+        .then((data) => {
+          if (data.result) {
+            setSubmitted(true);
+          } else {
+            throw new Error(data.message || 'Something went wrong 🧐');      
+          }
+        })
+        .catch((error) => {
+          console.error('Sign-in failed', error.message);
+          Alert.alert("Error", data.message)
+        })
+    };
+
+    const handleAnimationFinish =() => {
+      setSubmitted(false)
+      setModalVisible(false)
+      setTimeout(() => {
+        navigation.navigate('UserDashboard');
+      }, 900);
+    };
 
   return (
     <SafeAreaView style={styles.buttonWrapper}>
@@ -37,7 +57,17 @@ export default function SignIn({navigation}) {
       />
       <Modal visible={modalVisible} animationtType="fade" transparent>
       <View style={styles.modal}>
-        <View style={styles.modalContainer}>
+
+        {
+          submitted ?
+          <LottieView
+            source={require('../assets/Animation - 1723553895120.json')}
+            autoPlay
+            loop={false}
+            onAnimationFinish={handleAnimationFinish}
+            style={styles.lottieAnim}/> 
+          :
+          <View style={styles.modalContainer}>
           <View style={styles.shadowView}>
             <TextInput placeholder='username' placeholderTextColor={'grey'} style={styles.formStyle} value={username} onChangeText={(value)=> setUsername(value)}/>
             <TextInput placeholder='password' placeholderTextColor={'grey'} textContentType='password' secureTextEntry={true} style={styles.formStyle} value={password} onChangeText={(value)=> setPassword(value)}/>
@@ -53,6 +83,7 @@ export default function SignIn({navigation}) {
             />
           </View>
           </View>
+          } 
         </View>
       </Modal>
     </SafeAreaView>
@@ -104,5 +135,10 @@ const styles = StyleSheet.create({
     padding: 12,
     marginVertical: 10,
     fontSize: 15,
+  },
+
+  lottieAnim:{
+    width:'100%',
+    height:'100%',
   },
 })
