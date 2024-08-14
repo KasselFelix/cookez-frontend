@@ -19,7 +19,7 @@ export default function SignIn({navigation}) {
 
     // funtion to handle the signin
     const handleSignin =()=> {
-        fetch('http://192.168.100.155:3000/users/signin', {
+        fetch('http://192.168.1.139:3000/users/signin', {
         method:'POST',
         headers:{'Content-Type':'Application/json'},
         body:JSON.stringify({
