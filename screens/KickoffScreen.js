@@ -13,6 +13,7 @@ import MySmallButton from "../modules/MySmallButton";
 import MyButton from '../modules/MyButton';
 import buttonStyles from '../styles/Button';
 import css from "../styles/Global";
+import * as Animatable from 'react-native-animatable';
 
 export default function KickoffScreen({navigation}) {
   	const saveMoney=false;
@@ -34,6 +35,7 @@ export default function KickoffScreen({navigation}) {
   	const isFocused = useIsFocused();
 
   	let cameraRef = useRef(null);
+	const modalRef = useRef(null);
 
   	const background = [];
 
@@ -58,23 +60,34 @@ export default function KickoffScreen({navigation}) {
     // getData();
     // }, []);
 
+	const handleFetchIngredients = async () => {
+		const response = await fetch(`http://${addressIp}:3000/ingredients/${searchInput}`);
+		const data =  await response.json();
+		// console.log('JSON: ', data)
+		if (data.result) {
+			console.log('search',data);
+			setDataListIngredient(data.ingredients.map((e, i) => {return {id: i, name: e.name, display_name: e.name, photo: e.image, g_per_serving: e.quantity, nutrition: e.nutrition }}));
+			console.log('datalist: ', dataListIngredient)
+		} else {
+			setDataListIngredient(data.error);
+		}
+	}
+
 	useEffect(() => {
 		if (searchInput.length > 0) {
-			const handleFetchIngredients = async () => {
-				const response = await fetch(`http://${addressIp}:3000/ingredients/${searchInput}`);
-				const data =  await response.json();
-				// console.log('JSON: ', data)
-				if (data.result) {
-					console.log('search',data);
-					setDataListIngredient(data.ingredients.map((e, i) => {return {id: i, name: e.name, display_name: e.name, photo: e.image, g_per_serving: e.quantity, nutrition: e.nutrition }}));
-					console.log('datalist: ', dataListIngredient)
-				} else {
-					setDataListIngredient(data.error);
-				}
-			}
 			handleFetchIngredients()
-		};
+		}
 	}, [searchInput]);
+
+
+	function onItemPress(data){
+		dispatch(addIngredientToStore({photo: data.photo, data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
+		if(modalRef.current){
+			modalRef.current.animate('slideOutUp', 800).then(() => {
+				setModalVisible(false);
+		  	})
+		}
+	}
 
 	function handleBtn () {
 		if(!saveMoney){
@@ -150,7 +163,7 @@ export default function KickoffScreen({navigation}) {
 	if (!hasPermission || !isFocused) {
 		return (
 		  <View>
-			<Text style={styles.title}> SnapScreen </Text>
+			<Text> SnapScreen </Text>
 		  </View>
 		)
 	  }
@@ -233,26 +246,31 @@ export default function KickoffScreen({navigation}) {
 			}
 		
 			<View style={styles.containerButtonBottom}>
-				<Modal visible={modalVisible} animationtType="fade" transparent>
+				<Modal visible={modalVisible} animationtType="none" transparent>
        		 		<View style={styles.modal}>
-       		 		    <View  style={styles.modalBackgound}>
+       		 		    <Animatable.View
+						ref={modalRef}
+						animation="slideInUp"
+						duration={700}   
+						style={styles.modalBackgound}>
 							<View style={styles.modalContainer}>
 
-							<SearchIngredients
+								<SearchIngredients
+									searchInput={searchInput}
+									setSearchInput={setSearchInput}
+									setDataListIngredient={setDataListIngredient}
+									clicked={clicked}
+									setClicked={setClicked}
+								/>
+								
+								<ListIngredients
 								searchInput={searchInput}
-								setSearchInput={setSearchInput}
-								setDataListIngredient={setDataListIngredient}
-								clicked={clicked}
+								data={dataListIngredient}
 								setClicked={setClicked}
-							/>
-							   
-							<ListIngredients
-							  searchInput={searchInput}
-							  data={dataListIngredient}
-							  setClicked={setClicked}
-							  validatedIngredient={validatedIngredient}
-							  setValidatedIngredient={setValidatedIngredient}
-							/>
+								validatedIngredient={validatedIngredient}
+								setValidatedIngredient={setValidatedIngredient}
+								onItemPress={onItemPress}
+								/>
 							</View>
 									
 							<View style={styles.modalButtons}>
@@ -265,15 +283,15 @@ export default function KickoffScreen({navigation}) {
 										setDataListIngredient={setDataListIngredient}
 									/>
 								</View>
-								<View style={styles.validButton}>
+								{/* <View style={styles.validButton}>
 									<MySmallButton 
 										dataFlow={()=> {handleSearch(); ; setDataListIngredient([])}}
 										text={'Add'}
 										buttonType={buttonStyles.buttonFour}
 									/>
-								</View>
+								</View> */}
 							</View>
-       		 		    </View>
+       		 		    </Animatable.View>
        		 		</View>
        			</Modal> 
 								
@@ -318,13 +336,13 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		width: '100%',
 		height: '100%',
-		backgroundColor: 'rgba(255,255,255,0.8)',
 	},
 
 	modal: {
 		flex: 1,
 		justifyContent: 'center',
-		alignItems: 'center',	
+		alignItems: 'center',
+		backgroundColor: 'rgba(0,0,0,0.5)',
 	},
 
 	modalContainer: {

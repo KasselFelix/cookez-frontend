@@ -36,9 +36,13 @@ export default function SignUp({navigation}) {
         })
         .then(res => res.json())
         .then(data => {
-          dispatch(addUserToStore(data.userLogged))
-          console.log('user', data);
-          navigation.navigate('Home');
+          if(data.result){
+            dispatch(addUserToStore(data.newUser))
+            setModalVisible(false);
+            navigation.navigate('Home');
+          }else{
+            alert(data.error)
+          }
         });
         setEmail('');
     setFirstname('');

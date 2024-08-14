@@ -8,43 +8,50 @@ import { updateRecipeToStore } from '../reducers/recipe';
 import addressIp from '../modules/addressIp';
 
 export default function ResultScreen({ navigation }) {
-  const user =useSelector((state)=>state.user.user);
+  const user =useSelector((state)=>state.user.value);
   const recipeData= useSelector((state)=>state.recipe.recipes);
   const ingredients= useSelector((state)=>state.ingredient.ingredient)
   const dispatch= useDispatch();
 
-  useEffect(()=>{
-    // console.log('user',user)
+  const handleFetch= async ()=>{
     const ingredientSelected=ingredients.map((e)=> {
       return e={name: e.data.display_name ,
       image: e.photo,
       quantity: e.data.g_per_serving,
       nutrition: e.data.nutrition};
     })
+    try{
+      const response = await fetch(`http://${addressIp}:3000/recipes/result`,{
+        method:'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: user.username || '', 
+          ingredients: ingredientSelected,
+          excludeIngredients:[]
+        })
+      });
+      const data =  await response.json();
+      if (data.result) {
+        dispatch(updateRecipeToStore(data.recipes))
+        console.log('reducer',recipeData)
+      }
+    }catch(error){
+      console.error('There has been a problem with your fetch operation:', error);
+    }
+  }
 
-    //console.log('body',ingredientSelected)
-    fetch(`http://${addressIp}:3000/recipes/result`, {
-          method:'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: user ? user.username: '', ingredients: ingredientSelected,
-            excludeIngredients:[]
-          })
-      }).then((response) => response.json())
-			.then((data) => {
-					if(data.result){
-            //console.log('fetch:',data.recipes)
-						dispatch(updateRecipeToStore(data.recipes))
-            //console.log('reducer',recipeData)
-					}
-			})
-			.catch(error => console.error('There has been a problem with your fetch operation:', error));
+  useEffect(()=>{
+    handleFetch();
   },[])
+
+  function update(){
+    handleFetch();
+  }
  
   const recipes = recipeData.map((data, i) => {
-    return  <Recipe key={i} {...data} navigation={navigation} />;
+    return  <Recipe key={i} {...data} navigation={navigation} update={update} />;
   })
 
   const handleReturn = () => {

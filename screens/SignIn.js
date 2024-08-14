@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MyButton from '../modules/MyButton';
 import buttonStyles from '../styles/Button';
 import { addUserToStore } from '../reducers/user';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import addressIp from '../modules/addressIp';
 
 
@@ -16,6 +16,7 @@ export default function SignIn({navigation}) {
     const [modalVisible, setModalVisible]=useState(false);
 
     const dispatch =useDispatch();
+    const user=useSelector((state)=>state.user.value)
 
     // funtion to handle the signin
     const handleSignin =()=> {
@@ -27,10 +28,17 @@ export default function SignIn({navigation}) {
         })
         })
         .then(res => res.json())
-        .then(data => {dispatch(addUserToStore(data.userLogged))})
+        .then(data => {
+          if(data.result){
+            dispatch(addUserToStore(data.userLogged));
+            setModalVisible(false);
+            navigation.navigate('UserDashboard');
+          }else{
+            alert(data.error)
+          }
+        })
         setUsername('')
         setPassword('')
-        navigation.navigate('Home')
     }
 
   return (

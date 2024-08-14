@@ -23,7 +23,7 @@ export default function Recipe( props ) {
         <View style={styles.recipeContainer}>
           <TouchableOpacity 
           style={styles.recipeContainer} 
-          onPress={()=>{props.navigation.navigate('Recipe',{props,note:note,vote:props.votes})}}
+          onPress={()=>{props.navigation.navigate('Recipe',{props,note:note,votes:props.votes.length,update:props.update})}}
           >
             <Text style={styles.name}>{props.name}</Text>
             <Text> {props.origin}</Text>

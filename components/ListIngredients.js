@@ -7,21 +7,28 @@ import css from '../styles/Global';
 
 
 // the filter
-export default function ListIngredients ({ searchInput, setClicked, data, validatedIngredient, setValidatedIngredient }) {
+export default function ListIngredients ({ searchInput, setClicked, data, onItemPress}) {
+    
+    const [selectedItemId, setSelectedItemId] = useState(null);
 
-    const Item = ({ name }) => (
-    <View style={ validatedIngredient ? styles.validated : styles.nonValidated}>
-
-        {/* <TouchableOpacity activeOpacity={0.8} onPress={() => validatedIngredient ? setValidatedIngredient(false) : setValidatedIngredient(true)} style={ validatedIngredient ? styles.validated : styles.nonValidated}> */}
+    const Item = ({ name, itemData }) => {
+      const isSelected = selectedItemId === itemData.id  // Vérifie si l'élément est sélectionné
+      
+      return (
+        <TouchableOpacity
+        activeOpacity={0.8} 
+        onPress={() => {setSelectedItemId(itemData.id);onItemPress(itemData)}} // Passez les données de l'élément à la fonction onItemPress
+        style={isSelected?styles.validated:styles.nonValidated}
+        >
           <View style={styles.item}>
-            <Text style={styles.name}>{name}</Text>
-            {/* <TouchableOpacity activeOpacity={0.8} onPress={() => validatedIngredient ? setValidatedIngredient(false) : setValidatedIngredient(true)} style={ validatedIngredient ? styles.validatedBtn : styles.nonValidatedBtn}>
-                <FontAwesome name={'check'} size={22} color={'white'}/>
-            </TouchableOpacity> */}
+                  <Text style={styles.name}>{name}</Text>
+                  <TouchableOpacity activeOpacity={0.8}  >
+                      <FontAwesome name={'check'} size={22} color={'white'}/>
+                  </TouchableOpacity>
           </View>
-        {/* </TouchableOpacity> */}
-      </View>
+        </TouchableOpacity>
     );
+  }
 
     const renderItem = ({ item }) => {
         if (data === "No ingredients found") {
@@ -29,7 +36,7 @@ export default function ListIngredients ({ searchInput, setClicked, data, valida
         }
 
         if (item.name.toUpperCase().includes(searchInput.toUpperCase().trim().replace(/\s/g, ""))) {
-        return <Item name={item.name}/>;
+        return <Item name={item.name} itemData={item}/>;
         }
   };
 
