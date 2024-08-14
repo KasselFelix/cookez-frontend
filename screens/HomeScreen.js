@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
 
   buttonsContainer: {
     flex: 0,
-    paddingTop: 20,
+    paddingTop: 50,
     height: "100%",
     backgroundColor: css.backgroundColorTwo,
     borderTopRightRadius: 180,
