@@ -866,10 +866,25 @@
   resolved "https://registry.yarnpkg.com/@emotion/unitless/-/unitless-0.7.5.tgz#77211291c1900a700b8a78cfafda3160d76949ed"
   integrity sha512-OWORNpfjMsSSUBVrRBVGECkhWcULOAJz9ZW8uK9qgxD+87M7jHRcvh/A96XXNhXTLmKcoYSQtBEX7lHMO7YRwg==
 
+"@expo-google-fonts/fira-sans@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@expo-google-fonts/fira-sans/-/fira-sans-0.2.3.tgz#f406fc66b0e8a3ec3499a2ddb07b9d8ed971b938"
+  integrity sha512-isAroaeVjZyIhkpm2g6gbhfWuwkUgn3ETd/vllm0Gwrz7zWZGR+FcOkzUr+Obz7MmVVinj6FX8F+jZzqppOEFA==
+
 "@expo-google-fonts/inter@^0.2.3":
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/@expo-google-fonts/inter/-/inter-0.2.3.tgz#82bf7224bb76fc6614a00393a9e9ee4d6dd09dcb"
   integrity sha512-iHK9FI+dnE45X5c2Z5hSFwNH4zUWethizpbv3XUn0FIGw5jwvzriENz0a6wCdkI4/d+1QkurnHo5XHti7TbNJA==
+
+"@expo-google-fonts/varela-round@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@expo-google-fonts/varela-round/-/varela-round-0.2.3.tgz#48b80cf4eba7e323097b89efc913f1ed5c60bf78"
+  integrity sha512-IOWskk89nXK6sBDDqImvntMbS1uYlXd/DUGifOUMLN4IDiYKBQYmnCzvdTdrySBBz3x5ShFDX98qWLf5Mw1uVQ==
+
+"@expo-google-fonts/varela@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@expo-google-fonts/varela/-/varela-0.2.3.tgz#e0956358f602d57bf150f7bfbcc1db095647fe17"
+  integrity sha512-CKfVrwep+0hR5BRGDMhNqTorxvFoeV2mM2apsSGTPIx4pk/+pSKOZbcEjNKF+w4qjwqq1hYLqZTb3laqkqGGuQ==
 
 "@expo/bunyan@^4.0.0":
   version "4.0.0"

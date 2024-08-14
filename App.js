@@ -49,7 +49,7 @@ const TabNavigator = () => {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName = "";
-          if (route.name === "Profile") {
+          if (route.name === "UserDashboard") {
             iconName = "user";
           } else if (route.name === "Message") {
             iconName = "comment-o";
@@ -60,24 +60,24 @@ const TabNavigator = () => {
           } else if (route.name === "SearchRecipe") {
             iconName = "search";
           }
+      return <FontAwesome name={iconName} color={color} size={size} />;
+    },
+    headerShown: false,
+    backgroundColor: css.backgroundColorTwo,
+    tabBarInactiveBackgroundColor: css.inactiveButtonColor,
+    tabBarActiveBackgroundColor: css.backgroundColorTwo,
+    tabBarActiveTintColor: css.backgroundColorOne,
+    tabBarInactiveTintColor: css.backgroundColorTwo,
+    tabBarShowLabel: false,
+  })}
+>
+  <Tab.Screen name="UserDashboard" component={UserDashboardScreen}/>
+  <Tab.Screen name="Message" component={MessageScreen} />
+  <Tab.Screen name="AddRecipe" component={AddRecipeScreen} />
+  <Tab.Screen name="Favorite" component={FavoriteScreen} />
+  <Tab.Screen name="SearchRecipe" component={SearchRecipeScreen} />
+</Tab.Navigator>
 
-          return <FontAwesome name={iconName} color={color} size={size} />;
-        },
-        headerShown: false,
-        backgroundColor: css.backgroundColorTwo,
-        tabBarInactiveBackgroundColor: css.inactiveButtonColor,
-        tabBarActiveBackgroundColor: css.backgroundColorTwo,
-        tabBarActiveTintColor: css.backgroundColorOne,
-        tabBarInactiveTintColor: css.backgroundColorTwo,
-        tabBarShowLabel: false,
-      })}
-    >
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-      <Tab.Screen name="Message" component={MessageScreen} />
-      <Tab.Screen name="AddRecipe" component={AddRecipeScreen} />
-      <Tab.Screen name="Favorite" component={FavoriteScreen} />
-      <Tab.Screen name="SearchRecipe" component={SearchRecipeScreen} />
-    </Tab.Navigator>
   );
 };
 
