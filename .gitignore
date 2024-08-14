@@ -37,3 +37,6 @@ yarn-error.*
 #modules
 modules/addressIp.js
 modules/recipe.js
+
+
+yarn.lock

@@ -58,6 +58,14 @@ export default function HomeAsGuest({ navigation }) {
             buttonType={buttonStyles.buttonOne}
           />
         </View>
+
+        <View style={styles.buttons}>
+          <MyButton
+            dataFlow={() => navigation.navigate("Favorite")}
+            text={"FAVORITE"}
+            buttonType={buttonStyles.buttonOne}
+          />
+        </View>
       </View>
     </View>
   );
@@ -79,7 +87,7 @@ const styles = StyleSheet.create({
 
   logoContainer: {
     flex: 0,
-    height: "60%",
+    height: "54%",
     backgroundColor: css.backgroundColorOne,
     borderBottomLeftRadius: 180,
   },

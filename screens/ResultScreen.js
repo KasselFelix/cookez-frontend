@@ -106,8 +106,7 @@ const styles = StyleSheet.create({
   },
 
   scrollView: {
-    alignItems: 'center',
-    paddingBottom: 20,
+    marginHorizontal: '7%',
   },
 
   name: {

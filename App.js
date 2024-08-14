@@ -28,6 +28,7 @@ import ResultScreen from "./screens/ResultScreen";
 import SearchRecipeScreen from "./screens/SearchRecipeScreen";
 import UserDashboardScreen from "./screens/UserDashboardScreen";
 import WishListScreen from "./screens/WishListScreen";
+import FavoriteScreen from "./screens/FavoriteScreen";
 
 // ALL REDUCERS IMPORTS
 import user from './reducers/user';
@@ -54,15 +55,15 @@ const TabNavigator = () => {
             iconName = "comment-o";
           } else if (route.name === "AddRecipe") {
             iconName = "plus";
-          } else if (route.name === "WishList") {
+          } else if (route.name === "Favorite") {
             iconName = "heart-o";
-          } else if (route.name === "Recipe") {
+          } else if (route.name === "SearchRecipe") {
             iconName = "search";
           }
 
           return <FontAwesome name={iconName} color={color} size={size} />;
         },
-        headersShown: false,
+        headerShown: false,
         backgroundColor: css.backgroundColorTwo,
         tabBarInactiveBackgroundColor: css.inactiveButtonColor,
         tabBarActiveBackgroundColor: css.backgroundColorTwo,
@@ -74,17 +75,18 @@ const TabNavigator = () => {
       <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="Message" component={MessageScreen} />
       <Tab.Screen name="AddRecipe" component={AddRecipeScreen} />
-      <Tab.Screen name="WishList" component={WishListScreen} />
-      <Tab.Screen name="Recipe" component={SearchRecipeScreen} />
+      <Tab.Screen name="Favorite" component={FavoriteScreen} />
+      <Tab.Screen name="SearchRecipe" component={SearchRecipeScreen} />
     </Tab.Navigator>
   );
 };
 
 export default function App() {
   return (
-    <Provider store={store}>
+    <Provider store={store}>w
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown: false}} >
+          <Stack.Screen name="Favorite" component={FavoriteScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Kickoff" component={KickoffScreen} />

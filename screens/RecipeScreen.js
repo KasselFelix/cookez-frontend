@@ -164,13 +164,12 @@ export default function RecipeScreen({ route, navigation }) {
       <View style={styles.header}>
         <MySmallButton
           dataFlow={() => navigation.goBack()}
-          text={
-            <FontAwesome name="angle-double-left" size={30} color={"white"} />
-          }
+          text={<FontAwesome name="angle-double-left" size={30} color={"white"} />}
           buttonType={buttonStyles.buttonSmall}
         />
+        <Text style={styles.titlePage}>{selectedRecipe.name}</Text>
+        {/* <View></View> */}
       </View>
-
       {/* BLOC RECETTE SELECTED  */}
       <Animatable.View
               animation="slideInDown"
@@ -298,14 +297,19 @@ const styles = StyleSheet.create({
     height:'200%',
     alignItems: "center",
     backgroundColor: css.backgroundColorOne,
-    paddingTop: 20,
+    paddingTop: '15%',
   },
+  
   header: {
     flex: 0,
     width: "90%",
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingTop: 10,
+  },
+
+  titlePage: {
+    width: '70%',
+    fontSize: css.fontSizeFive,
   },
 
   pictureBloc: {

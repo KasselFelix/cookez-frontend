@@ -3,17 +3,17 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SignIn from './SignIn';
 import SignUp from './SignUp';
-import MyButton from '../modules/MyButton';
-import MySmallButton from '../modules/MySmallButton';
-import buttonStyles from '../styles/Button';
+import MyButton from "../modules/MyButton";
+import MySmallButton from "../modules/MySmallButton";
+import buttonStyles from "../styles/Button";
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import css from '../styles/Global';
+import css from "../styles/Global";
 
 export default function LoginScreen({navigation}) {
    return (
     <SafeAreaView style={styles.container}>
       <View style={styles.btn}>
-      <MySmallButton 
+        <MySmallButton
           dataFlow={() => navigation.goBack()}
           text={
             <FontAwesome name="angle-double-left" size={30} color={"white"} />
@@ -22,14 +22,14 @@ export default function LoginScreen({navigation}) {
         />
       </View>
       <View style={styles.buttonContainer}>
-        <SignIn navigation={navigation} />
-        <SignUp navigation={navigation} />
+        <SignIn navigation={navigation} style={styles.signin}/>
+        <SignUp navigation={navigation} style={styles.signup}/>
+        <MyButton
+          dataFlow={() => navigation.navigate('TabNavigator')}
+          text={"Go to HomePage"}
+          buttonType={buttonStyles.buttonOne}
+        />
       </View>
-      <MyButton
-        dataFlow={() => navigation.navigate('TabNavigator')}
-        text={"Go to HomePage"}
-        buttonType={buttonStyles.buttonOne}
-      />
     </SafeAreaView>
   );
 }
@@ -37,16 +37,16 @@ export default function LoginScreen({navigation}) {
 const styles = StyleSheet.create({
 container: {
   flex:1,
-  justifyContent: 'center',
-  backgroundColor: css.backgroundColorTwo ,
-  alignItems:'center',
-  padding: 20,
+  textAlign:'center',
+  justifyContent:'center',
+  backgroundColor:css.backgroundColorOne,
+  padding:7,
 },
 buttonContainer:{
   marginBottom: 30,
 },
 btn:{
-  width:'100%',
-  flexDirection:'row'
+  width: '100%',
+  flexDirection: 'row'
 }
 })
