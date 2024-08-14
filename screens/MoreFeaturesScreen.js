@@ -34,7 +34,7 @@ export default function MoreFeaturesScreen({navigation}) {
         </View>
         <View style={styles.buttons}>
           <MyButton
-            dataFlow={() => navigation.navigate("Recipe")}
+            dataFlow={() => navigation.navigate("Home")}
             text={"SKIP"}
             buttonType={buttonStyles.buttonTwo}
           />

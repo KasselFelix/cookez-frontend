@@ -58,14 +58,6 @@ export default function HomeAsGuest({ navigation }) {
             buttonType={buttonStyles.buttonOne}
           />
         </View>
-
-        <View style={styles.buttons}>
-          <MyButton
-            dataFlow={() => navigation.navigate("Favorite")}
-            text={"FAVORITE"}
-            buttonType={buttonStyles.buttonOne}
-          />
-        </View>
       </View>
     </View>
   );

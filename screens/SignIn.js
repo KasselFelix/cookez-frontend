@@ -38,7 +38,7 @@ export default function SignIn({navigation}) {
             dispatch(addUserToStore(data.userLogged))
             setSubmitted(true);
           } else {
-            throw new Error(data.message || 'Something went wrong 🧐');      
+            alert(data.error)    
           }
         })
         .catch((error) => {

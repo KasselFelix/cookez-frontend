@@ -24,11 +24,6 @@ export default function LoginScreen({navigation}) {
       <View style={styles.buttonContainer}>
         <SignIn navigation={navigation} style={styles.signin}/>
         <SignUp navigation={navigation} style={styles.signup}/>
-        <MyButton
-          dataFlow={() => navigation.navigate('TabNavigator')}
-          text={"Go to HomePage"}
-          buttonType={buttonStyles.buttonOne}
-        />
       </View>
     </SafeAreaView>
   );

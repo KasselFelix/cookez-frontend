@@ -50,13 +50,12 @@ export default function SignUp({navigation}) {
         if (data.result) {
           setSubmitted(true);
           dispatch(addUserToStore(data.newUser))
-        } else {
-          throw new Error(data.message || 'Something went wrong 🧐');      
+        }else{
+          alert(data.error)
         }
       })
       .catch((error) => {
-        console.error('Sign-up failed', error.message);
-        Alert.alert("Error", data.message)
+        console.log(error)
       })
       // .finally(() => setLoading(false))
   };
