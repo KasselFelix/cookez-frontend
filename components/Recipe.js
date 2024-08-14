@@ -5,8 +5,7 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 
 export default function Recipe( props ) {
 
-
-    const note=props.votes.reduce(function(accumulator, user) {
+    const note = props.votes.reduce((accumulator, user) => {
       return accumulator + user.note;
     }, 0)/props.votes.length;
 
@@ -23,7 +22,7 @@ export default function Recipe( props ) {
         <View style={styles.recipeContainer}>
           <TouchableOpacity 
           style={styles.recipeContainer} 
-          onPress={()=>{props.navigation.navigate('Recipe',{props,note:note,vote:props.votes})}}
+          onPress={() => { props.navigation.navigate('Recipe', {props, note: note, vote: props.votes })}}
           >
             <Text style={styles.name}>{props.name}</Text>
             <Text> {props.origin}</Text>

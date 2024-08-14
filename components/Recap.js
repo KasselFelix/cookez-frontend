@@ -11,7 +11,7 @@ export default function Recap( props ) {
     const [modalVisible, setModalVisible] = useState(false);
     
     const dispatch = useDispatch((state) => state.ingredient.ingredient)
-  console.log('PROPS: ', props)
+    
     return (
       <View style={styles.ingredientContainer}>
           <View style={styles.photoContainer}>
