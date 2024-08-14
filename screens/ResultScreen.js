@@ -1,21 +1,50 @@
-import { StyleSheet, Text, View, SafeAreaView, Image, TouchableOpacity, ScrollView} from 'react-native';
-import React from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView} from 'react-native';
+import React, { useEffect } from 'react';
 import css from "../styles/Global";
-import buttonStyles from "../styles/Button";
-import MyButton from "../modules/MyButton";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import recipes from '../modules/recipes';
 import Recipe from '../components/Recipe';
-import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateRecipeToStore } from '../reducers/recipe';
+import addressIp from '../modules/addressIp';
 
 export default function ResultScreen({ navigation }) {
+  const user =useSelector((state)=>state.user.user);
+  const recipeData= useSelector((state)=>state.recipe.recipes);
+  const ingredients= useSelector((state)=>state.ingredient.ingredient)
+  const dispatch= useDispatch();
 
-  const recipeData = recipes;
+  useEffect(()=>{
+    // console.log('user',user)
+    const ingredientSelected=ingredients.map((e)=> {
+      return e={name: e.data.display_name ,
+      image: e.photo,
+      quantity: e.data.g_per_serving,
+      nutrition: e.data.nutrition};
+    })
 
-  // const [selectedRecipe, setSelecedRecipe] = useState([]);
-
-  const results = recipeData.map((data, i) => {
-    return  <Recipe key={i} {...data} />;
+    //console.log('body',ingredientSelected)
+    fetch(`http://${addressIp}:3000/recipes/result`, {
+          method:'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: user ? user.username: '', ingredients: ingredientSelected,
+            excludeIngredients:[]
+          })
+      }).then((response) => response.json())
+			.then((data) => {
+					if(data.result){
+            //console.log('fetch:',data.recipes)
+						dispatch(updateRecipeToStore(data.recipes))
+            //console.log('reducer',recipeData)
+					}
+			})
+			.catch(error => console.error('There has been a problem with your fetch operation:', error));
+  },[])
+ 
+  const recipes = recipeData.map((data, i) => {
+    return  <Recipe key={i} {...data} navigation={navigation} />;
   })
 
   const handleReturn = () => {
@@ -23,19 +52,18 @@ export default function ResultScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.btnReturn} activeOpacity={0.8} onPress={() => handleReturn()}>
           <FontAwesome name='angle-double-left' size={30} color={'white'}/>
         </TouchableOpacity>
         <Text style={styles.titlePage}>Résultats</Text>
       </View>
-      
-      <ScrollView contentContainerStyle={styles.scrollView}>
-        {results}
-      </ScrollView>
 
-    </SafeAreaView>
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        {recipes.length > 0 ? recipes: <View><Text> try with more ingredient again 🤔 </Text><Text> maybe it's time to go shopping!  </Text></View>}
+      </ScrollView>
+    </View>
   )
 }
 

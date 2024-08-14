@@ -4,12 +4,16 @@ import css from "../styles/Global";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 
 export default function Recipe( props ) {
-  
+
+
+    const note=props.votes.reduce(function(accumulator, user) {
+      return accumulator + user.note;
+    }, 0)/props.votes.length;
+
     const voteRecipe= () => {
       let stars = [];
-
       for (let i=0; i < 5; i++) {
-        stars.push(<FontAwesome key={i} name='star' size={18}/>)
+        stars.push(<FontAwesome key={i} name='star' size={18} color={i < note ? "#d4b413" : "#9c9c98"} />)
       }
 
       return stars;
@@ -17,6 +21,10 @@ export default function Recipe( props ) {
 
     return (
         <View style={styles.recipeContainer}>
+          <TouchableOpacity 
+          style={styles.recipeContainer} 
+          onPress={()=>{props.navigation.navigate('Recipe',{props,note:note,vote:props.votes})}}
+          >
             <Text style={styles.name}>{props.name}</Text>
             <Text> {props.origin}</Text>
             <View style={styles.imageContainer}>
@@ -25,13 +33,14 @@ export default function Recipe( props ) {
                 <View style={styles.vote}>
                   {voteRecipe()}
                 </View>
-                  <Text> votes: 150</Text>
+                  <Text> votes: {props.votes.length}</Text>
               </View>
             </View>
             <View style={styles.infos}>
               <Text style={styles.text}>Difficulté: {props.difficulty}/5</Text>
               <Text style={styles.text}>Temps de préparation: {props.preparationTime}m</Text>
             </View>
+          </TouchableOpacity>
         </View>
     )
 }

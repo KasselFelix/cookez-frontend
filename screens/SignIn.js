@@ -4,6 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import MyButton from '../modules/MyButton';
 import buttonStyles from '../styles/Button';
+import { addUserToStore } from '../reducers/user';
+import { useDispatch } from 'react-redux';
+import addressIp from '../modules/addressIp';
 
 
 export default function SignIn({navigation}) {
@@ -12,9 +15,11 @@ export default function SignIn({navigation}) {
     const [password, setPassword]=useState('');
     const [modalVisible, setModalVisible]=useState(false);
 
+    const dispatch =useDispatch();
+
     // funtion to handle the signin
     const handleSignin =()=> {
-        fetch('http://192.168.100.155:3000/users/signin', {
+        fetch(`http://${addressIp}:3000/users/signin`, {
         method:'POST',
         headers:{'Content-Type':'Application/json'},
         body:JSON.stringify({
@@ -22,7 +27,7 @@ export default function SignIn({navigation}) {
         })
         })
         .then(res => res.json())
-        .then(data => {console.log('user',data)})
+        .then(data => {dispatch(addUserToStore(data.userLogged))})
         setUsername('')
         setPassword('')
         navigation.navigate('Home')

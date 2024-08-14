@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
     width: 320,
     height: 80,
   },
+
   lottieAnim:{
     height:'80%',
     width:'95%',
