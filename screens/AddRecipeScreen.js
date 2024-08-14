@@ -45,8 +45,8 @@ export default function AddRecipeScreen({navigation}) {
   const [ingredient, setIngredient] = useState([]);
   const [stepsArray, setStepsArray] = useState([]);
 
-//const user = useSelector((state) => state.user.user);
-const user={username:'reptincel',token:"vePuvRek0PzD61hJVkyryC4EoGCZH-RY"} //simulation user 
+const user = useSelector((state) => state.user.value);
+//const user={username:'reptincel',token:"vePuvRek0PzD61hJVkyryC4EoGCZH-RY"} //simulation user 
 console.log('HELLO: ', );
 
 const handleAddRecipe = () => {
