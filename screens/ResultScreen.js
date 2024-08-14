@@ -13,13 +13,15 @@ export default function ResultScreen({ navigation }) {
   const ingredients= useSelector((state)=>state.ingredient.ingredient)
   const dispatch= useDispatch();
 
-  useEffect(()=>{
+  useEffect (() => {
     // console.log('user',user)
-    const ingredientSelected=ingredients.map((e)=> {
-      return e={name: e.data.display_name ,
-      image: e.photo,
-      quantity: e.data.g_per_serving,
-      nutrition: e.data.nutrition};
+    const ingredientSelected = ingredients.map((e)=> {
+      return e = {
+        name: e.data.display_name,
+        image: e.photo,
+        quantity: e.data.g_per_serving,
+        nutrition: e.data.nutrition
+      };
     })
 
     //console.log('body',ingredientSelected)
@@ -29,23 +31,24 @@ export default function ResultScreen({ navigation }) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            username: user ? user.username: '', ingredients: ingredientSelected,
+            username: user ? user.username : '', 
+            ingredients: ingredientSelected,
             excludeIngredients:[]
           })
       }).then((response) => response.json())
 			.then((data) => {
-					if(data.result){
+					if (data.result) {
             //console.log('fetch:',data.recipes)
 						dispatch(updateRecipeToStore(data.recipes))
             //console.log('reducer',recipeData)
 					}
 			})
 			.catch(error => console.error('There has been a problem with your fetch operation:', error));
-  },[])
+  },[]);
  
   const recipes = recipeData.map((data, i) => {
     return  <Recipe key={i} {...data} navigation={navigation} />;
-  })
+  });
 
   const handleReturn = () => {
     navigation.navigate("Home")
@@ -99,8 +102,7 @@ const styles = StyleSheet.create({
   },
 
   scrollView: {
-    alignItems: 'center',
-    paddingBottom: 20,
+    marginHorizontal: '7%',
   },
 
   name: {

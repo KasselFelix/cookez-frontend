@@ -63,16 +63,15 @@ export default function RecipeScreen({ route, navigation }) {
       <View style={styles.header}>
         <MySmallButton
           dataFlow={() => navigation.goBack()}
-          text={
-            <FontAwesome name="angle-double-left" size={30} color={"white"} />
-          }
+          text={<FontAwesome name="angle-double-left" size={30} color={"white"} />}
           buttonType={buttonStyles.buttonSmall}
         />
+        <Text style={styles.titlePage}>{selectedRecipe.name}</Text>
+        {/* <View></View> */}
       </View>
-
       {/* BLOC RECETTE SELECTED  */}
       <View style={styles.pictureBloc}>
-        <Text style={styles.sectionsTitle}>{selectedRecipe.name}</Text>
+        <Text style={styles.sectionsTitle}>{selectedRecipe.origin}</Text>
         <View style={styles.imageContainer}>
           <View style={styles.imagePlaceholder} />
             <Popover 
@@ -143,14 +142,19 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     backgroundColor: css.backgroundColorOne,
-    paddingTop: 20,
+    paddingTop: '15%',
   },
+  
   header: {
     flex: 0,
     width: "90%",
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingTop: 10,
+  },
+
+  titlePage: {
+    width: '70%',
+    fontSize: css.fontSizeFive,
   },
 
   pictureBloc: {
