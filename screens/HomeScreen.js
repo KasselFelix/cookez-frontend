@@ -42,36 +42,12 @@ export default function HomeAsGuest({ navigation }) {
       />
       
       <View style={styles.buttonsContainer}>
-        <View style={styles.buttons}>
-          <MyButton
-            dataFlow={() => navigation.navigate("Recipe")}
-            text={"RECIPE-SCREEN"}
-            buttonType={buttonStyles.buttonTwo}
-          />
-        </View>
-        <View style={styles.buttons}>
-          <MyButton
-            dataFlow={() => navigation.navigate("Result")}
-            text={"RECIPE"}
-            buttonType={buttonStyles.buttonTwo}
-          />
-        </View>
 
         <View style={styles.buttons}>
           <MyButton
             dataFlow={() => navigation.navigate("Kickoff")}
             text={"START"}
             buttonType={buttonStyles.buttonTwo}
-          />
-        </View>
-
-        <View style={styles.buttons}>
-          <MyButton
-            dataFlow={() =>
-              navigation.navigate("TabNavigator", { screen: "Profil" })
-            }
-            text={"PROFIL"}
-            buttonType={buttonStyles.buttonTwo}à
           />
         </View>
 

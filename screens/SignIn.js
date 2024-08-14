@@ -32,7 +32,7 @@ export default function SignIn({navigation}) {
           if(data.result){
             dispatch(addUserToStore(data.userLogged));
             setModalVisible(false);
-            navigation.navigate('UserDashboard');
+            navigation.navigate("TabNavigator", { screen: "UserDashboard" })
           }else{
             alert(data.error)
           }

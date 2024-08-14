@@ -39,7 +39,7 @@ export default function SignUp({navigation}) {
           if(data.result){
             dispatch(addUserToStore(data.newUser))
             setModalVisible(false);
-            navigation.navigate('Home');
+            navigation.navigate("TabNavigator", { screen: "UserDashboard" })
           }else{
             alert(data.error)
           }
