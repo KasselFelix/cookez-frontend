@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, SafeAreaView, ScrollView, RefreshControl } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import css from '../styles/Global';
+import { useSelector } from "react-redux";
 
 import addressIp from '../modules/addressIp';
 import buttonStyles from '../styles/Button';
@@ -12,7 +13,8 @@ import Recipe from '../components/Recipe';
 export default function FavoriteScreen({ navigation }) {
     const [myFavorites, setMyFavorites] = useState([]);
     const [refreshing, setRefreshing] = React.useState(false);
-    console.log('My favorites: ', myFavorites)
+
+    const user = useSelector((state) => state.user.value);
 
     const onRefresh = React.useCallback(() => {
       setRefreshing(true);
@@ -28,7 +30,7 @@ export default function FavoriteScreen({ navigation }) {
     const username = "dracaufeu " 
 
     useEffect (()  => {
-        fetch(`http://${addressIp}:3000/recipes/${username}`)
+        fetch(`http://${addressIp}:3000/recipes/${user.username}`)
         .then((res) => res.json())
         .then(data => {
             if(data.result) {

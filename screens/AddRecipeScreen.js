@@ -15,9 +15,9 @@ import MyButton from "../modules/MyButton";
 import MySmallButton from "../modules/MySmallButton";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import RNPickerSelect from 'react-native-picker-select';
+import addressIp from "../modules/addressIp";
+import { useSelector } from "react-redux";
 // import {addRecipeToStore} from '../reducers/recipe';
-
-const BACKEND_ADDRESS = "http://192.168.100.181:3000";
 
 export default function AddRecipeScreen({navigation}) {
   // const dispatch = useDispatch();
@@ -46,7 +46,6 @@ export default function AddRecipeScreen({navigation}) {
   const [stepsArray, setStepsArray] = useState([]);
 
 const user = useSelector((state) => state.user.value);
-//const user={username:'reptincel',token:"vePuvRek0PzD61hJVkyryC4EoGCZH-RY"} //simulation user 
 console.log('HELLO: ', );
 
 const handleAddRecipe = () => {
@@ -68,7 +67,7 @@ const handleAddRecipe = () => {
   
   if(user && user.token){
     // if(name && origin && ingredients.lenght>0 && difficulty && preparationTime && description && steps.length>0) {
-      fetch(`${BACKEND_ADDRESS}/recipes/add`, {
+      fetch(`${addressIp}/recipes/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json"},
         body: JSON.stringify({
