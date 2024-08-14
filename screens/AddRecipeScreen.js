@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
    },
 
   titlePage: {
-    paddingRight: '35%',
+    paddingRight: '30%',
     fontSize: css.fontSizeFive,
   },
   

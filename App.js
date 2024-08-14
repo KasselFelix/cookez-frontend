@@ -49,7 +49,7 @@ const TabNavigator = () => {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName = "";
-          if (route.name === "Profile") {
+          if (route.name === "UserDashboard") {
             iconName = "user";
           } else if (route.name === "Message") {
             iconName = "comment-o";
@@ -72,7 +72,7 @@ const TabNavigator = () => {
         tabBarShowLabel: false,
       })}
     >
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="UserDashboard" component={UserDashboardScreen}/>
       <Tab.Screen name="Message" component={MessageScreen} />
       <Tab.Screen name="AddRecipe" component={AddRecipeScreen} />
       <Tab.Screen name="Favorite" component={FavoriteScreen} />
@@ -86,8 +86,8 @@ export default function App() {
     <Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown: false}} >
-          <Stack.Screen name="Favorite" component={FavoriteScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Favorite" component={FavoriteScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Kickoff" component={KickoffScreen} />
           <Stack.Screen name="Recap" component={RecapScreen} />

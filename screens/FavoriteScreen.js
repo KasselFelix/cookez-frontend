@@ -29,19 +29,27 @@ export default function FavoriteScreen({ navigation }) {
 
     const username = "dracaufeu " 
 
-    useEffect (()  => {
-        fetch(`http://${addressIp}:3000/recipes/${user.username}`)
+    const handleFetch =()=>{
+      fetch(`http://${addressIp}:3000/recipes/${user.username}`)
         .then((res) => res.json())
         .then(data => {
             if(data.result) {
                 setMyFavorites(data.favoritesByAuthors)
             } 
         })
+    }
+    
+    useEffect (()  => {
+        handleFetch();
     },[]);
+
+    function update(){
+        handleFetch();
+    }
 
     const allFavorites = myFavorites.map((data, i) => {
         console.log('PROPS', data);
-        return  <Recipe key={i} {...data} navigation={navigation} />
+        return  <Recipe key={i} {...data} navigation={navigation} update={update} />
     })
 
     return (

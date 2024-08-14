@@ -192,7 +192,7 @@ export default function RecipeScreen({ route, navigation }) {
             </Popover>
           </View>
           <View style={styles.icons}>
-            <View style={styles.stars}>{stars}<Text>({votes})</Text></View>
+            <View style={styles.stars}>{stars}<Text>({votes.length})</Text></View>
             <Popover 
               isVisible={showPopoverVote}
               onRequestClose={()=> setShowPopoverVote(false)}
