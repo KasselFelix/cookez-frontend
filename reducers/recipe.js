@@ -18,8 +18,11 @@ export const recipeSlice = createSlice({
         removeRecipeToStore: (state, action) => {
             state.recipes = state.recipes.filter((e) => e._id !== action.payload._id)
         },
+        removeAllRecipeToStore: (state, action) => {
+            state.recipes = [];
+        }
     },
 });
 
-export const { addRecipeToStore, updateRecipeToStore,removeRecipeToStore } = recipeSlice.actions;
+export const { addRecipeToStore, updateRecipeToStore,removeRecipeToStore ,removeAllRecipeToStore} = recipeSlice.actions;
 export default recipeSlice.reducer;
