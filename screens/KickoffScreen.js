@@ -176,7 +176,7 @@ export default function KickoffScreen({navigation}) {
 					let copyPictures = pictures.filter(e=>e!==data);
 					setPictures(copyPictures)
 					}}>
-				  <FontAwesome name='times' size={20} color='red'/>
+				  <FontAwesome name='times' size={20} color={css.activeIconColor}/>
 				</TouchableOpacity>
 			</View>
 			<Image source={{ uri: data }} style={styles.photo} />
@@ -212,6 +212,7 @@ export default function KickoffScreen({navigation}) {
 	
   	return (
 		<View style={styles.container} >
+			<View style={styles.styleCamera}>
 			<Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
 					<View style={styles.buttonsCameraContainer}>
 						<TouchableOpacity onPress={() => setType(type === CameraType.back ? CameraType.front : CameraType.back)} style={styles.buttonsCamera}>
@@ -223,6 +224,7 @@ export default function KickoffScreen({navigation}) {
 						</TouchableOpacity>
 					</View>
 			</Camera>
+			</View>
 
         	<ScrollView horizontal  contentContainerStyle={styles.galleryContainer}>
 				{photos}
@@ -384,13 +386,20 @@ const styles = StyleSheet.create({
 	borderColor: 'grey',
 	backgroundColor: 'rgba(255,255,255, 0.6)',
 	},
-
-	camera: {
-		height:'50%',
-		width:'90%',
+	styleCamera:{
+		height:350,
+		width:350,
 		marginBottom:10,
 		borderRadius: 40,
 		overflow: "hidden",
+	},
+
+	camera: {
+		height:'100%',
+		width:'100%',
+		// marginBottom:10,
+	// 	borderRadius: 40,
+	// 	overflow: "hidden",
 	},
 
 	buttonsCameraContainer: {

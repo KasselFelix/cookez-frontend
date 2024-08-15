@@ -50,7 +50,7 @@ export default function UserDashboardScreen({navigation}) {
       </View>
       <View style={styles.buttons}>
         <MyButton
-          dataFlow={() => TabNa("AddRecipe")}
+          dataFlow={() => navigation.navigate("AddRecipe")}
           text={"ADD RECIPE ✍🏽"}
           buttonType={buttonStyles.buttonTwo}
         />
@@ -113,7 +113,7 @@ lowerContainers:{
   backgroundColor:'transparent',
   borderWidth:2,
   width:'98%',
-  borderRadius:'10%',
+  borderRadius:15,
   marginHorizontal:'auto',
   padding:2,
   marginBottom:10,
