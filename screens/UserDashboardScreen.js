@@ -1,13 +1,43 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from "react-native";
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
 import MyButton from "../modules/MyButton";
 import * as Unicons from '@iconscout/react-native-unicons';
+import addressIp from "../modules/addressIp";
 
 
 
 export default function UserDashboardScreen({navigation}) {
+
+  const [foundRecipe, setFoundRecipe]= useState([])
+
+  const recipeAll = async () => {
+    try{
+      const response = await fetch(`http://${addressIp}:3000/recipes/all`, {
+        method:'POST',
+        headers:{}
+      });
+      const data = await response.json();
+      if (data.result) {
+        setFoundRecipe(data.recipes);
+        console.log('fetched recipes', data.recipes);
+      }
+    } catch (error) {
+      console.error('error fetching data 🧐', error);
+      alert('error', error);
+  }
+}
+
+  useEffect(()=> {
+    
+    recipeAll(); 
+  }, [])
+// map on 'foundRecipe' to retrieve 'votes'
+  const votes = foundRecipe?.votes?.map(e=>e.note) || [];
+
+
+
   return (
 
     <View style={styles.container}>
@@ -23,7 +53,9 @@ export default function UserDashboardScreen({navigation}) {
         </TouchableOpacity>
       </View>
       <View style={styles.lowerIcons}>
+
         {/* INSERT THE POPOVER FOR LOOKING FOR A RECIPE */}
+
         <TouchableOpacity name='wishList'>
           <Unicons.UilHeart style={styles.icons} size={40} color='white'/>
         </TouchableOpacity>
@@ -39,18 +71,50 @@ export default function UserDashboardScreen({navigation}) {
 
       </View>
       <View style={styles.lowerContainers}>
+        <Text style={styles.title1}>Top Recipe</Text>
         <ScrollView style={styles.scrollView}>
+      
+          {foundRecipe.length > 0 && (
+            <View>
+              <Text style={styles.recipe}>{foundRecipe[31].name}</Text>
+            </View>
+          )}
+        <View style={styles.imageBlock}>
 
+        </View>
+          {votes.length > 0 ?(
+            votes.map((note, index) =>(
+              <Text style={styles.votes} key={index}>Note:{note}</Text>
+            ))
+          ) : (
+            <Text style={styles.votes}>No votes available</Text>
+          )}
         </ScrollView>
       </View>
       <View style={styles.lowerContainers}>
+      <Text style={styles.title1}>Latest Recipe</Text>
         <ScrollView style={styles.scrollView}>
+        {foundRecipe.length > 0 && (
+            <View>
+              <Text style={styles.recipe}>{foundRecipe[15].name}</Text>
+            </View>
+          )}
+        <View style={styles.imageBlock}>
+
+        </View>
+          {votes.length > 0 ?(
+            votes.map((note, index) =>(
+              <Text style={styles.votes} key={index}>Note:{note}</Text>
+            ))
+          ) : (
+            <Text style={styles.votes}>No votes available</Text>
+          )}
 
         </ScrollView>
       </View>
       <View style={styles.buttons}>
         <MyButton
-          dataFlow={() => TabNa("AddRecipe")}
+          dataFlow={() => navigation.navigate("AddRecipe")}
           text={"ADD RECIPE ✍🏽"}
           buttonType={buttonStyles.buttonTwo}
         />
@@ -104,13 +168,31 @@ titleBlock:{
 },
 title:{
   textAlign:'center',
-  fontSize:20,
+  fontSize:30,
+},
+title1:{
+  textAlign:'center',
+  fontSize:18,
+},
+recipe:{
+  paddingHorizontal:6,
+},
+votes:{
+  paddingHorizontal:6,
+},
+imageBlock:{
+  flex:0.2,
+  width:'97%',
+  marginHorizontal:'auto',
+  height:130,
+  backgroundColor:css.iconColor,
+  borderRadius:9,
+  borderWidth:2,
 },
 
-
 lowerContainers:{
-  flex:0.29,
-  backgroundColor:'transparent',
+  flex:0.333,
+  backgroundColor:css.backgroundColorTwo,
   borderWidth:2,
   width:'98%',
   borderRadius:'10%',
