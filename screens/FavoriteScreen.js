@@ -62,11 +62,11 @@ export default function FavoriteScreen({ navigation }) {
                 />
                 { myFavorites.length === 1 ? <Text style={styles.titlePage}> My favorite ❤️</Text> :  <Text style={styles.titlePage}>My favorites ❤️</Text>}
             </View>
-            <View style={styles.anyFavoriteContainer}>
-                { myFavorites.length === 0 && <View style={styles.anyFavorite}><Text>No favorites in your list </Text><Text>at the moment 😔 ...</Text></View>}
-            </View>
+            { myFavorites.length === 0 && <View style={styles.noFavoriteContainer}>
+              <View style={styles.noFavorite}><Text>No favorites in your list </Text><Text>at the moment 😔 ...</Text></View>
+            </View> }
 
-            <ScrollView contentContainerStyle={styles.scrollView} 
+            <ScrollView contentContainerStyle={styles.galleryContainer} 
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
             {allFavorites}
             </ScrollView>
@@ -94,20 +94,20 @@ const styles = StyleSheet.create({
         fontSize: css.fontSizeFive,
       },
 
-      anyFavoriteContainer: {
+      noFavoriteContainer: {
         flex: 0,
         alignItems: 'center',
         justifyContent: 'center',
         marginTop: '50%',
       },
 
-      anyFavorite: {
+      noFavorite: {
         flex: 0,
         alignItems: 'center',
         justifyContent: 'center',
       },
 
-      scrollView: {
+      galleryContainer: {
         marginHorizontal: '7%',
       },
 })

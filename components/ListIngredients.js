@@ -3,30 +3,27 @@ import { StyleSheet, Text, View, FlatList, SafeAreaView, TouchableOpacity, TextI
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import css from '../styles/Global';
 
-
-
-
 // the filter
 export default function ListIngredients ({ searchInput, setClicked, data, onItemPress}) {
     
     const [selectedItemId, setSelectedItemId] = useState(null);
 
     const Item = ({ name, itemData }) => {
-      const isSelected = selectedItemId === itemData.id  // Vérifie si l'élément est sélectionné
+    const isSelected = selectedItemId === itemData.id  // Vérifie si l'élément est sélectionné
       
-      return (
-        <TouchableOpacity
-        activeOpacity={0.8} 
-        onPress={() => {setSelectedItemId(itemData.id);onItemPress(itemData)}} // Passez les données de l'élément à la fonction onItemPress
-        style={isSelected?styles.validated:styles.nonValidated}
-        >
-          <View style={styles.item}>
-                  <Text style={styles.name}>{name}</Text>
-                  <TouchableOpacity activeOpacity={0.8}  >
-                      <FontAwesome name={'check'} size={22} color={'white'}/>
-                  </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
+    return (
+      <TouchableOpacity
+      activeOpacity={0.8} 
+      onPress={() => {setSelectedItemId(itemData.id); onItemPress(itemData)}} // Passez les données de l'élément à la fonction onItemPress
+      style={isSelected ? styles.validated : styles.nonValidated}
+      >
+        <View style={styles.item}>
+                <Text style={styles.name}>{name}</Text>
+                <TouchableOpacity activeOpacity={0.8}  >
+                    <FontAwesome name={'check'} size={22} color={'white'}/>
+                </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
     );
   }
 
@@ -35,7 +32,7 @@ export default function ListIngredients ({ searchInput, setClicked, data, onItem
             return;
         }
 
-        if (item.name.toUpperCase().includes(searchInput.toUpperCase().trim().replace(/\s/g, ""))) {
+        if (item.name.toUpperCase().includes(searchInput.toUpperCase().trim())) {
         return <Item name={item.name} itemData={item}/>;
         }
   };
@@ -47,8 +44,8 @@ export default function ListIngredients ({ searchInput, setClicked, data, onItem
             setClicked(false);
           }}
         >
-          {data.length === 0 && <Text>Waiting for your search...</Text>}
-          {data === "No ingredients found"  && <Text>{data}</Text>}
+          {data.length === 0 && <Text style={styles.text}>Waiting for your search 🧐 ...</Text>}
+          {data === "No ingredients found"  && <Text style={styles.text}>{data} sorry... try again ! 👍</Text>}
           <FlatList
             data={data}
             renderItem={renderItem}
@@ -64,7 +61,6 @@ listContainer: {
   margin: 10,
   height: "65%",
   width: "100%",
-  // marginBottom: 70,
 },
 
 nonValidated: {
@@ -116,4 +112,9 @@ name: {
   fontStyle: "italic",
 },
 
+text: {
+  alignSelf: 'center',
+  textAlignVertical: 'center',
+  height: '80%',
+}
 });

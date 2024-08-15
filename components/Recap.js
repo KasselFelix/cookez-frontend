@@ -24,7 +24,7 @@ export default function Recap( props ) {
               <Image source={{ uri: props.photo }} style={styles.photo} />
             </View>
           </View>
-          <View>
+          <View style={styles.ingredientNameContainter}>
             <Text style={styles.ingredientName}>{props.data.display_name}</Text>
           </View>
           <View style={styles.infoGramsContainer}>
@@ -113,9 +113,15 @@ const styles = StyleSheet.create({
         marginLeft: '4%',
       },
     
-      ingredientName: {
+      ingredientNameContainter: {
+        flex:  0,
+        justifyContent: 'center',
         width: 70,
-        height: 20,
+        height: 80,
+        fontWeight: 'bold',
+      },
+
+      ingredientName: {
         fontWeight: 'bold',
       },
 

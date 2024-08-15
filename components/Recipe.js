@@ -22,10 +22,12 @@ export default function Recipe( props ) {
         <View style={styles.recipeContainer}>
           <TouchableOpacity 
           style={styles.recipeContainer} 
-          onPress={() => { props.navigation.navigate('Recipe', {props, note: note, votes: props.votes, update:props.update })}}
-          >
-            <Text style={styles.name}>{props.name}</Text>
-            <Text> {props.origin}</Text>
+          onPress={() => { props.navigation.navigate('Recipe', {props, note: note, votes: props.votes , update:props.update })}}
+          > 
+            <View style={styles.nameContainer}>
+              <Text style={styles.name}>{props.name}</Text>
+              <Text> {props.origin}</Text>
+            </View>
             <View style={styles.imageContainer}>
               <Image style={styles.image} source={{ uri: props.picture}}/>
               <View style={styles.voteContainer}> 
@@ -54,8 +56,13 @@ const styles = StyleSheet.create({
     marginBottom: '5%',
   },
 
+  nameContainer: {
+    paddingLeft: '3%',
+  },
+
   name: {
     fontSize: css.fontSizeSix,
+    fontWeight: 'bold',
   },
 
   imageContainer: {
@@ -64,7 +71,6 @@ const styles = StyleSheet.create({
     marginTop: '3%',
     marginLeft: '10%',
     width: '80%',
-    height: '90%',
   },
 
   image: {
@@ -87,9 +93,11 @@ const styles = StyleSheet.create({
 
   infos: {
     marginTop: '6%',
+    marginBottom: '3%',
+    paddingLeft: '3%',
   },
 
   text: {
-    fontSize: css.fontSizeSix,
-  },
+    fontSize: 16,
+    },
 })

@@ -27,7 +27,6 @@ import RecipeScreen from "./screens/RecipeScreen";
 import ResultScreen from "./screens/ResultScreen";
 import SearchRecipeScreen from "./screens/SearchRecipeScreen";
 import UserDashboardScreen from "./screens/UserDashboardScreen";
-import WishListScreen from "./screens/WishListScreen";
 import FavoriteScreen from "./screens/FavoriteScreen";
 
 // ALL REDUCERS IMPORTS

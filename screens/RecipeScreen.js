@@ -5,6 +5,7 @@ import buttonStyles from "../styles/Button";
 import MyButton from "../modules/MyButton";
 import MySmallButton from "../modules/MySmallButton";
 import addressIp from "../modules/addressIp";
+import Comments from "../components/Comments";
 
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Popover from "react-native-popover-view";
@@ -18,9 +19,9 @@ export default function RecipeScreen({ route, navigation }) {
 
   //const user ={username:'reptincel',token:'vePuvRek0PzD61hJVkyryC4EoGCZH-RY'};
   //const user = {username:null,token:null};
-  const user =useSelector((state)=>state.user.value);
-  const selectedRecipe= route.params.props
-  const votes=route.params.votes
+  const user = useSelector((state)=>state.user.value);
+  const selectedRecipe = route.params.props
+  const votes = route.params.votes
 
   /* HOOK STATE FOR THE HEART LOGO ON THE RECIPE*/
   const [like, setLike] = useState(false);
@@ -29,7 +30,6 @@ export default function RecipeScreen({ route, navigation }) {
   const [modalVisible,setModalVisible]=useState(false);
   const [starNote,setStarNote]=useState(0);
   const [action,setAction]=useState(false);
-  //const user=useSelector((state)=>{state.user.user})
   const modalRef = useRef(null);
 
 // auto close the popover 
@@ -76,7 +76,9 @@ export default function RecipeScreen({ route, navigation }) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: user.username, _id:selectedRecipe._id,action
+        username: user.username, 
+        _id: selectedRecipe._id, 
+        action
       })
     });
     const data =  await response.json();
@@ -107,8 +109,6 @@ export default function RecipeScreen({ route, navigation }) {
     }
   }, []);
   
-
-
   const stars = [];
   for (let i = 0; i < 5; i++) {
     stars.push(
@@ -145,19 +145,82 @@ export default function RecipeScreen({ route, navigation }) {
   }
   
   const ingredients= selectedRecipe.ingredients.map((e,i)=>{
-      return <Text key={i}> {e.quantity}g {e.name}</Text>
+      return <Text key={i}> ● {e.quantity}g {e.name}</Text>
   })
   
   const steps= selectedRecipe.steps.map((text,i)=>{
     return <Text key={i}>{i+1}. {text}</Text>
   })
 
-  const comments= selectedRecipe.comments.map((e,i)=>{
-    return <View key={i} style={styles.content}>
-          <Text>{e.username}   {e.date}</Text>
-          <Text>{e.message}</Text>
-    </View>
-  })
+  // const comments= selectedRecipe.comments.map((e,i)=>{
+  //   return <View key={i} style={styles.content}>
+  //         <Text>{e.username}   {e.date}</Text>
+  //         <Text>{e.message}</Text>
+  //   </View>
+  // })
+  const handleUpComment = async ({username, _id}) => {
+    try {
+      const response = await fetch(`http://${addressIp}:3000/comments/upvote`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          username: username,
+          _id: _id
+        })
+      });
+      const data =  await response.json();
+      if (data.result) {
+        console.log(data)
+      }
+    } catch (error) {
+      console.error('There has been a problem with your fetch operation:', error);
+    }
+    route.params.update()
+  };
+
+  const handleDownComment = async ({username, _id}) => {
+    try {
+      const response = await fetch(`http://${addressIp}:3000/comments/downvote`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          username: username,
+          _id: _id
+        })
+      });
+      const data =  await response.json();
+      if (data.result) {
+        console.log(data)
+      }
+    } catch (error) {
+      console.error('There has been a problem with your fetch operation:', error);
+    }
+    route.params.update()
+  };
+  
+
+  useEffect(() => {
+    handleUpComment()
+  }, []);
+
+  useEffect(() => {
+    handleDownComment()
+  }, []);
+
+  // useEffect(() => {
+  //   const commentsDisplay= selectedRecipe.comments.map((e,i)=>{
+  //     console.log('EEEEEEEe :', e)
+  //     return <Comments key={i} {...e}/>
+  //   });
+  // }, [starNote]);
+
+  console.log('INITIAL: ', selectedRecipe.comments._id);
+  const commentsDisplay= selectedRecipe.comments.map((e,i)=>{
+    console.log('EEEEEEEe :', e)
+    return <Comments key={i} {...e} handleUpComment={handleUpComment} handleDownComment={handleDownComment}/>
+  });
+
+  console.log('PSG: ', commentsDisplay);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -168,113 +231,117 @@ export default function RecipeScreen({ route, navigation }) {
           buttonType={buttonStyles.buttonSmall}
         />
         <Text style={styles.titlePage}>{selectedRecipe.name}</Text>
-        {/* <View></View> */}
+        <View style={styles.btnEmpty}></View>
       </View>
+      <ScrollView>  
+      {/* contentContainerStyle={styles.scrollView} */}
       {/* BLOC RECETTE SELECTED  */}
-      <Animatable.View
-              animation="slideInDown"
-              duration={700}
-               style={styles.pictureBloc}>
-        <Text style={styles.sectionsTitle}>{selectedRecipe.name}</Text>
-        <View style={styles.imageContainer}>
-          <View style={styles.imagePlaceholder} />
-            <Popover 
-              isVisible={showPopover}
-              onRequestClose={()=> setShowPopover(false)}
-              from={(
-              <TouchableOpacity style={styles.favoriteButton} onPress={()=> {handleLikeRecipe();}}>
-                <FontAwesome name="heart" size={24} color={like?"#E45858":"grey"} />
-              </TouchableOpacity>
-              )}>
-              <View style={styles.popover}>
-                <Text>You can unlock this feature by Signing in ❤️</Text>
+        <View style={styles.recipeContainer}>
+          <Animatable.View animation="slideInDown" duration={700} style={styles.pictureBloc}>
+            <View style={styles.firstContainer}>
+              <Text style={styles.sectionsTitle}>{selectedRecipe.origin}</Text>
+              
+              <Popover 
+                placement="floating"
+                backgroundStyle={styles.popoverBackground}
+                isVisible={showPopoverVote}
+                onRequestClose={()=> setShowPopoverVote(false)}
+                from={(
+                  <TouchableOpacity style={styles.voteBtn} activeOpacity={0.8} onPress={() => handleVote()}>
+                    <Text>Do you like it ?</Text>
+                  </TouchableOpacity>
+                )}>
+                <View style={styles.popoverContainer}>
+                  <Text>You can unlock this feature by Signing in ❤️ </Text>
+                </View>
+              </Popover>
+            </View>
+            <View style={styles.imageContainer}>
+              <View style={styles.imagePlaceholder} />
+                <Popover 
+                  placement="floating"
+                  backgroundStyle={styles.popoverBackground}
+                  isVisible={showPopover}
+                  onRequestClose={()=> setShowPopover(false)}
+                  from={(
+                  <TouchableOpacity style={styles.favoriteButton} onPress={()=> {handleLikeRecipe();}}>
+                    <FontAwesome name="heart" size={24} color={like?"#E45858":"grey"} />
+                  </TouchableOpacity>
+                  )}>
+                  <View style={styles.popoverContainer}>
+                    <Text>You can unlock this feature by Signing in ❤️</Text>
+                  </View>
+                </Popover>
               </View>
-            </Popover>
-          </View>
-          <View style={styles.icons}>
-            <View style={styles.stars}>{stars}<Text>({votes.length})</Text></View>
-            <Popover 
-              isVisible={showPopoverVote}
-              onRequestClose={()=> setShowPopoverVote(false)}
-              from={(
-                <TouchableOpacity style={styles.btnReturn} activeOpacity={0.8} onPress={() => handleVote()}>
-                  <FontAwesome name='angle-double-right' size={30} color={'white'}/>
-                </TouchableOpacity>
-              )}>
-              <View style={styles.popover}>
-                <Text>You can unlock this feature by Signing in ! </Text>
+              <View>
+              <View style={styles.voteContainer}>
+                <View style={styles.stars}>{stars}</View>
+                <Text>Votes: {votes?.length}</Text>
               </View>
-            </Popover>
-          </View>
-        <View style={styles.textUnder}>
-          <Text style={styles.infos}>
-            Prep: {selectedRecipe.preparationTime} min
-          </Text>
-          <Text style={styles.infos}>
-            Difficulty: {selectedRecipe.difficulty}/5
-          </Text>
-        </View>
-      </Animatable.View>
+            </View>
+            <View style={styles.textUnder}>
+              <Text style={styles.infos}>
+                Prep: {selectedRecipe.preparationTime} min
+              </Text>
+              <Text style={styles.infos}>
+                Difficulty: {selectedRecipe.difficulty}/5
+              </Text>
+            </View>
+          </Animatable.View>
 
-      {/* BLOC DESCRIPTION*/}
-      <Animatable.View
+          {/* BLOC DESCRIPTION*/}
+          <Animatable.View
+                  animation="slideInRight"
+                  duration={700}
+                  style={styles.descriptionBloc}>
+            <Text style={styles.sectionsTitle}>Description</Text>
+            <ScrollView >
+              <View style={styles.content}>
+                <Text>{selectedRecipe.description}</Text>
+              </View>
+            </ScrollView>
+          </Animatable.View>
+
+          {/* BLOC INGREDIENTS */}
+          <Animatable.View
+                  animation="slideInLeft"
+                  duration={600}
+                  style={styles.ingredientsBloc}>
+            <Text style={styles.sectionsTitle}>Ingredients</Text>
+            <View style={styles.content}>
+              {ingredients}
+            </View>
+          </Animatable.View>
+
+          {/* BLOC STEPS */}
+          <Animatable.View
               animation="slideInRight"
               duration={700}
-              style={styles.descriptionBloc}>
-        <Text style={styles.sectionsTitle}>Description</Text>
-        <ScrollView >
-          <View style={styles.content}>
-            <Text>{selectedRecipe.description}</Text>
-          </View>
-        </ScrollView>
-      </Animatable.View>
+              style={styles.stepsBloc}>
+            <Text style={styles.sectionsTitle}>Étapes</Text>
+            <View style={styles.content}>
+              {steps}
+            </View>
+          </Animatable.View>
+        </View>
+      </ScrollView>
+      { commentsDisplay.length > 0 && 
+      <ScrollView horizontal  contentContainerStyle={styles.CommentScrollView}>
+        {commentsDisplay}
+      </ScrollView> }
 
-      {/* BLOC INGREDIENTS */}
-      <Animatable.View
-              animation="slideInLeft"
-              duration={600}
-              style={styles.recipeBloc}>
-        <Text style={styles.sectionsTitle}>Ingredients</Text>
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.content}>
-            {ingredients}
-          </View>
-        </ScrollView>
-      </Animatable.View>
-
-      {/* BLOC STEPS */}
-      <Animatable.View
-          animation="slideInRight"
-          duration={700}
-          style={styles.recipeBloc}>
-        <Text style={styles.sectionsTitle}>Étapes</Text>
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.content}>
-            {steps}
-          </View>
-        </ScrollView>
-      </Animatable.View>
-
-      <View style={styles.separator} />
 
       {/* BOUTON  */}
-      <MyButton
-        dataFlow={() => navigation.navigate("MoreFeatures")}
-        text="More Features"
-        buttonType={buttonStyles.buttonTwo}
-      />
-
-       {/* BLOC COMMENTAIRES */
-      comments.length>0 && <Animatable.View
-      animation="slideInUp"
-      duration={700}
-      style={styles.commentsBloc}>
-    <Text style={styles.sectionsTitle}>Commentaires</Text>
-    <ScrollView >
-      {comments}
-    </ScrollView>
-  </Animatable.View>}
-
+      <View style={styles.separator} />
+      { !user.token &&
+      <View style={styles.moreFeaturesBtn}>
+        <MyButton
+          dataFlow={() => navigation.navigate("MoreFeatures")}
+          text="More Features"
+          buttonType={buttonStyles.buttonTwo}
+        />
+      </View>
+      }
       <Modal visible={modalVisible} animationtType="none" transparent>
         <View style={styles.modal}>
           <Animatable.View
@@ -293,23 +360,39 @@ export default function RecipeScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    width:'100%',
-    height:'200%',
-    alignItems: "center",
-    backgroundColor: css.backgroundColorOne,
+    flex: 1,
+    alignItems: 'center',
     paddingTop: '15%',
-  },
+    backgroundColor: css.backgroundColorOne,
+  }, 
   
   header: {
     flex: 0,
-    width: "90%",
-    flexDirection: "row",
-    justifyContent: "space-between",
+    width: '90%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 
   titlePage: {
-    width: '70%',
     fontSize: css.fontSizeFive,
+  },
+
+  btnEmpty: {
+    flex: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 30,
+    marginBottom: '4%',
+    borderRadius: 10,
+  },
+
+  recipeContainer: {
+    // flex: 1,
+    alignItems: 'center',
+  },
+
+  scrollViewMain: {
+    marginHorizontal: '7%',
   },
 
   pictureBloc: {
@@ -320,11 +403,27 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 10,
   },
-
+  
   sectionsTitle: {
     fontSize: 12,
     fontWeight: "bold",
     marginBottom: 2,
+  },
+
+  firstContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '2%',
+  },
+
+  voteBtn: {
+    width: 120,
+    height: 25,
+    justifyContent: 'center'
+,    alignItems: 'center',
+    borderRadius: 10,
+    backgroundColor: 'white',
   },
 
   imageContainer: {
@@ -338,17 +437,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
 
-  popover:{
+  popoverBackground: {
+    backgroundColor: 'transparent',
+  },
+
+  popoverContainer:{
     width:300,
-    height:50,
+    height:70,
     textAlign:'center',
     alignItems:'center',
     justifyContent:'center',
-  },
-
-  icons:{
-    flexDirection:'row',
-    justifyContent:'space-between'
+    paddingTop: '2%',
   },
 
   favoriteButton: {
@@ -357,8 +456,15 @@ const styles = StyleSheet.create({
     right: 5,
   },
 
+  voteContainer: {
+    flex: 0, 
+    flexDirection: 'row',
+    alignItems:'flex-end',
+    justifyContent:'space-between',
+  },
+
   stars: {
-    flexDirection: "row",
+    flexDirection: 'row',
   },
 
   textUnder: {
@@ -373,16 +479,22 @@ const styles = StyleSheet.create({
 
   descriptionBloc: {
     width: "90%",
-    height: 70,
     backgroundColor: css.backgroundColorTwo,
     padding: 10,
     borderRadius: 8,
     marginBottom: 10,
   },
 
-  recipeBloc: {
+  ingredientsBloc: {
     width: "90%",
-    height: 150,
+    backgroundColor: css.backgroundColorTwo,
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  
+  stepsBloc: {
+    width: "90%",
     backgroundColor: css.backgroundColorTwo,
     padding: 10,
     borderRadius: 8,
@@ -396,10 +508,14 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
 
+  CommentScrollView: {
+    height: 200,
+    width: 'auto',
+  },
+
   commentsBloc: {
     marginTop:10,
     width: "90%",
-    height:300,
     backgroundColor: css.backgroundColorTwo,
     padding: 10,
     borderRadius: 8,
@@ -435,4 +551,8 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 5,
   },
+
+  moreFeaturesBtn: {
+    margin: '2%',
+  }
 });

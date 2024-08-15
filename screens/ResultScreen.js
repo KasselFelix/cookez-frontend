@@ -6,6 +6,8 @@ import Recipe from '../components/Recipe';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateRecipeToStore } from '../reducers/recipe';
 import addressIp from '../modules/addressIp';
+import MySmallButton from '../modules/MySmallButton';
+import buttonStyles from '../styles/Button';
 
 export default function ResultScreen({ navigation }) {
   const user =useSelector((state)=>state.user.value);
@@ -14,7 +16,7 @@ export default function ResultScreen({ navigation }) {
   const dispatch= useDispatch();
 
   const handleFetch= async ()=>{
-    const ingredientSelected=ingredients.map((e)=> {
+    const ingredientSelected = ingredients.map((e)=> {
       return e={name: e.data.display_name ,
       image: e.photo,
       quantity: e.data.g_per_serving,
@@ -34,8 +36,9 @@ export default function ResultScreen({ navigation }) {
       });
       const data =  await response.json();
       if (data.result) {
+        // console.log('DATA, ', data.recipes[0])
         dispatch(updateRecipeToStore(data.recipes))
-        console.log('reducer',recipeData)
+        // console.log('reducer',recipeData)
       }
     }catch(error){
       console.error('There has been a problem with your fetch operation:', error);
@@ -61,10 +64,13 @@ export default function ResultScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.btnReturn} activeOpacity={0.8} onPress={() => handleReturn()}>
-          <FontAwesome name='angle-double-left' size={30} color={'white'}/>
-        </TouchableOpacity>
-        <Text style={styles.titlePage}>Résultats</Text>
+        <MySmallButton
+          dataFlow={() => navigation.goBack()}
+          text={<FontAwesome name="angle-double-left" size={30} color={"white"} />}
+          buttonType={buttonStyles.buttonSmall}
+        />
+        <Text style={styles.titlePage}>Result{recipes.length >  0 && 's'}</Text>
+        <View style={styles.btnEmpty}></View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollView}>
@@ -90,7 +96,6 @@ const styles = StyleSheet.create({
   },
 
   titlePage: {
-    paddingRight: '35%',
     fontSize: css.fontSizeFive,
   },
 
@@ -101,6 +106,15 @@ const styles = StyleSheet.create({
     width: 30,
     backgroundColor: css.inactiveButtonColor,
     color: css.backgroundColorOne,
+    marginBottom: '4%',
+    borderRadius: 10,
+  },
+
+  btnEmpty: {
+    flex: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 30,
     marginBottom: '4%',
     borderRadius: 10,
   },

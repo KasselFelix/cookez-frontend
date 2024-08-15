@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, TouchableOpacity, ScrollView, View, Image, Text, Modal } from "react-native";
+import { StyleSheet, TouchableOpacity, ScrollView, View, Image, Text, Modal, KeyboardAvoidingView, Platform } from "react-native";
 import { Camera, CameraType, FlashMode } from "expo-camera/legacy";
 import { useDispatch, useSelector } from "react-redux";
 import { addIngredientToStore } from "../reducers/ingredient";
@@ -79,15 +79,6 @@ export default function KickoffScreen({navigation}) {
 		}
 	}, [searchInput]);
 
-
-	function onItemPress(data){
-		dispatch(addIngredientToStore({photo: data.photo, data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
-		if(modalRef.current){
-			modalRef.current.animate('slideOutUp', 800).then(() => {
-				setModalVisible(false);
-		  	})
-		}
-	}
 
 	function handleBtn () {
 		if(!saveMoney){
@@ -195,15 +186,29 @@ export default function KickoffScreen({navigation}) {
 		return  background;
 	}
 
-	const handleAddIngredient = () => {
-		dispatch(addIngredientToStore({photo: dataListIngredient[0].photo, data: {display_name: dataListIngredient[0].name, g_per_serving: dataListIngredient[0].g_per_serving, nutrition: dataListIngredient[0].nutrition }}));
-		console.log('reducer',ingredients)
+	function onItemPress(data){
+		dispatch(addIngredientToStore({photo: data.photo, data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
 	}
 
-	function handleSearch () {
-		setSearchInput(""); 
-		handleAddIngredient();
-	};
+	const handleAddIngredient = () => {
+		setSearchInput("");
+		setDataListIngredient([]);
+		if(modalRef.current){
+			modalRef.current.animate('slideOutUp', 800).then(() => {
+			setModalVisible(false);
+		  	})
+		}
+	}
+
+	const handleGoBack = () => {
+		setSearchInput("");
+		setDataListIngredient([]);
+		if(modalRef.current){
+			modalRef.current.animate('slideOutUp', 800).then(() => {
+			setModalVisible(false);
+		  	})
+		}
+	}
 
 	const displayAddedIngredients = () => {
 		const nameIngredientsAdded = ingredients.map((e, i) => e.data.display_name)
@@ -211,44 +216,12 @@ export default function KickoffScreen({navigation}) {
 	}
 	
   	return (
-		<View style={styles.container} >
-			<View style={styles.styleCamera}>
-			<Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
-					<View style={styles.buttonsCameraContainer}>
-						<TouchableOpacity onPress={() => setType(type === CameraType.back ? CameraType.front : CameraType.back)} style={styles.buttonsCamera}>
-							<FontAwesome name="rotate-right" size={25} color="#ffffff" />
-						</TouchableOpacity>
+		  <View style={styles.container} >
+			<Modal visible={modalVisible} animationtType="none" transparent>
+					<KeyboardAvoidingView
+					behavior={Platform.OS === "ios" ? "padding" : "height"}
+					style={styles.key}>
 
-						<TouchableOpacity onPress={() => setFlashMode(flashMode === FlashMode.off ? FlashMode.torch : FlashMode.off)} style={styles.buttonsCamera}>
-							<FontAwesome name="flash" size={25} color={flashMode === FlashMode.off ? "#ffffff" : "#e8be4b"} />
-						</TouchableOpacity>
-					</View>
-			</Camera>
-			</View>
-
-        	<ScrollView horizontal  contentContainerStyle={styles.galleryContainer}>
-				{photos}
-				{backgroundIngredient()}
-        	</ScrollView>
-			{ ingredients.length > 0 &&
-			<View style={styles.ingredientsAddedContainter}>
-				<View styles={styles.ingredientsTotal}>
-					<Text>
-						Added ingredients ({ingredients.length}):
-					</Text>
-				</View>
-				<ScrollView horizontal  contentContainerStyle={styles.galleryContainer}>
-				<View style={styles.ingredientsAdded}>
-					<Text>
-						{displayAddedIngredients()}
-					</Text>
-				</View>
-				</ScrollView>
-			</View>
-			}
-		
-			<View style={styles.containerButtonBottom}>
-				<Modal visible={modalVisible} animationtType="none" transparent>
        		 		<View style={styles.modal}>
        		 		    <Animatable.View
 						ref={modalRef}
@@ -278,24 +251,59 @@ export default function KickoffScreen({navigation}) {
 							<View style={styles.modalButtons}>
 								<View style={styles.backRetour}>
 									<MySmallButton 
-										dataFlow={()=> {setModalVisible(false) ; setDataListIngredient([])}}
+										dataFlow={()=> {handleGoBack()}}
 										text={'Go back'}
 										buttonType={buttonStyles.buttonFour}
 										setSearchInput={setSearchInput}
 										setDataListIngredient={setDataListIngredient}
 									/>
 								</View>
-								{/* <View style={styles.validButton}>
+								<View style={styles.validButton}>
 									<MySmallButton 
-										dataFlow={()=> {handleSearch(); ; setDataListIngredient([])}}
-										text={'Add'}
+										dataFlow={()=> {handleAddIngredient()}}
+										text={'Added'}
 										buttonType={buttonStyles.buttonFour}
 									/>
-								</View> */}
+								</View>
 							</View>
        		 		    </Animatable.View>
        		 		</View>
+					</KeyboardAvoidingView>
        			</Modal> 
+			<Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
+					<View style={styles.buttonsCameraContainer}>
+						<TouchableOpacity onPress={() => setType(type === CameraType.back ? CameraType.front : CameraType.back)} style={styles.buttonsCamera}>
+							<FontAwesome name="rotate-right" size={25} color="#ffffff" />
+						</TouchableOpacity>
+
+						<TouchableOpacity onPress={() => setFlashMode(flashMode === FlashMode.off ? FlashMode.torch : FlashMode.off)} style={styles.buttonsCamera}>
+							<FontAwesome name="flash" size={25} color={flashMode === FlashMode.off ? "#ffffff" : "#e8be4b"} />
+						</TouchableOpacity>
+					</View>
+			</Camera>
+
+        	<ScrollView horizontal  contentContainerStyle={styles.galleryContainer}>
+				{photos}
+				{backgroundIngredient()}
+        	</ScrollView>
+			{ ingredients.length > 0 && !modalVisible &&
+			<View style={styles.ingredientsAddedContainter}>
+				<View styles={styles.ingredientsTotal}>
+					<Text>
+						Added ingredients ({ingredients.length}):
+					</Text>
+				</View>
+				<ScrollView horizontal  contentContainerStyle={styles.galleryContainer}>
+				<View style={styles.ingredientsAdded}>
+					<Text>
+						{displayAddedIngredients()}
+					</Text>
+				</View>
+				</ScrollView>
+			</View>
+			}
+		
+			<View style={styles.containerButtonBottom}>
 								
 				<View style={styles.buttonSearch}>
 					<MyButton
@@ -304,7 +312,7 @@ export default function KickoffScreen({navigation}) {
         				buttonType={buttonStyles.buttonFour}
 					/>
 				</View>
-
+			
 				<View style={styles.buttonNext}>
 					<MyButton
 						dataFlow={()=>handleBtn()}
@@ -326,13 +334,16 @@ export default function KickoffScreen({navigation}) {
 const styles = StyleSheet.create({
 	container:{
 		flex: 1,
+		alignContent: 'center',
 		alignItems:'center',
+		width: '100%',
+		height: '100%',
 		backgroundColor:css.backgroundColorTwo,
 		paddingTop: css.paddingTop,
 	},
 
 	modalBackgound: {
-		flex: 1,
+		flex: 0,
 		paddingTop:'30%',
 		justifyContent: 'flex-start',
 		alignItems: 'center',
@@ -344,6 +355,12 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
+	},
+	
+	key: {
+		flex: 1,
+		alignContent: 'center',
+		alignItems:'center',
 		backgroundColor: 'rgba(0,0,0,0.5)',
 	},
 
@@ -371,6 +388,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		width: '60%',
+		background: 'red',
 	},
 
 	validButton: {
