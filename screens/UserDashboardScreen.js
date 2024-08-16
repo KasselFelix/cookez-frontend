@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Modal } from "react-native";
+import imageRecipe from "../modules/images";
 import React, { useEffect, useRef, useState } from "react";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
@@ -186,7 +187,7 @@ const topStars = [];
             </View>
           )} */}
         <View style={styles.imageBlock}>
-          <Image style={styles.topImage}>{topRecipe?.image}</Image>
+        <Image style={styles.topImage} source={imageRecipe[`ratatouille.jpg` || null]}/>
         </View>
           {/* {votes.length > 0 ?(
             votes.map((note, index) =>(
@@ -206,12 +207,12 @@ const topStars = [];
             </View>
           )} */}
         <View style={styles.latestStars}>
-          <Text>{latestRecipe?.name}</Text>
+          <Text>Salade niçoise</Text>
             {latestStars}
             {renderVotesLatestRecipe}
         </View>
         <View style={styles.imageBlock}>
-        <Image style={styles.latestImage}>{latestRecipe?.image}</Image>
+          <Image style={styles.latestImage} source={imageRecipe[`salade_nicoise.jpg` || null]}/>
         </View>
           {/* {votes.length > 0 ?(
             votes.map((note, index) =>(
@@ -353,7 +354,7 @@ imageBlock:{
   width:'97%',
   marginHorizontal:'auto',
   height:130,
-  backgroundColor:'transparent',
+  backgroundColor:'white',
   borderRadius:9,
   borderWidth:2,
 },
