@@ -56,9 +56,10 @@ const TabNavigator = () => {
             iconName = "plus";
           } else if (route.name === "Favorite") {
             iconName = "heart-o";
-          } else if (route.name === "SearchRecipe") {
-            iconName = "search";
-          }
+          } 
+          // else if (route.name === "SearchRecipe") {
+          //   iconName = "search";
+          // }
 
           return <FontAwesome name={iconName} color={color} size={size} />;
         },
@@ -74,7 +75,7 @@ const TabNavigator = () => {
       <Tab.Screen name="UserDashboard" component={UserDashboardScreen}/>
       <Tab.Screen name="AddRecipe" component={AddRecipeScreen} />
       <Tab.Screen name="Favorite" component={FavoriteScreen} />
-      <Tab.Screen name="SearchRecipe" component={SearchRecipeScreen} />
+      {/* // <Tab.Screen name="SearchRecipe" component={SearchRecipeScreen} /> */}
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

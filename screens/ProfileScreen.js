@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 16,
-    color: css.backgroundColorTwo,
+    color: 'black',
   },
   modalContainer: {
     flex: 1,

@@ -197,6 +197,7 @@ const handleDeleteStep = (stepToDelete) => {
         />
       </View>
         <Text style={styles.titlePage}>Add your recipe 🍳</Text>
+        <View style={styles.btnEmpty}></View>
       </View>
       <ScrollView>
         <View style={styles.formBloc}>
@@ -337,29 +338,41 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: '6%', //pour monter le titre de la page
-    backgroundColor: css.backgroundColorOne,
+    paddingTop: '15%',
+    backgroundColor: css.backgroundColorOne
   }, 
 
   header: {
     flex: 0,
     width: '90%',
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 0,
-    marginTop: 10, //pour que le titre ne monte pas trop haut
-   },
-
-   buttonReturn:{
-    height: '100%',
-    width: '10%',
-    marginRight: 60,
-   },
-  titlePage: {
-    paddingRight: '5%',
-    fontSize: css.fontSizeFive,
-    
+    justifyContent: 'space-between'
   },
+
+  titlePage: {
+    fontSize: css.fontSizeFive,
+  },
+
+  btnReturn: {
+    flex: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 30,
+    backgroundColor: css.inactiveButtonColor,
+    color: css.backgroundColorOne,
+    marginBottom: '4%',
+    borderRadius: 10,
+  },
+
+  btnEmpty: {
+    flex: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 30,
+    marginBottom: '4%',
+    borderRadius: 10,
+  },
+
   formBloc:{
     flex:1,
     width: '100%',

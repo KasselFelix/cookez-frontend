@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SignIn from './SignIn';
@@ -12,14 +12,13 @@ import css from "../styles/Global";
 export default function LoginScreen({navigation}) {
    return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.btn}>
+      <View style={styles.header}>
         <MySmallButton
           dataFlow={() => navigation.goBack()}
-          text={
-            <FontAwesome name="angle-double-left" size={30} color={"white"} />
-          }
+          text={<FontAwesome name="angle-double-left" size={30} color={"white"} />}
           buttonType={buttonStyles.buttonSmall}
         />
+        <View style={styles.btnEmpty}></View>
       </View>
       <View style={styles.buttonContainer}>
         <SignIn navigation={navigation} style={styles.signin}/>
@@ -30,18 +29,32 @@ export default function LoginScreen({navigation}) {
 }
 
 const styles = StyleSheet.create({
-container: {
-  flex:1,
-  textAlign:'center',
-  justifyContent:'center',
-  backgroundColor:css.backgroundColorOne,
-  padding:7,
-},
-buttonContainer:{
-  marginBottom: 30,
-},
-btn:{
-  width: '100%',
-  flexDirection: 'row'
-}
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: '15%',
+    backgroundColor: css.backgroundColorOne
+  }, 
+
+  header: {
+    flex: 0,
+    width: '90%',
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+
+  titlePage: {
+    fontSize: css.fontSizeFive,
+  },
+
+  buttonContainer:{
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  btn:{
+    width: '100%',
+    flexDirection: 'row'
+  },
 })
