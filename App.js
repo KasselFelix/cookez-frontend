@@ -105,6 +105,7 @@ export default function App() {
           <Stack.Screen name="Recipe" component={RecipeScreen} />
           <Stack.Screen name="MoreFeatures" component={MoreFeaturesScreen} />
           <Stack.Screen name="UserDashboard" component={UserDashboardScreen} />
+          <Stack.Screen name="TabNavigator" component={TabNavigator} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>
