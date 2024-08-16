@@ -34,22 +34,18 @@ export default function UserDashboardScreen({navigation}) {
 
 // FETCH THE RECIPE ROUTE BY NAME 
 
-const handleFetchRecipe = async () => {
+const handleFetchRecipe = async (recipe) => {
 		const response = await fetch(`http://${addressIp}:3000/recipes/recipeName`, {
       method:'POST',
       headers:{"Content-Type":"Application/json"},
-      body:JSON.stringify({searchRecipe})
+      body:JSON.stringify({searchRecipe: recipe})
     });
 		const data =  await response.json();
 
+    console.log(data.recipe);
+
 		if (data.result) {
-      //console.log('data in fetch',data.recipe)
-      consol.log('search',searchRecipe);
-			//console.log('search',data.recipe);
 			setDataListRecipe(data.recipe);
-      console.log('list',dataListRecipe)
-      //dispatch(removeAllRecipeToStore())
-      //dispatch(addRecipeToStore(data.recipe[0]))
 		} else {
 			setDataListRecipe(data.error);
 		}
@@ -58,7 +54,7 @@ const handleFetchRecipe = async () => {
 
 	useEffect(() => {
 		if (searchRecipe.length > 0) {
-			handleFetchRecipe()
+			handleFetchRecipe(searchRecipe)
 		}
 	}, [searchRecipe]);
 
@@ -156,19 +152,19 @@ const topStars = [];
       </View>
       <View style={styles.higherIcon}>
         <TouchableOpacity onPress={()=> navigation.navigate('Kickoff')}>
-        <Unicons.UilCameraPlus size={60} color='white'/>
+        <Unicons.UilCameraPlus size={60} color='black'/>
         </TouchableOpacity>
       </View>
       <View style={styles.lowerIcons}>
       
-        <TouchableOpacity name='wishList'>
-          <Unicons.UilHeart style={styles.icons} size={40} color='white'/>
+        <TouchableOpacity name='wishList' onPress={()=> navigation.navigate('Favorite')} >
+          <Unicons.UilHeart style={styles.icons} size={40} color='#7f2727'/>
         </TouchableOpacity>
         <TouchableOpacity name='searchRecipe' onPress={()=> setModalVisible(true)}>
-          <Unicons.UilSearch style={styles.icons} size={50} color='white'/>
+          <Unicons.UilSearch style={styles.icons} size={50} color='black'/>
         </TouchableOpacity>
-        <TouchableOpacity name='Profile'>
-          <Unicons.UilUser style={styles.icons} size={40} color='white'/>
+        <TouchableOpacity name='Profile' onPress={()=> navigation.navigate('Profile')}>
+          <Unicons.UilUser style={styles.icons} size={40} color='black'/>
         </TouchableOpacity>
       </View>
       <View style={styles.titleBlock}>
@@ -190,6 +186,7 @@ const topStars = [];
             </View>
           )} */}
         <View style={styles.imageBlock}>
+          <Image style={styles.topImage}>{topRecipe?.image}</Image>
         </View>
           {/* {votes.length > 0 ?(
             votes.map((note, index) =>(
@@ -214,7 +211,7 @@ const topStars = [];
             {renderVotesLatestRecipe}
         </View>
         <View style={styles.imageBlock}>
-
+        <Image style={styles.latestImage}>{latestRecipe?.image}</Image>
         </View>
           {/* {votes.length > 0 ?(
             votes.map((note, index) =>(
@@ -302,9 +299,9 @@ logo:{
   alignSelf:'center',
   marginTop:'18%',
   marginBottom:15,
-  shadowOffset: { width: 0, height:8 }, // Shadow offset for iOS
-  shadowOpacity: 0.8,          // Shadow opacity for iOS
-  shadowRadius: 3,  
+  shadowOffset: { width: 3, height:10 }, // Shadow offset for iOS
+  shadowOpacity: 2,          // Shadow opacity for iOS
+  shadowRadius: 2,  
   marginBottom:0,           // Shadow radius for iOS
 
 },
@@ -313,6 +310,7 @@ higherIcon: {
   flex:0.1,
   alignSelf:'center',
   height:20,
+  marginBottom:10,
  
 },
 lowerIcons:{
@@ -320,13 +318,13 @@ lowerIcons:{
   width:'100%',
   flexDirection: 'row',
   justifyContent:'space-around',
-  marginBottom:10,
+  marginBottom:0,
 
 },
 titleBlock:{
   flex:0,
   width:'100%',
-  marginBottom:19,
+  marginBottom:5,
 },
 title:{
   textAlign:'center',
@@ -355,9 +353,19 @@ imageBlock:{
   width:'97%',
   marginHorizontal:'auto',
   height:130,
-  backgroundColor:css.iconColor,
+  backgroundColor:'transparent',
   borderRadius:9,
   borderWidth:2,
+},
+topImage:{
+  width:'100%',
+  height:'100%',
+  objectFit:'contain'
+},
+latestImage:{
+  width:'100%',
+  height:'100%',
+  objectFit:'contain'
 },
 
 lowerContainers:{

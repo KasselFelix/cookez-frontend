@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, TextInput, View, Text, Keyboard, Button, TouchableOpacity } from "react-native";
+import { StyleSheet, TextInput, View, Text, Keyboard, Button, TouchableOpacity, Image} from "react-native";
 import { Feather, Entypo } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import css from "../styles/Global";
@@ -26,7 +26,7 @@ export default function SearchRecipe ({clicked, searchRecipe, setSearchRecipe, s
           placeholder="Search"
           placeholderTextColor="grey"
           value={searchRecipe}
-          onChangeText={setSearchRecipe}
+          onChangeText={(value) => setSearchRecipe(value)}
           onFocus={() => {
             setClicked(true);
           }}
