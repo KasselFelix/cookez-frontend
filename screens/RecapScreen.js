@@ -244,7 +244,8 @@ const pickerSelectStyles = StyleSheet.create({
   },
   
   inputIOS: {
-    width: 50,
+    marginLeft: '1%',
+    width: 350,
     height: 40,
     fontSize: 12,
     paddingVertical: 8,

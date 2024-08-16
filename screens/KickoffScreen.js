@@ -17,6 +17,9 @@ import * as Animatable from 'react-native-animatable';
 
 export default function KickoffScreen({navigation}) {
   	const saveMoney=false;
+	const API_KEY="3bJ5BKRL.zWoKPci3XQUszxDUlGKYGePe6ZlLFrYk"
+
+
 
   	const [hasPermission, setHasPermission] = useState(false);
   	const [type, setType] = useState(CameraType.back);

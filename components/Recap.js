@@ -112,22 +112,22 @@ export default function Recap( props ) {
                       <View style={styles.aLineContainer}>
                         <Text>⚫ </Text> 
                         <Text style={styles.text}>Sugars:</Text>
-                        <Text>{props.data.nutrition.sugars_100g || 0}</Text>
+                        <Text>{Number.parseFloat(props.data.nutrition.sugars_100g).toFixed(2) || 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
                         <Text>⚫ </Text> 
                         <Text style={styles.text}>Proteins:</Text>
-                        <Text> {props.data.nutrition.proteins_100g || 0}</Text>
+                        <Text>{Number.parseFloat(props.data.nutrition.proteins_100g).toFixed(2) || 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
                         <Text>⚫ </Text>
                         <Text style={styles.text}>Fat:</Text>
-                        <Text> {props.data.nutrition.fat_100g || 0}</Text>
+                        <Text> {Number.parseFloat(props.data.nutrition.fat_100g).toFixed(2) || 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
                         <Text>⚫ </Text> 
                         <Text style={styles.text}>Fibers:</Text>
-                        <Text>{props.data.nutrition.fibers_100g || 0}</Text>
+                        <Text>{Number.parseFloat(props.data.nutrition.fibers_100g).toFixed(2) || 0}</Text>
                       </View>
                 </View>
               </View>
