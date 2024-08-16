@@ -11,7 +11,7 @@ import css from "../styles/Global";
 import Recap from "../components/Recap";
 
 export default function RecapScreen({ navigation }) {
-
+  
   const dispatch = useDispatch();
   const ingredients = useSelector((state) => state.ingredient.ingredient);
 
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingTop: '15%',
-    backgroundColor: css.backgroundColorOne
+    backgroundColor: css.backgroundColorOne,
   }, 
 
   header: {

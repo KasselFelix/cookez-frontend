@@ -63,9 +63,10 @@ export default function SignUp({navigation}) {
   const handleAnimationFinish =() => {
     setSubmitted(false)
     setModalVisible(false)
-    setTimeout(() => {
-      navigation.navigate("TabNavigator", { screen: "UserDashboard" })
-    }, 900);
+    navigation.navigate("TabNavigator", { screen: "UserDashboard" })
+    // setTimeout(() => {
+    //   navigation.navigate("TabNavigator", { screen: "UserDashboard" })
+    // }, 900);
   };
 
   return (

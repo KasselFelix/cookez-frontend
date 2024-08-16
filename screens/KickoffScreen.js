@@ -30,10 +30,10 @@ export default function KickoffScreen({navigation}) {
 	const [validatedIngredient, setValidatedIngredient] = useState(false);
 	
 	const ingredients=  useSelector((state)=>state.ingredient.ingredient)
-
+	
   	const dispatch = useDispatch();
   	const isFocused = useIsFocused();
-
+	  const [imageUrl, setImageUrl] = useState(null);
   	let cameraRef = useRef(null);
 	const modalRef = useRef(null);
 
@@ -65,9 +65,9 @@ export default function KickoffScreen({navigation}) {
 		const data =  await response.json();
 		// console.log('JSON: ', data)
 		if (data.result) {
-			console.log('search',data);
+			//console.log('search',data);
 			setDataListIngredient(data.ingredients.map((e, i) => {return {id: i, name: e.name, display_name: e.name, photo: e.image, g_per_serving: e.quantity, nutrition: e.nutrition }}));
-			console.log('datalist: ', dataListIngredient)
+			//console.log('datalist: ', dataListIngredient)
 		} else {
 			setDataListIngredient(data.error);
 		}
@@ -79,8 +79,12 @@ export default function KickoffScreen({navigation}) {
 		}
 	}, [searchInput]);
 
+	
 
 	function onItemPress(data){
+		//fetchImageFromUnsplash (data.name)
+		
+		//dispatch(addIngredientToStore({photo:imageUrl ,data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
 		dispatch(addIngredientToStore({photo: data.photo, data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
 		if(modalRef.current){
 			modalRef.current.animate('slideOutUp', 800).then(() => {
@@ -89,10 +93,27 @@ export default function KickoffScreen({navigation}) {
 		}
 	}
 
+	const fetchImageFromUnsplash = async (ingredientName) => {
+		try {
+			const response = await fetch(`https://api.unsplash.com/search/photos?query=${ingredientName}&client_id=jtpouSnBgNG5G1d0xNZhOXdrd5fyMN-BfcPWG_0uQMQ`);
+			const data = await response.json();
+			if (data.results && data.results.length > 0) {
+				setImageUrl(data.results[0].urls.small);
+				setPictures([...pictures, imageUrl])
+			} else {
+				console.error("No image found");
+			}
+		} catch (error) {
+			console.error("Error fetching image from Unsplash", error);
+		}
+	  };
+
+
 	function handleBtn () {
 		if(!saveMoney){
 			for (let imagePath of pictures){
 				// Make the request
+				// if(!imagePath.includes("https://images.unsplash.com/")){
 				const handleFetch = async (cpt=0)=>{
 					try{						
 						//Create FormData	
@@ -128,6 +149,7 @@ export default function KickoffScreen({navigation}) {
 					}
 				}
 				handleFetch();	 
+			// }
 			}
 		}
 		navigation.navigate('Recap')
@@ -160,6 +182,11 @@ export default function KickoffScreen({navigation}) {
 
 	};
 
+	const handleAddIngredient = () => {
+		dispatch(addIngredientToStore({photo: dataListIngredient[0].photo, data: {display_name: dataListIngredient[0].name, g_per_serving: dataListIngredient[0].g_per_serving, nutrition: dataListIngredient[0].nutrition }}));
+		console.log('reducer',ingredients)
+	}
+
 	if (!hasPermission || !isFocused) {
 		return (
 		  <View>
@@ -168,6 +195,7 @@ export default function KickoffScreen({navigation}) {
 		)
 	  }
 	
+
 	const photos = pictures.map((data, i) => {
 		return (
 		  <View key={i} style={styles.photoContainer}>
@@ -193,11 +221,6 @@ export default function KickoffScreen({navigation}) {
 				
 		}	
 		return  background;
-	}
-
-	const handleAddIngredient = () => {
-		dispatch(addIngredientToStore({photo: dataListIngredient[0].photo, data: {display_name: dataListIngredient[0].name, g_per_serving: dataListIngredient[0].g_per_serving, nutrition: dataListIngredient[0].nutrition }}));
-		console.log('reducer',ingredients)
 	}
 
 	function handleSearch () {

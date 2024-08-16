@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Modal} from "react-native";
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Modal, Image} from "react-native";
 import React, {useState, useEffect, useRef} from "react";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
@@ -13,6 +13,8 @@ import { useSelector } from "react-redux";
 import * as Animatable from 'react-native-animatable';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
+
+import imageRecipe from "../modules/images";
 
 export default function RecipeScreen({ route, navigation }) {
 
@@ -177,7 +179,7 @@ export default function RecipeScreen({ route, navigation }) {
                style={styles.pictureBloc}>
         <Text style={styles.sectionsTitle}>{selectedRecipe.name}</Text>
         <View style={styles.imageContainer}>
-          <View style={styles.imagePlaceholder} />
+          <Image style={styles.imagePlaceholder} source={imageRecipe[`${selectedRecipe.picture}` || null]}/>{/*{{ uri: selectedRecipe.picture}}/>*/}
             <Popover 
               isVisible={showPopover}
               onRequestClose={()=> setShowPopover(false)}

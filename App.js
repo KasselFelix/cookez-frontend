@@ -51,8 +51,8 @@ const TabNavigator = () => {
           let iconName = "";
           if (route.name === "UserDashboard") {
             iconName = "user";
-          } else if (route.name === "Message") {
-            iconName = "comment-o";
+          } else if (route.name === "Profile") {
+            iconName = "gear";
           } else if (route.name === "AddRecipe") {
             iconName = "plus";
           } else if (route.name === "Favorite") {
@@ -73,10 +73,10 @@ const TabNavigator = () => {
       })}
     >
       <Tab.Screen name="UserDashboard" component={UserDashboardScreen}/>
-      <Tab.Screen name="Message" component={MessageScreen} />
       <Tab.Screen name="AddRecipe" component={AddRecipeScreen} />
       <Tab.Screen name="Favorite" component={FavoriteScreen} />
       <Tab.Screen name="SearchRecipe" component={SearchRecipeScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 };
