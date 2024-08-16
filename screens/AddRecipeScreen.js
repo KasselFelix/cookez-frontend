@@ -3,13 +3,11 @@ import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Modal,
 } from "react-native";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
@@ -155,7 +153,6 @@ const handleAddSteps=()=>{
     const stepNumber = stepsArray.length + 1; // Numéro de l'étape
     const stepText = `Step ${stepNumber}: ${recipeSteps}`; // Préfixe de l'étape
     setStepsArray([...stepsArray, stepText]); // Ajouter l'étape avec le préfixe
-    console.log('array',stepsArray)
     // setStepsArray([...stepsArray, recipeSteps ]);
     setRecipeSteps("");
   }
@@ -568,6 +565,7 @@ const pickerSelectStyles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
   },
+  
   inputIOS: {
     width: 50,
     height: 40,

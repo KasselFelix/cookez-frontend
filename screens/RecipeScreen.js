@@ -234,7 +234,6 @@ export default function RecipeScreen({ route, navigation }) {
         <View style={styles.btnEmpty}></View>
       </View>
       <ScrollView>  
-      {/* contentContainerStyle={styles.scrollView} */}
       {/* BLOC RECETTE SELECTED  */}
         <View style={styles.recipeContainer}>
           <Animatable.View animation="slideInDown" duration={700} style={styles.pictureBloc}>

@@ -17,7 +17,6 @@ import * as Animatable from 'react-native-animatable';
 
 export default function KickoffScreen({navigation}) {
   	const saveMoney=false;
-  	const API_KEY="3bJ5BKRL.zWoKPci3XQUszxDUlGKYGePe6ZlLFrYk"
 
   	const [hasPermission, setHasPermission] = useState(false);
   	const [type, setType] = useState(CameraType.back);
@@ -63,7 +62,6 @@ export default function KickoffScreen({navigation}) {
 	const handleFetchIngredients = async () => {
 		const response = await fetch(`http://${addressIp}:3000/ingredients/${searchInput}`);
 		const data =  await response.json();
-		// console.log('JSON: ', data)
 		if (data.result) {
 			console.log('search',data);
 			setDataListIngredient(data.ingredients.map((e, i) => {return {id: i, name: e.name, display_name: e.name, photo: e.image, g_per_serving: e.quantity, nutrition: e.nutrition }}));
@@ -404,6 +402,7 @@ const styles = StyleSheet.create({
 	borderColor: 'grey',
 	backgroundColor: 'rgba(255,255,255, 0.6)',
 	},
+
 	styleCamera:{
 		height:350,
 		width:350,
@@ -413,11 +412,13 @@ const styles = StyleSheet.create({
 	},
 
 	camera: {
-		height:'100%',
-		width:'100%',
-		// marginBottom:10,
-	// 	borderRadius: 40,
-	// 	overflow: "hidden",
+		height:'50%',
+		width:'90%',
+		// height:'100%',
+		// width:'100%',
+		marginBottom:10,
+		borderRadius: 40,
+		overflow: "hidden",
 	},
 
 	buttonsCameraContainer: {

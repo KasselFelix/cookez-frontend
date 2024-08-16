@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView} from 'react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import css from "../styles/Global";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Recipe from '../components/Recipe';
@@ -8,8 +8,10 @@ import { updateRecipeToStore } from '../reducers/recipe';
 import addressIp from '../modules/addressIp';
 import MySmallButton from '../modules/MySmallButton';
 import buttonStyles from '../styles/Button';
+import * as Animatable from 'react-native-animatable';
 
 export default function ResultScreen({ navigation }) {
+
   const user =useSelector((state)=>state.user.value);
   const recipeData= useSelector((state)=>state.recipe.recipes);
   const ingredients= useSelector((state)=>state.ingredient.ingredient)
@@ -36,9 +38,7 @@ export default function ResultScreen({ navigation }) {
       });
       const data =  await response.json();
       if (data.result) {
-        // console.log('DATA, ', data.recipes[0])
         dispatch(updateRecipeToStore(data.recipes))
-        // console.log('reducer',recipeData)
       }
     }catch(error){
       console.error('There has been a problem with your fetch operation:', error);
@@ -57,10 +57,6 @@ export default function ResultScreen({ navigation }) {
     return  <Recipe key={i} {...data} navigation={navigation} update={update} />;
   })
 
-  const handleReturn = () => {
-    navigation.navigate("Home")
-  }
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -72,10 +68,11 @@ export default function ResultScreen({ navigation }) {
         <Text style={styles.titlePage}>Result{recipes.length >  0 && 's'}</Text>
         <View style={styles.btnEmpty}></View>
       </View>
-
       <ScrollView contentContainerStyle={styles.scrollView}>
-        {recipes.length > 0 ? recipes: <View><Text> try with more ingredient again 🤔 </Text><Text> maybe it's time to go shopping!  </Text></View>}
-      </ScrollView>
+        {recipes.length > 0 ? recipes: <Animatable.View animation="slideInDown" duration={700} style={styles.noRecipesContainer}> 
+          <View style={styles.noRecipes}><Text> try with more ingredient again 🤔 </Text><Text> maybe it's time to go shopping!  </Text></View>
+          </Animatable.View>}
+      </ScrollView>      
     </View>
   )
 }
@@ -126,4 +123,19 @@ const styles = StyleSheet.create({
   name: {
     fontSize: css.fontSizeSix,
   },
-})
+
+  noRecipesContainer: {
+    flex: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: '120%',
+  },
+
+  noRecipes: {
+    flex: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+}); 
+

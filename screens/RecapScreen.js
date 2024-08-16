@@ -10,6 +10,7 @@ import MyButton from "../modules/MyButton";
 import MySmallButton from "../modules/MySmallButton";
 import buttonStyles from "../styles/Button";
 import css from "../styles/Global";
+import RNPickerSelect from 'react-native-picker-select';
 
 import Recap from "../components/Recap";
 
@@ -18,7 +19,7 @@ export default function RecapScreen({ navigation }) {
   const [showPopover, setShowPopover]=useState(false);
   const dispatch = useDispatch();
   const ingredients = useSelector((state) => state.ingredient.ingredient);
-  // console.log('ON CLICK: ', showPopover)
+  const [slectOrigin, setSelectOrigin] = useState("");
 
   const handleShowPopover =() => {
     setShowPopover(true)
@@ -54,7 +55,26 @@ export default function RecapScreen({ navigation }) {
     </View>
   )
 
-  console.log('ICIIIIIIIIIIIIII: ', ingredients.length)
+  const originRecipes = [
+    { label: "All recipes", value: "All recipes" },
+    { label: "France", value: "France" },
+    { label: "Cambodia", value: "Cambodia" },
+    { label: "Cuba", value: "Cuba" },
+    { label: "Colombia", value: "Colombia" },
+    { label: "Italy", value: "Italy" },
+    { label: "Spain", value: "Spain" },
+    { label: "Japan", value: "Japan" },
+    { label: "India", value: "India" },
+    { label: "Mexico", value: "Mexico" },
+    { label: "Thailand", value: "Thailand" },
+    { label: "Breakfast", value: "Breakfast" },
+    { label: "Dessert", value: "Dessert" },
+    { label: "Main Course", value: "Main Course" },
+    { label: "Appetizer", value: "Appetizer" },
+    { label: "Sweet", value: "Sweet" },
+    { label: "Savory", value: "Savory" }
+  ];
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -83,12 +103,29 @@ export default function RecapScreen({ navigation }) {
             </Popover>
         </View>
       </View>
+      <View>
+        <Text style={styles.textMenu}>1. Select your ingredients 🎯</Text>
+        <View style={styles.separator}><Text><Text>--------------------------------------------------------------------------------------</Text></Text></View>
+      </View>
       { ingredients.length === 0 && <Animatable.View animation="slideInDown" duration={700} style={styles.noIngredientsContainer}>
         <View style={styles.noIngredients}><Text>Go back to add your ingredients by 📸 or 🔎</Text><Text> Your futures recipes awaits you 🥘 !  </Text></View> 
       </Animatable.View>}
       <ScrollView contentContainerStyle={styles.galleryContainer}>
           {listIngredients}
       </ScrollView>
+      <View>
+        <Text style={styles.textMenu}>2. Choose your meal type 😋 </Text>
+        <View style={styles.separator}><Text><Text>--------------------------------------------------------------------------------------</Text></Text></View>
+        <View style={styles.difficultyBloc}>
+                  <RNPickerSelect
+                  onValueChange={(value) => setSelectOrigin(value)}
+                  items={originRecipes}
+                  // placeholder={{ label: "All recipes", value: "All recipes" }}
+                  style={pickerSelectStyles} 
+                  useNativeAndroidPickerStyle={false}
+                  />
+                </View>   
+      </View>
       <View style={styles.buttonBottom}>
         <MyButton
 			    dataFlow={()=>navigation.navigate('Result')}
@@ -143,6 +180,18 @@ const styles = StyleSheet.create({
     fontSize: css.fontSizeFive,
   },
 
+  textMenu: {
+    marginTop: '2%',
+    fontSize: css.fontSizeSix,
+  },
+
+  separator: {
+    height: 2,
+    width: "90%",
+    backgroundColor: "black",
+    marginBottom: '3%',
+  },
+
   noIngredientsContainer: {
     flex: 0,
     alignItems: 'center',
@@ -165,3 +214,39 @@ const styles = StyleSheet.create({
   }
 
 });
+const pickerSelectStyles = StyleSheet.create({
+  label: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  
+  inputIOS: {
+    width: 50,
+    height: 40,
+    fontSize: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 5,
+    borderWidth: 2,
+    borderColor: css.inactiveButtonColor,
+    borderRadius: 5,
+    backgroundColor: 'white',
+    color: 'black',
+    marginBottom: '4%',
+  },
+
+  inputAndroid: {
+    marginLeft: '2%',
+    width: 350,
+    height: 40,
+    fontSize: 12,
+    alignItems: 'center',
+    paddingHorizontal: 5,
+    paddingVertical: 8,
+    borderWidth: 2,
+    borderColor: css.inactiveButtonColor,
+    borderRadius: 5,
+    backgroundColor: 'white',
+    color: 'black',
+    marginBottom: '4%',
+  },
+})
