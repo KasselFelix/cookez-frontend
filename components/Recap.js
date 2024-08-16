@@ -66,7 +66,7 @@ export default function Recap( props ) {
           <View style={styles.photoContainer}>
             <View style={styles.deleteIcon}>
               <TouchableOpacity onPress={() => dispatch(removeIngredientToStore(props))}>
-                <FontAwesome name='times' size={20} color='red'  />
+                <FontAwesome name='times' size={20} color={css.activeIconColor}  />
               </TouchableOpacity>
             </View>
             <View>
@@ -100,7 +100,7 @@ export default function Recap( props ) {
                         <Text style={styles.titleText}>Nutrition of: {props.data.display_name}/100g</Text>
                         <View style={styles.deleteIconModal}>
                           <TouchableOpacity onPress={() => setModalVisible(false)}>
-                            <FontAwesome name='times' size={25} color='red'  />
+                            <FontAwesome name='times' size={25} color={css.activeIconColor}  />
                           </TouchableOpacity>
                         </View>
                       </View>

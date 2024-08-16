@@ -131,6 +131,7 @@ export default function RecipeScreen({ route, navigation }) {
           name="star"
           size={25}
           color={i < starNote ? "blue" : "#9c9c98"}
+          style={styles.stars}
         />
       </TouchableOpacity>
     );
@@ -233,7 +234,12 @@ export default function RecipeScreen({ route, navigation }) {
           buttonType={buttonStyles.buttonSmall}
         />
         <Text style={styles.titlePage}>{selectedRecipe.name}</Text>
-        <View style={styles.btnEmpty}></View>
+        { user.token ? <MySmallButton
+          dataFlow={() => navigation.navigate('Home')}
+          text={<FontAwesome name="home" size={25} color={"white"} />}
+          buttonType={buttonStyles.buttonSmall}
+        /> :
+        <View style={styles.btnEmpty}></View>}
       </View>
       <ScrollView>  
       {/* BLOC RECETTE SELECTED  */}
@@ -241,21 +247,6 @@ export default function RecipeScreen({ route, navigation }) {
           <Animatable.View animation="slideInDown" duration={700} style={styles.pictureBloc}>
             <View style={styles.firstContainer}>
               <Text style={styles.sectionsTitle}>{selectedRecipe.origin}</Text>
-              
-              <Popover 
-                placement="floating"
-                backgroundStyle={styles.popoverBackground}
-                isVisible={showPopoverVote}
-                onRequestClose={()=> setShowPopoverVote(false)}
-                from={(
-                  <TouchableOpacity style={styles.voteBtn} activeOpacity={0.8} onPress={() => handleVote()}>
-                    <Text>Do you like it ?</Text>
-                  </TouchableOpacity>
-                )}>
-                <View style={styles.popoverContainer}>
-                  <Text>You can unlock this feature by Signing in ❤️ </Text>
-                </View>
-              </Popover>
             </View>
             <View style={styles.imageContainer}>
               <Image style={styles.imagePlaceholder} source={imageRecipe[`${selectedRecipe.picture}` || null]}/>{/*{{ uri: selectedRecipe.picture}}/>*/}
@@ -276,7 +267,22 @@ export default function RecipeScreen({ route, navigation }) {
               </View>
               <View>
               <View style={styles.voteContainer}>
-                <View style={styles.stars}>{stars}</View>
+              <Popover 
+                placement="floating"
+                backgroundStyle={styles.popoverBackground}
+                isVisible={showPopoverVote}
+                onRequestClose={()=> setShowPopoverVote(false)}
+                from={(
+                  <TouchableOpacity style={styles.voteBtn} activeOpacity={0.8} onPress={() => handleVote()}>
+                    <View style={styles.starsContainer}>{stars}</View>
+                  </TouchableOpacity>
+                )}>
+                <View style={styles.popoverContainer}>
+                  <Text>You can unlock this feature by Signing in ❤️ </Text>
+                </View>
+              </Popover>
+
+
                 <Text>Votes: {votes?.length}</Text>
               </View>
             </View>
@@ -422,9 +428,9 @@ const styles = StyleSheet.create({
     width: 120,
     height: 25,
     justifyContent: 'center'
-,    alignItems: 'center',
+,   alignItems: 'center',
     borderRadius: 10,
-    backgroundColor: 'white',
+    // backgroundColor: 'white',
   },
 
   imageContainer: {
@@ -464,8 +470,14 @@ const styles = StyleSheet.create({
     justifyContent:'space-between',
   },
 
-  stars: {
+  starsContainer: {
     flexDirection: 'row',
+
+  },
+
+  stars: {
+    borderWidth: 2,
+    borderColor: 'yellow',
   },
 
   textUnder: {

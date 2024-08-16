@@ -308,18 +308,20 @@ export default function KickoffScreen({navigation}) {
        		 		    </Animatable.View>
        		 		</View>
 					</KeyboardAvoidingView>
-       			</Modal> 
-			<Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
-					<View style={styles.buttonsCameraContainer}>
-						<TouchableOpacity onPress={() => setType(type === CameraType.back ? CameraType.front : CameraType.back)} style={styles.buttonsCamera}>
-							<FontAwesome name="rotate-right" size={25} color="#ffffff" />
-						</TouchableOpacity>
+       			</Modal>
+			<View style={styles.cameraContainer}> 
+				<Camera type={type} flashMode={flashMode} ref={(ref) => (cameraRef = ref)} style={styles.camera}>
+						<View style={styles.buttonsCameraContainer}>
+							<TouchableOpacity onPress={() => setType(type === CameraType.back ? CameraType.front : CameraType.back)} style={styles.buttonsCamera}>
+								<FontAwesome name="rotate-right" size={25} color="#ffffff" />
+							</TouchableOpacity>
 
-						<TouchableOpacity onPress={() => setFlashMode(flashMode === FlashMode.off ? FlashMode.torch : FlashMode.off)} style={styles.buttonsCamera}>
-							<FontAwesome name="flash" size={25} color={flashMode === FlashMode.off ? "#ffffff" : "#e8be4b"} />
-						</TouchableOpacity>
-					</View>
-			</Camera>
+							<TouchableOpacity onPress={() => setFlashMode(flashMode === FlashMode.off ? FlashMode.torch : FlashMode.off)} style={styles.buttonsCamera}>
+								<FontAwesome name="flash" size={25} color={flashMode === FlashMode.off ? "#ffffff" : "#e8be4b"} />
+							</TouchableOpacity>
+						</View>
+				</Camera>	
+			</View> 
 
         	<ScrollView horizontal  contentContainerStyle={styles.galleryContainer}>
 				{photos}
@@ -444,6 +446,15 @@ const styles = StyleSheet.create({
 	backgroundColor: 'rgba(255,255,255, 0.6)',
 	},
 
+	cameraContainer: {
+		backgroundColor: 'orange',
+		borderRadius: 50,
+		overflow: 'hidden',
+		height:'50%',
+		width:'90%',
+		marginBottom:10,
+	},
+
 	styleCamera:{
 		height:350,
 		width:350,
@@ -453,13 +464,8 @@ const styles = StyleSheet.create({
 	},
 
 	camera: {
-		height:'50%',
-		width:'90%',
-		// height:'100%',
-		// width:'100%',
-		marginBottom:10,
-		borderRadius: 40,
-		overflow: "hidden",
+		height:'100%',
+		width:'100%',
 	},
 
 	buttonsCameraContainer: {

@@ -46,9 +46,14 @@ export default function RecapScreen({ navigation }) {
     ingredients.length > 0 ?
       <View style={styles.popoverContainer}>
       <Text>Sure about removing them all ?!</Text>
-      <TouchableOpacity style={styles.popoverBtn} activeOpacity={0.8} onPress={() => handleRemove()} >
-          <FontAwesome name={'check'} size={22} color={'white'}/>
-      </TouchableOpacity>
+      <View style={styles.removebtnContainer}>
+        <TouchableOpacity style={styles.popoverCancelBtn} activeOpacity={0.8} onPress={() => setShowPopover(false)} >
+            <FontAwesome name='times' size={22} color={css.activeIconColor} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.popoverValidBtn} activeOpacity={0.8} onPress={() => handleRemove()} >
+            <FontAwesome name={'check'} size={22} color={'white'}/>
+        </TouchableOpacity>
+      </View>
     </View> :
       <View style={styles.popoverContainer}>
       <Text>No ingredients to remove again 😊</Text>
@@ -94,7 +99,7 @@ export default function RecapScreen({ navigation }) {
               <TouchableOpacity style={styles.favoriteButton} /*onPress={()=> {handleShowPopover();}}*/>
                 <MySmallButton
                   dataFlow={()=> {handleShowPopover()}}
-                  text={<FontAwesome name='times' size={25} color='white' />}
+                  text={<FontAwesome name='times' size={25} color={css.activeIconColor} />}
                   buttonType={buttonStyles.buttonSmall}
                 />
               </TouchableOpacity>
@@ -158,7 +163,14 @@ const styles = StyleSheet.create({
     paddingTop: '2%',
   },
 
-  popoverBtn:{
+
+  removebtnContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: 100,
+  },
+
+  popoverCancelBtn:{
     flex: 0,
     margin: '2%',
     alignItems:'center',
@@ -166,7 +178,18 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     width: 30,
     height: 30,
-    backgroundColor: 'green',
+    backgroundColor: css.backgroundColorTwo,
+  },
+
+  popoverValidBtn:{
+    flex: 0,
+    margin: '2%',
+    alignItems:'center',
+    justifyContent:'center',
+    borderRadius: 100,
+    width: 30,
+    height: 30,
+    backgroundColor: css.backgroundColorTwo,
   },
 
   header: {
