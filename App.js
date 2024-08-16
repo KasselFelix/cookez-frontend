@@ -46,6 +46,15 @@ const TabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
+        tabBarStyle:({ 
+          position: 'absolute',
+            bottom: 0,
+            height: 70, // Adjust height
+            paddingBottom: 0, // Remove padding
+            borderTopWidth: 0, // Remove top border
+            elevation: 2, // Remove shadow on Android
+            backgroundColor: 'transparent', // Make transparent if needed
+        }),
         tabBarIcon: ({ color, size }) => {
           let iconName = "";
           if (route.name === "UserDashboard") {
@@ -96,7 +105,6 @@ export default function App() {
           <Stack.Screen name="Recipe" component={RecipeScreen} />
           <Stack.Screen name="MoreFeatures" component={MoreFeaturesScreen} />
           <Stack.Screen name="UserDashboard" component={UserDashboardScreen} />
-          <Stack.Screen name="TabNavigator" component={TabNavigator} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

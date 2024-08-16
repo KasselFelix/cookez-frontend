@@ -9,7 +9,10 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo-google-fonts/fira-sans": "^0.2.3",
     "@expo-google-fonts/inter": "^0.2.3",
+    "@expo-google-fonts/varela": "^0.2.3",
+    "@expo-google-fonts/varela-round": "^0.2.3",
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-native-fontawesome": "^0.3.2",
