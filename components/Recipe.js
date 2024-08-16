@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, SafeAreaView, Image, TouchableOpacity} from 're
 import React from 'react';
 import css from "../styles/Global";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import imageRecipe from '../modules/images';
 
 export default function Recipe( props ) {
 
@@ -29,7 +30,7 @@ export default function Recipe( props ) {
               <Text> {props.origin}</Text>
             </View>
             <View style={styles.imageContainer}>
-              <Image style={styles.image} source={{ uri: props.picture}}/>
+              <Image style={styles.image} source={imageRecipe[`${props.picture}` || null]}/>{/*{{ uri: props.picture}}/>*/}
               <View style={styles.voteContainer}> 
                 <View style={styles.vote}>
                   {voteRecipe()}
@@ -54,6 +55,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: 'white',
     marginBottom: '5%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
 
   nameContainer: {
@@ -77,7 +82,7 @@ const styles = StyleSheet.create({
     width: '110%',
     height: '94%',
     borderRadius: 10,
-    backgroundColor: 'green',
+    backgroundColor: css.backgroundColorTwo,
   },
 
   voteContainer: {

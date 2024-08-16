@@ -43,16 +43,17 @@ export default function SignIn({navigation}) {
         })
         .catch((error) => {
           console.error('Sign-in failed', error.message);
-          Alert.alert("Error", data.message)
+          alert("Error", data.message)
         })
     };
 
     const handleAnimationFinish =() => {
       setSubmitted(false)
       setModalVisible(false)
-      setTimeout(() => {
-        navigation.navigate("TabNavigator", { screen: "UserDashboard" })
-      }, 900);
+      navigation.navigate("TabNavigator", { screen: "UserDashboard" })
+      // setTimeout(() => {
+      //   navigation.navigate("TabNavigator", { screen: "UserDashboard" })
+      // }, 1);
     };
 
   return (
