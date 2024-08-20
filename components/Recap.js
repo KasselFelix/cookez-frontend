@@ -13,52 +13,52 @@ export default function Recap( props ) {
     
     const dispatch = useDispatch((state) => state.ingredient.ingredient)
 
-    // Fonction pour appeler l'API de DALL·E
-    // const generateImage = async (ingredientName) => {
-    //   try {
-    //       const response = await fetch("https://api.openai.com/v1/images/generations", {
-    //           method: "POST",
-    //           headers: {
-    //               "Content-Type": "application/json",
-    //               Authorization: `Bearer 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`,
-    //           },
-    //           body: JSON.stringify({
-    //               prompt: `Generate an image of ${ingredientName}`,
-    //               n: 1,
-    //               size: "1024x1024",
-    //           }),
-    //       });
-
-    //       const data = await response.json();
-    //       console.log('API Response:', data);
-    //       if (data && data.data && data.data.length > 0) {
-    //           setImageUrl(data.data[0].url); // Met à jour l'état avec l'URL de l'image
-    //       } else {
-    //           console.error("No image found");
-    //       }
-    //   } catch (error) {
-    //       console.error("Error fetching image from DALL·E", error);
-    //   }
-    // }
-
-    const fetchImageFromUnsplash = async (ingredientName) => {
+    //Fonction pour appeler l'API de DALL·E
+    const generateImage = async (ingredientName) => {
       try {
-          const response = await fetch(`https://api.unsplash.com/search/photos?query=${ingredientName}&client_id=jtpouSnBgNG5G1d0xNZhOXdrd5fyMN-BfcPWG_0uQMQ`);
+          const response = await fetch("https://api.openai.com/v1/images/generations", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer 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`,
+              },
+              body: JSON.stringify({
+                  prompt: `Generate an image of ${ingredientName}`,
+                  n: 1,
+                  size: "1024x1024",
+              }),
+          });
+
           const data = await response.json();
-          if (data.results && data.results.length > 0) {
-              setImageUrl(data.results[0].urls.small);
+          console.log('API Response:', data);
+          if (data && data.data && data.data.length > 0) {
+              setImageUrl(data.data[0].url); // Met à jour l'état avec l'URL de l'image
           } else {
               console.error("No image found");
           }
       } catch (error) {
-          console.error("Error fetching image from Unsplash", error);
+          console.error("Error fetching image from DALL·E", error);
       }
-    };
+    }
+
+    // const fetchImageFromUnsplash = async (ingredientName) => {
+    //   try {
+    //       const response = await fetch(`https://api.unsplash.com/search/photos?query=${ingredientName}&client_id=jtpouSnBgNG5G1d0xNZhOXdrd5fyMN-BfcPWG_0uQMQ`);
+    //       const data = await response.json();
+    //       if (data.results && data.results.length > 0) {
+    //           setImageUrl(data.results[0].urls.small);
+    //       } else {
+    //           console.error("No image found");
+    //       }
+    //   } catch (error) {
+    //       console.error("Error fetching image from Unsplash", error);
+    //   }
+    // };
 
     // Appel de l'API lors du montage du composant ou si l'ingredient change
     useEffect(() => {
-      //generateImage(props.data.display_name);
-      fetchImageFromUnsplash (props.data.display_name)
+      generateImage(props.data.display_name);
+      //fetchImageFromUnsplash (props.data.display_name)
     }, [props.data.display_name]);
     
     return (

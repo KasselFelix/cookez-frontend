@@ -10,7 +10,7 @@ export default function Comments({ username, date, message, up, down, handleUpCo
     const user = useSelector((state)=>state.user.value);
     const [showPopover, setShowPopover]=useState(false);
     const dateFormated = moment(date).format('HH:MM DD-MM-YYYY');
-
+    console.log('USER',user)
     useEffect(() => {
       setTimeout(() => setShowPopover(false), 5500);
     }, [])
@@ -24,7 +24,7 @@ export default function Comments({ username, date, message, up, down, handleUpCo
     }
 
     const upDownDisplay = () => {
-      if ((up.length - down.length) > 0) {
+      if ((up?.length - down?.length) > 0) {
         return <Text>({up.length - down.length})</Text>
       } else {
         return <Text>(0)</Text>
@@ -35,10 +35,10 @@ export default function Comments({ username, date, message, up, down, handleUpCo
       user.token  ?
                 <View style={styles.footer}>
                     <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleUpComment({username, _id})}>
-                      <FontAwesome name="thumbs-up" size={20} color={up.length === 0 ? "grey" : "green"} />
+                      <FontAwesome name="thumbs-up" size={20} color={  (up && up.length > 0) ? "green" : "grey"} />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleDownComment({username, _id})}>
-                      <FontAwesome name="thumbs-down" size={20} color={down.length === 0 ? "grey" : "red"}/>
+                      <FontAwesome name="thumbs-down" size={20} color={ down?.length > 0 ?  "red" : "grey"}/>
                     </TouchableOpacity>
                     <View>
                       <Text>{upDownDisplay()}</Text>
