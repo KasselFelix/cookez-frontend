@@ -61,19 +61,23 @@ const handleFetchRecipe = async (recipe) => {
 
 	
 
-function onItemPress(data){
-  
-  console.log('test',dataListRecipe[0])
-  //const votes= recipe.votes.length;
-  //const note= recipe.votes.reduce((accumulator,current)=>accumulator+current.note,0)/votesTopRecipe;
+  function onItemPress(props){
+    
+    //console.log('test',dataListRecipe[0])
+    //const votes= recipe.votes.length;
+    //const note= recipe.votes.reduce((accumulator,current)=>accumulator+current.note,0)/votesTopRecipe;
+    console.log('dashbooard',props)
 
-  //navigation.navigate('Recipe', {data, note: note, votes: votes})
-  if(modalRef.current){
-    modalRef.current.animate('slideOutUp', 800).then(() => {
-      setModalVisible(false);
-      })
+    const votes = props?.votes.length;
+    const note= props?.votes.reduce((accumulator,current)=>accumulator+current.note,0)/votes;
+    
+    navigation.navigate('Recipe', { props, note: note, votes: votes, update:update })
+    if(modalRef.current){
+      modalRef.current.animate('slideOutUp', 800).then(() => {
+        setModalVisible(false);
+        })
+    }
   }
-}
 
   const recipeAll = async () => {
     try{
@@ -95,6 +99,11 @@ function onItemPress(data){
     
     recipeAll(); 
   }, [])
+
+function update(){
+  recipeAll();
+} 
+
 // map on 'foundRecipe' to retrieve 'votes'
 
   const sortRecipes = foundRecipe?.sort((a, b) => b.votes.length - a.votes.length ) || [];

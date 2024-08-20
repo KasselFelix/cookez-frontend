@@ -13,7 +13,7 @@ export default function ListRecipes ({ searchRecipe, setClicked, data, onItemPre
 
     const Item = ({ name, itemData }) => {
       const isSelected = selectedItemId === itemData.id  // Vérifie si l'élément est sélectionné
-      
+      console.log('select',itemData)
       return (
         <TouchableOpacity
         activeOpacity={0.8} 
@@ -36,7 +36,7 @@ export default function ListRecipes ({ searchRecipe, setClicked, data, onItemPre
         }
 
         if (item.name.toUpperCase().includes(searchRecipe.toUpperCase())) {
-        return <Item name={item.name} itemData={item}/>;
+        return <Item name={item.name} itemData={item} />;
         }
   };
 

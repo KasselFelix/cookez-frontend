@@ -23,6 +23,7 @@ export default function RecipeScreen({ route, navigation }) {
   //const user = {username:null,token:null};
   const user = useSelector((state)=>state.user.value);
   const selectedRecipe = route.params.props
+  console.log('PARAMS',selectedRecipe)
   const votes = route.params.votes
 
   /* HOOK STATE FOR THE HEART LOGO ON THE RECIPE*/
@@ -162,6 +163,7 @@ export default function RecipeScreen({ route, navigation }) {
   //   </View>
   // })
   const handleUpComment = async ({username, _id}) => {
+
     try {
       const response = await fetch(`http://${addressIp}:3000/comments/upvote`, {
         method: 'POST',
@@ -203,11 +205,11 @@ export default function RecipeScreen({ route, navigation }) {
   
 
   useEffect(() => {
-    handleUpComment()
+    handleUpComment() // selectedRecipe.comments.map((e,i)=>{ map handleUpComment({user.username,e._id}})
   }, []);
 
   useEffect(() => {
-    handleDownComment()
+    handleDownComment()  // selectedRecipe.comments.map((e,i)=>{ handleUpComment({user.username,e._id} })
   }, []);
 
   // useEffect(() => {
@@ -316,7 +318,7 @@ export default function RecipeScreen({ route, navigation }) {
                   style={styles.ingredientsBloc}>
             <Text style={styles.sectionsTitle}>Ingredients</Text>
             <View style={styles.content}>
-              {ingredients}
+              {/* {ingredients} */}
             </View>
           </Animatable.View>
 
