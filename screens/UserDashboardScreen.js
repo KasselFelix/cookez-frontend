@@ -27,7 +27,7 @@ export default function UserDashboardScreen({navigation}) {
 	const [searchRecipe, setSearchRecipe] = useState('');
 	const [clicked, setClicked] = useState(false);
 	const [dataListRecipe, setDataListRecipe] = useState([]);
-	const [validatedRecipe, setValidatedRecipe] = useState(false);
+	//const [validatedRecipe, setValidatedRecipe] = useState(false);
 
 
   const [foundRecipe, setFoundRecipe]= useState([])
@@ -256,8 +256,8 @@ const topStars = [];
 								searchRecipe={searchRecipe}
 								data={dataListRecipe}
 								setClicked={setClicked}
-								validatedRecipe={validatedRecipe}
-								setValidatedRecipe={setValidatedRecipe}
+								//validatedRecipe={validatedRecipe}
+								//setValidatedRecipe={setValidatedRecipe}
 								onItemPress={onItemPress}
 								/>
 							</View>
