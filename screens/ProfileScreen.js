@@ -1,18 +1,37 @@
 import React, { useEffect ,useState} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { View, Text, StyleSheet, Image, ScrollView, Animated, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, Animated, TouchableOpacity, Modal, TextInput } from 'react-native';
 import MyButton from '../modules/MyButton';
 import buttonStyles from '../styles/Button';
 import css from '../styles/Global';
-import { removeUserToStore } from '../reducers/user';
+import { removeUserToStore, updateUserInStore} from '../reducers/user';
+import FontAwesome from "react-native-vector-icons/FontAwesome";
+import addressIp from '../modules/addressIp';
+
+
 
 const ProfilScreen = ({navigation}) => {
 
-  const dispatch=useDispatch();
-  const user =useSelector((state)=>state.user.value);
+  const dispatch = useDispatch();
+  const user = useSelector((state)=>state.user.value);
   const [modalVisible, setModalVisible] = useState(false);
   const [profileImage, setProfileImage] = useState(require('../assets/profile/avatar_M.jpg'));
   const animatedValue = new Animated.Value(0);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+
+  //Etats pour les inputs de la modal :
+  // const [email, setEmail]=useState('');          ___
+  // const [firstname, setFirstname]=useState('');     |
+  // const [lastname, setLastname]=useState('');        } Finalement je ne les ai pas utilisé 
+  // const [username, setUsername]=useState('');       |   mais j'ai fait un seul état pour tous 
+  // const [age, setAge]=useState(0);                __|    ces inputs-là (voir plus bas)
+  const [allergies, setAllergies]=useState(''); 
+  const [householdComposition, setHouseholdComposition]=useState('');
+
+  //On peut faire un seul état pour gérer tous les inputs de la modal du update:
+  const [updatedUser, setUpdatedUser] = useState({ email: user.email, firstname: user.firstname, lastname: user.lastname, username: user.username, age: user.age });
+
+
 
   // Animation d'apparition avec interpolation
   useEffect(() => {
@@ -61,8 +80,34 @@ const ProfilScreen = ({navigation}) => {
     require('../assets/profile/avatar_F4.jpg'),
   ]
   
+// FONCTION POUR HANDLE L'UPDATE DES INFOS USER
+const handleUpdate = () => {
+  fetch( `http://${addressIp}:3000/users/update`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json"},
+    body: JSON.stringify({...updatedUser, token: user.token}),
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.result) {
+      dispatch(updateUserInStore(data.updatedUser));
+      setEditModalVisible(false);
+    } else {
+      alert(data.error);
+    }
+  })
+  .catch(error => alert('Error updating user info'));
+};
+
+
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.iconContainer}>
+        <TouchableOpacity onPress={() => setEditModalVisible(true)}>
+          <FontAwesome name={"edit"} size={30} color={css.inactiveButtonColor} style={styles.iconEdit}/>
+        </TouchableOpacity>
+      </View>
       <Animated.View
         style={[
           styles.profileHeader,
@@ -144,6 +189,83 @@ const ProfilScreen = ({navigation}) => {
         </View>
       </Modal>
 
+      {/* MODAL POUR UPDATE USER INFO */}
+      <Modal 
+      transparent={true} 
+      visible={editModalVisible} 
+      onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalEditContainer}>
+          <View style={styles.modalEditContent}>
+            <Text style={styles.modalTitle}>Modifiez votre profile</Text>
+            <TextInput 
+            placeholder='firstname' 
+            placeholderTextColor={'grey'}  
+            style={styles.input} 
+            value={updatedUser.firstname} //utilisation de la valeur d'état unique 'updatedUser' pour chaque input 
+            onChangeText={(text) => setUpdatedUser({ ...updatedUser, firstname: text })} //pareil pour le setter unique
+            />
+            <TextInput  
+            placeholder='lastname' 
+            placeholderTextColor={'grey'}  
+            style={styles.input} 
+            value={updatedUser.lastname}
+            onChangeText={(text) => setUpdatedUser({ ...updatedUser, lastname: text })}
+            />
+            <TextInput  
+            placeholder='username' 
+            placeholderTextColor={'grey'}  
+            style={styles.input} 
+            value={updatedUser.username} 
+            onChangeText={(text) => setUpdatedUser({ ...updatedUser, username: text })}
+            />
+            <TextInput 
+            placeholder='email' 
+            placeholderTextColor={'grey'}  
+            KeyboardType={'email-address'} 
+            InputModeOptions={'email'} 
+            textContentType={'emailAddress'} 
+            autoCapitalize={'email'}  
+            style={styles.input} 
+            value={updatedUser.email} 
+            onChangeText={(text) => setUpdatedUser({ ...updatedUser, email: text })}
+            />
+            <TextInput 
+            placeholder='age' 
+            placeholderTextColor={'grey'}
+            keyboardType="numeric" 
+            style={styles.input} 
+            value={updatedUser.age.toString()} 
+            onChangeText={(text) => setUpdatedUser({ ...updatedUser, age: Number(text) })}
+            />
+            <TextInput
+             placeholder='allergies' 
+             placeholderTextColor={'grey'}  
+             style={styles.input} 
+             value={allergies} 
+             onChangeText={(value)=> setAllergies(value)}
+             />
+            <TextInput
+              placeholder='household composition' 
+              placeholderTextColor={'grey'}
+              keyboardType="numeric" 
+              style={styles.input} 
+              value={householdComposition} 
+              onChangeText={(value)=> setHouseholdComposition(value)}/>
+           
+              <MyButton 
+              dataFlow={() => handleUpdate()}
+              text="Updated"
+              buttonType={buttonStyles.buttonThree}/>
+
+              <MyButton
+              dataFlow={() => setEditModalVisible(false)}
+              text="Cancel"
+              buttonType={buttonStyles.buttonThree}/>
+            
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -155,6 +277,18 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: css.backgroundColorTwo,
     alignItems: 'center',
+  },
+  iconContainer:{
+    position: 'absolute',
+    flexDirection: 'row',
+    marginTop: 10,
+    top: 20,
+    right: 20,
+    padding: 5,
+  },
+  iconEdit:{
+    justifyContent: 'flex-end',
+    padding: 10,
   },
   profileHeader: {
     alignItems: 'center',
@@ -217,7 +351,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   imageOptions: {
     height:250,
@@ -231,6 +365,30 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 10,
   },
+   modalEditContainer:{
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalEditContent:{
+    width: 350,
+    height:550,
+    padding: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
+    flexWrap:'wrap',
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 12,
+    paddingHorizontal: 10,
+    width: '80%',
+  },
+ 
 });
 
 export default ProfilScreen;
