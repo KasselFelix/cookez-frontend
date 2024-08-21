@@ -5,7 +5,7 @@ import { removeAllIngredientToStore } from '../reducers/ingredient'
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import * as Animatable from 'react-native-animatable';
 
-import Popover from "react-native-popover-view";
+import Popover from "react-native-popover-view"; 
 import MyButton from "../modules/MyButton";
 import MySmallButton from "../modules/MySmallButton";
 import buttonStyles from "../styles/Button";

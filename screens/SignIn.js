@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContainer:{
-    backgroundColor:'#abd1c6',
+    backgroundColor:css.backgroundColorTwo,
     borderRadius: 20,
     padding: 20,
     alignItems:'center',
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   shadowView:{
-    backgroundColor: '#abd1c6',
+    backgroundColor: css.backgroundColorTwo,
     borderRadius: 20,
     padding: 20,
     width: '100%',

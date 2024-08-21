@@ -130,36 +130,45 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     marginBottom: 5, 
   },
-  
-  modal:{
-    flex:1,
-    justifyContent:'center',
-    alignItems:'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },   
-  
-  scroll:{
-    backgroundColor: '#abd1c6',
-    borderRadius: 20,
-    padding: 20,
-    width: '100%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
-  },
-
-  modalTitle:{
-    justifyContent: 'center',
-    alignItems:'center',
-    color: css.inactiveButtonColor,
-    fontWeight: "bold",
-    fontFamily: css.fontFamilyOne,
-    marginBottom: 5,
-  },
-      
-  formStyle: {
+    modal:{
+        flex:1,
+        justifyContent:'center',
+        alignItems:'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      },
+      modalContainer: {
+        backgroundColor: css.backgroundColorTwo,
+        borderRadius: 20,
+        padding: 20,
+        alignItems: 'center',
+        width: '80%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 2,
+        elevation: 5,
+      },
+      scroll:{
+        backgroundColor: css.backgroundColorTwo,
+        borderRadius: 20,
+        padding: 20,
+        width: '100%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 2,
+        elevation: 5,
+      },
+      modalTitle:{
+        justifyContent: 'center',
+        alignItems:'center',
+        color: css.inactiveButtonColor,
+        fontWeight: "bold",
+        fontFamily: css.fontFamilyOne,
+        marginBottom: 5,
+        
+      },
+      formStyle: {
         width: '100%',
         borderWidth: 2,
         borderColor: '#264143',
