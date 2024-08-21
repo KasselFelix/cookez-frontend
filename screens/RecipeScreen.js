@@ -34,6 +34,10 @@ export default function RecipeScreen({ route, navigation }) {
   const [starNote,setStarNote]=useState(0);
   const [action,setAction]=useState(false);
   const modalRef = useRef(null);
+  // const [up,setUp]=useState(false);
+  // const [down,setDown]=useState(false);
+  // const [upVote,setUpVote]=useState(false);
+  // const [downVote,setDownVote]=useState(false);
 
 // auto close the popover 
   useEffect(() => {
@@ -162,55 +166,65 @@ export default function RecipeScreen({ route, navigation }) {
   //         <Text>{e.message}</Text>
   //   </View>
   // })
-  const handleUpComment = async ({username, _id}) => {
+  // const handleUpComment = async (username, _id) => {
 
-    try {
-      const response = await fetch(`http://${addressIp}:3000/comments/upvote`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          username: username,
-          _id: _id
-        })
-      });
-      const data =  await response.json();
-      if (data.result) {
-        console.log(data)
-      }
-    } catch (error) {
-      console.error('There has been a problem with your fetch operation:', error);
-    }
-    route.params.update()
-  };
-
-  const handleDownComment = async ({username, _id}) => {
-    try {
-      const response = await fetch(`http://${addressIp}:3000/comments/downvote`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          username: username,
-          _id: _id
-        })
-      });
-      const data =  await response.json();
-      if (data.result) {
-        console.log(data)
-      }
-    } catch (error) {
-      console.error('There has been a problem with your fetch operation:', error);
-    }
-    route.params.update()
-  };
+  //   try {
+  //     const response = await fetch(`http://${addressIp}:3000/comments/upvote`, {
+  //       method: 'POST',
+  //       headers: {'Content-Type': 'application/json'},
+  //       body: JSON.stringify({
+  //         username: username,
+  //         _id: _id
+  //       })
+  //     });
+  //     const data =  await response.json();
+  //     if (data.result) {
+  //       console.log('DATA',data)
+  //       setUp(data.up)
+  //       setDown(data.down)
+  //       setUpVote(data.upVote)
+  //       setDownVote(data.downVote)
+  //       console.log('UPVOTE',upVote)
+  //       console.log('DOWNVOTE',downVote)
+  //     }
+  //   } catch (error) {
+  //     console.error('There has been a problem with your fetch operation:', error);
+  //   }
+  //   route.params.update()
+  // };
+  // //deconstruction non necesssaire
+  // const handleDownComment = async (username, _id) => {
+  //   try {
+  //     const response = await fetch(`http://${addressIp}:3000/comments/downvote`, {
+  //       method: 'POST',
+  //       headers: {'Content-Type': 'application/json'},
+  //       body: JSON.stringify({
+  //         username: username,
+  //         _id: _id
+  //       })
+  //     });
+  //     const data =  await response.json();
+  //     if (data.result) {
+  //       console.log('DATA',data)
+  //       setUp(data.up)
+  //       setDown(data.down)
+  //       setUpVote(data.upVote)
+  //       setDownVote(data.downVote)
+  //     }
+  //   } catch (error) {
+  //     console.error('There has been a problem with your fetch operation:', error);
+  //   }
+  //   route.params.update()
+  // };
   
 
-  useEffect(() => {
-    handleUpComment() // selectedRecipe.comments.map((e,i)=>{ map handleUpComment({user.username,e._id}})
-  }, []);
+  // useEffect(() => {
+  //   // selectedRecipe.comments.map((e,i)=>{ handleUpComment(user.username,e._id) })
+  // }, []);
 
-  useEffect(() => {
-    handleDownComment()  // selectedRecipe.comments.map((e,i)=>{ handleUpComment({user.username,e._id} })
-  }, []);
+  // useEffect(() => {
+  //   // selectedRecipe.comments.map((e,i)=>{ handleDownComment(user.username,e._id) })
+  // }, []);
 
   // useEffect(() => {
   //   const commentsDisplay= selectedRecipe.comments.map((e,i)=>{
@@ -219,13 +233,14 @@ export default function RecipeScreen({ route, navigation }) {
   //   });
   // }, [starNote]);
 
-  console.log('INITIAL: ', selectedRecipe.comments._id);
+  console.log('INITIAL: ', selectedRecipe.comments);
   const commentsDisplay= selectedRecipe.comments.map((e,i)=>{
-    console.log('EEEEEEEe :', e)
-    return <Comments key={i} {...e} handleUpComment={handleUpComment} handleDownComment={handleDownComment}/>
+    console.log('_id: ', e._id); //e correspond a l'ID
+    //return <Comments key={i} _id={e._id}  username={e.username} date={e.date} message={e.message} up={up} down={down} upVote={upVote} downVote={downVote} handleUpComment={handleUpComment} handleDownComment={handleDownComment}/>
+    return <Comments key={i} {...e} update={route.params.update} />
   });
 
-  console.log('PSG: ', commentsDisplay);
+  
 
   return (
     <SafeAreaView style={styles.container}>

@@ -4,13 +4,19 @@ import { FontAwesome } from '@expo/vector-icons';
 import Popover from "react-native-popover-view";
 import moment from 'moment';
 import { useSelector } from "react-redux";
+import addressIp from '../modules/addressIp';
 
-export default function Comments({ username, date, message, up, down, handleUpComment, handleDownComment, _id }) {
+//export default function Comments( {username, date, message, up, down, upVote, downVote, setDownVote, setUpVote, setUp, setDown, handleUpComment, handleDownComment, _id }) {
+export default function Comments( {username, date, message, _id, update }) {
 
     const user = useSelector((state)=>state.user.value);
     const [showPopover, setShowPopover]=useState(false);
     const dateFormated = moment(date).format('HH:MM DD-MM-YYYY');
-    console.log('USER',user)
+    const [up,setUp]=useState([]);
+    const [down,setDown]=useState([]);
+    const [upVote,setUpVote]=useState(false);
+    const [downVote,setDownVote]=useState(false);
+    
     useEffect(() => {
       setTimeout(() => setShowPopover(false), 5500);
     }, [])
@@ -31,14 +37,65 @@ export default function Comments({ username, date, message, up, down, handleUpCo
       }
     };
 
+    const handleUpComment = async (username, _id) => {
+
+      try {
+        const response = await fetch(`http://${addressIp}:3000/comments/upvote`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            username: username,
+            _id: _id
+          })
+        });
+        const data =  await response.json();
+        if (data.result) {
+          console.log('DATA',data)
+          setUp(data.up)
+          setDown(data.down)
+          setUpVote(data.upVote)
+          setDownVote(data.downVote)
+          console.log('UPVOTE',upVote)
+          console.log('DOWNVOTE',downVote)
+        }
+      } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error);
+      }
+      update()
+    };
+    //deconstruction non necesssaire
+    const handleDownComment = async (username, _id) => {
+      try {
+        const response = await fetch(`http://${addressIp}:3000/comments/downvote`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            username: username,
+            _id: _id
+          })
+        });
+        const data =  await response.json();
+        if (data.result) {
+          console.log('DATA',data)
+          setUp(data.up)
+          setDown(data.down)
+          setUpVote(data.upVote)
+          setDownVote(data.downVote)
+        }
+      } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error);
+      }
+      update()
+    };
+
     const handleLogged = (
       user.token  ?
                 <View style={styles.footer}>
-                    <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleUpComment({username, _id})}>
-                      <FontAwesome name="thumbs-up" size={20} color={  (up && up.length > 0) ? "green" : "grey"} />
+                    <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleUpComment(user.username, _id)}>
+                      <FontAwesome name="thumbs-up" size={20} color={  upVote ? "green" : "grey"} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleDownComment({username, _id})}>
-                      <FontAwesome name="thumbs-down" size={20} color={ down?.length > 0 ?  "red" : "grey"}/>
+                    <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleDownComment(user.username, _id)}>
+                      <FontAwesome name="thumbs-down" size={20} color={ downVote ?  "red" : "grey"}/>
                     </TouchableOpacity>
                     <View>
                       <Text>{upDownDisplay()}</Text>

@@ -78,7 +78,7 @@ export default function SignUp({navigation}) {
       />
       <Modal visible={modalVisible} animationtType="fade" transparent>
         <View style={styles.modal}>
-            <View  style={styles.modalContainer}>
+            {/* <View  style={styles.modalContainer}> */}
               {
                 submitted ? 
                 <LottieView
@@ -87,8 +87,10 @@ export default function SignUp({navigation}) {
                 loop={false}
                 onAnimationFinish={handleAnimationFinish}
                 style={styles.lottieAnim}/> 
-                :    
+                : 
+                <View style={styles.shadowView}> 
                 <ScrollView style={styles.scroll} automaticallyAdjustKeyboardInsets={true}>
+                
                 <Text style={styles.modalTitle}>Register</Text>
                 
                   {/*lire la doc pour specifier les options manquante */}
@@ -113,10 +115,11 @@ export default function SignUp({navigation}) {
                     text="Close"
                     buttonType={buttonStyles.buttonThree}
                   />
-                  </ScrollView>
+                   </ScrollView>
+                  </View>
               }
          
-            </View>
+            {/* </View> */}
         </View>
       </Modal>
     </SafeAreaView>
@@ -127,45 +130,36 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     marginBottom: 5, 
   },
-    modal:{
-        flex:1,
-        justifyContent:'center',
-        alignItems:'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      },
-      modalContainer: {
-        backgroundColor: '#abd1c6',
-        borderRadius: 20,
-        padding: 20,
-        alignItems: 'center',
-        width: '80%',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5,
-      },
-      scroll:{
-        backgroundColor: '#abd1c6',
-        borderRadius: 20,
-        padding: 20,
-        width: '100%',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5,
-      },
-      modalTitle:{
-        justifyContent: 'center',
-        alignItems:'center',
-        color: css.inactiveButtonColor,
-        fontWeight: "bold",
-        fontFamily: css.fontFamilyOne,
-        marginBottom: 5,
-        
-      },
-      formStyle: {
+  
+  modal:{
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },   
+  
+  scroll:{
+    backgroundColor: '#abd1c6',
+    borderRadius: 20,
+    padding: 20,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+
+  modalTitle:{
+    justifyContent: 'center',
+    alignItems:'center',
+    color: css.inactiveButtonColor,
+    fontWeight: "bold",
+    fontFamily: css.fontFamilyOne,
+    marginBottom: 5,
+  },
+      
+  formStyle: {
         width: '100%',
         borderWidth: 2,
         borderColor: '#264143',
@@ -173,30 +167,30 @@ const styles = StyleSheet.create({
         padding: 12,
         marginVertical: 10,
         fontSize: 15,
-      },
-      button:{
-        backgroundColor: '#2196F3',
-        borderRadius: 20,
-        padding: 10,
-        elevation: 2,
-      },
-      lottieAnim:{
-        width:'100%',
-        height:'100%',
+  },
 
-      },
-       // modalContainerhover:{
-      //   scale:'1.3',
-      // },
-      button:{
-        backgroundColor: '#2196F3',
-        borderRadius: 20,
-        padding: 10,
-        elevation: 2,
-      },
-      lottieAnim:{
-        width:'100%',
-        height:'100%',
+  lottieAnim:{
+    width:'100%',
+    height:'100%',
+  },
+  
+  shadowView:{
+    backgroundColor: '#abd1c6',
+    borderRadius: 20,
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+  },
 
-      },
+   
+  lottieAnim:{
+    width:'100%',
+    height:'100%',
+  },
+
 })

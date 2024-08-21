@@ -43,14 +43,14 @@ const handleFetchRecipe = async (recipe) => {
     });
 		const data =  await response.json();
 
-    console.log(data.recipe);
+    //console.log(data.recipe);
 
 		if (data.result) {
 			setDataListRecipe(data.recipe);
 		} else {
 			setDataListRecipe(data.error);
 		}
-    console.log('end')
+    //console.log('end')
 	}
 
 	useEffect(() => {
@@ -63,20 +63,15 @@ const handleFetchRecipe = async (recipe) => {
 
   function onItemPress(props){
     
-    //console.log('test',dataListRecipe[0])
-    //const votes= recipe.votes.length;
-    //const note= recipe.votes.reduce((accumulator,current)=>accumulator+current.note,0)/votesTopRecipe;
-    console.log('dashbooard',props)
-
     const votes = props?.votes.length;
     const note= props?.votes.reduce((accumulator,current)=>accumulator+current.note,0)/votes;
-    
-    navigation.navigate('Recipe', { props, note: note, votes: votes, update:update })
     if(modalRef.current){
       modalRef.current.animate('slideOutUp', 800).then(() => {
         setModalVisible(false);
+        navigation.navigate('Recipe', { props, note: note, votes: votes, update:update })
         })
     }
+    
   }
 
   const recipeAll = async () => {
@@ -449,4 +444,9 @@ borderWidth: 1,
 borderColor: 'grey',
 backgroundColor: 'rgba(255,255,255, 0.6)',
 },
+
+backRetour:{
+  width:'100%',
+  alignItems:'center',
+}
 })

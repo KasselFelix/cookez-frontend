@@ -13,12 +13,12 @@ export default function ListRecipes ({ searchRecipe, setClicked, data, onItemPre
 
     const Item = ({ name, itemData }) => {
       const isSelected = selectedItemId === itemData.id  // Vérifie si l'élément est sélectionné
-      console.log('select',itemData)
+      //console.log('select',itemData)
       return (
         <TouchableOpacity
         activeOpacity={0.8} 
         onPress={() => {setSelectedItemId(itemData.id);onItemPress(itemData)}} // Passez les données de l'élément à la fonction onItemPress
-        style={isSelected?styles.validated:styles.nonValidated}
+        style={styles.nonValidated}//{isSelected?styles.validated:styles.nonValidated}
         >
           <View style={styles.item}>
                   <Text style={styles.name}>{name}</Text>
@@ -65,6 +65,8 @@ listContainer: {
   height: "65%",
   width: "100%",
   // marginBottom: 70,
+  justifyContent:'center',
+  alignItems:'center',
 },
 
 nonValidated: {

@@ -42,8 +42,7 @@ export default function SignIn({navigation}) {
           }
         })
         .catch((error) => {
-          console.error('Sign-in failed', error.message);
-          alert("Error", data.message)
+          console.error('Sign-in failed', error);
         })
     };
 
@@ -122,14 +121,14 @@ const styles = StyleSheet.create({
   },
   shadowView:{
     backgroundColor: '#abd1c6',
-        borderRadius: 20,
-        padding: 20,
-        width: '100%',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5,
+    borderRadius: 20,
+    padding: 20,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
   },
 
   // modalContainerhover:{
