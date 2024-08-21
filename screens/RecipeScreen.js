@@ -252,11 +252,16 @@ export default function RecipeScreen({ route, navigation }) {
         />
         <Text style={styles.titlePage}>{selectedRecipe.name}</Text>
         { user.token ? <MySmallButton
-          dataFlow={() => navigation.navigate('Home')}
+          dataFlow={() => navigation.navigate('TabNavigator',{screen:'userDashboard'})}
           text={<FontAwesome name="home" size={25} color={"white"} />}
           buttonType={buttonStyles.buttonSmall}
         /> :
-        <View style={styles.btnEmpty}></View>}
+        // <View style={styles.btnEmpty}></View>
+        <MySmallButton
+          dataFlow={() => navigation.navigate('Home')}
+          text={<FontAwesome name="home" size={25} color={"white"} />}
+          buttonType={buttonStyles.buttonSmall}
+        />}
       </View>
       <ScrollView>  
       {/* BLOC RECETTE SELECTED  */}
@@ -333,7 +338,7 @@ export default function RecipeScreen({ route, navigation }) {
                   style={styles.ingredientsBloc}>
             <Text style={styles.sectionsTitle}>Ingredients</Text>
             <View style={styles.content}>
-              {/* {ingredients} */}
+              {ingredients}
             </View>
           </Animatable.View>
 
