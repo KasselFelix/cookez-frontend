@@ -26,7 +26,7 @@ export default function SearchRecipe ({clicked, searchRecipe, setSearchRecipe, s
           placeholder="Search"
           placeholderTextColor="grey"
           value={searchRecipe}
-          onChangeText={(value) => setSearchRecipe(value)}
+          onChangeText={setSearchRecipe}
           onFocus={() => {
             setClicked(true);
           }}

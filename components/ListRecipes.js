@@ -12,13 +12,13 @@ export default function ListRecipes ({ searchRecipe, setClicked, data, onItemPre
     const [selectedItemId, setSelectedItemId] = useState(null);
 
     const Item = ({ name, itemData }) => {
-      const isSelected = selectedItemId === itemData.id  // Vérifie si l'élément est sélectionné
-      //console.log('select',itemData)
+      const isSelected = selectedItemId === itemData._id  // Vérifie si l'élément est sélectionné
+      
       return (
         <TouchableOpacity
         activeOpacity={0.8} 
-        onPress={() => {setSelectedItemId(itemData.id);onItemPress(itemData)}} // Passez les données de l'élément à la fonction onItemPress
-        style={styles.nonValidated}//{isSelected?styles.validated:styles.nonValidated}
+        onPress={() => {setSelectedItemId(itemData._id);onItemPress(itemData)}} // Passez les données de l'élément à la fonction onItemPress
+        style={isSelected ? styles.validated : styles.nonValidated}
         >
           <View style={styles.item}>
                   <Text style={styles.name}>{name}</Text>
@@ -52,7 +52,7 @@ export default function ListRecipes ({ searchRecipe, setClicked, data, onItemPre
           <FlatList
             data={data}
             renderItem={renderItem}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item._id}
           />
         </View>
     </SafeAreaView>
@@ -64,7 +64,6 @@ listContainer: {
   margin: 10,
   height: "65%",
   width: "100%",
-  // marginBottom: 70,
   justifyContent:'center',
   alignItems:'center',
 },
@@ -77,7 +76,7 @@ nonValidated: {
 
 validated: {
   backgroundColor: "green",
-      borderRadius: 50,
+  borderRadius: 50,
   marginBottom: 10,
 },
 

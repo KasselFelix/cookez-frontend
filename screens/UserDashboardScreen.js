@@ -71,7 +71,7 @@ const handleFetchRecipe = async (recipe) => {
         navigation.navigate('Recipe', { props, note: note, votes: votes, update:update })
         })
     }
-    
+
   }
 
   const recipeAll = async () => {
