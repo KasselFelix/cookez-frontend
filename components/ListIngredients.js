@@ -61,6 +61,8 @@ listContainer: {
   margin: 10,
   height: "65%",
   width: "100%",
+  justifyContent:'center',
+  alignItems:'center',
 },
 
 nonValidated: {
