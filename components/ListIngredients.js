@@ -9,23 +9,23 @@ export default function ListIngredients ({ searchInput, setClicked, data, onItem
     const [selectedItemId, setSelectedItemId] = useState(null);
 
     const Item = ({ name, itemData }) => {
-    const isSelected = selectedItemId === itemData.id  // Vérifie si l'élément est sélectionné
-      
-    return (
-      <TouchableOpacity
-      activeOpacity={0.8} 
-      onPress={() => {setSelectedItemId(itemData.id); onItemPress(itemData)}} // Passez les données de l'élément à la fonction onItemPress
-      style={isSelected ? styles.validated : styles.nonValidated}
-      >
-        <View style={styles.item}>
-                <Text style={styles.name}>{name}</Text>
-                <TouchableOpacity activeOpacity={0.8}  >
-                    <FontAwesome name={'check'} size={22} color={'white'}/>
-                </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    );
-  }
+      const isSelected = selectedItemId === itemData.id  // Vérifie si l'élément est sélectionné
+        
+      return (
+        <TouchableOpacity
+        activeOpacity={0.8} 
+        onPress={() => {setSelectedItemId(itemData.id); onItemPress(itemData)}} // Passez les données de l'élément à la fonction onItemPress
+        style={isSelected ? styles.validated : styles.nonValidated}
+        >
+          <View style={styles.item}>
+                  <Text style={styles.name}>{name}</Text>
+                  <TouchableOpacity activeOpacity={0.8}  >
+                      <FontAwesome name={'check'} size={22} color={'white'}/>
+                  </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      );
+    }
 
     const renderItem = ({ item }) => {
         if (data === "No ingredients found") {
@@ -33,7 +33,7 @@ export default function ListIngredients ({ searchInput, setClicked, data, onItem
         }
 
         if (item.name.toUpperCase().includes(searchInput.toUpperCase().trim())) {
-        return <Item name={item.name} itemData={item}/>;
+          return <Item name={item.name} itemData={item}/>;
         }
   };
 
@@ -61,6 +61,8 @@ listContainer: {
   margin: 10,
   height: "65%",
   width: "100%",
+  justifyContent:'center',
+  alignItems:'center',
 },
 
 nonValidated: {
@@ -71,7 +73,7 @@ nonValidated: {
 
 validated: {
   backgroundColor: "green",
-      borderRadius: 50,
+  borderRadius: 50,
   marginBottom: 10,
 },
 

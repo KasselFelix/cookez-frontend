@@ -29,7 +29,7 @@ export default function KickoffScreen({navigation}) {
 	const [searchInput, setSearchInput] = useState('');
 	const [clicked, setClicked] = useState(false);
 	const [dataListIngredient, setDataListIngredient] = useState([]);
-	const [validatedIngredient, setValidatedIngredient] = useState(false);
+	//const [validatedIngredient, setValidatedIngredient] = useState(false);
 	
 	const ingredients=  useSelector((state)=>state.ingredient.ingredient)
 	
@@ -284,8 +284,8 @@ export default function KickoffScreen({navigation}) {
 								searchInput={searchInput}
 								data={dataListIngredient}
 								setClicked={setClicked}
-								validatedIngredient={validatedIngredient}
-								setValidatedIngredient={setValidatedIngredient}
+								//validatedIngredient={validatedIngredient}
+								//setValidatedIngredient={setValidatedIngredient}
 								onItemPress={onItemPress}
 								/>
 							</View>

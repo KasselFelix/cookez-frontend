@@ -24,7 +24,7 @@ export default function FavoriteScreen({ navigation }) {
     }, []);
 
     const handleReturn = () => {
-        navigation.navigate("Home")
+        navigation.goBack()
     }
 
     const username = "dracaufeu " 

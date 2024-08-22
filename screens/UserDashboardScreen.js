@@ -27,7 +27,7 @@ export default function UserDashboardScreen({navigation}) {
 	const [searchRecipe, setSearchRecipe] = useState('');
 	const [clicked, setClicked] = useState(false);
 	const [dataListRecipe, setDataListRecipe] = useState([]);
-	const [validatedRecipe, setValidatedRecipe] = useState(false);
+	//const [validatedRecipe, setValidatedRecipe] = useState(false);
 
 
   const [foundRecipe, setFoundRecipe]= useState([])
@@ -43,14 +43,18 @@ const handleFetchRecipe = async (recipe) => {
     });
 		const data =  await response.json();
 
+<<<<<<< HEAD
     console.log('We have the data', data.recipe);
+=======
+    //console.log(data.recipe);
+>>>>>>> 29e1947e81c8be578b07aacb9774087da086d6e7
 
 		if (data.result) {
 			setDataListRecipe(data.recipe);
 		} else {
 			setDataListRecipe(data.error);
 		}
-    console.log('end')
+    //console.log('end')
 	}
 
 	useEffect(() => {
@@ -63,20 +67,15 @@ const handleFetchRecipe = async (recipe) => {
 
   function onItemPress(props){
     
-    //console.log('test',dataListRecipe[0])
-    //const votes= recipe.votes.length;
-    //const note= recipe.votes.reduce((accumulator,current)=>accumulator+current.note,0)/votesTopRecipe;
-    console.log('dashbooard',props)
-
     const votes = props?.votes.length;
     const note= props?.votes.reduce((accumulator,current)=>accumulator+current.note,0)/votes;
-    
-    navigation.navigate('Recipe', { props, note: note, votes: votes, update:update })
     if(modalRef.current){
       modalRef.current.animate('slideOutUp', 800).then(() => {
         setModalVisible(false);
+        navigation.navigate('Recipe', { props, note: note, votes: votes, update:update })
         })
     }
+
   }
 
   const recipeAll = async () => {
@@ -269,8 +268,8 @@ const topStars = [];
 								searchRecipe={searchRecipe}
 								data={dataListRecipe}
 								setClicked={setClicked}
-								validatedRecipe={validatedRecipe}
-								setValidatedRecipe={setValidatedRecipe}
+								//validatedRecipe={validatedRecipe}
+								//setValidatedRecipe={setValidatedRecipe}
 								onItemPress={onItemPress}
 								/>
 							</View>
@@ -457,4 +456,9 @@ borderWidth: 1,
 borderColor: 'grey',
 backgroundColor: 'rgba(255,255,255, 0.6)',
 },
+
+backRetour:{
+  width:'100%',
+  alignItems:'center',
+}
 })
