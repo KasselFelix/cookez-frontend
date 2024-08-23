@@ -46,7 +46,7 @@ export default function SignUp({navigation}) {
       })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
+        // console.log(data);
         if (data.result) {
           setSubmitted(true);
           dispatch(addUserToStore(data.newUser))

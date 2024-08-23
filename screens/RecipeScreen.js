@@ -1,30 +1,27 @@
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Modal, Image} from "react-native";
 import React, {useState, useEffect, useRef} from "react";
+import { useSelector } from "react-redux";
+import Popover from "react-native-popover-view";
+import * as Animatable from 'react-native-animatable';
+import FontAwesome from "react-native-vector-icons/FontAwesome";
+// CSS
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
+// MODULES
 import MyButton from "../modules/MyButton";
 import MySmallButton from "../modules/MySmallButton";
 import addressIp from "../modules/addressIp";
-import Comments from "../components/Comments";
-
-import FontAwesome from "react-native-vector-icons/FontAwesome";
-import Popover from "react-native-popover-view";
-import { useSelector } from "react-redux";
-
-import * as Animatable from 'react-native-animatable';
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
-
 import imageRecipe from "../modules/images";
+// COMPONENTS
+import Comments from "../components/Comments";
 
 export default function RecipeScreen({ route, navigation }) {
 
-  //const user ={username:'reptincel',token:'vePuvRek0PzD61hJVkyryC4EoGCZH-RY'};
-  //const user = {username:null,token:null};
-  const user = useSelector((state)=>state.user.value);
+  // DATA NAVIGATE FROM COMPONENTS RECIPE 
   const selectedRecipe = route.params.props
-  console.log('PARAMS',selectedRecipe)
   const votes = route.params.votes
+
+  const user = useSelector((state)=>state.user.value);
 
   /* HOOK STATE FOR THE HEART LOGO ON THE RECIPE*/
   const [like, setLike] = useState(false);
@@ -33,27 +30,19 @@ export default function RecipeScreen({ route, navigation }) {
   const [modalVisible,setModalVisible]=useState(false);
   const [starNote,setStarNote]=useState(0);
   const [action,setAction]=useState(false);
-  const modalRef = useRef(null);
-  // const [up,setUp]=useState(false);
-  // const [down,setDown]=useState(false);
-  // const [upVote,setUpVote]=useState(false);
-  // const [downVote,setDownVote]=useState(false);
+  const [allComments, setAllComments] = useState([])
 
-// auto close the popover 
+  // Animatable ?
+  const modalRef = useRef(null);
+
+  // AUTO CLOSE THE POPOVER 
   useEffect(() => {
     setTimeout(() => setShowPopover(false), 5500);
     setTimeout(() => setShowPopoverVote(false), 5500);
   }, [])
 
 
-  const handleVote=()=>{
-    if(user.token ){
-      setModalVisible(true)
-    }else{
-      setShowPopoverVote(true)
-    }
-  }
-
+  // HNADLE VOTE RECIPE 1/3
   const handleFetchVote = async (note) => {
     const response = await fetch(`http://${addressIp}:3000/recipes/vote/${selectedRecipe._id}`,{
       method:'POST',
@@ -68,13 +57,30 @@ export default function RecipeScreen({ route, navigation }) {
     if (data.result) {
       if (modalRef.current) {
         modalRef.current.animate('slideOutUp', 800).then(() => {
-              setModalVisible(false);
+          setModalVisible(false);
         });
       }
       route.params.update()
     }
   }
+  
+  // 2/3
+  useEffect(() => {
+    if (user.token) { 
+      handleFetchVote(starNote);
+    }
+  }, [starNote]);
+  
+  // 3/3
+  const handleVote=()=>{
+    if(user.token ){
+      setModalVisible(true)
+    }else{
+      setShowPopoverVote(true)
+    }
+  }
 
+  // HANDLE FAVORITE HEART 3/3
   const handleFetchLike = async () => {
     setAction(true)
     const response = await fetch(`http://${addressIp}:3000/recipes/updateFavorite`,{
@@ -95,6 +101,23 @@ export default function RecipeScreen({ route, navigation }) {
     }
   }
 
+  // 2/3
+  useEffect(() => {
+    if(user.token){
+      handleFetchLike();
+    }
+  }, []);
+  
+  // 3/3 CONDITIONAL FUNCTION TO CHANGE HEART COLOR UPON CLICKING FOR LOGGED IN USER VERSION
+  const handleLikeRecipe =() => {
+    if(user.token){
+      handleFetchLike()
+    }else{
+      setShowPopover(true)
+    }
+  }
+  
+  
   function handleStarsVote(note){
     const last=note;
     setStarNote(note)
@@ -104,18 +127,7 @@ export default function RecipeScreen({ route, navigation }) {
     });}
   }
 
-  useEffect(() => {
-    if (user.token) { 
-      handleFetchVote(starNote);
-    }
-  }, [starNote]);
 
-  useEffect(() => {
-    if(user.token){
-      handleFetchLike();
-    }
-  }, []);
-  
   const stars = [];
   for (let i = 0; i < 5; i++) {
     stars.push(
@@ -142,15 +154,6 @@ export default function RecipeScreen({ route, navigation }) {
     );
   }
 
-
-  // CONDITIONAL FUNCTION TO CHANGE HEART COLOR UPON CLICKING FOR LOGGED IN USER VERSION
-  const handleLikeRecipe =() => {
-    if(user.token){
-      handleFetchLike()
-    }else{
-      setShowPopover(true)
-    }
-  }
   
   const ingredients= selectedRecipe.ingredients.map((e,i)=>{
       return <Text key={i}> ● {e.quantity}g {e.name}</Text>
@@ -159,91 +162,39 @@ export default function RecipeScreen({ route, navigation }) {
   const steps= selectedRecipe.steps.map((text,i)=>{
     return <Text key={i}>{i+1}. {text}</Text>
   })
-
-  // const comments= selectedRecipe.comments.map((e,i)=>{
-  //   return <View key={i} style={styles.content}>
-  //         <Text>{e.username}   {e.date}</Text>
-  //         <Text>{e.message}</Text>
-  //   </View>
-  // })
-  // const handleUpComment = async (username, _id) => {
-
-  //   try {
-  //     const response = await fetch(`http://${addressIp}:3000/comments/upvote`, {
-  //       method: 'POST',
-  //       headers: {'Content-Type': 'application/json'},
-  //       body: JSON.stringify({
-  //         username: username,
-  //         _id: _id
-  //       })
-  //     });
-  //     const data =  await response.json();
-  //     if (data.result) {
-  //       console.log('DATA',data)
-  //       setUp(data.up)
-  //       setDown(data.down)
-  //       setUpVote(data.upVote)
-  //       setDownVote(data.downVote)
-  //       console.log('UPVOTE',upVote)
-  //       console.log('DOWNVOTE',downVote)
-  //     }
-  //   } catch (error) {
-  //     console.error('There has been a problem with your fetch operation:', error);
-  //   }
-  //   route.params.update()
-  // };
-  // //deconstruction non necesssaire
-  // const handleDownComment = async (username, _id) => {
-  //   try {
-  //     const response = await fetch(`http://${addressIp}:3000/comments/downvote`, {
-  //       method: 'POST',
-  //       headers: {'Content-Type': 'application/json'},
-  //       body: JSON.stringify({
-  //         username: username,
-  //         _id: _id
-  //       })
-  //     });
-  //     const data =  await response.json();
-  //     if (data.result) {
-  //       console.log('DATA',data)
-  //       setUp(data.up)
-  //       setDown(data.down)
-  //       setUpVote(data.upVote)
-  //       setDownVote(data.downVote)
-  //     }
-  //   } catch (error) {
-  //     console.error('There has been a problem with your fetch operation:', error);
-  //   }
-  //   route.params.update()
-  // };
   
-
-  // useEffect(() => {
-  //   // selectedRecipe.comments.map((e,i)=>{ handleUpComment(user.username,e._id) })
-  // }, []);
-
-  // useEffect(() => {
-  //   // selectedRecipe.comments.map((e,i)=>{ handleDownComment(user.username,e._id) })
-  // }, []);
-
-  // useEffect(() => {
-  //   const commentsDisplay= selectedRecipe.comments.map((e,i)=>{
-  //     console.log('EEEEEEEe :', e)
-  //     return <Comments key={i} {...e}/>
-  //   });
-  // }, [starNote]);
-
-  console.log('INITIAL: ', selectedRecipe.comments);
-  const commentsDisplay= selectedRecipe.comments.map((e,i)=>{
-    console.log('_id: ', e._id); //e correspond a l'ID
-    //return <Comments key={i} _id={e._id}  username={e.username} date={e.date} message={e.message} up={up} down={down} upVote={upVote} downVote={downVote} handleUpComment={handleUpComment} handleDownComment={handleDownComment}/>
-    return <Comments key={i} {...e} update={route.params.update} />
-  });
-
-  
-
-  return (
-    <SafeAreaView style={styles.container}>
+  // FETCH GETS ALL USERS WHO VOTED UP/DOWN 1/3
+  const handleUpDownVoteByUser = async () => {
+    try {
+      const response = await fetch(`http://${addressIp}:3000/comments/byRecipe`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          recipe: selectedRecipe._id
+        })
+      });
+      const data = await response.json()
+      if (data.result) {
+        const comments = data.comments.map(e => e)
+        setAllComments(comments)
+      }
+    } catch (error) {
+      console.error('There has been a problem with your fetch operation:', error);
+    }
+  };
+    
+  // 2/3
+    useEffect(() => {
+      handleUpDownVoteByUser()
+    }, []);
+    
+    // 3/3
+      const commentsDisplay= allComments.map((e,i)=>{
+        return <Comments key={i} {...e} update={route.params.update} alreadyUp={e.usersAlreadyUpVoted.includes(user.username)} alreadyDown={e.usersAlreadyDownVoted.includes(user.username)} upDownCountInitial={e.usersAlreadyUpVoted.length - e.usersAlreadyDownVoted.length}/*handleUpCommentRecipeScreen={handleUpCommentRecipeScreen}*/ />
+      });
+    
+    return (
+      <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <MySmallButton
           dataFlow={() => navigation.goBack()}
@@ -256,14 +207,14 @@ export default function RecipeScreen({ route, navigation }) {
           text={<FontAwesome name="home" size={25} color={"white"} />}
           buttonType={buttonStyles.buttonSmall}
         /> :
-        // <View style={styles.btnEmpty}></View>
         <MySmallButton
           dataFlow={() => navigation.navigate('Home')}
           text={<FontAwesome name="home" size={25} color={"white"} />}
           buttonType={buttonStyles.buttonSmall}
         />}
       </View>
-      <ScrollView>  
+      <ScrollView> 
+
       {/* BLOC RECETTE SELECTED  */}
         <View style={styles.recipeContainer}>
           <Animatable.View animation="slideInDown" duration={700} style={styles.pictureBloc}>
@@ -354,6 +305,8 @@ export default function RecipeScreen({ route, navigation }) {
           </Animatable.View>
         </View>
       </ScrollView>
+
+      {/* BLOC COMMENTS */}
       { commentsDisplay.length > 0 && 
       <ScrollView horizontal  contentContainerStyle={styles.CommentScrollView}>
         {commentsDisplay}
@@ -452,7 +405,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
 ,   alignItems: 'center',
     borderRadius: 10,
-    // backgroundColor: 'white',
   },
 
   imageContainer: {
@@ -545,7 +497,7 @@ const styles = StyleSheet.create({
 
   CommentScrollView: {
     height: 200,
-    width: 'auto',
+    width: 1100,
   },
 
   commentsBloc: {
@@ -558,7 +510,7 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    paddingBottom: 10,
+    paddingBottom: 100,
   },
 
   scrollView: {

@@ -58,21 +58,21 @@ const user = useSelector((state) => state.user.value);
 
 const handleAddRecipe = () => {
   if(user && user.token){
-    console.log('pass')
-    console.log({
-      username: user.username, 
-      name: recipeName,
-      ingredients: ingredientsList, 
-      difficulty: recipeDifficulty, 
-      picture:`${recipeName}.jpg`, 
-      preparationTime:recipePreptime, 
-      cookingTime: recipeCooktime,
-      // unit:recipeUnit,
-      description:recipeDescription, 
-      servings:recipeServings, 
-      steps:stepsArray,
-      // comments:[],
-})
+//     console.log('pass')
+//     console.log({
+//       username: user.username, 
+//       name: recipeName,
+//       ingredients: ingredientsList, 
+//       difficulty: recipeDifficulty, 
+//       picture:`${recipeName}.jpg`, 
+//       preparationTime:recipePreptime, 
+//       cookingTime: recipeCooktime,
+//       // unit:recipeUnit,
+//       description:recipeDescription, 
+//       servings:recipeServings, 
+//       steps:stepsArray,
+//       // comments:[],
+// })
     // if(name && origin && ingredients.lenght>0 && difficulty && preparationTime && description && steps.length>0) {
       fetch(`http://${addressIp}:3000/recipes/add`, {
         method: "POST",
@@ -93,7 +93,7 @@ const handleAddRecipe = () => {
       })
       .then((res)=> res.json())
       .then((data) => {
-        console.log('data:', data);
+        // console.log('data:', data);
         
         if (data.result){
           alert("Recipe successfully added !")

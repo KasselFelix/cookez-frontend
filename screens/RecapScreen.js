@@ -23,7 +23,7 @@ export default function RecapScreen({ navigation }) {
 
   const handleShowPopover =() => {
     setShowPopover(true)
-    console.log('IF FALSE: ', showPopover)
+    // console.log('IF FALSE: ', showPopover)
 }
 
   let listIngredients=<></>;

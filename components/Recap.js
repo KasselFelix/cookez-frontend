@@ -30,7 +30,7 @@ export default function Recap( props ) {
           });
 
           const data = await response.json();
-          console.log('API Response:', data);
+          // console.log('API Response:', data);
           if (data && data.data && data.data.length > 0) {
               setImageUrl(data.data[0].url); // Met à jour l'état avec l'URL de l'image
           } else {
@@ -89,7 +89,7 @@ export default function Recap( props ) {
             </View>
           </View>
           <View style={styles.infoBtn}>
-            <TouchableOpacity activeOpacity={0.5} onPress={() => {console.log('ICI'); setModalVisible(true)}} >
+            <TouchableOpacity activeOpacity={0.5} onPress={() => {setModalVisible(true)}} >
                 <Feather name="info" size={24} color="black"/>
             </TouchableOpacity>
           </View>
