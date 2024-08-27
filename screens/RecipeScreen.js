@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
 
   recipeContainer: {
     width:'100%',
-    height:'78%',
+    height:'80%',
     paddingBottom:'auto',
     overflow:'hidden',
   },
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
 
   recipeContainerAdjustLogged: {
     width:'100%',
-    height: '71%',
+    height: '70%',
     paddingBottom:'auto',
     overflow:'hidden',
     alignItems: 'center',
@@ -512,6 +512,7 @@ const styles = StyleSheet.create({
   scrollViewMain: {
     width:'100%',
     height:'auto',
+    overflow:'visible',
   },
 
   pictureBloc: {
