@@ -12,7 +12,7 @@ import * as Animatable from 'react-native-animatable';
 import ListRecipes from "../components/ListRecipes";
 import SearchRecipe from "../components/SearchRecipe";
 import { useDispatch, useSelector } from "react-redux";
-import {updateRecipeToStore,removeAllRecipeToStore,addRecipeToStore} from "../reducers/recipe";
+import recipe, {updateRecipeToStore,removeAllRecipeToStore,addRecipeToStore} from "../reducers/recipe";
 
 
 
@@ -43,7 +43,11 @@ const handleFetchRecipe = async (recipe) => {
     });
 		const data =  await response.json();
 
+<<<<<<< HEAD
+    console.log('We have the data', data.recipe);
+=======
     //console.log(data.recipe);
+>>>>>>> 29e1947e81c8be578b07aacb9774087da086d6e7
 
 		if (data.result) {
 			setDataListRecipe(data.recipe);
@@ -83,12 +87,13 @@ const handleFetchRecipe = async (recipe) => {
       const data = await response.json();
       if (data.result) {
         setFoundRecipe(data.recipes);
+        console.log('Here are all the recipes', foundRecipe[0]);
       }
     } catch (error) {
       console.error('error fetching data 🧐', error);
       alert('error', error);
+    }
   }
-}
 
   useEffect(()=> {
     
@@ -121,6 +126,13 @@ const renderVotesLatestRecipe= (
     <Text>{votesLatestRecipe}</Text>
   </View>
 )
+
+// const getImageUrl = (foundRecipe) => {
+
+//   if (foundRecipe && foundRecipe.picture) {
+//     return ListRecipes[`${foundRecipe.picture}.jpg`];
+//   }
+// };
 
 const topStars = [];
   for (let i = 0; i < 5; i++) {
@@ -191,7 +203,7 @@ const topStars = [];
             </View>
           )} */}
         <View style={styles.imageBlock}>
-        <Image style={styles.topImage} source={imageRecipe[`ratatouille.jpg` || null]}/>
+        <Image style={styles.topImage} source={imageRecipe[`${topRecipe?.picture}` || null]}/>
         </View>
           {/* {votes.length > 0 ?(
             votes.map((note, index) =>(
@@ -211,12 +223,12 @@ const topStars = [];
             </View>
           )} */}
         <View style={styles.latestStars}>
-          <Text>Salade niçoise</Text>
+          <Text>{latestRecipe?.name}</Text>
             {latestStars}
             {renderVotesLatestRecipe}
         </View>
         <View style={styles.imageBlock}>
-          <Image style={styles.latestImage} source={imageRecipe[`salade_nicoise.jpg` || null]}/>
+          <Image style={styles.latestImage} source={imageRecipe[`${latestRecipe?.picture}` || null]}/>
         </View>
           {/* {votes.length > 0 ?(
             votes.map((note, index) =>(
@@ -365,12 +377,12 @@ imageBlock:{
 topImage:{
   width:'100%',
   height:'100%',
-  objectFit:'contain'
+  resizeMode:'cover'
 },
 latestImage:{
   width:'100%',
   height:'100%',
-  objectFit:'contain'
+  resizeMode:'cover'
 },
 
 lowerContainers:{

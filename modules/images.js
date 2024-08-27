@@ -9,6 +9,8 @@ const imageRecipe = {
     "salade_nicoise.jpg":require('../assets/recipe/salade_nicoise.jpg'),
     "soupe_a_l_oignon.jpg":require('../assets/recipe/soupe_a_l_oignon.jpg'),
     "tarte_tatin.jpg":require('../assets/recipe/tarte_tatin.jpg'),
+    "Croque_Monsieur.jpg": require('../assets/recipe/Croque_Monsieur.jpg')
+
 };
 
 export default imageRecipe;
