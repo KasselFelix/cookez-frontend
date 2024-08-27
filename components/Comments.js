@@ -8,7 +8,7 @@ import moment from 'moment';
 import addressIp from '../modules/addressIp';
 import css from '../styles/Global';
 
-export default function Comments( { upDownCountInitial, alreadyUp, alreadyDown, username, date, message, _id, update}) {
+export default function Comments( { upDownCountInitial, alreadyUp, alreadyDown, username, date, message, _id, update, recipe}) {
     const user = useSelector((state)=>state.user.value);
     const dateFormated = moment(date).format('HH:MM DD-MM-YYYY');
     const [showPopover, setShowPopover]=useState(false);
