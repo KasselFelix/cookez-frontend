@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
   pictureBlocURL: {
     justifyContent:'flex-start',
     width: "90%",
-    height: '32%',
+    height: '50%',
     backgroundColor: css.backgroundColorOne,
     paddingHorizontal: 10,
     borderRadius: 8,
