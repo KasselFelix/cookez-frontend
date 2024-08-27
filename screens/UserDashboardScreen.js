@@ -117,7 +117,6 @@ const handleFetchRecipe = async (recipe) => {
         setLatestRecipe( latest)
         fetchImageUrl(top?.name,top?.date,setImageUrlTop);
         fetchImageUrl(latest?.name,latest?.date,setImageUrlLatest);
-   
       }
     } catch (error) {
       console.error('error fetching data 🧐', error);
