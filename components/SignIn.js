@@ -29,7 +29,7 @@ export default function SignIn({navigation}) {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-            username,password
+            username:username.trim(),password
         })
         })
         .then(res => res.json())
