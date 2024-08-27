@@ -55,18 +55,11 @@ export default function UserDashboardScreen({navigation}) {
 
   useEffect(()=> {
     recipeAll(); 
-    const sortRecipes = foundRecipe?.sort((a, b) => b.votes.length - a.votes.length ) || [];
-    setTopRecipe(sortRecipes[0]);
-    setLatestRecipe( foundRecipe[foundRecipe.length-1])
-    console.log('TOP',topRecipe)
-    fetchImageUrl(topRecipe?.name,topRecipe?.date,setImageUrlTop);
-    fetchImageUrl(latestRecipe?.name,latestRecipe?.date,setImageUrlLatest);
   }, [])
 
   useEffect(() => {
-    console.log('PASS')
-   
-  }, [foundRecipe]);
+    
+  }, []);
 
 
 // FETCH THE RECIPE ROUTE BY NAME 
@@ -117,6 +110,14 @@ const handleFetchRecipe = async (recipe) => {
       const data = await response.json();
       if (data.result) {
         setFoundRecipe(data.recipes);
+        const sortRecipes = data.recipes.sort((a, b) => b.votes.length - a.votes.length ) || [];
+        const top=sortRecipes[0];
+        const latest= data.recipes[data.recipes.length-1];
+        setTopRecipe(top);
+        setLatestRecipe( latest)
+        fetchImageUrl(top?.name,top?.date,setImageUrlTop);
+        fetchImageUrl(latest?.name,latest?.date,setImageUrlLatest);
+   
       }
     } catch (error) {
       console.error('error fetching data 🧐', error);
@@ -126,12 +127,11 @@ const handleFetchRecipe = async (recipe) => {
 
   
 
-function update(){
-  recipeAll();
-} 
+  function update(){
+    recipeAll();
+  } 
 
 // map on 'foundRecipe' to retrieve 'votes'
-
   
   const votesTopRecipe = topRecipe?.votes.length;
   const noteTopRecipe = topRecipe?.votes.reduce((accumulator,current)=>accumulator+current.note,0)/votesTopRecipe;
@@ -345,11 +345,12 @@ logo:{
   alignSelf:'center',
   marginTop:'18%',
   marginBottom:15,
+  shadowColor:'#000',
   shadowOffset: { width: 3, height:10 }, // Shadow offset for iOS
   shadowOpacity: 2,          // Shadow opacity for iOS
   shadowRadius: 2,  
   marginBottom:0,           // Shadow radius for iOS
-
+  elevation:5,
 },
 
 higherIcon: {
