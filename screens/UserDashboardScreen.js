@@ -403,15 +403,16 @@ imageBlock:{
   borderRadius:9,
   borderWidth:2,
 },
+
 topImage:{
   width:'100%',
   height:'100%',
-  resizeMode:'cover'
+  resizeMode:'center'
 },
 latestImage:{
   width:'100%',
   height:'100%',
-  resizeMode:'cover'
+  resizeMode:'center'
 },
 
 lowerContainers:{
