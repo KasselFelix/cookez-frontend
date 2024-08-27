@@ -122,11 +122,11 @@ export default function KickoffScreen({navigation}) {
 								const data = await response.json();
 								if(data){
 									if (data.items && data.items.length > 0 && data.items[0].food.length > 0) {
-										console.log('NOW: ', data.items[0].food[0]);
+										// console.log('NOW: ', data.items[0].food[0]);
 										dispatch(addIngredientToStore({photo:imagePath, data:data.items[0].food[0].food_info}))
 									}
 								}else{
-									console.log('no data')
+									// console.log('no data')
 								}
 
 							  } else {

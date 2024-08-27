@@ -70,7 +70,7 @@ nonValidated: {
 },
 
 validated: {
-  backgroundColor: "green",
+  backgroundColor: css.backgroundColorTwo,
   borderRadius: 50,
   marginBottom: 10,
 },
@@ -83,6 +83,7 @@ item: {
   margin: 30,
   borderBottomWidth: 2,
   borderBottomColor: 'black',
+  width: '80%'
 },
 
 name: {

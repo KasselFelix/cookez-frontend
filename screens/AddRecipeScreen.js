@@ -26,7 +26,6 @@ import TakePhoto from "../components/TakePhoto";
 import { removePictureToStore } from "../reducers/picture";
 
 export default function AddRecipeScreen({navigation}) {
-  // const dispatch = useDispatch();
 
   // ETATS POUR LES PICKERS \\
   const [selectedNumber, setSelectedNumber] = useState(null);
@@ -55,13 +54,12 @@ export default function AddRecipeScreen({navigation}) {
 
   //ETATS POUR LES HANDLES \\
   const [recipe, setRecipe] = useState("");
-  // const [ingredient, setIngredient] = useState([]);
   const [stepsArray, setStepsArray] = useState([]);
 
   // Reducer user 
   const user = useSelector((state) => state.user.value);
-  const picture=useSelector((state)=>state.picture.value);
-  const dispatch=useDispatch()
+  const picture = useSelector((state)=>state.picture.value);
+  const dispatch = useDispatch()
 
   useEffect(()=>{
     dispatch(removePictureToStore())
@@ -69,6 +67,20 @@ export default function AddRecipeScreen({navigation}) {
 
   const handleAddRecipe = () => {
     if(user && user.token){
+//     console.log('pass')
+//     console.log({
+//       username: user.username, 
+//       name: recipeName,
+//       ingredients: ingredientsList, 
+//       difficulty: recipeDifficulty, 
+//       picture:`${recipeName}.jpg`, 
+//       preparationTime:recipePreptime, 
+//       cookingTime: recipeCooktime,
+//       // unit:recipeUnit,
+//       description:recipeDescription, 
+//       servings:recipeServings, 
+//       steps:stepsArray,
+//       // comments:[],
       console.log('PICTURE',picture)
       const date=Date.now();
       const formData = new FormData();
