@@ -69,7 +69,7 @@ const handleFetchRecipe = async (recipe) => {
     });
 		const data =  await response.json();
 
-    console.log('We have the data', data.recipe);
+    // console.log('We have the data', data.recipe);
 
 		if (data.result) {
 			setDataListRecipe(data.recipe);

@@ -9,7 +9,6 @@ export const SearchBar = memo(() => {
 
   const getSuggestions = useCallback(async q => {
     const filterToken = q.toLowerCase()
-    console.log('getSuggestions', filterToken)
     if (typeof q !== 'string' || q.length < 3) {
       setRemoteDataSet(null)
       return

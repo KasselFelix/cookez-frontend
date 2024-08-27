@@ -6,6 +6,7 @@ import buttonStyles from '../styles/Button';
 import css from '../styles/Global';
 import { removeUserToStore, updateUserInStore} from '../reducers/user';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import AntDesign from "react-native-vector-icons/AntDesign";
 import addressIp from '../modules/addressIp';
 import { removeAllIngredientToStore } from '../reducers/ingredient';
 import { removeAllRecipeToStore } from '../reducers/recipe';
@@ -106,9 +107,18 @@ const handleUpdate = () => {
   return (
     <SafeAreaView style={styles.container}>
 
-      <View style={styles.iconContainer}>
+      <View style={styles.header}>
         <TouchableOpacity onPress={() => setEditModalVisible(true)}>
           <FontAwesome name={"edit"} size={30} color={css.inactiveButtonColor} style={styles.iconEdit}/>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => {
+              navigation.navigate("Home");
+              dispatch( removeUserToStore());
+              dispatch( removeAllIngredientToStore());
+              dispatch( removeAllRecipeToStore());
+              dispatch(removeCommentToStore());
+              dispatch(removePictureToStore())}}>
+          <AntDesign name={"logout"} size={25} color={css.inactiveButtonColor} style={styles.iconEdit}/>
         </TouchableOpacity>
       </View>
 
@@ -129,7 +139,9 @@ const handleUpdate = () => {
         </Text>
         <Text style={styles.profileUsername}>@{user?.username}</Text>
       </Animated.View>
-
+      <ScrollView>
+        
+      </ScrollView>
       <View style={styles.profileInfo}>
         <ScrollView style={{overflow:'hidden'}} >
         <Text style={styles.infoTitle}>Email:</Text>
@@ -164,7 +176,7 @@ const handleUpdate = () => {
         </ScrollView >
       </View>
 
-      <View style={styles.logoutSection}>
+      {/* <View>
       <MyButton
             dataFlow={() => {
               navigation.navigate("Home");
@@ -176,7 +188,7 @@ const handleUpdate = () => {
             text={"LOG OUT"}
             buttonType={buttonStyles.buttonOne}
           />
-      </View>
+      </View> */}
 
       {/* Modal pour sélectionner l'image */}
       <Modal
@@ -285,21 +297,23 @@ const handleUpdate = () => {
 
 const styles = StyleSheet.create({
   container: {
+    //flex:1,
     width: width * 1,  
     height: height * 1, 
     paddingVertical: '20%',
     justifyContent:'space-between',
     backgroundColor: css.backgroundColorTwo,
     alignItems: 'center',
-  },
+    paddingTop: '10%',
+    backgroundColor: css.backgroundColorTwo
+  }, 
 
-  iconContainer:{
-    position: 'absolute',
+  header: {
+    flex: 0,
+    width: '90%',
     flexDirection: 'row',
-    marginTop: 10,
-    top: 20,
-    right: 20,
-    padding: 5,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 
   iconEdit:{
@@ -345,7 +359,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 5,
-    marginBottom:'4%',
+    marginBottom:'20%',
+    //marginBottom:'4%',
   },
 
   infoTitle: {

@@ -1,47 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import { useSelector } from "react-redux";
 import Popover from "react-native-popover-view";
 import moment from 'moment';
-import { useSelector } from "react-redux";
+// MODULES
 import addressIp from '../modules/addressIp';
 import css from '../styles/Global';
 
-//export default function Comments( {username, date, message, up, down, upVote, downVote, setDownVote, setUpVote, setUp, setDown, handleUpComment, handleDownComment, _id }) {
-export default function Comments( {username, date, message, _id, update ,recipe}) {
-
+export default function Comments( { upDownCountInitial, alreadyUp, alreadyDown, username, date, message, _id, update}) {
     const user = useSelector((state)=>state.user.value);
-    const [showPopover, setShowPopover]=useState(false);
     const dateFormated = moment(date).format('HH:MM DD-MM-YYYY');
-    const [up,setUp]=useState([]);
-    const [down,setDown]=useState([]);
-    const [upVote,setUpVote]=useState(false);
-    const [downVote,setDownVote]=useState(false);
+    const [showPopover, setShowPopover]=useState(false);
+    const [up, setUp] = useState([]);
+    const [down, setDown]= useState([]);
+    const [upDownCountCurrent, setUpDownCountCurrent] = useState((0));
+    const [upVote, setUpVote] = useState(false);
+    const [downVote, setDownVote] = useState(false);
     const [inputMessage,setInputMessage]=useState('');
     const [modalVisible, setModalVisible] = useState(false);
-    
+    const [trigger, setTrigger] = useState(false);
+
+
+    //HANDLE UP/DOWN COLOR IF USER HAS ALREADY VOTED AT INITIALIZATION OF RECIPE SCREEN 
     useEffect(() => {
-      setTimeout(() => setShowPopover(false), 5500);
-    }, [])
-
-    const handleUpDown=()=>{
-      if (user.token) {
-        setShowPopover(false)
-      } else {
-        setShowPopover(true)
+      if (alreadyUp) {
+        setUpVote(true);
+      } else if (alreadyDown) {
+        setDownVote(true);
       }
-    }
+    }, [alreadyUp, alreadyDown]);
 
+    //HANDLE TOTAL UP/DOWN COUNT AT INITIALIZATION OF RECIPE SCREEN 1/2
+    useEffect(() => {
+      if (upDownCountInitial > 0) {
+        setUpDownCountCurrent(upDownCountInitial)
+        setTrigger(true)
+      } 
+    }, [upDownCountInitial])
+
+    // 2/2
     const upDownDisplay = () => {
       if ((up?.length - down?.length) > 0) {
-        return <Text>({up.length - down.length})</Text>
+        return <Text>({(up.length - down.length)})</Text>
       } else {
         return <Text>(0)</Text>
       }
     };
 
+    // HANDLE UP BY CLICK
     const handleUpComment = async (username, _id) => {
-
       try {
         const response = await fetch(`http://${addressIp}:3000/comments/upvote`, {
           method: 'POST',
@@ -52,21 +60,20 @@ export default function Comments( {username, date, message, _id, update ,recipe}
           })
         });
         const data =  await response.json();
-        if (data.result) {
-          console.log('DATA',data)
-          setUp(data.up)
-          setDown(data.down)
-          setUpVote(data.upVote)
-          setDownVote(data.downVote)
-          console.log('UPVOTE',upVote)
-          console.log('DOWNVOTE',downVote)
-        }
+          if (data.result) {
+            setUp(data.up)
+            setDown(data.down)
+            setUpVote(data.upVote)
+            setDownVote(data.downVote)
+            setTrigger(false)
+          }
       } catch (error) {
         console.error('There has been a problem with your fetch operation:', error);
       }
       update()
     };
-    
+
+    // HANDLE DOWN BY CLICK
     const handleDownComment = async (username, _id) => {
       try {
         const response = await fetch(`http://${addressIp}:3000/comments/downvote`, {
@@ -79,11 +86,11 @@ export default function Comments( {username, date, message, _id, update ,recipe}
         });
         const data =  await response.json();
         if (data.result) {
-          console.log('DATA',data)
           setUp(data.up)
           setDown(data.down)
           setUpVote(data.upVote)
           setDownVote(data.downVote)
+          setTrigger(false)
         }
       } catch (error) {
         console.error('There has been a problem with your fetch operation:', error);
@@ -170,25 +177,39 @@ export default function Comments( {username, date, message, _id, update ,recipe}
       } catch (error) {
         console.error('There has been a problem with your fetch operation:', error);
       }
+     }
     }
 
+    // HANDLE THE POSSIBILITY OF INTERACTING WITH COMMENTS 1/3
+    useEffect(() => {
+      setTimeout(() => setShowPopover(false), 5500);
+    }, [])
+
+    // 2/3
+    const handleUpDownNoLogged=()=>{
+      if (user.token) {
+        setShowPopover(false)
+      } else {
+        setShowPopover(true)
+      }
     }
 
+    // 3/3
     const handleLogged = (
       user.token  ?
                 <View style={styles.footer}>
-                    <View>
-                      <FontAwesome name="comments" size={20} color={css.backgroundColorTwo} onPress={() => setModalVisible(true)}/>
-                    </View>
+                    <TouchableOpacity onPress={() => setModalVisible(true)}>
+                      <FontAwesome name="comments" size={20} color={css.backgroundColorTwo}/>
+                    </TouchableOpacity>
                     <View style={styles.icone}>
-                      <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleUpComment(user.username, _id)}>
-                        <FontAwesome name="thumbs-up" size={20} color={  upVote ? "green" : "grey"} />
+                      <TouchableOpacity style={styles.upButton} activeOpacity={0.4} onPress={() => handleUpComment(user.username, _id)}>
+                        <FontAwesome name="thumbs-up" size={20} color={ upVote ? "green" : "grey" } />
                       </TouchableOpacity>
-                      <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleDownComment(user.username, _id)}>
-                        <FontAwesome name="thumbs-down" size={20} color={ downVote ?  "red" : "grey"}/>
+                      <TouchableOpacity style={styles.downButton} activeOpacity={0.4} onPress={() => handleDownComment(user.username, _id)}>
+                        <FontAwesome name="thumbs-down" size={20} color={ downVote ?  "red" : "grey" }/>
                       </TouchableOpacity>
                       <View>
-                        <Text>{upDownDisplay()}</Text>
+                      {trigger ? <Text>({upDownCountCurrent})</Text> : <Text>{upDownDisplay()}</Text>}
                       </View>
                     </View>
                     <Modal
@@ -258,23 +279,27 @@ export default function Comments( {username, date, message, _id, update ,recipe}
                 isVisible={showPopover}
                 onRequestClose={()=> setShowPopover(false)}
                 from={(
-                
-                  <TouchableOpacity style={styles.upDown} activeOpacity={0.4} onPress={() => handleUpDown()}>              
+                  <TouchableOpacity style={styles.footerNoLogged} activeOpacity={0.4} onPress={() => handleUpDownNoLogged()}>
                     <View >
                       <FontAwesome name="comments" size={20} color={"grey"}/>
                     </View>
-                    <View style={styles.icone} >
-                      <FontAwesome name="thumbs-up" size={20} color={"grey"}/>
-                      <FontAwesome name="thumbs-down" size={20} color={"grey"}/>
+                    <View style={styles.upDownButton}>
+                      <View style={styles.upButton}>
+                        <FontAwesome name="thumbs-up" size={20} color={"grey"}/>
+                      </View>
+                      <View style={styles.downButton} activeOpacity={0.4}>
+                        <FontAwesome name="thumbs-down" size={20} color={"grey"}/>
+                      </View>
+                        <Text>({upDownCountCurrent})</Text> 
                     </View>
                   </TouchableOpacity>
+                  
                 )}>
                 <View style={styles.popoverContainer}>
                   <Text>You can unlock this feature by Signing in ❤️</Text>
                 </View>
               </Popover> 
               </View>
-      
     )
 
       return (
@@ -290,30 +315,6 @@ export default function Comments( {username, date, message, _id, update ,recipe}
           </View>
         );
       };
-    
-    // return (
-    //   <View style={styles.commentContainer}>
-    //       <View style={styles.header}>
-    //         <Text style={styles.author}>@{username}</Text>
-    //         <Text style={styles.date}>{dateFormated}</Text>
-    //       </View>
-    //       <View style={styles.messageContainer}>
-    //         <Text style={styles.content}>{message}</Text>
-    //       </View>
-    //       <View style={styles.footer}>
-            // <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleUpComment({username, _id})}>
-            //   <FontAwesome name="thumbs-up" size={20} color={up.length === 0 ? "grey" : "green"} />
-            // </TouchableOpacity>
-            // <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleDownComment({username, _id})}>
-            //   <FontAwesome name="thumbs-down" size={20} color={down.length === 0 ? "grey" : "red"}/>
-            // </TouchableOpacity>
-    //         <View>
-    //           <Text>{upDownDisplay()}</Text>
-    //         </View>
-    //       </View>
-    //     </View>
-    //   );
-    // };
     
     const styles = StyleSheet.create({
       commentContainer: {
@@ -377,28 +378,34 @@ export default function Comments( {username, date, message, _id, update ,recipe}
         paddingTop: '2%',
       },
 
-      upDown: {
+      footerNoLogged: {
         flex: 0, 
+        width: '100%',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: '100%',
-        paddingRight: "5%",
       },
 
       footer: {
         marginTop: '2%',
         flexDirection: 'row',
-         justifyContent: 'space-between'
+        justifyContent: 'space-between',
       },
 
-      voteButton: {
+      upDownButton: {
         flexDirection: 'row',
         alignItems: 'center',
+      },
+
+      upButton: {
         marginRight: 15,
       },
 
-      voteCount: {
+      downButton: {
+        marginRight: 15,
+      },
+
+      comment: {
         marginLeft: 5,
         fontSize: 14,
       },

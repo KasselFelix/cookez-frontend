@@ -50,7 +50,6 @@ export default function FavoriteScreen({ navigation }) {
     }
 
     const allFavorites = myFavorites.map((data, i) => {
-        //console.log('PROPS', data);
         return  <Recipe key={i} {...data} navigation={navigation} update={update} />
     })
 
