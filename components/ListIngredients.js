@@ -4,17 +4,15 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import css from '../styles/Global';
 
 // the filter
-export default function ListIngredients ({ searchInput, setClicked, data, onItemPress}) {
+export default function ListIngredients ({ searchInput, setClicked, data, onItemPress, validatedIngredient,setValidatedIngredient}) {
     
-    const [selectedItemId, setSelectedItemId] = useState(null);
-
     const Item = ({ name, itemData }) => {
-      const isSelected = selectedItemId === itemData.id  // Vérifie si l'élément est sélectionné
-        
+  
+      const isSelected = validatedIngredient.includes(itemData.id)
       return (
         <TouchableOpacity
         activeOpacity={0.8} 
-        onPress={() => {setSelectedItemId(itemData.id); onItemPress(itemData)}} // Passez les données de l'élément à la fonction onItemPress
+        onPress={() => {setValidatedIngredient([...validatedIngredient,data.id]); onItemPress(itemData)}} // Passez les données de l'élément à la fonction onItemPress
         style={isSelected ? styles.validated : styles.nonValidated}
         >
           <View style={styles.item}>
@@ -75,26 +73,6 @@ validated: {
   backgroundColor: "green",
   borderRadius: 50,
   marginBottom: 10,
-},
-
-nonValidatedBtn: {
-  flex: 0,
-  justifyContent: 'center',
-  alignItems: 'center',
-  width: 30,
-  height: 30,
-  backgroundColor: "grey",
-  borderRadius: 100,
-},
-
-validatedBtn: {
-  flex: 0,
-  justifyContent: 'center',
-  alignItems: 'center',
-  width: 30,
-  height: 30,
-  backgroundColor: "green",
-  borderRadius: 100,
 },
 
 item: {

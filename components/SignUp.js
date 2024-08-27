@@ -1,7 +1,7 @@
 import {Modal, StyleSheet, TextInput, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import React, {useState} from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MyButton from '../modules/MyButton';
+import MyButton from './MyButton';
 import buttonStyles from '../styles/Button';
 import css from '../styles/Global';
 import { addUserToStore } from '../reducers/user';
@@ -16,7 +16,6 @@ export default function SignUp({navigation}) {
     const [username, setUsername]=useState('');
     const [age, setAge]=useState(0); 
     const [password, setPassword]=useState('');
-    const [image, setImage]=useState('');
     const [modalVisible, setModalVisible]=useState(false);
 
     const dispatch =useDispatch();
@@ -33,7 +32,7 @@ export default function SignUp({navigation}) {
 
       fetch(`http://${addressIp}:3000/users/signup`, {
         method:'POST',
-        headers: {'Content-Type': 'Application/json'}, 
+        headers: {'Content-Type': 'application/json'}, 
         body: JSON.stringify({
           email:email,
           firstname:firstname,
@@ -41,7 +40,12 @@ export default function SignUp({navigation}) {
           username: username,
           age:age,
           password: password,
-          image:image,
+          image:'default_M',
+          settings: {
+            allergy: [],
+            gender: null,
+            householdComposition: 0,
+          },
         })
       })
       .then((res) => res.json())
@@ -82,7 +86,7 @@ export default function SignUp({navigation}) {
               {
                 submitted ? 
                 <LottieView
-                source={require('../assets/Animation - 1723553895120.json')}
+                source={require('../assets/animation/Animation - 1723553895120.json')}
                 autoPlay
                 loop={false}
                 onAnimationFinish={handleAnimationFinish}
@@ -100,8 +104,6 @@ export default function SignUp({navigation}) {
                   <TextInput placeholder='age' placeholderTextColor={'grey'}  style={styles.formStyle} value={age} onChangeText={(value)=> setAge(value)}/>
                   <TextInput placeholder='email' placeholderTextColor={'grey'}  KeyboardType={'email-address'} InputModeOptions={'email'} textContentType={'emailAddress'} autoCapitalize={'email'}  style={styles.formStyle} value={email} onChangeText={(value)=> setEmail(value)}/>
                   <TextInput placeholder='password' placeholderTextColor={'grey'} textContentType='password' autoComplete='new-password' secureTextEntry={true}  style={styles.formStyle} value={password} onChangeText={(value)=> setPassword(value)}/>
-                  <TextInput placeholder='image' placeholderTextColor={'grey'}  style={styles.formStyle} value={image} onChangeText={(value)=> setImage(value)}/>
-                  {/*Conditionally render the Lottie animation */}
 
                   <MyButton
                   dataFlow={() => signUpUser()}

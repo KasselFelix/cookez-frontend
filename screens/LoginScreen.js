@@ -1,10 +1,10 @@
 import { StyleSheet, View, Text } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import SignIn from './SignIn';
-import SignUp from './SignUp';
-import MyButton from "../modules/MyButton";
-import MySmallButton from "../modules/MySmallButton";
+import SignIn from '../components/SignIn';
+import SignUp from '../components/SignUp';
+import MyButton from "../components/MyButton";
+import MySmallButton from "../components/MySmallButton";
 import buttonStyles from "../styles/Button";
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import css from "../styles/Global";

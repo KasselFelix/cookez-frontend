@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import Popover from "react-native-popover-view";
 import moment from 'moment';
 import { useSelector } from "react-redux";
 import addressIp from '../modules/addressIp';
+import css from '../styles/Global';
 
 //export default function Comments( {username, date, message, up, down, upVote, downVote, setDownVote, setUpVote, setUp, setDown, handleUpComment, handleDownComment, _id }) {
-export default function Comments( {username, date, message, _id, update }) {
+export default function Comments( {username, date, message, _id, update ,recipe}) {
 
     const user = useSelector((state)=>state.user.value);
     const [showPopover, setShowPopover]=useState(false);
@@ -16,6 +17,8 @@ export default function Comments( {username, date, message, _id, update }) {
     const [down,setDown]=useState([]);
     const [upVote,setUpVote]=useState(false);
     const [downVote,setDownVote]=useState(false);
+    const [inputMessage,setInputMessage]=useState('');
+    const [modalVisible, setModalVisible] = useState(false);
     
     useEffect(() => {
       setTimeout(() => setShowPopover(false), 5500);
@@ -63,7 +66,7 @@ export default function Comments( {username, date, message, _id, update }) {
       }
       update()
     };
-    //deconstruction non necesssaire
+    
     const handleDownComment = async (username, _id) => {
       try {
         const response = await fetch(`http://${addressIp}:3000/comments/downvote`, {
@@ -88,19 +91,165 @@ export default function Comments( {username, date, message, _id, update }) {
       update()
     };
 
+    const handleAddComment = async () => {
+      try {
+        const response = await fetch(`http://${addressIp}:3000/comments/add`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            token: user.token,
+            message: inputMessage,
+            recipe: recipe,
+          })
+        });
+        const data =  await response.json();
+        if (data.result) {
+          console.log('DATA',data)
+          console.log('Comment added successfully:', data.comment);
+          setModalVisible(false);
+          setInputMessage('');
+          update()
+        } else {
+          alert('Failed to add comment');
+        }
+      } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error);
+      }
+    }
+
+    const handleDeleteComment = async () => {
+      if(user.username===username){
+        try {
+          const response = await fetch(`http://${addressIp}:3000/comments/delete`, {
+            method: 'DELETE',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              _id,
+              username,
+            })
+          });
+          const data =  await response.json();
+          if (data.result) {
+            console.log('DATA',data)
+            console.log('Comment added successfully:', data.comment);
+            setModalVisible(false);
+            setInputMessage('');
+            update()
+          } else {
+            alert('Seems the server has a problem try another time');
+          }
+        } catch (error) {
+          console.error('There has been a problem with your fetch operation:', error);
+        }
+      }
+    }
+
+    const handleUpdateComment = async () => {
+      if(user.username===username){
+        console.log('INFO',recipe)
+        try {
+          const response = await fetch(`http://${addressIp}:3000/comments/update`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              _id,
+              username,
+              message:inputMessage,
+            })
+          });
+          const data =  await response.json();
+          if (data.result) {
+            console.log('DATA',data)
+            alert('Comment updated successfully:');
+            setModalVisible(false);
+            setInputMessage('');
+            update()
+          } else {
+            alert('Seems the server has a problem try another time');
+          }
+      } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error);
+      }
+    }
+
+    }
+
     const handleLogged = (
       user.token  ?
                 <View style={styles.footer}>
-                    <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleUpComment(user.username, _id)}>
-                      <FontAwesome name="thumbs-up" size={20} color={  upVote ? "green" : "grey"} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleDownComment(user.username, _id)}>
-                      <FontAwesome name="thumbs-down" size={20} color={ downVote ?  "red" : "grey"}/>
-                    </TouchableOpacity>
                     <View>
-                      <Text>{upDownDisplay()}</Text>
+                      <FontAwesome name="comments" size={20} color={css.backgroundColorTwo} onPress={() => setModalVisible(true)}/>
                     </View>
-                  </View>
+                    <View style={styles.icone}>
+                      <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleUpComment(user.username, _id)}>
+                        <FontAwesome name="thumbs-up" size={20} color={  upVote ? "green" : "grey"} />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.voteButton} activeOpacity={0.4} onPress={() => handleDownComment(user.username, _id)}>
+                        <FontAwesome name="thumbs-down" size={20} color={ downVote ?  "red" : "grey"}/>
+                      </TouchableOpacity>
+                      <View>
+                        <Text>{upDownDisplay()}</Text>
+                      </View>
+                    </View>
+                    <Modal
+                      animationType="slide"
+                      transparent={true}
+                      visible={modalVisible}
+                      onRequestClose={() => setModalVisible(false)} // Ferme la modal sur back press Android
+                    >
+                      <View style={styles.modalContainer}>
+                        <View style={styles.modalView}>
+                          {user.username===username?
+                            <Text style={styles.modalTitle}>Update your Comment</Text>:
+                            <Text style={styles.modalTitle}>Add a Comment</Text>
+                          }
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Type your comment..."
+                            value={inputMessage}
+                            onChangeText={(text) => {
+                              if (text.length <= 250) {
+                                setInputMessage(text);
+                              }
+                            }}
+                            multiline={true}
+                            numberOfLines={4}
+                            maxLength={250} // Empêche la saisie au-delà de la limite
+                          />
+                          <Text style={styles.charCount}>
+                            {inputMessage.length}/250
+                          </Text>
+                          <View style={styles.buttonContainer}>
+                          {username===user.username&& 
+                            <TouchableOpacity 
+                            style={[styles.button, styles.buttonCancel]} 
+                            onPress={() => {handleDeleteComment()}}
+                          >
+                            <Text style={styles.textStyle}>Delete</Text>
+                          </TouchableOpacity>
+                          }
+                              
+                            <TouchableOpacity 
+                              style={[styles.button, styles.buttonCancel]} 
+                              onPress={() => {
+                                setModalVisible(false)
+                              }}
+                            >
+                              <Text style={styles.textStyle}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                              style={[styles.button, styles.buttonAdd]} 
+                              onPress={()=>{username===user.username ? handleUpdateComment():handleAddComment()}}
+                            >
+                              {username===user.username ?
+                              <Text style={styles.textStyle}>Update</Text>: 
+                              <Text style={styles.textStyle}>Add</Text>}
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      </View>
+                    </Modal>
+                </View>
           :
             <View style={styles.footer}>
                 <Popover 
@@ -109,9 +258,15 @@ export default function Comments( {username, date, message, _id, update }) {
                 isVisible={showPopover}
                 onRequestClose={()=> setShowPopover(false)}
                 from={(
-                  <TouchableOpacity style={styles.upDown} activeOpacity={0.4} onPress={() => handleUpDown()}>
-                    <FontAwesome name="thumbs-up" size={20} color={"grey"}/>
-                    <FontAwesome name="thumbs-down" size={20} color={"grey"}/>
+                
+                  <TouchableOpacity style={styles.upDown} activeOpacity={0.4} onPress={() => handleUpDown()}>              
+                    <View >
+                      <FontAwesome name="comments" size={20} color={"grey"}/>
+                    </View>
+                    <View style={styles.icone} >
+                      <FontAwesome name="thumbs-up" size={20} color={"grey"}/>
+                      <FontAwesome name="thumbs-down" size={20} color={"grey"}/>
+                    </View>
                   </TouchableOpacity>
                 )}>
                 <View style={styles.popoverContainer}>
@@ -175,6 +330,10 @@ export default function Comments( {username, date, message, _id, update }) {
         width: 350,
       },
 
+      icone: {
+        flexDirection:'row'
+      },
+
       header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -223,14 +382,14 @@ export default function Comments( {username, date, message, _id, update }) {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: 65,
+        width: '100%',
         paddingRight: "5%",
       },
 
       footer: {
         marginTop: '2%',
         flexDirection: 'row',
-        justifyContent: 'flex-end',
+         justifyContent: 'space-between'
       },
 
       voteButton: {
@@ -242,5 +401,72 @@ export default function Comments( {username, date, message, _id, update }) {
       voteCount: {
         marginLeft: 5,
         fontSize: 14,
+      },
+
+      modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0)',
+      },
+
+      modalView: {
+        width: '80%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+      },
+
+      modalTitle: {
+        fontSize: 18,
+        marginBottom: 15,
+      },
+
+      input: {
+        width: '100%',
+        padding: 10,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 5,
+        marginBottom: 20,
+      },
+
+      charCount: {
+        alignSelf: 'flex-end',
+        marginBottom: 10,
+        color: '#888',
+      },
+
+      buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+      },
+
+      button: {
+        borderRadius: 5,
+        padding: 10,
+        elevation: 2,
+      },
+
+
+      buttonCancel: {
+        backgroundColor: '#f44336',
+      },
+
+      buttonAdd: {
+        backgroundColor: '#4CAF50',
+      },
+
+      textStyle: {
+        color: 'white',
+        fontWeight: 'bold',
+        textAlign: 'center',
       },
     });

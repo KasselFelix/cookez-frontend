@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
   StyleSheet,
   Text,
@@ -8,17 +8,22 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
+  Image,
 } from "react-native";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
-import MyButton from "../modules/MyButton";
-import MySmallButton from "../modules/MySmallButton";
+import MyButton from "../components/MyButton";
+import MySmallButton from "../components/MySmallButton";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import RNPickerSelect from 'react-native-picker-select';
 import addressIp from "../modules/addressIp";
-import { useSelector } from "react-redux";
-import IngredientsList from "./IngredientsList";
-import StepsList from "./StepsList";
+import { useDispatch, useSelector } from "react-redux";
+import IngredientsList from "../components/IngredientsList";
+import StepsList from "../components/StepsList";
+import ImageSelector from "../components/ImageSelector";
+import PickImage from "../components/PickImage";
+import TakePhoto from "../components/TakePhoto";
+import { removePictureToStore } from "../reducers/picture";
 
 export default function AddRecipeScreen({navigation}) {
   // const dispatch = useDispatch();
@@ -41,128 +46,156 @@ export default function AddRecipeScreen({navigation}) {
   const [recipeSteps, setRecipeSteps] = useState("");
   const [recipePicture, setRecipePicture] = useState("");
 
-// //ETATS POUR LA LISTE DES INGREDIENTS\\
-const [ingredientsList, setIngredientsList] = useState([]);
-// const [stepsList, setStepsList] = useState([]); //////////////////////////// A VOIR
-const [modalVisible, setModalVisible] = useState(false);
-const [modalVisible2, setModalVisible2] = useState(false);
+  // //ETATS POUR LA LISTE DES INGREDIENTS\\
+  const [ingredientsList, setIngredientsList] = useState([]);
+  // const [stepsList, setStepsList] = useState([]); //////////////////////////// A VOIR
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible2, setModalVisible2] = useState(false);
 
 
-//ETATS POUR LES HANDLES \\
+  //ETATS POUR LES HANDLES \\
   const [recipe, setRecipe] = useState("");
   // const [ingredient, setIngredient] = useState([]);
   const [stepsArray, setStepsArray] = useState([]);
 
-// Reducer user 
-const user = useSelector((state) => state.user.value);
+  // Reducer user 
+  const user = useSelector((state) => state.user.value);
+  const picture=useSelector((state)=>state.picture.value);
+  const dispatch=useDispatch()
 
-const handleAddRecipe = () => {
-  if(user && user.token){
-    console.log('pass')
-    console.log({
-      username: user.username, 
-      name: recipeName,
-      ingredients: ingredientsList, 
-      difficulty: recipeDifficulty, 
-      picture:`${recipeName}.jpg`, 
-      preparationTime:recipePreptime, 
-      cookingTime: recipeCooktime,
-      // unit:recipeUnit,
-      description:recipeDescription, 
-      servings:recipeServings, 
-      steps:stepsArray,
-      // comments:[],
-})
-    // if(name && origin && ingredients.lenght>0 && difficulty && preparationTime && description && steps.length>0) {
-      fetch(`http://${addressIp}:3000/recipes/add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json"},
-        body: JSON.stringify({
-              username: user.username, 
-              name: recipeName,
-              ingredients: ingredientsList, 
-              difficulty: recipeDifficulty, 
-              picture:`${recipeName}.jpg`, 
-              preparationTime:recipePreptime, 
-              cookingTime: recipeCooktime,
-              description:recipeDescription, 
-              servings:recipeServings, 
-              steps:stepsArray,
-              comments:[],
-      })
-      })
-      .then((res)=> res.json())
-      .then((data) => {
-        console.log('data:', data);
-        
-        if (data.result){
-          alert("Recipe successfully added !")
-          setIngredientsList([])
-          setRecipe("")
-          setRecipeCooktime("")
-          setRecipeDescription("")
-          setRecipeDifficulty("")
-          setRecipeName("")
-          setRecipeIngredients("")
-          setRecipeName("")
-          setRecipePicture("")
-          setRecipePreptime("")
-          setRecipeQuantity("")
-          setRecipeServings("")
-          setRecipeSteps("")
-          setRecipeUnit("")
-          setStepsArray([])
-        }else {
-          alert(data.error);
-        }
-      })
-      .catch((error)=> {
-        alert(error);
+  useEffect(()=>{
+    dispatch(removePictureToStore())
+  },[])
+
+  const handleAddRecipe = () => {
+    if(user && user.token){
+      console.log('PICTURE',picture)
+      const date=Date.now();
+      const formData = new FormData();
+      formData.append('photoFromFront', {
+          uri: picture,
+          name: `${recipeName}_${date}.jpg`,
+          type: 'image/jpeg',
       });
+      fetch(`http://${addressIp}:3000/upload/${recipeName}_${date}`, {
+          method: 'POST',
+          body: formData,
+      })
+      .then((response) => response.json())
+      .then((data) => {
+          if(data.result){
+              console.log('NOW: ', data.url)
+              // if(name && origin && ingredients.lenght>0 && difficulty && preparationTime && description && steps.length>0) {
+              fetch(`http://${addressIp}:3000/recipes/add`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json"},
+                body: JSON.stringify({
+                      username: user.username,
+                      name: recipeName,
+                      date:date, 
+                      origin:null,
+                      ingredients: ingredientsList, 
+                      difficulty: recipeDifficulty,
+                      votes:[], 
+                      picture:`${recipeName}_${date}`, 
+                      preparationTime:recipePreptime, 
+                      cookingTime: recipeCooktime,
+                      description:recipeDescription, 
+                      servings:recipeServings, 
+                      steps:stepsArray,
+                      comments:[],
+                })
+              })
+              .then((res)=> res.json())
+              .then((data) => {
+                console.log('data:', data);
+                      if (data.result){
+                        alert("Recipe successfully added !")
+                        setIngredientsList([])
+                        setRecipe("")
+                        setRecipeCooktime("")
+                        setRecipeDescription("")
+                        setRecipeDifficulty("")
+                        setRecipeName("")
+                        setRecipeIngredients("")
+                        setRecipeName("")
+                        setRecipePicture("")
+                        setRecipePreptime("")
+                        setRecipeQuantity("")
+                        setRecipeServings("")
+                        setRecipeSteps("")
+                        setRecipeUnit("")
+                        setStepsArray([])
+                        dispatch(removePictureToStore())
+                      }else {
+                        alert(data.error);
+                      }
+              })
+              .catch((error)=> {
+                  alert(error);
+              });
+          }
+      })
+      .catch(error => console.error('There has been a problem with your fetch operation:', error));
+     
+      console.log({
+        username: user.username, 
+        name: recipeName,
+        ingredients: ingredientsList, 
+        difficulty: recipeDifficulty, 
+        picture:`${recipeName}_${date}.jpg`, 
+        preparationTime:recipePreptime, 
+        cookingTime: recipeCooktime,
+        // unit:recipeUnit,
+        description:recipeDescription, 
+        servings:recipeServings, 
+        steps:stepsArray,
+        // comments:[],
+      })
     }
     // }
-};
+  };
 
-//Fonction pour ajouter un ingrédient à la liste:
-const handleAddIngredient=()=>{
-  if (recipeQuantity && recipeUnit && recipeIngredients) {
-    setIngredientsList([...ingredientsList,
-      {id: Date.now().toString(), quantity: parseFloat(recipeQuantity), unit: recipeUnit, name: recipeIngredients },
-     ]);
-     setRecipeQuantity('');
-     setRecipeUnit('');
-     setRecipeIngredients('');
-  }
-};
-// console.log('ADDED INGREDIENT:', ingredientsList);
+  //Fonction pour ajouter un ingrédient à la liste:
+  const handleAddIngredient=()=>{
+    if (recipeQuantity && recipeUnit && recipeIngredients) {
+      setIngredientsList([...ingredientsList,
+        {id: Date.now().toString(), quantity: parseFloat(recipeQuantity), unit: recipeUnit, name: recipeIngredients },
+      ]);
+      setRecipeQuantity('');
+      setRecipeUnit('');
+      setRecipeIngredients('');
+    }
+  };
+  // console.log('ADDED INGREDIENT:', ingredientsList);
 
-//Fonction pour supprimer un ingrédient de la liste
-const handleDeleteIngredient = (id) => {
-  setIngredientsList(ingredientsList.filter((ingredient)=> ingredient.id !== id));
-};
+  //Fonction pour supprimer un ingrédient de la liste
+  const handleDeleteIngredient = (id) => {
+    setIngredientsList(ingredientsList.filter((ingredient)=> ingredient.id !== id));
+  };
 
-//Fonction pour compter le nombre d'ingrédients ajoutés
-const ingredientCount = ingredientsList.length;
+  //Fonction pour compter le nombre d'ingrédients ajoutés
+  const ingredientCount = ingredientsList.length;
 
-//Fonction pour compter le nombre de steps ajoutés
-const stepCount = stepsArray.length;
+  //Fonction pour compter le nombre de steps ajoutés
+  const stepCount = stepsArray.length;
 
-// Fonction pour ajouter une étape
-const handleAddSteps=()=>{
-  if(recipeSteps) {
-    const stepNumber = stepsArray.length + 1; // Numéro de l'étape
-    const stepText = `Step ${stepNumber}: ${recipeSteps}`; // Préfixe de l'étape
-    setStepsArray([...stepsArray, stepText]); // Ajouter l'étape avec le préfixe
-    // setStepsArray([...stepsArray, recipeSteps ]);
-    setRecipeSteps("");
-  }
-};
-// Fonction pour supprimer un step
-const handleDeleteStep = (stepToDelete) => {
-  setStepsArray(stepsArray.filter(step => step !== stepToDelete));
-};
+  // Fonction pour ajouter une étape
+  const handleAddSteps=()=>{
+    if(recipeSteps) {
+      //const stepNumber = stepsArray.length + 1; // Numéro de l'étape
+      const stepText = `${recipeSteps}`; // Préfixe de l'étape
+      setStepsArray([...stepsArray, stepText]); // Ajouter l'étape avec le préfixe
+      // setStepsArray([...stepsArray, recipeSteps ]);
+      setRecipeSteps("");
+    }
+  };
+  // Fonction pour supprimer un step
+  const handleDeleteStep = (stepToDelete) => {
+    setStepsArray(stepsArray.filter(step => step !== stepToDelete));
+  };
 
-// Menus déroulant pour servings, difficulty et unités de mesure
+  // Menus déroulant pour servings, difficulty et unités de mesure
   const numbers = Array.from({ length: 6 }, (_, i) => ({
     label: (i + 1).toString(),
     value: i + 1,
@@ -189,23 +222,23 @@ const handleDeleteStep = (stepToDelete) => {
     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.buttonReturn}>
+        {/* <View style={styles.buttonReturn}> */}
           <MySmallButton
         	dataFlow={()=>navigation.goBack()}
           text={<FontAwesome name='angle-double-left' size={30} color={'white'}/>}
           buttonType={buttonStyles.buttonSmall}
         />
-      </View>
+      {/* </View> */}
         <Text style={styles.titlePage}>Add your recipe 🍳</Text>
         <View style={styles.btnEmpty}></View>
       </View>
-      <ScrollView>
-        <View style={styles.formBloc}>
-          <View style={styles.formContainer}>
-                        {/* SECTION RECIPE : TITLE - DESCRIPTION  - SETTINGS*/}
+      <View style={styles.formBloc}>
+        <View style={styles.formContainer}>
+          <ScrollView style={styles.scroll}>
+            {/* SECTION RECIPE : TITLE - DESCRIPTION  - SETTINGS*/}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Recipe______________________________</Text>
-              <TextInput placeholder='title*' placeholderTextColor={'grey'} style={styles.formInput} onChangeText={(value) => setRecipeName(value)} value={recipeName}/>
+              <TextInput placeholder='name*' placeholderTextColor={'grey'} style={styles.formInput} onChangeText={(value) => setRecipeName(value)} value={recipeName}/>
               <TextInput placeholder='description*' placeholderTextColor={'grey'} style={styles.formInput} onChangeText={(value) => setRecipeDescription(value)} value={recipeDescription}/>
               < View style={styles.settings}>
                 <View style={styles.servingBloc}>
@@ -318,18 +351,24 @@ const handleDeleteStep = (stepToDelete) => {
                                   {/* SECTION PICTURE */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Picture _____________________________</Text>
-              <View style={styles.stepsInput}>
-                <TextInput placeholder='add a picture' placeholderTextColor={'grey'} style={styles.formInput} onChangeText={(value) => setRecipePicture(value)} value={recipePicture}/>
-              </View>
+                <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                  {picture ?
+                    <Image source={{ uri: picture }} style={{ width: 200, height: 200,borderRadius:20, borderWidth:5, borderColor:css.inactiveButtonColor }} />:
+                    <View style={styles.pictureLogo}> 
+                        <TakePhoto name={recipeName}/>
+                        <PickImage name={recipeName}/>
+                    </View>
+                  }
+                </View>
             </View>
-          </View>
+          </ScrollView>
         </View>
-      </ScrollView>
-    <MyButton
-    dataFlow={() => handleAddRecipe()}  
-    text="Add Recipe"
-    buttonType={buttonStyles.buttonThree}
-    />
+      </View>
+      <MyButton
+          dataFlow={() => handleAddRecipe()}  
+          text="Add Recipe"
+          buttonType={buttonStyles.buttonThree}
+        />
   </KeyboardAvoidingView>
   );
 }
@@ -374,22 +413,23 @@ const styles = StyleSheet.create({
   },
 
   formBloc:{
-    flex:1,
-    width: '100%',
-    marginTop: 10,
-    marginBottom: 10,
-    borderWidth: 1,
+    height: '80%',
+    width: '95%',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: css.activeButtonColor,
+    elevation: 5,
+    marginBottom:'3.5%',
     borderRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
     shadowRadius: 3,
-    elevation: 5,
   },
+  
   formContainer:{
-    flex:1,
-    width: '98%',
+    width: '95%',
+    height: '95%',
     justifyContent:'center',
     alignItems:'center',
     backgroundColor: css.activeButtonColor,
@@ -401,22 +441,32 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 10,
-    marginBottom: 10,
-    marginTop: 10,
-    marginLeft: 5,
-    marginRight: 1,
   },
+
+  scroll: {
+    width:'100%',
+    overflow:'hidden'
+  },
+
   section:{
     marginBottom: 2, 
     marginVertical: 8,
     width: '100%',
   },
+
   sectionTitle: {
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 5,
     color: css.inactiveButtonColor,
   },
+
+  pictureLogo: {
+    flexDirection:'row',
+    justifyContent:'space-around',
+    width:'100%',
+  },
+
   formInput:{
     flex: 1, 
     width: '100%',
@@ -428,6 +478,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     backgroundColor: "white",
   },
+
   formInputSmall: {
     flex: 1,
     width: "75%",
@@ -439,6 +490,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     backgroundColor: "white",
   },
+
   settings:{
     flexDirection: 'row',
     justifyContent:'space-between',
@@ -446,75 +498,76 @@ const styles = StyleSheet.create({
     width: '100%',
     marginVertical: 10,
     // flexWrap: 'wrap',
-    // backgroundColor: 'pink',
   },
+
   servingBloc:{
     flexDirection: 'row',
     alignItems: 'center',
-    // backgroundColor: 'green',
   },
+
   difficultyBloc:{
     flexDirection: 'row',
     alignItems: 'center',
-    // backgroundColor: 'orange',
     marginRight: 5,
   },
+
   label: {
     fontSize: 14,
     marginRight: 8,
     marginLeft: 2,
-    // backgroundColor: 'yellow',
     color: css.inactiveButtonColor,
   },
+
   unit: {
     fontSize: 14,
     marginLeft: 5,
     color: css.inactiveButtonColor,
   },
+
   timeInputsContainer:{
     flexDirection: 'row',
-    // backgroundColor: 'red',
     justifyContent: 'space-between',
     width: '100%',
     height: 50,
   },
+
   timeInput1:{
     // flex:1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    // backgroundColor: 'blue',
     width: '50%',
   },
+
   timeInput2:{
     flex:0,
     flexDirection: 'row',
     justifyContent: 'flex-end',
     // paddingLeft: 10,
     alignItems:'center',
-    // backgroundColor: 'pink',
     width: '50%',
   },
+
   inputRow1:{
     width: '50%',
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'center',
-  // backgroundColor: 'yellow',
   },
+  
   inputRow2:{
     width: '50%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  // backgroundColor: 'orange',
   },
+
   ingredientBloc:{
     flexDirection:'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    // backgroundColor: 'pink',
   },
+
   quantityInput:{
     width: 50,
     height: 42,
@@ -525,8 +578,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     backgroundColor: "white",
     marginRight: 2,
-    // backgroundColor: 'yellow',
   },
+
   ingredientInput: {
     flex: 1,
     height: 42,
@@ -537,7 +590,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     backgroundColor: "white",
     marginLeft: 2,
-    // backgroundColor: 'orange',
   },
 
   counterText:{

@@ -3,8 +3,8 @@ import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import css from "../styles/Global"
 import buttonStyles from "../styles/Button";
-import MyButton from "../modules/MyButton";
-import MySmallButton from "../modules/MySmallButton";
+import MyButton from "../components/MyButton";
+import MySmallButton from "../components/MySmallButton";
 import LottieView from "lottie-react-native";
 
 import FontAwesome from "react-native-vector-icons/FontAwesome"
@@ -21,7 +21,7 @@ export default function MoreFeaturesScreen({navigation}) {
         />
         <View style={styles.btnEmpty}></View>
       </View>
-      <LottieView style={styles.lottieAnim} source={require("../assets/Animation - 1723426951688.json")}
+      <LottieView style={styles.lottieAnim} source={require("../assets/animation/Animation - 1723426951688.json")}
       autoPlay
       loop
       />

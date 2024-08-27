@@ -9,8 +9,8 @@ import { useIsFocused } from "@react-navigation/native";
 import addressIp from "../modules/addressIp";
 import ListIngredients from "../components/ListIngredients";
 import SearchIngredients from "../components/SearchIngredients";
-import MySmallButton from "../modules/MySmallButton";
-import MyButton from '../modules/MyButton';
+import MySmallButton from "../components/MySmallButton";
+import MyButton from '../components/MyButton';
 import buttonStyles from '../styles/Button';
 import css from "../styles/Global";
 import * as Animatable from 'react-native-animatable';
@@ -29,7 +29,7 @@ export default function KickoffScreen({navigation}) {
 	const [searchInput, setSearchInput] = useState('');
 	const [clicked, setClicked] = useState(false);
 	const [dataListIngredient, setDataListIngredient] = useState([]);
-	//const [validatedIngredient, setValidatedIngredient] = useState(false);
+	const [validatedIngredient, setValidatedIngredient] = useState([]);
 	
 	const ingredients=  useSelector((state)=>state.ingredient.ingredient)
 	
@@ -80,19 +80,6 @@ export default function KickoffScreen({navigation}) {
 		}
 	}, [searchInput]);
 
-	
-
-	function onItemPress(data){
-		//fetchImageFromUnsplash (data.name)
-		
-		//dispatch(addIngredientToStore({photo:imageUrl ,data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
-		dispatch(addIngredientToStore({photo: data.photo, data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
-		if(modalRef.current){
-			modalRef.current.animate('slideOutUp', 800).then(() => {
-				setModalVisible(false);
-		  	})
-		}
-	}
 
 	const fetchImageFromUnsplash = async (ingredientName) => {
 		try {
@@ -159,26 +146,9 @@ export default function KickoffScreen({navigation}) {
 	const takePicture = async () => {
 		const photo = await cameraRef.takePictureAsync({ quality: 0.3 });
 		if (photo) {
-			const formData = new FormData();
-			formData.append('photoFromFront', {
-				uri: photo.uri,
-				name: 'photo.jpg',
-				type: 'image/jpeg',
-			});
-			// fetch('http://${addressIp}:3000/upload', {
-			// 	method: 'POST',
-			// 	body: formData,
-			//    })
-			//    .then((response) => response.json())
-			// 	.then((data) => {
-			// 		if(data.result){
-			// 			console.log('NOW: ', data.url)
-			// 		}
-			// })
-			// .catch(error => console.error('There has been a problem with your fetch operation:', error));
-			
-			//console.log(photo.uri)
 			setPictures([...pictures, photo.uri])
+		}else{
+			alert('Your photo was not taken well, Try to retake it pls 👏')
 		}
 
 	};
@@ -187,8 +157,9 @@ export default function KickoffScreen({navigation}) {
 
 	if (!hasPermission || !isFocused) {
 		return (
-		  <View>
-			<Text> SnapScreen </Text>
+		  <View style={styles.container}>
+			<View style={styles.cameraContainer}> 
+			</View>
 		  </View>
 		)
 	  }
@@ -221,16 +192,30 @@ export default function KickoffScreen({navigation}) {
 		return  background;
 	}
 
+	// function onItemPress(data){
+	// 	//fetchImageFromUnsplash (data.name)
+	// 	setValidatedIngredient([...validatedIngredient,data.id])
+	// 	//dispatch(addIngredientToStore({photo:imageUrl ,data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
+	// 	dispatch(addIngredientToStore({photo: data.photo, data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
+	// 	if(modalRef.current){
+	// 		modalRef.current.animate('slideOutUp', 800).then(() => {
+	// 			setModalVisible(false);
+	// 	  	})
+	// 	}
+	// }
+
 	function onItemPress(data){
+		setValidatedIngredient([...validatedIngredient,data.id])
 		dispatch(addIngredientToStore({photo: data.photo, data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
 	}
 
 	const handleAddIngredient = () => {
 		setSearchInput("");
-		setDataListIngredient([]);
 		if(modalRef.current){
 			modalRef.current.animate('slideOutUp', 800).then(() => {
 			setModalVisible(false);
+			setDataListIngredient([]);
+			setValidatedIngredient([])
 		  	})
 		}
 	}
@@ -244,10 +229,10 @@ export default function KickoffScreen({navigation}) {
 
 	const handleGoBack = () => {
 		setSearchInput("");
-		setDataListIngredient([]);
 		if(modalRef.current){
 			modalRef.current.animate('slideOutUp', 800).then(() => {
 			setModalVisible(false);
+			setDataListIngredient([]);
 		  	})
 		}
 	}
@@ -284,8 +269,8 @@ export default function KickoffScreen({navigation}) {
 								searchInput={searchInput}
 								data={dataListIngredient}
 								setClicked={setClicked}
-								//validatedIngredient={validatedIngredient}
-								//setValidatedIngredient={setValidatedIngredient}
+								validatedIngredient={validatedIngredient}
+								setValidatedIngredient={setValidatedIngredient}
 								onItemPress={onItemPress}
 								/>
 							</View>
@@ -450,7 +435,7 @@ const styles = StyleSheet.create({
 	},
 
 	cameraContainer: {
-		backgroundColor: 'orange',
+		backgroundColor: 'black',
 		borderRadius: 50,
 		overflow: 'hidden',
 		height:'50%',

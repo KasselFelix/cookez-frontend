@@ -3,8 +3,8 @@ import imageRecipe from "../modules/images";
 import React, { useEffect, useRef, useState } from "react";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
-import MyButton from "../modules/MyButton";
-import MySmallButton from "../modules/MySmallButton";
+import MyButton from "../components/MyButton";
+import MySmallButton from "../components/MySmallButton";
 import * as Unicons from '@iconscout/react-native-unicons';
 import addressIp from "../modules/addressIp";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -157,7 +157,7 @@ const topStars = [];
       </View>
       <View style={styles.higherIcon}>
         <TouchableOpacity onPress={()=> navigation.navigate('Kickoff')}>
-        <Unicons.UilCameraPlus size={60} color='black'/>
+          <Unicons.UilCameraPlus size={60} color='black'/>
         </TouchableOpacity>
       </View>
       <View style={styles.lowerIcons}>

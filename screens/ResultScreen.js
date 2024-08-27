@@ -6,7 +6,7 @@ import Recipe from '../components/Recipe';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateRecipeToStore } from '../reducers/recipe';
 import addressIp from '../modules/addressIp';
-import MySmallButton from '../modules/MySmallButton';
+import MySmallButton from '../components/MySmallButton';
 import buttonStyles from '../styles/Button';
 import * as Animatable from 'react-native-animatable';
 
@@ -14,7 +14,8 @@ export default function ResultScreen({ navigation }) {
 
   const user =useSelector((state)=>state.user.value);
   const recipeData= useSelector((state)=>state.recipe.recipes);
-  const ingredients= useSelector((state)=>state.ingredient.ingredient)
+  const ingredients= useSelector((state)=>state.ingredient.ingredient);
+  const origin= useSelector((state)=>state.origin.value);
   const dispatch= useDispatch();
 
   const handleFetch= async ()=>{
@@ -31,9 +32,10 @@ export default function ResultScreen({ navigation }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: user.username || '', 
+          token: user.token , 
           ingredients: ingredientSelected,
-          excludeIngredients:[]
+          allergy:user?.settings?.allergy,
+          origin:origin || 'All recipes',
         })
       });
       const data =  await response.json();

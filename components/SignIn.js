@@ -2,7 +2,7 @@ import { Modal, StyleSheet, TextInput, Text, View} from 'react-native';
 import React, {useState} from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import MyButton from '../modules/MyButton';
+import MyButton from './MyButton';
 import buttonStyles from '../styles/Button';
 import { addUserToStore } from '../reducers/user';
 import { useDispatch, useSelector } from 'react-redux';
@@ -27,7 +27,7 @@ export default function SignIn({navigation}) {
     const handleSignin =()=> {
         fetch(`http://${addressIp}:3000/users/signin`, {
         method:'POST',
-        headers:{'Content-Type':'Application/json'},
+        headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
             username,password
         })
@@ -68,7 +68,7 @@ export default function SignIn({navigation}) {
         {
           submitted ?
           <LottieView
-            source={require('../assets/Animation - 1723553895120.json')}
+            source={require('../assets/animation/Animation - 1723553895120.json')}
             autoPlay
             loop={false}
             onAnimationFinish={handleAnimationFinish}

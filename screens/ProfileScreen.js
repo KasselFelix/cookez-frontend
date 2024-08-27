@@ -1,12 +1,17 @@
 import React, { useEffect ,useState} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { View, Text, StyleSheet, Image, ScrollView, Animated, TouchableOpacity, Modal, TextInput } from 'react-native';
-import MyButton from '../modules/MyButton';
+import { View, Text, StyleSheet, Image, ScrollView, Animated, TouchableOpacity, Modal, TextInput, KeyboardAvoidingView } from 'react-native';
+import MyButton from '../components/MyButton';
 import buttonStyles from '../styles/Button';
 import css from '../styles/Global';
 import { removeUserToStore, updateUserInStore} from '../reducers/user';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import addressIp from '../modules/addressIp';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { removeAllIngredientToStore } from '../reducers/ingredient';
+import { removeAllRecipeToStore } from '../reducers/recipe';
+import { removeCommentToStore } from '../reducers/comment';
+import { removePictureToStore } from '../reducers/picture';
 
 
 
@@ -15,7 +20,7 @@ const ProfilScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const user = useSelector((state)=>state.user.value);
   const [modalVisible, setModalVisible] = useState(false);
-  const [profileImage, setProfileImage] = useState(require('../assets/profile/avatar_M.jpg'));
+  const [profileImage, setProfileImage] = useState(user.image);
   const animatedValue = new Animated.Value(0);
   const [editModalVisible, setEditModalVisible] = useState(false);
 
@@ -25,16 +30,17 @@ const ProfilScreen = ({navigation}) => {
   // const [lastname, setLastname]=useState('');        } Finalement je ne les ai pas utilisé 
   // const [username, setUsername]=useState('');       |   mais j'ai fait un seul état pour tous 
   // const [age, setAge]=useState(0);                __|    ces inputs-là (voir plus bas)
-  const [allergies, setAllergies]=useState(''); 
-  const [householdComposition, setHouseholdComposition]=useState('');
+  //const [allergy, setAllergy]=useState(''); 
+  //const [householdComposition, setHouseholdComposition]=useState('');
 
   //On peut faire un seul état pour gérer tous les inputs de la modal du update:
-  const [updatedUser, setUpdatedUser] = useState({ email: user.email, firstname: user.firstname, lastname: user.lastname, username: user.username, age: user.age });
+  const [updatedUser, setUpdatedUser] = useState({ email: user.email, firstname: user.firstname, lastname: user.lastname, username: user.username, age: user.age,allergy: user.settings.allergy.join(' '),householdComposition: user?.householdComposition });
 
 
 
   // Animation d'apparition avec interpolation
   useEffect(() => {
+    console.log();
     Animated.timing(animatedValue, {
       toValue: 1,
       duration: 1000,
@@ -42,8 +48,14 @@ const ProfilScreen = ({navigation}) => {
     }).start();
   }, []);
 
+  useEffect(()=>{
+    handleUpdate()
+  },[profileImage])
+
 
   const handleImageChange = (newImage) => {
+    console.log('before',newImage)
+    setUpdatedUser({ ...updatedUser, image: newImage})
     setProfileImage(newImage);
     setModalVisible(false);
   };
@@ -57,27 +69,17 @@ const ProfilScreen = ({navigation}) => {
   });
   const opacity = animatedValue;
 
-  const displayImage={
-    default_M: require('../assets/profile/avatar_M.jpg'),
-    default_F: require('../assets/profile/avatar_F.jpg'),
-    avatar_M1:require('../assets/profile/avatar_M1.jpg'),
-    avatar_M2:require('../assets/profile/avatar_M2.jpg'),
-    avatar_M3:require('../assets/profile/avatar_M3.jpg'),
-    avatar_M4:require('../assets/profile/avatar_M4.jpg'),
-    avatar_F1:require('../assets/profile/avatar_F1.jpg'),
-    avatar_F2:require('../assets/profile/avatar_F2.jpg'),
-    avatar_F3:require('../assets/profile/avatar_F3.jpg'),
-    avatar_F4:require('../assets/profile/avatar_F3.jpg'),
-  }
   availableImages=[
-    require('../assets/profile/avatar_M1.jpg'),
-    require('../assets/profile/avatar_M2.jpg'),
-    require('../assets/profile/avatar_M3.jpg'),
-    require('../assets/profile/avatar_M4.jpg'),
-    require('../assets/profile/avatar_F1.jpg'),
-    require('../assets/profile/avatar_F2.jpg'),
-    require('../assets/profile/avatar_F3.jpg'),
-    require('../assets/profile/avatar_F4.jpg'),
+    {nameFile: "default_M",path:require('../assets/profile/avatar_M.jpg')},
+    {nameFile: "default_F",path:require('../assets/profile/avatar_F.jpg')},
+    {nameFile: "default_M1",path:require('../assets/profile/avatar_M1.jpg')},
+    {nameFile: "default_M2",path:require('../assets/profile/avatar_M2.jpg')},
+    {nameFile: "avatar_M3",path:require('../assets/profile/avatar_M3.jpg')},
+    {nameFile: "avatar_M4",path:require('../assets/profile/avatar_M4.jpg')},
+    {nameFile: "avatar_F1",path:require('../assets/profile/avatar_F1.jpg')},
+    {nameFile: "avatar_F2",path:require('../assets/profile/avatar_F2.jpg')},
+    {nameFile: "avatar_F3",path:require('../assets/profile/avatar_F3.jpg')},
+    {nameFile: "avatar_F4",path:require('../assets/profile/avatar_F4.jpg')},
   ]
   
 // FONCTION POUR HANDLE L'UPDATE DES INFOS USER
@@ -92,6 +94,7 @@ const handleUpdate = () => {
     if (data.result) {
       dispatch(updateUserInStore(data.updatedUser));
       setEditModalVisible(false);
+      console.log(data);
     } else {
       alert(data.error);
     }
@@ -99,15 +102,17 @@ const handleUpdate = () => {
   .catch(error => alert('Error updating user info'));
 };
 
-
-
+  
+  
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
+
       <View style={styles.iconContainer}>
         <TouchableOpacity onPress={() => setEditModalVisible(true)}>
           <FontAwesome name={"edit"} size={30} color={css.inactiveButtonColor} style={styles.iconEdit}/>
         </TouchableOpacity>
       </View>
+
       <Animated.View
         style={[
           styles.profileHeader,
@@ -118,7 +123,7 @@ const handleUpdate = () => {
         ]}
       >
         <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Image source={user.token? profileImage: (displayImage.default_M)} style={styles.profileImage} />
+          <Image source={availableImages.find(e=> e.nameFile==profileImage).path} style={styles.profileImage} />
         </TouchableOpacity>
         <Text style={styles.profileName}>
           {user?.firstname} {user?.lastname}
@@ -130,41 +135,47 @@ const handleUpdate = () => {
         <Text style={styles.infoTitle}>Email:</Text>
         <Text style={styles.infoText}>{user?.email}</Text>
 
-        <Text style={styles.infoTitle}>Âge:</Text>
-        <Text style={styles.infoText}>{user?.age} ans</Text>
+        <Text style={styles.infoTitle}>Ages:</Text>
+        <Text style={styles.infoText}>{user?.age} year</Text>
 
         {/* <Text style={styles.infoTitle}>Genre:</Text> */}
         {/* <Text style={styles.infoText}>{user?.settings?.gender}</Text> */}
 
-        <Text style={styles.infoTitle}>Allergies:</Text>
+        <Text style={styles.infoTitle}>Allergy:</Text>
         <Text style={styles.infoText}>
-          {user?.settings?.allergies.length > 0
-            ? user.settings.allergies.join(', ')
+          {user?.settings?.allergy?.length > 0
+            ? user.settings.allergy.join(', ')
             : 'Aucune'}
         </Text>
 
-        <Text style={styles.infoTitle}>Composition du foyer:</Text>
+        <Text style={styles.infoTitle}>House hold composition:</Text>
         <Text style={styles.infoText}>
           {user?.settings?.householdComposition}
         </Text>
 
-        <Text style={styles.infoTitle}>Recettes favorites:</Text>
+        <Text style={styles.infoTitle}>Favorites recipes:</Text>
         <Text style={styles.infoText}>{user?.favorites.length}</Text>
 
-        <Text style={styles.infoTitle}>Recettes publiées:</Text>
+        <Text style={styles.infoTitle}>Published recipes:</Text>
         <Text style={styles.infoText}>{user?.recipes.length}</Text>
 
-        <Text style={styles.infoTitle}>Commentaires:</Text>
+        <Text style={styles.infoTitle}>Comments:</Text>
         <Text style={styles.infoText}>{user?.comments.length}</Text>
       </View>
+
       <View>
       <MyButton
-            dataFlow={() => {dispatch( removeUserToStore());navigation.navigate("Home")}}
+            dataFlow={() => {
+              navigation.navigate("Home");
+              dispatch( removeUserToStore());
+              dispatch( removeAllIngredientToStore());
+              dispatch( removeAllRecipeToStore());
+              dispatch(removeCommentToStore());
+              dispatch(removePictureToStore())}}
             text={"LOG OUT"}
             buttonType={buttonStyles.buttonOne}
           />
       </View>
-      
 
       {/* Modal pour sélectionner l'image */}
       <Modal
@@ -174,14 +185,14 @@ const handleUpdate = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Sélectionnez une image</Text>
+            <Text style={styles.modalTitle}>Select your Avatar !</Text>
             <View style={styles.imageOptions}>
-              {availableImages.map((image, index) => (
+              {availableImages.map((image, index) => index>1 && (
                 <TouchableOpacity
                   key={index}
-                  onPress={() => handleImageChange(image)}
+                  onPress={() => {handleImageChange(image.nameFile)}}
                 >
-                  <Image source={image} style={styles.optionImage} />
+                  <Image source={image.path} style={styles.optionImage} />
                 </TouchableOpacity>
               ))}
             </View>
@@ -196,8 +207,9 @@ const handleUpdate = () => {
       onRequestClose={() => setEditModalVisible(false)}
       >
         <View style={styles.modalEditContainer}>
-          <View style={styles.modalEditContent}>
-            <Text style={styles.modalTitle}>Modifiez votre profile</Text>
+          <KeyboardAvoidingView style={styles.modalEditContent}> 
+          <ScrollView  contentContainerStyle={styles.scrollModalEdit} >
+            <Text style={styles.modalTitle}>Update your profile</Text>
             <TextInput 
             placeholder='firstname' 
             placeholderTextColor={'grey'}  
@@ -212,13 +224,13 @@ const handleUpdate = () => {
             value={updatedUser.lastname}
             onChangeText={(text) => setUpdatedUser({ ...updatedUser, lastname: text })}
             />
-            <TextInput  
+            {/* <TextInput  
             placeholder='username' 
             placeholderTextColor={'grey'}  
             style={styles.input} 
             value={updatedUser.username} 
             onChangeText={(text) => setUpdatedUser({ ...updatedUser, username: text })}
-            />
+            /> */}
             <TextInput 
             placeholder='email' 
             placeholderTextColor={'grey'}  
@@ -239,45 +251,45 @@ const handleUpdate = () => {
             onChangeText={(text) => setUpdatedUser({ ...updatedUser, age: Number(text) })}
             />
             <TextInput
-             placeholder='allergies' 
+             placeholder='allergy' 
              placeholderTextColor={'grey'}  
              style={styles.input} 
-             value={allergies} 
-             onChangeText={(value)=> setAllergies(value)}
+             value={updatedUser.allergy} 
+             onChangeText={(text)=> setUpdatedUser({ ...updatedUser,allergy: text})}
              />
             <TextInput
               placeholder='household composition' 
               placeholderTextColor={'grey'}
               keyboardType="numeric" 
               style={styles.input} 
-              value={householdComposition} 
-              onChangeText={(value)=> setHouseholdComposition(value)}/>
+              value={updatedUser.householdComposition} 
+              onChangeText={(text)=> setUpdatedUser({ ...updatedUser,householdComposition:text})}/>
            
               <MyButton 
               dataFlow={() => handleUpdate()}
-              text="Updated"
+              text="Update"
               buttonType={buttonStyles.buttonThree}/>
 
               <MyButton
               dataFlow={() => setEditModalVisible(false)}
               text="Cancel"
               buttonType={buttonStyles.buttonThree}/>
-            
-          </View>
+              </ScrollView>
+           </KeyboardAvoidingView> 
         </View>
       </Modal>
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex:1,
     paddingTop:'20%',
-    flexGrow: 1,
-    padding: 20,
     backgroundColor: css.backgroundColorTwo,
     alignItems: 'center',
   },
+
   iconContainer:{
     position: 'absolute',
     flexDirection: 'row',
@@ -286,100 +298,120 @@ const styles = StyleSheet.create({
     right: 20,
     padding: 5,
   },
+
   iconEdit:{
     justifyContent: 'flex-end',
     padding: 10,
   },
+
   profileHeader: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: '5%',
   },
+
   profileImage: {
     width: 120,
     height: 120,
     borderRadius: 60,
     borderWidth: 2,
     borderColor: css.backgroundColorOne,
-    marginBottom: 10,
+    marginBottom: '1%',
   },
+
   profileName: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#FFF',
   },
+
   profileUsername: {
     fontSize: 18,
     color: css.backgroundColorOne,
   },
+
   profileInfo: {
-    width: '100%',
+    width: '80%',
     backgroundColor: '#FFF',
     borderRadius: 10,
-    padding: 20,
+    padding: '6%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 5,
-    marginBottom:30,
+    marginBottom:'8%',
   },
+
   infoTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: css.inactiveButtonColor,
     marginTop: 10,
   },
+
   infoText: {
     fontSize: 16,
     color: 'black',
   },
+
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
+
   modalContent: {
-    width: 300,
-    height:342,
-    padding: 20,
+    width: '85%',
+    height: '40%',
+    padding: '2.5%',
     backgroundColor: '#fff',
     borderRadius: 10,
     alignItems: 'center',
     flexWrap:'wrap',
   },
+
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: '2%',
   },
+
   imageOptions: {
-    height:250,
+    height:'85%',
+    width: '100%',
     flexDirection: 'row',
-    marginBottom: 20,
     flexWrap : 'wrap',
-    justifyContent: 'space-around'
+    justifyContent: 'space-around',
+    overflow:'scroll',
   },
   optionImage: {
     width: 80,
     height: 80,
+    margin: '1%',
     borderRadius: 10,
+    marginBottom:'15%'
   },
    modalEditContainer:{
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalEditContent:{
-    width: 350,
-    height:550,
-    padding: 10,
+    width: '90%',
+    height:'60%',
+    marginTop:'20%',
+    padding: 15,
     backgroundColor: '#fff',
     borderRadius: 10,
-    alignItems: 'center',
-    flexWrap:'wrap',
   },
+
+  scrollModalEdit: {
+    alignItems: "center",
+    justifyContent:"center",
+    width: "100%"
+  },
+
   input: {
     height: 40,
     borderColor: 'gray',
@@ -405,7 +437,7 @@ export default ProfilScreen;
 //   const [householdComposition, setHouseholdComposition] = useState(
 //     user?.settings?.householdComposition?.toString()
 //   );
-//   const [allergies, setAllergies] = useState(user?.settings?.allergies || []);
+//   const [allergy, setAllergy] = useState(user?.settings?.allergy || []);
 //   const [newAllergy, setNewAllergy] = useState('');
 //   const animatedValue = new Animated.Value(0);
 
@@ -434,14 +466,14 @@ export default ProfilScreen;
 //   };
 
 //   const handleAddAllergy = () => {
-//     if (newAllergy.trim() !== '' && !allergies.includes(newAllergy)) {
-//       setAllergies([...allergies, newAllergy]);
+//     if (newAllergy.trim() !== '' && !allergy.includes(newAllergy)) {
+//       setAllergy([...allergy, newAllergy]);
 //       setNewAllergy('');
 //     }
 //   };
 
 //   const handleRemoveAllergy = (allergy) => {
-//     setAllergies(allergies.filter((item) => item !== allergy));
+//     setAllergy(allergy.filter((item) => item !== allergy));
 //   };
 
 //   const handleSave = () => {
@@ -514,9 +546,9 @@ export default ProfilScreen;
 //           keyboardType="numeric"
 //         />
 
-//         <Text style={styles.infoTitle}>Allergies:</Text>
+//         <Text style={styles.infoTitle}>Allergy:</Text>
 //         <View style={styles.allergyList}>
-//           {allergies.map((allergy, index) => (
+//           {allergy.map((allergy, index) => (
 //             <View key={index} style={styles.allergyItem}>
 //               <Text style={styles.allergyText}>{allergy}</Text>
 //               <TouchableOpacity

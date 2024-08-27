@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
 import React, { useRef } from "react";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
-import MyButton from "../modules/MyButton";
+import MyButton from "../components/MyButton";
 import LottieView from "lottie-react-native";
 
 // import { useFonts, } from '@expo-google-fonts/inter';
@@ -36,7 +36,7 @@ export default function HomeAsGuest({ navigation }) {
           source={require("../assets/logo/cookez logo.png")}
         />
       </View>
-      <LottieView style={styles.lottieAnim} source={require("../assets/Animation - 1723436591199.json")}
+      <LottieView style={styles.lottieAnim} source={require("../assets/animation/Animation - 1723436591199.json")}
       autoPlay
       loop
       />

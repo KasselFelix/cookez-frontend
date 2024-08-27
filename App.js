@@ -29,18 +29,21 @@ import ResultScreen from "./screens/ResultScreen";
 import SearchRecipeScreen from "./screens/SearchRecipeScreen";
 import UserDashboardScreen from "./screens/UserDashboardScreen";
 import FavoriteScreen from "./screens/FavoriteScreen";
+import CommentScreen from "./screens/CommentScreen";
 
 // ALL REDUCERS IMPORTS
 import user from './reducers/user';
 import recipe from './reducers/recipe';
 import comment from './reducers/comment';
 import ingredient from "./reducers/ingredient";
+import origin from "./reducers/origin"
+import picture from "./reducers/picture";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const store = configureStore({
-  reducer: { user, recipe, comment ,ingredient},
+  reducer: { user, recipe, comment ,ingredient, origin, picture},
 });
 
 const TabNavigator = () => {
@@ -50,7 +53,7 @@ const TabNavigator = () => {
         tabBarStyle:({ 
           position: 'absolute',
             bottom: 0,
-            height: 70, // Adjust height
+            height: 60, // Adjust height
             paddingBottom: 0, // Remove padding
             borderTopWidth: 0, // Remove top border
             elevation: 2, // Remove shadow on Android
@@ -65,7 +68,9 @@ const TabNavigator = () => {
           } else if (route.name === "AddRecipe") {
             iconName = "plus";
           } else if (route.name === "Favorite") {
-            iconName = "heart-o";
+            iconName = "heart";
+          } else if (route.name === "Comment") {
+            iconName = "comments";
           } 
           // else if (route.name === "SearchRecipe") {
           //   iconName = "search";
@@ -83,8 +88,9 @@ const TabNavigator = () => {
       })}
     >
       <Tab.Screen name="UserDashboard" component={UserDashboardScreen}/>
-      <Tab.Screen name="AddRecipe" component={AddRecipeScreen} />
       <Tab.Screen name="Favorite" component={FavoriteScreen} />
+      <Tab.Screen name="AddRecipe" component={AddRecipeScreen} />
+      <Tab.Screen name="Comment" component={CommentScreen} />
       {/* // <Tab.Screen name="SearchRecipe" component={SearchRecipeScreen} /> */}
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>

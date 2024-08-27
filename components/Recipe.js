@@ -13,7 +13,7 @@ export default function Recipe( props ) {
     const voteRecipe= () => {
       let stars = [];
       for (let i=0; i < 5; i++) {
-        stars.push(<FontAwesome key={i} name='star' size={18} color={i < note ? "#d4b413" : "#9c9c98"} />)
+        stars.push(<FontAwesome key={i} name='star' size={18} color={i < note ? "#FFD700" : "#C0C0C0"} />) //#d4b413
       }
 
       return stars;
@@ -39,8 +39,8 @@ export default function Recipe( props ) {
               </View>
             </View>
             <View style={styles.infos}>
-              <Text style={styles.text}>Difficulté: {props.difficulty}/5</Text>
-              <Text style={styles.text}>Temps de préparation: {props.preparationTime}m</Text>
+              <Text style={styles.text}>Difficulty: {props.difficulty}/5</Text>
+              <Text style={styles.text}>Preparation Time: {props.preparationTime}m</Text>
             </View>
           </TouchableOpacity>
         </View>

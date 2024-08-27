@@ -14,13 +14,13 @@ export default function Recap( props ) {
     const dispatch = useDispatch((state) => state.ingredient.ingredient)
 
     //Fonction pour appeler l'API de DALL·E
-    const generateImage = async (ingredientName) => {
+    const generateImageFromDalle = async (ingredientName) => {
       try {
           const response = await fetch("https://api.openai.com/v1/images/generations", {
               method: "POST",
               headers: {
                   "Content-Type": "application/json",
-                  Authorization: `Bearer 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`,
+                  Authorization: `Bearer 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`,
               },
               body: JSON.stringify({
                   prompt: `Generate an image of ${ingredientName}`,
@@ -41,36 +41,78 @@ export default function Recap( props ) {
       }
     }
 
-    // const fetchImageFromUnsplash = async (ingredientName) => {
-    //   try {
-    //       const response = await fetch(`https://api.unsplash.com/search/photos?query=${ingredientName}&client_id=jtpouSnBgNG5G1d0xNZhOXdrd5fyMN-BfcPWG_0uQMQ`);
-    //       const data = await response.json();
-    //       if (data.results && data.results.length > 0) {
-    //           setImageUrl(data.results[0].urls.small);
-    //       } else {
-    //           console.error("No image found");
-    //       }
-    //   } catch (error) {
-    //       console.error("Error fetching image from Unsplash", error);
-    //   }
-    // };
+    //Fonction pour appeler l'API unsplash
+    const generateImageFromUnsplash = async (ingredientName) => {
+      try {
+          const response = await fetch(`https://api.unsplash.com/search/photos?query=${ingredientName}&client_id=jtpouSnBgNG5G1d0xNZhOXdrd5fyMN-BfcPWG_0uQMQ`);
+          const data = await response.json();
+          if (data.results && data.results.length > 0) {
+              setImageUrl(data.results[0].urls.small);
+          } else {
+              console.error("No image found");
+          }
+      } catch (error) {
+          console.error("Error fetching image from Unsplash", error);
+      }
+    };
+
+
+    const generateImageFromDeepAI = async (ingredientName) => {
+      try {
+          const response = await fetch("https://api.deepai.org/api/text2img", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Api-Key": "6a4f36cf-6144-4c7e-8ed9-b686eff0d3d6",
+              },
+              body: JSON.stringify({ text: `A picture of ${ingredientName}` }),
+          });
+          const data = await response.json();
+          if (data.output_url) {
+              setImageUrl(data.output_url);
+          } else {
+              console.error("No image found",data);
+          }
+      } catch (error) {
+          console.error("Error fetching image from DeepAI", error);
+      }
+  };
+
+  const generateImageFromPexels = async (ingredientName) => {
+    try {
+        const response = await fetch(`https://api.pexels.com/v1/search?query=${ingredientName}`, {
+            headers: {
+                Authorization: 'mujY10VeWWIrl3uzp9QaY9NWbM9YjgFNMi1OWzBD15ePJf3L0WynHm4P',
+            },
+        });
+        const data = await response.json();
+        if (data.photos && data.photos.length > 0) {
+            setImageUrl(data.photos[0].src.small);
+        } else {
+            console.error("No image found");
+        }
+    } catch (error) {
+        console.error("Error fetching image from Pexels", error);
+    }
+};
 
     // Appel de l'API lors du montage du composant ou si l'ingredient change
     useEffect(() => {
-      generateImage(props.data.display_name);
-      //fetchImageFromUnsplash (props.data.display_name)
+      //generateImageFromDalle(props.data.display_name);
+      //generateImageFromUnsplash (props.data.display_name);
+      //generateImageFromDeepAI (props.data.display_name)
+      generateImageFromPexels(props.data.display_name);
     }, [props.data.display_name]);
     
     return (
       <View style={styles.ingredientContainer}>
           <View style={styles.photoContainer}>
             <View style={styles.deleteIcon}>
-              <TouchableOpacity onPress={() => dispatch(removeIngredientToStore(props))}>
+              <TouchableOpacity onPress={() => dispatch(removeIngredientToStore(props))} style={styles.cross}>
                 <FontAwesome name='times' size={20} color={css.activeIconColor}  />
               </TouchableOpacity>
             </View>
             <View>
-              {/* <Image source={{ uri: null }} style={styles.image} /> */}
                {/* Utilise l'image générée si elle existe */}
                {imageUrl ? (
                         <Image source={{ uri: imageUrl }} style={styles.image} />
@@ -89,20 +131,18 @@ export default function Recap( props ) {
             </View>
           </View>
           <View style={styles.infoBtn}>
-            <TouchableOpacity activeOpacity={0.5} onPress={() => {console.log('ICI'); setModalVisible(true)}} >
-                <Feather name="info" size={24} color="black"/>
+            <TouchableOpacity activeOpacity={0.5} onPress={() => { setModalVisible(true)}} >
+                <Feather name="info" size={24} color='white'/>
             </TouchableOpacity>
           </View>
           <Modal visible={modalVisible} animationtType="fade" transparent>
               <View style={styles.modalBackground}>
                 <View style={styles.modalContainer}>
-                      <View styles={styles.modal}>
-                        <Text style={styles.titleText}>Nutrition of: {props.data.display_name}/100g</Text>
-                        <View style={styles.deleteIconModal}>
-                          <TouchableOpacity onPress={() => setModalVisible(false)}>
-                            <FontAwesome name='times' size={25} color={css.activeIconColor}  />
-                          </TouchableOpacity>
-                        </View>
+                      <View style={styles.deleteIconModal}>
+                        <Text style={styles.titleText}> {props.data.display_name}/100g</Text>
+                        <TouchableOpacity onPress={() => setModalVisible(false)}>
+                          <FontAwesome name='times' size={25} color={css.activeIconColor}  />
+                        </TouchableOpacity>
                       </View>
                       <View style={styles.aLineContainer}>
                           <Text>⚫ </Text> 
@@ -144,7 +184,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: 330,
         borderRadius: 10,
-        backgroundColor: css.backgroundColorTwo,
+        backgroundColor: css.backgroundColorOne,
         marginBottom: '5%',
       },
     
@@ -153,23 +193,37 @@ const styles = StyleSheet.create({
       },
       
       deleteIcon: {
+        zIndex:1,
         width: '95%',
         alignItems: 'flex-end',
         position: 'absolute',
-        zIndex: 1,
         paddingTop: '2%',
         paddingRight: '6%',
+        marginTop:'3%'
+      },
+
+      cross: {
+        backgroundColor:css.backgroundColorOne,
+        borderRadius:5,
+        //height:'100%',
+        width:'25%',
+        alignItems: 'center',
+        //justifyContent:'center'
       },
     
       image: {
         width: 90,
         height: 95,
-        borderRadius: 10,
-        marginLeft: '4%',
+        //borderRadius:10,
+        //borderTopEndRadius:10,
+        //borderBottomLeftRadius:10,
+        //borderTopEndRadius:10,
+        borderBottomLeftRadius:10,
+        borderTopLeftRadius:10,
+        // marginLeft: '4%',
       },
     
       ingredientNameContainter: {
-        flex:  0,
         justifyContent: 'center',
         width: 70,
         height: 80,
@@ -181,7 +235,6 @@ const styles = StyleSheet.create({
       },
 
       infoGramsContainer: {
-        flex: 0,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'red',
@@ -193,7 +246,6 @@ const styles = StyleSheet.create({
       },
 
       infoGrams: {
-        flex: 0,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
@@ -216,9 +268,8 @@ const styles = StyleSheet.create({
       },
     
       modalContainer: {
-        flex: 0,
-        justifyContent: 'space-between',
         alignItems: 'center',
+        justifyContent:'space-around',
         backgroundColor: 'white',
         borderRadius: 20,
         height: 310,
@@ -231,30 +282,26 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
-        marginBottom: 15,
+      },
+
+      deleteIconModal: {
+        flexDirection:'row',
+        justifyContent:'space-between',
+        alignItems: 'center',
+        width: '80%',
+        height: '10%',
       },
 
       aLineContainer: {
-        flex: 0,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         width: 200,
-        paddingBottom: 15,
-      },
-
-      deleteIconModal: {
-        marginTop: 5,
-        alignItems: 'flex-end',
-        width: 290,
-        position: 'absolute',
-      },
-
-      modal: {
-        backgroundColor: 'green',
+        height: '10%',
       },
 
       titleText: {
+        marginLeft:'28%',
         fontSize: 20,
         fontWeight: 'bold',
       },

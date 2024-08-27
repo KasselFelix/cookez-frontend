@@ -9,7 +9,9 @@ export const ingredientSlice = createSlice({
   initialState,
   reducers: {
     addIngredientToStore: (state, action) => {
-      state.ingredient.push(action.payload);
+     if(!state.ingredient.some((e)=> e.data.display_name==action.payload.data.display_name)){
+        state.ingredient.push(action.payload);
+      }
     },
     removeIngredientToStore: (state, action) => {
       state.ingredient= state.ingredient.filter((e) => e.data.display_name !== action.payload.data.display_name);

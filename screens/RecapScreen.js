@@ -6,24 +6,24 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import * as Animatable from 'react-native-animatable';
 
 import Popover from "react-native-popover-view"; 
-import MyButton from "../modules/MyButton";
-import MySmallButton from "../modules/MySmallButton";
+import MyButton from "../components/MyButton";
+import MySmallButton from "../components/MySmallButton";
 import buttonStyles from "../styles/Button";
 import css from "../styles/Global";
 import RNPickerSelect from 'react-native-picker-select';
 
 import Recap from "../components/Recap";
+import { addOriginToStore } from "../reducers/origin";
 
 export default function RecapScreen({ navigation }) {
 
   const [showPopover, setShowPopover]=useState(false);
   const dispatch = useDispatch();
   const ingredients = useSelector((state) => state.ingredient.ingredient);
-  const [slectOrigin, setSelectOrigin] = useState("");
+  const [selectOrigin, setSelectOrigin] = useState(null);
 
   const handleShowPopover =() => {
     setShowPopover(true)
-    console.log('IF FALSE: ', showPopover)
 }
 
   let listIngredients=<></>;
@@ -51,7 +51,7 @@ export default function RecapScreen({ navigation }) {
             <FontAwesome name='times' size={22} color={css.activeIconColor} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.popoverValidBtn} activeOpacity={0.8} onPress={() => handleRemove()} >
-            <FontAwesome name={'check'} size={22} color={'white'}/>
+            <FontAwesome name={'check'} size={22} color={'#2E8B57'}/>
         </TouchableOpacity>
       </View>
     </View> :
@@ -61,7 +61,6 @@ export default function RecapScreen({ navigation }) {
   )
 
   const originRecipes = [
-    { label: "All recipes", value: "All recipes" },
     { label: "France", value: "France" },
     { label: "Cambodia", value: "Cambodia" },
     { label: "Cuba", value: "Cuba" },
@@ -123,9 +122,10 @@ export default function RecapScreen({ navigation }) {
         <View style={styles.separator}><Text><Text>--------------------------------------------------------------------------------------</Text></Text></View>
         <View style={styles.difficultyBloc}>
                   <RNPickerSelect
-                  onValueChange={(value) => setSelectOrigin(value)}
+                  value={selectOrigin}
+                  onValueChange={(value) => {setSelectOrigin(value);dispatch(addOriginToStore(value))}}
                   items={originRecipes}
-                  // placeholder={{ label: "All recipes", value: "All recipes" }}
+                  placeholder={{ label: "All recipes", value: "All recipes" }}
                   style={pickerSelectStyles} 
                   useNativeAndroidPickerStyle={false}
                   />
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingTop: '15%',
-    backgroundColor: css.backgroundColorOne
+    backgroundColor: css.backgroundColorTwo
   }, 
 
   popoverBackground: {

@@ -3,7 +3,7 @@ import { Modal, StyleSheet, TouchableOpacity, Text, View, FlatList
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import css from '../styles/Global';
-import MyButton from "../modules/MyButton";
+import MyButton from "./MyButton";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 
 //ICI: LA MODAL QUI AFFICHE LES INGREDIENTS DE LA RECETTE UTILISATEUR \\
