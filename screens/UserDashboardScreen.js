@@ -55,11 +55,17 @@ export default function UserDashboardScreen({navigation}) {
 
   useEffect(()=> {
     recipeAll(); 
+    const sortRecipes = foundRecipe?.sort((a, b) => b.votes.length - a.votes.length ) || [];
+    setTopRecipe(sortRecipes[0]);
+    setLatestRecipe( foundRecipe[foundRecipe.length-1])
+    console.log('TOP',topRecipe)
+    fetchImageUrl(topRecipe?.name,topRecipe?.date,setImageUrlTop);
+    fetchImageUrl(latestRecipe?.name,latestRecipe?.date,setImageUrlLatest);
   }, [])
 
   useEffect(() => {
-    fetchImageUrl(topRecipe.name,topRecipe.date,setImageUrlTop);
-    fetchImageUrl(latestRecipe.name,latestRecipe.date,setImageUrlLatest);
+    console.log('PASS')
+   
   }, [foundRecipe]);
 
 
@@ -111,9 +117,6 @@ const handleFetchRecipe = async (recipe) => {
       const data = await response.json();
       if (data.result) {
         setFoundRecipe(data.recipes);
-        const sortRecipes = foundRecipe?.sort((a, b) => b.votes.length - a.votes.length ) || [];
-        setTopRecipe(sortRecipes[0]);
-        setLatestRecipe( foundRecipe[foundRecipe.length-1])
       }
     } catch (error) {
       console.error('error fetching data 🧐', error);
