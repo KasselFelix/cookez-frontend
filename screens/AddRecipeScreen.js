@@ -9,6 +9,7 @@ import {
   ScrollView,
   TextInput,
   Image,
+  Dimensions
 } from "react-native";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
@@ -24,6 +25,8 @@ import ImageSelector from "../components/ImageSelector";
 import PickImage from "../components/PickImage";
 import TakePhoto from "../components/TakePhoto";
 import { removePictureToStore } from "../reducers/picture";
+
+const { width, height } = Dimensions.get('window');
 
 export default function AddRecipeScreen({navigation}) {
   // const dispatch = useDispatch();
@@ -377,7 +380,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: '15%',
+    width: width * 1,  
+    height: height * 1, 
+    paddingVertical: '15%',
     backgroundColor: css.backgroundColorOne
   }, 
 
@@ -445,7 +450,6 @@ const styles = StyleSheet.create({
 
   scroll: {
     width:'100%',
-    overflow:'hidden'
   },
 
   section:{

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, ScrollView, RefreshControl, Touchable } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, ScrollView, RefreshControl,  Dimensions } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import css from '../styles/Global';
 import { useSelector } from "react-redux";
@@ -9,6 +9,8 @@ import MySmallButton from '../components/MySmallButton';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Comment from '../components/Comments';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+
+const { width, height } = Dimensions.get('window');
 
 export default function CommentScreen({ navigation }) {
     const [myComments, setMyComments] = useState([]);
@@ -58,7 +60,7 @@ export default function CommentScreen({ navigation }) {
     })
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.header}>
                 <MySmallButton
                 	dataFlow={()=> handleReturn()}
@@ -70,20 +72,22 @@ export default function CommentScreen({ navigation }) {
             { myComments.length === 0 && <View style={styles.noCommentContainer}>
               <View style={styles.noFavorite}><Text>No comments in your list </Text><Text>at the moment 😔 ...</Text></View>
             </View> }
-
-            <ScrollView contentContainerStyle={styles.galleryContainer} 
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
-            {allComments}
-            </ScrollView>
-        </SafeAreaView>
+            <View style={styles.galleryContainer}>
+              <ScrollView 
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
+              {allComments}
+              </ScrollView>
+            </View>
+        </View>
     )
 }
 
 const styles = StyleSheet.create({
       container: {
-        flex: 1,
+        width: width * 1,  
+        height: height * 1, 
         alignItems: 'center',
-        paddingTop: '15%',
+        paddingVertical: '15%',
         backgroundColor: css.backgroundColorOne
       }, 
     
@@ -113,6 +117,9 @@ const styles = StyleSheet.create({
       },
 
       galleryContainer: {
-        marginHorizontal: '7%',
+        flexDirection:'column',
+        width:'100%',
+        paddingHorizontal:'4%',
+        height:'100%',
       },
 })

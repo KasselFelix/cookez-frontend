@@ -1,17 +1,18 @@
 import React, { useEffect ,useState} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { View, Text, StyleSheet, Image, ScrollView, Animated, TouchableOpacity, Modal, TextInput, KeyboardAvoidingView } from 'react-native';
+import {SafeAreaView, View, Text, StyleSheet, Image, ScrollView, Animated, TouchableOpacity, Modal, TextInput, KeyboardAvoidingView, Dimensions } from 'react-native';
 import MyButton from '../components/MyButton';
 import buttonStyles from '../styles/Button';
 import css from '../styles/Global';
 import { removeUserToStore, updateUserInStore} from '../reducers/user';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import addressIp from '../modules/addressIp';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { removeAllIngredientToStore } from '../reducers/ingredient';
 import { removeAllRecipeToStore } from '../reducers/recipe';
 import { removeCommentToStore } from '../reducers/comment';
 import { removePictureToStore } from '../reducers/picture';
+
+const { width, height } = Dimensions.get('window');
 
 
 
@@ -95,8 +96,6 @@ const handleUpdate = () => {
       dispatch(updateUserInStore(data.updatedUser));
       setEditModalVisible(false);
       console.log(data);
-    } else {
-      alert(data.error);
     }
   })
   .catch(error => alert('Error updating user info'));
@@ -105,7 +104,7 @@ const handleUpdate = () => {
   
   
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
 
       <View style={styles.iconContainer}>
         <TouchableOpacity onPress={() => setEditModalVisible(true)}>
@@ -122,16 +121,17 @@ const handleUpdate = () => {
           },
         ]}
       >
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
+        <TouchableOpacity onPress={() => setModalVisible(true)} >
           <Image source={availableImages.find(e=> e.nameFile==profileImage).path} style={styles.profileImage} />
         </TouchableOpacity>
-        <Text style={styles.profileName}>
+        <Text  style={styles.profileName}>
           {user?.firstname} {user?.lastname}
         </Text>
         <Text style={styles.profileUsername}>@{user?.username}</Text>
       </Animated.View>
 
       <View style={styles.profileInfo}>
+        <ScrollView style={{overflow:'hidden'}} >
         <Text style={styles.infoTitle}>Email:</Text>
         <Text style={styles.infoText}>{user?.email}</Text>
 
@@ -161,9 +161,10 @@ const handleUpdate = () => {
 
         <Text style={styles.infoTitle}>Comments:</Text>
         <Text style={styles.infoText}>{user?.comments.length}</Text>
+        </ScrollView >
       </View>
 
-      <View>
+      <View style={styles.logoutSection}>
       <MyButton
             dataFlow={() => {
               navigation.navigate("Home");
@@ -186,7 +187,7 @@ const handleUpdate = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select your Avatar !</Text>
-            <View style={styles.imageOptions}>
+            <ScrollView contentContainerStyle={styles.imageOptions}>
               {availableImages.map((image, index) => index>1 && (
                 <TouchableOpacity
                   key={index}
@@ -195,7 +196,7 @@ const handleUpdate = () => {
                   <Image source={image.path} style={styles.optionImage} />
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
             </View>
         </View>
       </Modal>
@@ -278,14 +279,16 @@ const handleUpdate = () => {
            </KeyboardAvoidingView> 
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex:1,
-    paddingTop:'20%',
+    width: width * 1,  
+    height: height * 1, 
+    paddingVertical: '20%',
+    justifyContent:'space-between',
     backgroundColor: css.backgroundColorTwo,
     alignItems: 'center',
   },
@@ -306,13 +309,15 @@ const styles = StyleSheet.create({
 
   profileHeader: {
     alignItems: 'center',
+    height: height * 0.20,
+    width: width * 0.9,
     marginBottom: '5%',
   },
 
   profileImage: {
     width: 120,
     height: 120,
-    borderRadius: 60,
+    borderRadius: 75,
     borderWidth: 2,
     borderColor: css.backgroundColorOne,
     marginBottom: '1%',
@@ -330,7 +335,8 @@ const styles = StyleSheet.create({
   },
 
   profileInfo: {
-    width: '80%',
+    height: height*0.5,
+    width: width* 0.8,
     backgroundColor: '#FFF',
     borderRadius: 10,
     padding: '6%',
@@ -339,7 +345,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 5,
-    marginBottom:'8%',
+    marginBottom:'4%',
   },
 
   infoTitle: {
@@ -354,8 +360,13 @@ const styles = StyleSheet.create({
     color: 'black',
   },
 
+  logoutSection: {
+    height:height*0.1,
+  },
+
   modalContainer: {
-    flex: 1,
+    width: width * 1,  
+    height: height * 1, 
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -378,19 +389,18 @@ const styles = StyleSheet.create({
   },
 
   imageOptions: {
-    height:'85%',
+    height:'100%',
     width: '100%',
     flexDirection: 'row',
     flexWrap : 'wrap',
     justifyContent: 'space-around',
-    overflow:'scroll',
   },
   optionImage: {
     width: 80,
     height: 80,
     margin: '1%',
     borderRadius: 10,
-    marginBottom:'15%'
+    marginBottom:'15%',
   },
    modalEditContainer:{
     flex: 1,

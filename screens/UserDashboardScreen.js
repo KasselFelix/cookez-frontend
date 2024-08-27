@@ -23,6 +23,7 @@ export default function UserDashboardScreen({navigation}) {
   const dispatch = useDispatch();
   const recipeSelect= useSelector((state)=>state.recipe.recipes)
 
+  const [imageUrl, setImageUrl] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 	const [searchRecipe, setSearchRecipe] = useState('');
 	const [clicked, setClicked] = useState(false);
@@ -31,6 +32,31 @@ export default function UserDashboardScreen({navigation}) {
 
 
   const [foundRecipe, setFoundRecipe]= useState([])
+
+
+  const fetchImageUrl = async () => {
+    try {
+      const date = new Date(selectedRecipe.date).getTime();
+      const response = await fetch(`http://${addressIp}:3000/download/${selectedRecipe.name}_${date}`);
+      const data = await response.json();
+      if (data.result) {
+        setImageUrl(data.imageUrl);
+      } else {
+        console.error('Error fetching image:', data.error);
+      }
+    } catch (error) {
+      console.error('Fetch image error:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchImageUrl();
+    console.log('IMAGEURL',imageUrl)
+  }, [])
+
+  useEffect(() => {
+    fetchImageUrl();
+  }, [imageUrl]);
 
 
 // FETCH THE RECIPE ROUTE BY NAME 
@@ -43,11 +69,7 @@ const handleFetchRecipe = async (recipe) => {
     });
 		const data =  await response.json();
 
-<<<<<<< HEAD
     console.log('We have the data', data.recipe);
-=======
-    //console.log(data.recipe);
->>>>>>> 29e1947e81c8be578b07aacb9774087da086d6e7
 
 		if (data.result) {
 			setDataListRecipe(data.recipe);
@@ -203,7 +225,9 @@ const topStars = [];
             </View>
           )} */}
         <View style={styles.imageBlock}>
-        <Image style={styles.topImage} source={imageRecipe[`${topRecipe?.picture}` || null]}/>
+        {imageRecipe[`${topRecipe?.picture}`]? 
+                <Image style={styles.topImage} source={ imageRecipe[`${topRecipe?.picture}`]}/>:
+                <Image style={styles.topImage} source={{ uri: imageUrl  || null} }/>}
         </View>
           {/* {votes.length > 0 ?(
             votes.map((note, index) =>(
@@ -228,7 +252,9 @@ const topStars = [];
             {renderVotesLatestRecipe}
         </View>
         <View style={styles.imageBlock}>
-          <Image style={styles.latestImage} source={imageRecipe[`${latestRecipe?.picture}` || null]}/>
+        {imageRecipe[`${latestRecipe?.picture}`]? 
+                <Image style={styles.latestImage} source={ imageRecipe[`${latestRecipe?.picture}`]}/>:
+                <Image style={styles.latestImage} source={{ uri: imageUrl  || null} }/>}
         </View>
           {/* {votes.length > 0 ?(
             votes.map((note, index) =>(
