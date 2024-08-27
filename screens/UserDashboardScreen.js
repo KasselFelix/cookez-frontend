@@ -23,7 +23,11 @@ export default function UserDashboardScreen({navigation}) {
   const dispatch = useDispatch();
   const recipeSelect= useSelector((state)=>state.recipe.recipes)
 
-  const [imageUrl, setImageUrl] = useState(null);
+
+  const [topRecipe,setTopRecipe]=useState(null);
+  const [latestRecipe,setLatestRecipe]=useState(null);
+  const [imageUrlLatest, setImageUrlLatest] = useState(null);
+  const [imageUrlTop, setImageUrlTop] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 	const [searchRecipe, setSearchRecipe] = useState('');
 	const [clicked, setClicked] = useState(false);
@@ -34,13 +38,13 @@ export default function UserDashboardScreen({navigation}) {
   const [foundRecipe, setFoundRecipe]= useState([])
 
 
-  const fetchImageUrl = async () => {
+  const fetchImageUrl = async (recipeName,recipeDate,setImageUrl) => {
     try {
-      const date = new Date(selectedRecipe.date).getTime();
-      const response = await fetch(`http://${addressIp}:3000/download/${selectedRecipe.name}_${date}`);
+      const date = new Date(recipeDate).getTime();
+      const response = await fetch(`http://${addressIp}:3000/download/${recipeName}_${date}`);
       const data = await response.json();
       if (data.result) {
-        setImageUrl(data.imageUrl);
+        setImageUrl(data.imageUrl)
       } else {
         console.error('Error fetching image:', data.error);
       }
@@ -49,14 +53,14 @@ export default function UserDashboardScreen({navigation}) {
     }
   };
 
-  useEffect(() => {
-    fetchImageUrl();
-    console.log('IMAGEURL',imageUrl)
+  useEffect(()=> {
+    recipeAll(); 
   }, [])
 
   useEffect(() => {
-    fetchImageUrl();
-  }, [imageUrl]);
+    fetchImageUrl(topRecipe.name,topRecipe.date,setImageUrlTop);
+    fetchImageUrl(latestRecipe.name,latestRecipe.date,setImageUrlLatest);
+  }, [foundRecipe]);
 
 
 // FETCH THE RECIPE ROUTE BY NAME 
@@ -69,14 +73,12 @@ const handleFetchRecipe = async (recipe) => {
     });
 		const data =  await response.json();
 
-    // console.log('We have the data', data.recipe);
 
 		if (data.result) {
 			setDataListRecipe(data.recipe);
 		} else {
 			setDataListRecipe(data.error);
 		}
-    //console.log('end')
 	}
 
 	useEffect(() => {
@@ -109,7 +111,9 @@ const handleFetchRecipe = async (recipe) => {
       const data = await response.json();
       if (data.result) {
         setFoundRecipe(data.recipes);
-        console.log('Here are all the recipes', foundRecipe[0]);
+        const sortRecipes = foundRecipe?.sort((a, b) => b.votes.length - a.votes.length ) || [];
+        setTopRecipe(sortRecipes[0]);
+        setLatestRecipe( foundRecipe[foundRecipe.length-1])
       }
     } catch (error) {
       console.error('error fetching data 🧐', error);
@@ -117,10 +121,7 @@ const handleFetchRecipe = async (recipe) => {
     }
   }
 
-  useEffect(()=> {
-    
-    recipeAll(); 
-  }, [])
+  
 
 function update(){
   recipeAll();
@@ -128,12 +129,11 @@ function update(){
 
 // map on 'foundRecipe' to retrieve 'votes'
 
-  const sortRecipes = foundRecipe?.sort((a, b) => b.votes.length - a.votes.length ) || [];
-  const topRecipe = sortRecipes[0]
+  
   const votesTopRecipe = topRecipe?.votes.length;
   const noteTopRecipe = topRecipe?.votes.reduce((accumulator,current)=>accumulator+current.note,0)/votesTopRecipe;
 
-  const latestRecipe = foundRecipe[foundRecipe.length-1];
+ 
   const votesLatestRecipe = latestRecipe?.votes.length;
   const noteLatestRecipe = latestRecipe?.votes.reduce((accumulator, current)=>accumulator+current.note,0)/votesLatestRecipe
 
@@ -227,7 +227,7 @@ const topStars = [];
         <View style={styles.imageBlock}>
         {imageRecipe[`${topRecipe?.picture}`]? 
                 <Image style={styles.topImage} source={ imageRecipe[`${topRecipe?.picture}`]}/>:
-                <Image style={styles.topImage} source={{ uri: imageUrl  || null} }/>}
+                <Image style={styles.topImage} source={{ uri: imageUrlTop  || null} }/>}
         </View>
           {/* {votes.length > 0 ?(
             votes.map((note, index) =>(
@@ -254,7 +254,7 @@ const topStars = [];
         <View style={styles.imageBlock}>
         {imageRecipe[`${latestRecipe?.picture}`]? 
                 <Image style={styles.latestImage} source={ imageRecipe[`${latestRecipe?.picture}`]}/>:
-                <Image style={styles.latestImage} source={{ uri: imageUrl  || null} }/>}
+                <Image style={styles.latestImage} source={{ uri: imageUrlLatest  || null} }/>}
         </View>
           {/* {votes.length > 0 ?(
             votes.map((note, index) =>(
