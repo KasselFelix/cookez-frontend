@@ -6,6 +6,7 @@ import buttonStyles from '../styles/Button';
 import css from '../styles/Global';
 import { removeUserToStore, updateUserInStore} from '../reducers/user';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import AntDesign from "react-native-vector-icons/AntDesign";
 import addressIp from '../modules/addressIp';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { removeAllIngredientToStore } from '../reducers/ingredient';
@@ -107,9 +108,18 @@ const handleUpdate = () => {
   return (
     <View style={styles.container}>
 
-      <View style={styles.iconContainer}>
+      <View style={styles.header}>
         <TouchableOpacity onPress={() => setEditModalVisible(true)}>
           <FontAwesome name={"edit"} size={30} color={css.inactiveButtonColor} style={styles.iconEdit}/>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => {
+              navigation.navigate("Home");
+              dispatch( removeUserToStore());
+              dispatch( removeAllIngredientToStore());
+              dispatch( removeAllRecipeToStore());
+              dispatch(removeCommentToStore());
+              dispatch(removePictureToStore())}}>
+          <AntDesign name={"logout"} size={25} color={css.inactiveButtonColor} style={styles.iconEdit}/>
         </TouchableOpacity>
       </View>
 
@@ -130,7 +140,9 @@ const handleUpdate = () => {
         </Text>
         <Text style={styles.profileUsername}>@{user?.username}</Text>
       </Animated.View>
-
+      <ScrollView>
+        
+      </ScrollView>
       <View style={styles.profileInfo}>
         <Text style={styles.infoTitle}>Email:</Text>
         <Text style={styles.infoText}>{user?.email}</Text>
@@ -163,7 +175,7 @@ const handleUpdate = () => {
         <Text style={styles.infoText}>{user?.comments.length}</Text>
       </View>
 
-      <View>
+      {/* <View>
       <MyButton
             dataFlow={() => {
               navigation.navigate("Home");
@@ -175,7 +187,7 @@ const handleUpdate = () => {
             text={"LOG OUT"}
             buttonType={buttonStyles.buttonOne}
           />
-      </View>
+      </View> */}
 
       {/* Modal pour sélectionner l'image */}
       <Modal
@@ -284,19 +296,18 @@ const handleUpdate = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex:1,
-    paddingTop:'20%',
-    backgroundColor: css.backgroundColorTwo,
+    flex: 1,
     alignItems: 'center',
-  },
+    paddingTop: '10%',
+    backgroundColor: css.backgroundColorTwo
+  }, 
 
-  iconContainer:{
-    position: 'absolute',
+  header: {
+    flex: 0,
+    width: '90%',
     flexDirection: 'row',
-    marginTop: 10,
-    top: 20,
-    right: 20,
-    padding: 5,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 
   iconEdit:{
@@ -339,7 +350,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 5,
-    marginBottom:'8%',
+    marginBottom:'20%',
   },
 
   infoTitle: {

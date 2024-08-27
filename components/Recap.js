@@ -145,28 +145,28 @@ export default function Recap( props ) {
                         </TouchableOpacity>
                       </View>
                       <View style={styles.aLineContainer}>
-                          <Text>⚫ </Text> 
-                          <Text style={styles.text}>Calories:</Text>
-                          <Text>{props.data.nutrition.calories_100g || 0}</Text>
+                        <Text>● </Text> 
+                        <Text style={styles.text}> Calories:</Text>
+                        <Text>{props.data.nutrition.calories_100g || 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
-                        <Text>⚫ </Text> 
-                        <Text style={styles.text}>Sugars:</Text>
+                        <Text>● </Text> 
+                        <Text style={styles.text}> Sugars:</Text>
                         <Text>{Number.parseFloat(props.data.nutrition.sugars_100g).toFixed(2) || 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
-                        <Text>⚫ </Text> 
-                        <Text style={styles.text}>Proteins:</Text>
+                        <Text>● </Text> 
+                        <Text style={styles.text}> Proteins:</Text>
                         <Text>{Number.parseFloat(props.data.nutrition.proteins_100g).toFixed(2) || 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
-                        <Text>⚫ </Text>
-                        <Text style={styles.text}>Fat:</Text>
-                        <Text> {Number.parseFloat(props.data.nutrition.fat_100g).toFixed(2) || 0}</Text>
+                        <Text>● </Text>
+                        <Text style={styles.text}> Fat:</Text>
+                        <Text>{Number.parseFloat(props.data.nutrition.fat_100g).toFixed(2) || 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
-                        <Text>⚫ </Text> 
-                        <Text style={styles.text}>Fibers:</Text>
+                        <Text>● </Text> 
+                        <Text style={styles.text}> Fibers:</Text>
                         <Text>{Number.parseFloat(props.data.nutrition.fibers_100g).toFixed(2) || 0}</Text>
                       </View>
                 </View>
@@ -185,7 +185,6 @@ const styles = StyleSheet.create({
         width: 330,
         borderRadius: 10,
         backgroundColor: css.backgroundColorOne,
-        marginBottom: '5%',
       },
     
       photoContainer: {
@@ -309,7 +308,6 @@ const styles = StyleSheet.create({
       text: {
         fontSize: 18,
         marginRight: 45,
-        height: 25,
-        width: 100,
-      }
+        width: 120,
+      },
 })

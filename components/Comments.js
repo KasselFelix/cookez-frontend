@@ -198,14 +198,14 @@ export default function Comments( { upDownCountInitial, alreadyUp, alreadyDown, 
     const handleLogged = (
       user.token  ?
                 <View style={styles.footer}>
-                    <View>
-                      <FontAwesome name="comments" size={20} color={css.backgroundColorTwo} onPress={() => setModalVisible(true)}/>
-                    </View>
+                    <TouchableOpacity onPress={() => setModalVisible(true)}>
+                      <FontAwesome name="comments" size={20} color={css.backgroundColorTwo}/>
+                    </TouchableOpacity>
                     <View style={styles.icone}>
-                      <TouchableOpacity style={styles.upDownButton} activeOpacity={0.4} onPress={() => handleUpComment(user.username, _id)}>
+                      <TouchableOpacity style={styles.upButton} activeOpacity={0.4} onPress={() => handleUpComment(user.username, _id)}>
                         <FontAwesome name="thumbs-up" size={20} color={ upVote ? "green" : "grey" } />
                       </TouchableOpacity>
-                      <TouchableOpacity style={styles.upDownButton} activeOpacity={0.4} onPress={() => handleDownComment(user.username, _id)}>
+                      <TouchableOpacity style={styles.downButton} activeOpacity={0.4} onPress={() => handleDownComment(user.username, _id)}>
                         <FontAwesome name="thumbs-down" size={20} color={ downVote ?  "red" : "grey" }/>
                       </TouchableOpacity>
                       <View>
@@ -279,18 +279,18 @@ export default function Comments( { upDownCountInitial, alreadyUp, alreadyDown, 
                 isVisible={showPopover}
                 onRequestClose={()=> setShowPopover(false)}
                 from={(
-                  <TouchableOpacity style={styles.upDownNoLogged} activeOpacity={0.4} onPress={() => handleUpDownNoLogged()}>
+                  <TouchableOpacity style={styles.footerNoLogged} activeOpacity={0.4} onPress={() => handleUpDownNoLogged()}>
                     <View >
                       <FontAwesome name="comments" size={20} color={"grey"}/>
                     </View>
-                    <TouchableOpacity style={styles.upDownButton} activeOpacity={0.4} onPress={() => handleUpComment(user.username, _id)}>
-                      <FontAwesome name="thumbs-up" size={20} color={"grey"}/>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.upDownButton} activeOpacity={0.4} onPress={() => handleDownComment(user.username, _id)}>
-                      <FontAwesome name="thumbs-down" size={20} color={"grey"}/>
-                    </TouchableOpacity>
-                    <View>
-                      <Text>({upDownCountCurrent})</Text> 
+                    <View style={styles.upDownButton}>
+                      <View style={styles.upButton}>
+                        <FontAwesome name="thumbs-up" size={20} color={"grey"}/>
+                      </View>
+                      <View style={styles.downButton} activeOpacity={0.4}>
+                        <FontAwesome name="thumbs-down" size={20} color={"grey"}/>
+                      </View>
+                        <Text>({upDownCountCurrent})</Text> 
                     </View>
                   </TouchableOpacity>
                   
@@ -378,8 +378,9 @@ export default function Comments( { upDownCountInitial, alreadyUp, alreadyDown, 
         paddingTop: '2%',
       },
 
-      upDownNoLogged: {
+      footerNoLogged: {
         flex: 0, 
+        width: '100%',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -388,16 +389,23 @@ export default function Comments( { upDownCountInitial, alreadyUp, alreadyDown, 
       footer: {
         marginTop: '2%',
         flexDirection: 'row',
-         justifyContent: 'space-between'
+        justifyContent: 'space-between',
       },
 
       upDownButton: {
         flexDirection: 'row',
         alignItems: 'center',
+      },
+
+      upButton: {
         marginRight: 15,
       },
 
-      voteCount: {
+      downButton: {
+        marginRight: 15,
+      },
+
+      comment: {
         marginLeft: 5,
         fontSize: 14,
       },

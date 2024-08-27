@@ -270,7 +270,6 @@ export default function RecipeScreen({ route, navigation }) {
             text={<FontAwesome name="home" size={25} color={"white"} />}
             buttonType={buttonStyles.buttonSmall}
           /> :
-          // <View style={styles.btnEmpty}></View>
           <MySmallButton
             dataFlow={() => navigation.navigate('Home')}
             text={<FontAwesome name="home" size={25} color={"white"} />}
@@ -279,19 +278,19 @@ export default function RecipeScreen({ route, navigation }) {
         </View>
           
         {/* BLOC RECETTE SELECTED  */}
-        <View style={ commentsDisplay.length > 0 ? styles.recipeContainerAdjust: styles.recipeContainer}>
+        <View style={ commentsDisplay.length > 0 ? (user.token ? styles.recipeContainerAdjustLogged : styles.recipeContainerAdjust ) : styles.recipeContainer}>
           <ScrollView
             style={styles.scrollViewMain}
             contentContainerStyle={{alignItems:'center'}}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
-            <Animatable.View animation="slideInDown" duration={700} style={imageRecipe[`${selectedRecipe.picture}`]?styles.pictureBloc:styles.pictureBlocURL}>
+            refreshControl={<RefreshControl /*refreshing={refreshing} onRefresh={onRefresh}*//>}>
+            <Animatable.View animation="slideInDown" duration={700} style={ imageRecipe[`${selectedRecipe.picture}`] ? styles.pictureBloc :styles.pictureBlocURL }>
               <View style={styles.firstContainer}>
                 <Text style={styles.sectionsTitle}>{selectedRecipe.origin}</Text>
               </View>
               <View style={styles.imageContainer}>
                 {imageRecipe[`${selectedRecipe.picture}`]? 
-                  <Image style={styles.imagePlaceholderURI} source={ imageRecipe[`${selectedRecipe.picture}`]}/>:
-                  <Image style={styles.imagePlaceholderURL} source={{ uri: imageUrl  || null} }/>}
+                  <Image style={ styles.imagePlaceholderURI } source={ imageRecipe[`${selectedRecipe.picture}`]}/>:
+                  <Image style={ styles.imagePlaceholderURL } source={ { uri: imageUrl  || null} }/>}
                   <Popover 
                     placement="floating"
                     backgroundStyle={styles.popoverBackground}
@@ -335,7 +334,6 @@ export default function RecipeScreen({ route, navigation }) {
                 </Text>
               </View>
             </Animatable.View>
-          </ScrollView>
 
           {/* BLOC DESCRIPTION*/}
           <Animatable.View
@@ -371,6 +369,7 @@ export default function RecipeScreen({ route, navigation }) {
               {steps}
             </View>
           </Animatable.View>
+          </ScrollView>
         </View>
   
         {/* BLOC COMMENTS */}
@@ -379,15 +378,15 @@ export default function RecipeScreen({ route, navigation }) {
           <ScrollView horizontal  contentContainerStyle={styles.CommentScrollView}>
             {commentsDisplay}
           </ScrollView> 
-        </View>: 
+        </View> : 
         <Popover 
           placement="floating"
           backgroundStyle={styles.popoverBackground}
           isVisible={showPopover}
           onRequestClose={()=> setShowPopover(false)}
           from={(
-            <TouchableOpacity onPress={() => handleAddComment()}>
-              <FontAwesome name="comments" size={35} color={user.token?css.inactiveButtonColor:'grey'} />
+            <TouchableOpacity style={styles.commentIcon} onPress={() => handleAddComment()}>
+              <FontAwesome name="comments" size={30} color={user.token?css.inactiveButtonColor:'grey'} />
             </TouchableOpacity>
           )}>
           <View style={styles.popoverContainer}>
@@ -396,9 +395,9 @@ export default function RecipeScreen({ route, navigation }) {
         </Popover>}
     
         {/* BOUTON  */}
+        { !user.token &&
         <View style={styles.footer}>
           <View style={styles.separator} />
-            { !user.token &&
             <View style={styles.moreFeaturesBtn}>
               <MyButton
                 dataFlow={() => navigation.navigate("MoreFeatures")}
@@ -406,8 +405,8 @@ export default function RecipeScreen({ route, navigation }) {
                 buttonType={buttonStyles.buttonTwo}
               />
             </View>
-            }
         </View>
+            }
         <Modal visible={modalVisible} animationtType="none" transparent>
           <View style={styles.modal}>
             <Animatable.View
@@ -485,15 +484,6 @@ const styles = StyleSheet.create({
     fontSize: css.fontSizeFive,
   },
 
-  btnEmpty: {
-    flex: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 30,
-    marginBottom: '4%',
-    borderRadius: 10,
-  },
-
   recipeContainer: {
     width:'100%',
     height:'78%',
@@ -503,9 +493,20 @@ const styles = StyleSheet.create({
 
   recipeContainerAdjust: {
     width:'100%',
-    height:'60%',
+    height: '60%',
     paddingBottom:'auto',
     overflow:'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  recipeContainerAdjustLogged: {
+    width:'100%',
+    height: '71%',
+    paddingBottom:'auto',
+    overflow:'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   scrollViewMain: {
@@ -516,7 +517,7 @@ const styles = StyleSheet.create({
   pictureBloc: {
     justifyContent:'flex-start',
     width: "90%",
-    height: "35%",
+    height: "32%",
     backgroundColor: css.backgroundColorOne,
     paddingHorizontal: 10,
     borderRadius: 8,
@@ -526,6 +527,7 @@ const styles = StyleSheet.create({
   pictureBlocURL: {
     justifyContent:'flex-start',
     width: "90%",
+    height: '32%',
     backgroundColor: css.backgroundColorOne,
     paddingHorizontal: 10,
     borderRadius: 8,
@@ -556,8 +558,8 @@ const styles = StyleSheet.create({
 
   imageContainer: {
     justifyContent:'flex-Start',
-    height:'45%',
-    marginBottom:'2%'
+    height:'58%',
+    marginBottom:'2%',
   },
 
   imagePlaceholderURL: {
@@ -613,6 +615,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
+  // content: {
+  //   paddingBottom: 50,
+  // },
+  
   descriptionBloc: {
     width: "90%",
     backgroundColor: css.backgroundColorOne,
@@ -634,14 +640,14 @@ const styles = StyleSheet.create({
     backgroundColor: css.backgroundColorOne,
     padding: 10,
     borderRadius: 8,
-    marginBottom: 10,
+    paddingBottom: 200,
   },
 
   separator: {
     height: 1,
     width: "90%",
     backgroundColor: "black",
-    marginVertical: 16,
+    marginBottom: '2%'
   },
 
   CommentScrollView: {
@@ -653,7 +659,7 @@ const styles = StyleSheet.create({
     height:'20%',
     alignItems:'center',
     justifyContent:'center',
-    marginTop:10,
+    marginTop: 10,
     width: "90%",
     backgroundColor: css.backgroundColorOne,
     padding: 10,
@@ -674,12 +680,12 @@ const styles = StyleSheet.create({
     justifyContent:'flex-end',
   },
 
-  content: {
-    paddingBottom: 100,
-  },
-
   scrollView: {
     flex: 1,
+  },
+
+  commentIcon: {
+    margin: 5,
   },
 
   modal:{
@@ -755,7 +761,6 @@ const styles = StyleSheet.create({
     padding: 10,
     elevation: 2,
   },
-
 
   buttonCancel: {
     backgroundColor: '#f44336',

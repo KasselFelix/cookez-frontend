@@ -22,9 +22,9 @@ export default function ListRecipes ({ searchRecipe, setClicked, data, onItemPre
         >
           <View style={styles.item}>
                   <Text style={styles.name}>{name}</Text>
-                  <TouchableOpacity activeOpacity={0.8}  >
+                  {/* <TouchableOpacity activeOpacity={0.8}  >
                       <FontAwesome name={'check'} size={22} color={'white'}/>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
           </View>
         </TouchableOpacity>
     );
@@ -72,12 +72,14 @@ nonValidated: {
   backgroundColor: "white",
   borderRadius: 50,
   marginBottom: 10,
+  width: 340,
 },
 
 validated: {
-  backgroundColor: "green",
+  backgroundColor: css.backgroundColorTwo,
   borderRadius: 50,
   marginBottom: 10,
+  width: 340,
 },
 
 nonValidatedBtn: {
@@ -108,6 +110,7 @@ item: {
   margin: 30,
   borderBottomWidth: 2,
   borderBottomColor: 'black',
+  width: '80%'
 },
 
 name: {
