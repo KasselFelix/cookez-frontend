@@ -21,7 +21,6 @@ import addressIp from "../modules/addressIp";
 import { useDispatch, useSelector } from "react-redux";
 import IngredientsList from "../components/IngredientsList";
 import StepsList from "../components/StepsList";
-import ImageSelector from "../components/ImageSelector";
 import PickImage from "../components/PickImage";
 import TakePhoto from "../components/TakePhoto";
 import { removePictureToStore } from "../reducers/picture";
