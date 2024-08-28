@@ -62,9 +62,9 @@ const TabNavigator = () => {
         tabBarIcon: ({ color, size }) => {
           let iconName = "";
           if (route.name === "UserDashboard") {
-            iconName = "user";
+            iconName = "home";
           } else if (route.name === "Profile") {
-            iconName = "gear";
+            iconName = "user";
           } else if (route.name === "AddRecipe") {
             iconName = "plus";
           } else if (route.name === "Favorite") {
