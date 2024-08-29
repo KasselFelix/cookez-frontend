@@ -26,7 +26,6 @@ import ProfileScreen from "./screens/ProfileScreen";
 import RecapScreen from "./screens/RecapScreen";
 import RecipeScreen from "./screens/RecipeScreen";
 import ResultScreen from "./screens/ResultScreen";
-import SearchRecipeScreen from "./screens/SearchRecipeScreen";
 import UserDashboardScreen from "./screens/UserDashboardScreen";
 import FavoriteScreen from "./screens/FavoriteScreen";
 import CommentScreen from "./screens/CommentScreen";
