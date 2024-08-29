@@ -413,7 +413,7 @@ export default function RecipeScreen({ route, navigation }) {
                 ref={modalRef}
                 animation="slideInDown"
                 duration={700}
-                style={styles.modalContainer}
+                style={styles.modalContainerStar}
               >
               {starsVotes}
             </Animatable.View>
@@ -696,7 +696,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   
-  modalContainer:{
+  modalContainerStar:{
     flexDirection:'row',
     backgroundColor:'white',
     borderRadius: 20,

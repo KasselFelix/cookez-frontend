@@ -64,12 +64,12 @@ export default function UserDashboardScreen({navigation}) {
 
 // FETCH THE RECIPE ROUTE BY NAME 
 
-const handleFetchRecipe = async (recipe) => {
+const handleFetchRecipe = async () => {
 		const response = await fetch(`http://${addressIp}:3000/recipes/recipeName`, {
       method:'POST',
       headers:{"Content-Type":"Application/json"},
-      body:JSON.stringify({searchRecipe: recipe})
-    });
+      body:JSON.stringify({name: searchRecipe})}
+    );
 		const data =  await response.json();
 
 
@@ -82,7 +82,7 @@ const handleFetchRecipe = async (recipe) => {
 
 	useEffect(() => {
 		if (searchRecipe.length > 0) {
-			handleFetchRecipe(searchRecipe)
+			handleFetchRecipe()
 		}
 	}, [searchRecipe]);
 
