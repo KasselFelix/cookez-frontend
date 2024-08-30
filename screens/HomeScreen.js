@@ -16,7 +16,7 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.logoContainer}>
         <Image
           style={styles.logo}
-          source={require("../assets/logo/cookez logo.png")}
+          source={require("../assets/logo/cookez_logo.png")}
           alt="logo"
         />
       </View>
