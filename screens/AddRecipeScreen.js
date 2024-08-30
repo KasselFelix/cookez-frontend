@@ -91,7 +91,7 @@ export default function AddRecipeScreen({navigation}) {
           name: `${recipeName}_${date}.jpg`,
           type: 'image/jpeg',
       });
-      fetch(`http://${addressIp}:3000/upload/${recipeName}_${date}`, {
+      fetch(`https://cookez-backend.vercel.app/upload/${recipeName}_${date}`, {
           method: 'POST',
           body: formData,
       })
@@ -100,7 +100,7 @@ export default function AddRecipeScreen({navigation}) {
           if(data.result){
               console.log('NOW: ', data.url)
               // if(name && origin && ingredients.lenght>0 && difficulty && preparationTime && description && steps.length>0) {
-              fetch(`http://${addressIp}:3000/recipes/add`, {
+              fetch(`https://cookez-backend.vercel.app/recipes/add`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json"},
                 body: JSON.stringify({

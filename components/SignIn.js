@@ -25,7 +25,7 @@ export default function SignIn({navigation}) {
 
     // funtion to handle the signin
     const handleSignin =()=> {
-        fetch(`http://${addressIp}:3000/users/signin`, {
+        fetch(`https://cookez-backend.vercel.app/users/signin`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({

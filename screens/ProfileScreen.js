@@ -86,7 +86,7 @@ const ProfilScreen = ({navigation}) => {
   
 // FONCTION POUR HANDLE L'UPDATE DES INFOS USER
 const handleUpdate = () => {
-  fetch( `http://${addressIp}:3000/users/update`, {
+  fetch( `https://cookez-backend.vercel.app/users/update`, {
     method: "PUT",
     headers: { "Content-Type": "application/json"},
     body: JSON.stringify({...updatedUser, token: user.token}),

@@ -41,7 +41,7 @@ export default function UserDashboardScreen({navigation}) {
   const fetchImageUrl = async (recipeName,recipeDate,setImageUrl) => {
     try {
       const date = new Date(recipeDate).getTime();
-      const response = await fetch(`http://${addressIp}:3000/download/${recipeName}_${date}`);
+      const response = await fetch(`https://cookez-backend.vercel.app/download/${recipeName}_${date}`);
       const data = await response.json();
       if (data.result) {
         setImageUrl(data.imageUrl)
@@ -65,7 +65,7 @@ export default function UserDashboardScreen({navigation}) {
 // FETCH THE RECIPE ROUTE BY NAME 
 
 const handleFetchRecipe = async () => {
-		const response = await fetch(`http://${addressIp}:3000/recipes/recipeName`, {
+		const response = await fetch(`https://cookez-backend.vercel.app/recipes/recipeName`, {
       method:'POST',
       headers:{"Content-Type":"Application/json"},
       body:JSON.stringify({name: searchRecipe})}
@@ -103,7 +103,7 @@ const handleFetchRecipe = async () => {
 
   const recipeAll = async () => {
     try{
-      const response = await fetch(`http://${addressIp}:3000/recipes/all`, {
+      const response = await fetch(`https://cookez-backend.vercel.app/recipes/all`, {
         method:'POST',
         headers:{}
       });
@@ -188,7 +188,7 @@ const topStars = [];
       <View style={styles.logoBanner}>
        <Image
           style={styles.logo}
-          source={require("../assets/logo/cookez logo.png")}
+          source={require("../assets/logo/cookez_logo.png")}
         />
       </View>
       <View style={styles.higherIcon}>

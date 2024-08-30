@@ -26,7 +26,7 @@ export default function ResultScreen({ navigation }) {
       nutrition: e.data.nutrition};
     })
     try{
-      const response = await fetch(`http://${addressIp}:3000/recipes/result`,{
+      const response = await fetch(`https://cookez-backend.vercel.app/recipes/result`,{
         method:'POST',
         headers: {
           'Content-Type': 'application/json',

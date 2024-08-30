@@ -62,7 +62,7 @@ export default function RecipeScreen({ route, navigation }) {
   const fetchImageUrl = async () => {
     try {
       const date = new Date(selectedRecipe.date).getTime();
-      const response = await fetch(`http://${addressIp}:3000/download/${selectedRecipe.name}_${date}`);
+      const response = await fetch(`https://cookez-backend.vercel.app/download/${selectedRecipe.name}_${date}`);
       const data = await response.json();
       if (data.result) {
         setImageUrl(data.imageUrl);
@@ -76,7 +76,7 @@ export default function RecipeScreen({ route, navigation }) {
 
   // HNADLE VOTE RECIPE 1/3
   const handleFetchVote = async (note) => {
-    const response = await fetch(`http://${addressIp}:3000/recipes/vote/${selectedRecipe._id}`,{
+    const response = await fetch(`https://cookez-backend.vercel.app/recipes/vote/${selectedRecipe._id}`,{
       method:'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ export default function RecipeScreen({ route, navigation }) {
   // HANDLE FAVORITE HEART 1/3
   const handleFetchLike = async () => {
     setAction(true)
-    const response = await fetch(`http://${addressIp}:3000/recipes/updateFavorite`,{
+    const response = await fetch(`https://cookez-backend.vercel.app/recipes/updateFavorite`,{
       method:'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ export default function RecipeScreen({ route, navigation }) {
   
   const fetchAddComment = async () => {
     try {
-      const response = await fetch(`http://${addressIp}:3000/comments/add`, {
+      const response = await fetch(`https://cookez-backend.vercel.app/comments/add`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -229,7 +229,7 @@ export default function RecipeScreen({ route, navigation }) {
   // FETCH GETS ALL USERS WHO VOTED UP/DOWN 1/3
   const handleUpDownVoteByUser = async () => {
     try {
-      const response = await fetch(`http://${addressIp}:3000/comments/byRecipe`, {
+      const response = await fetch(`https://cookez-backend.vercel.app/comments/byRecipe`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({

@@ -30,7 +30,7 @@ export default function SignUp({navigation}) {
   const signUpUser = () => {
       // setLoading(true);
 
-      fetch(`http://${addressIp}:3000/users/signup`, {
+      fetch(`https://cookez-backend.vercel.app/users/signup`, {
         method:'POST',
         headers: {'Content-Type': 'application/json'}, 
         body: JSON.stringify({

@@ -65,7 +65,7 @@ export default function KickoffScreen({navigation}) {
     // }, []);
 
 	const handleFetchIngredients = async () => {
-		const response = await fetch(`http://${addressIp}:3000/ingredients/${searchInput}`);
+		const response = await fetch(`https://cookez-backend.vercel.app/ingredients/${searchInput}`);
 		const data =  await response.json();
 		if (data.result) {
 			//console.log('search',data);

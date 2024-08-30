@@ -32,7 +32,7 @@ export default function CommentScreen({ navigation }) {
     }
 
     const handleFetch =()=>{
-      fetch(`http://${addressIp}:3000/comments/${user.username}`)
+      fetch(`https://cookez-backend.vercel.app/comments/${user.username}`)
         .then((res) => res.json())
         .then(data => {
             if(data.result) {
