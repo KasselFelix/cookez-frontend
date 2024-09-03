@@ -408,12 +408,12 @@ imageBlock:{
 topImage:{
   width:'100%',
   height:'100%',
-  resizeMode:'center'
+  resizeMode:'cover'
 },
 latestImage:{
   width:'100%',
   height:'100%',
-  resizeMode:'center'
+  resizeMode:'cover'
 },
 
 lowerContainers:{

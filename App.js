@@ -1,5 +1,6 @@
-import { LogBox } from 'react-native';
-LogBox.ignoreAllLogs();//Ignore all log notifications
+//Ignore all log notifications
+//import { LogBox } from 'react-native';
+//LogBox.ignoreAllLogs();
 
 // NAVIGATION SETTINGS
 import { NavigationContainer } from "@react-navigation/native";
