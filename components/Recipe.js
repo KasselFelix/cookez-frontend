@@ -30,7 +30,7 @@ export default function Recipe( props ) {
               <Text> {props.origin}</Text>
             </View>
             <View style={styles.imageContainer}>
-              <Image style={styles.image} source={imageRecipe[`${props.picture}` || null]}/>{/*{{ uri: props.picture}}/>*/}
+              <Image style={styles.image} source={imageRecipe[`${props.picture}` || null]} alt="picture of one recipe" accessibilityLabel="picture of one recipe"/>
               <View style={styles.voteContainer}> 
                 <View style={styles.vote}>
                   {voteRecipe()}

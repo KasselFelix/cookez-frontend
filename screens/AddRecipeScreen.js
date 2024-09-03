@@ -9,7 +9,8 @@ import {
   ScrollView,
   TextInput,
   Image,
-  Dimensions
+  Dimensions,
+  accessibilityLabel
 } from "react-native";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
@@ -367,7 +368,7 @@ export default function AddRecipeScreen({navigation}) {
               <Text style={styles.sectionTitle}>Picture _____________________________</Text>
                 <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                   {picture ?
-                    <Image source={{ uri: picture }} alt="photo" style={{ width: 200, height: 200,borderRadius:20, borderWidth:5, borderColor:css.inactiveButtonColor }} />:
+                    <Image source={{ uri: picture }} alt="photo" accessibilityLabel="photo" style={{ width: 200, height: 200,borderRadius:20, borderWidth:5, borderColor:css.inactiveButtonColor }} />:
                     <View style={styles.pictureLogo}> 
                         <TakePhoto name={recipeName}/>
                         <PickImage name={recipeName}/>

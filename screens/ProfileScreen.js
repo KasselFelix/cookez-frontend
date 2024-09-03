@@ -132,7 +132,7 @@ const handleUpdate = () => {
         ]}
       >
         <TouchableOpacity onPress={() => setModalVisible(true)} >
-          <Image source={availableImages.find(e=> e.nameFile==profileImage).path} style={styles.profileImage} />
+          <Image source={availableImages.find(e=> e.nameFile==profileImage).path} style={styles.profileImage} alt="profil icon" accessibilityLabel="profil icon" />
         </TouchableOpacity>
         <Text  style={styles.profileName}>
           {user?.firstname} {user?.lastname}

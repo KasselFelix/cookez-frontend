@@ -115,9 +115,9 @@ export default function Recap( props ) {
             <View>
                {/* Utilise l'image générée si elle existe */}
                {imageUrl ? (
-                        <Image source={{ uri: imageUrl }} style={styles.image} />
+                        <Image source={{ uri: imageUrl }} style={styles.image}  alt="picture of one recipe" accessibilityLabel="picture of one recipe"/>
                     ) : (
-                      <Image source={{ uri: props.photo }} style={styles.image} />
+                      <Image source={{ uri: props.photo }} style={styles.image} alt="picture of one recipe" accessibilityLabel="picture of one recipe"/>
                     )}
             </View>
           </View>

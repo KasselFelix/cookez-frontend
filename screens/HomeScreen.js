@@ -18,6 +18,7 @@ export default function HomeScreen({ navigation }) {
           style={styles.logo}
           source={require("../assets/logo/cookez_logo.png")}
           alt="logo"
+          accessibilityLabel="logo"
         />
       </View>
       <LottieView style={styles.lottieAnim} source={require("../assets/animation/Animation - 1723436591199.json")}

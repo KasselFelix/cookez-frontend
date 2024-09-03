@@ -189,6 +189,7 @@ const topStars = [];
        <Image
           style={styles.logo}
           source={require("../assets/logo/cookez_logo.png")}
+           alt="logo" accessibilityLabel="logo"
         />
       </View>
       <View style={styles.higherIcon}>

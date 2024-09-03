@@ -178,7 +178,7 @@ export default function KickoffScreen({navigation}) {
 				  <FontAwesome name='times' size={20} color={css.activeIconColor}/>
 				</TouchableOpacity>
 			</View>
-			<Image source={{ uri: data }} style={styles.photo} />
+			<Image source={{ uri: data }} style={styles.photo} alt="image of one recipe" accessibilityLabel="image of one recipe" />
 		  </View>
 		);
 	  });

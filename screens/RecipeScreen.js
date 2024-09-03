@@ -289,8 +289,8 @@ export default function RecipeScreen({ route, navigation }) {
               </View>
               <View style={styles.imageContainer}>
                 {imageRecipe[`${selectedRecipe.picture}`]? 
-                  <Image style={ styles.imagePlaceholderURI } source={ imageRecipe[`${selectedRecipe.picture}`]}/>:
-                  <Image style={ styles.imagePlaceholderURL } source={ { uri: imageUrl  || null} }/>}
+                  <Image style={ styles.imagePlaceholderURI } source={ imageRecipe[`${selectedRecipe.picture}`]} alt="profile icon" accessibilityLabel="profile icon"/>:
+                  <Image style={ styles.imagePlaceholderURL } source={ { uri: imageUrl  || null} }  alt="profile icon" accessibilityLabel="profile icon"/>}
                   <Popover 
                     placement="floating"
                     backgroundStyle={styles.popoverBackground}
