@@ -19,7 +19,7 @@ export default function RecipeScreen({ route, navigation }) {
   // DATA NAVIGATE FROM COMPONENTS RECIPE 
   const selectedRecipe = route.params.props
   const votes = route.params.votes
-
+  console.log('vote',route.params.votes)
   const user = useSelector((state)=>state.user.value);
 
   // HOOK STATE FOR THE HEART LOGO ON THE RECIPE

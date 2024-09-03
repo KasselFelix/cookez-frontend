@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Modal } from "react-native";
 import imageRecipe from "../modules/images";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import css from "../styles/Global";
 import buttonStyles from "../styles/Button";
 import MyButton from "../components/MyButton";
@@ -13,6 +13,7 @@ import ListRecipes from "../components/ListRecipes";
 import SearchRecipe from "../components/SearchRecipe";
 import { useDispatch, useSelector } from "react-redux";
 import recipe, {updateRecipeToStore,removeAllRecipeToStore,addRecipeToStore} from "../reducers/recipe";
+import { useFocusEffect } from "@react-navigation/native";
 
 
 
@@ -53,13 +54,15 @@ export default function UserDashboardScreen({navigation}) {
     }
   };
 
-  useEffect(()=> {
-    recipeAll(); 
-  }, [])
-
-  useEffect(() => {
-    
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Screen is focused');
+      recipeAll(); 
+      return () => {
+        console.log('Screen is unfocused');
+      };
+    },[])
+  )
 
 
 // FETCH THE RECIPE ROUTE BY NAME 
@@ -95,7 +98,7 @@ const handleFetchRecipe = async () => {
     if(modalRef.current){
       modalRef.current.animate('slideOutUp', 800).then(() => {
         setModalVisible(false);
-        navigation.navigate('Recipe', { props, note: note, votes: votes, update:update })
+        navigation.navigate('Recipe', { props, note: note, votes: votes})
         })
     }
 
@@ -103,6 +106,7 @@ const handleFetchRecipe = async () => {
 
   const recipeAll = async () => {
     try{
+      console.log('UPDATE')
       const response = await fetch(`https://cookez-backend.vercel.app/recipes/all`, {
         method:'POST',
         headers:{}
@@ -126,37 +130,11 @@ const handleFetchRecipe = async () => {
 
   
 
-  function update(){
-    recipeAll();
-  } 
 
-// map on 'foundRecipe' to retrieve 'votes'
-  
-  const votesTopRecipe = topRecipe?.votes.length;
-  const noteTopRecipe = topRecipe?.votes.reduce((accumulator,current)=>accumulator+current.note,0)/votesTopRecipe;
+//retrieve 'votes'
+  const noteTopRecipe = topRecipe?.votes.reduce((accumulator,current)=>accumulator+current.note,0)/topRecipe?.votes.length;
 
- 
-  const votesLatestRecipe = latestRecipe?.votes.length;
-  const noteLatestRecipe = latestRecipe?.votes.reduce((accumulator, current)=>accumulator+current.note,0)/votesLatestRecipe
-
-  const renderVotesTopRecipe = (
-  <View >
-    <Text>{votesTopRecipe}</Text>
-  </View>
-)
-
-const renderVotesLatestRecipe= (
-  <View >
-    <Text>{votesLatestRecipe}</Text>
-  </View>
-)
-
-// const getImageUrl = (foundRecipe) => {
-
-//   if (foundRecipe && foundRecipe.picture) {
-//     return ListRecipes[`${foundRecipe.picture}.jpg`];
-//   }
-// };
+  const noteLatestRecipe = latestRecipe?.votes.reduce((accumulator, current)=>accumulator+current.note,0)/latestRecipe?.votes.length;
 
 const topStars = [];
   for (let i = 0; i < 5; i++) {
@@ -214,13 +192,19 @@ const topStars = [];
 
       </View>
       <View style={styles.lowerContainers}>
+        <TouchableOpacity 
+          style={styles.recipeContainer} 
+          onPress={() => { navigation.navigate('Recipe', {props:topRecipe, note: noteTopRecipe, votes: topRecipe.votes })}}
+        > 
         <Text style={styles.title1}>Top Recipe</Text>
         <ScrollView style={styles.scrollView}>
 
           <View style={styles.topStars}>
             <Text>{topRecipe?.name}</Text>
-            {topStars}
-            {renderVotesTopRecipe}
+            <View style={styles.topStars}>
+              {topStars}
+              <Text>{topRecipe?.votes.length}</Text>
+            </View>
           </View>
           {/* {foundRecipe.length > 0 && (
             <View>
@@ -240,8 +224,13 @@ const topStars = [];
             <Text style={styles.votes}>No votes available</Text>
           )} */}
         </ScrollView>
+        </TouchableOpacity>
       </View>
       <View style={styles.lowerContainers}>
+         <TouchableOpacity 
+          style={styles.recipeContainer} 
+          onPress={() => { navigation.navigate('Recipe', {props:latestRecipe, note: noteLatestRecipe, votes: latestRecipe.votes})}}
+          > 
       <Text style={styles.title1}>Latest Recipe</Text>
         <ScrollView style={styles.scrollView}>
         {/* {foundRecipe.length > 0 && (
@@ -251,8 +240,10 @@ const topStars = [];
           )} */}
         <View style={styles.latestStars}>
           <Text>{latestRecipe?.name}</Text>
+          <View style={styles.latestStars}>
             {latestStars}
-            {renderVotesLatestRecipe}
+            <Text>{latestRecipe?.votes.length}</Text>
+          </View>
         </View>
         <View style={styles.imageBlock}>
         {imageRecipe[`${latestRecipe?.picture}`]? 
@@ -268,6 +259,7 @@ const topStars = [];
           )} */}
 
         </ScrollView>
+        </TouchableOpacity>
       </View>
       <View style={styles.buttons}>
         <MyButton
@@ -333,18 +325,22 @@ const styles = StyleSheet.create({
 container:{
   flex:1,
   backgroundColor: css.backgroundColorOne,
+  paddingTop:'15%',
+  alignItems:'center'
+},
+
+logoBanner:{
+  width:'80%',
+  height:'12%',
+  alignItems:'center',
+  justifyContent:'center',
 },
 
 
 logo:{
-  alignItems:'center',
-  margin:0,
-  width:390,
-  height:115,
+  width:'100%',
+  height:'100%',
   objectFit:'contain',
-  alignSelf:'center',
-  marginTop:'18%',
-  marginBottom:15,
   shadowColor:'#000',
   shadowOffset: { width: 3, height:10 }, // Shadow offset for iOS
   shadowOpacity: 2,          // Shadow opacity for iOS
@@ -354,22 +350,18 @@ logo:{
 },
 
 higherIcon: {
-  flex:0.1,
   alignSelf:'center',
-  height:20,
-  marginBottom:10,
- 
+  height:'7%',
+  marginBottom:10, 
 },
+
 lowerIcons:{
-  flex:0.1,
   width:'100%',
   flexDirection: 'row',
   justifyContent:'space-around',
   marginBottom:0,
-
 },
 titleBlock:{
-  flex:0,
   width:'100%',
   marginBottom:5,
 },
@@ -389,14 +381,14 @@ votes:{
 },
 topStars: {
   flexDirection: "row",
-
+  justifyContent: "space-between"
 },
 latestStars: {
   flexDirection: "row",
+  justifyContent:'space-between'
 },
 
 imageBlock:{
-  flex:0.2,
   width:'97%',
   marginHorizontal:'auto',
   height:130,
@@ -417,7 +409,6 @@ latestImage:{
 },
 
 lowerContainers:{
-  flex:0.333,
   backgroundColor:css.backgroundColorTwo,
   borderWidth:2,
   width:'98%',
@@ -429,9 +420,11 @@ lowerContainers:{
   shadowOpacity: 0.8,          // Shadow opacity for iOS
   shadowRadius: 3,  
 },
+
 buttons:{
 
 },
+
 modalBackgound: {
   flex: 1,
   paddingTop:'30%',
