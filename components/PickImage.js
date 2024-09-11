@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+//import * as ImageManipulator from 'expo-image-manipulator';
 import * as Unicons from '@iconscout/react-native-unicons';
 import css from '../styles/Global';
 import { addPictureToStore } from '../reducers/picture';

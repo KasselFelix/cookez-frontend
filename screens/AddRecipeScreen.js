@@ -65,110 +65,92 @@ export default function AddRecipeScreen({navigation}) {
   const dispatch = useDispatch()
 
   useEffect(()=>{
-    dispatch(removePictureToStore())
+    'REMOVE PICTURE:'
+    return ()=>dispatch(removePictureToStore());
   },[])
 
-  const handleAddRecipe = () => {
-    if(user && user.token){
-//     console.log('pass')
-//     console.log({
-//       username: user.username, 
-//       name: recipeName,
-//       ingredients: ingredientsList, 
-//       difficulty: recipeDifficulty, 
-//       picture:`${recipeName}.jpg`, 
-//       preparationTime:recipePreptime, 
-//       cookingTime: recipeCooktime,
-//       // unit:recipeUnit,
-//       description:recipeDescription, 
-//       servings:recipeServings, 
-//       steps:stepsArray,
-//       // comments:[],
-      console.log('PICTURE',picture)
-      const date=Date.now();
-      const formData = new FormData();
-      formData.append('photoFromFront', {
-          uri: picture,
-          name: `${recipeName}_${date}.jpg`,
-          type: 'image/jpeg',
-      });
-      fetch(`https://cookez-backend.vercel.app/upload/${recipeName}_${date}`, {
-          method: 'POST',
-          body: formData,
-      })
-      .then((response) => response.json())
-      .then((data) => {
-          if(data.result){
-              console.log('NOW: ', data.url)
-              // if(name && origin && ingredients.lenght>0 && difficulty && preparationTime && description && steps.length>0) {
-              fetch(`https://cookez-backend.vercel.app/recipes/add`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json"},
-                body: JSON.stringify({
-                      username: user.username,
-                      name: recipeName,
-                      date:date, 
-                      origin:null,
-                      ingredients: ingredientsList, 
-                      difficulty: recipeDifficulty,
-                      votes:[], 
-                      picture:`${recipeName}_${date}`, 
-                      preparationTime:recipePreptime, 
-                      cookingTime: recipeCooktime,
-                      description:recipeDescription, 
-                      servings:recipeServings, 
-                      steps:stepsArray,
-                      comments:[],
-                })
-              })
-              .then((res)=> res.json())
-              .then((data) => {
-                console.log('data:', data);
-                      if (data.result){
-                        alert("Recipe successfully added !")
-                        setIngredientsList([])
-                        setRecipe("")
-                        setRecipeCooktime("")
-                        setRecipeDescription("")
-                        setRecipeDifficulty("")
-                        setRecipeName("")
-                        setRecipeIngredients("")
-                        setRecipeName("")
-                        setRecipePicture("")
-                        setRecipePreptime("")
-                        setRecipeQuantity("")
-                        setRecipeServings("")
-                        setRecipeSteps("")
-                        setRecipeUnit("")
-                        setStepsArray([])
-                        dispatch(removePictureToStore())
-                      }else {
-                        alert(data.error);
-                      }
-              })
-              .catch((error)=> {
-                  alert(error);
-              });
-          }
-      })
-      .catch(error => console.error('There has been a problem with your fetch operation:', error));
-     
-      console.log({
-        username: user.username, 
-        name: recipeName,
-        ingredients: ingredientsList, 
-        difficulty: recipeDifficulty, 
-        picture:`${recipeName}_${date}.jpg`, 
-        preparationTime:recipePreptime, 
-        cookingTime: recipeCooktime,
-        // unit:recipeUnit,
-        description:recipeDescription, 
-        servings:recipeServings, 
-        steps:stepsArray,
-        // comments:[],
-      })
+
+  async function handleAddRecipe() {
+    try {
+        // Vérification de la photo
+        if (!picture) {
+            alert('You should take or select a picture before 😊');
+        }else if (user?.token) {
+            const date = Date.now();
+            const formData = new FormData();
+            formData.append('photoFromFront', {
+                uri: picture,
+                name: `${recipeName.trim()}_${date}.jpg`,
+                type: 'image/jpeg',
+            });
+
+            // Envoi de l'image
+            const uploadResponse = await fetch(`${addressIp}/upload/${recipeName.trim()}_${date}`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!uploadResponse.ok) {
+                throw new Error('Resize a little your picture or try with another one');
+            }
+
+            const uploadData = await uploadResponse.json();
+            //console.log('Upload response data:', uploadData);
+
+            if (uploadData.result) {
+                // Envoi des informations de la recette
+                const recipeResponse = await fetch(`${addressIp}/recipes/add`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username: user.username,
+                        name: recipeName,
+                        date: date,
+                        origin: null,
+                        ingredients: ingredientsList,
+                        difficulty: recipeDifficulty,
+                        votes: [],
+                        picture: `${recipeName}_${date}`,
+                        preparationTime: recipePreptime,
+                        cookingTime: recipeCooktime,
+                        description: recipeDescription,
+                        servings: recipeServings,
+                        steps: stepsArray,
+                        comments: [],
+                    }),
+                });
+
+                const recipeData = await recipeResponse.json();
+                //console.log('Recipe creation response data:', recipeData);
+
+                if (recipeData.result) {
+                    alert("Recipe successfully added!");
+
+                    // Réinitialisation du formulaire
+                    setIngredientsList([]);
+                    setRecipe("");
+                    setRecipeCooktime("");
+                    setRecipeDescription("");
+                    setRecipeDifficulty("");
+                    setRecipeIngredients("");
+                    setRecipeName("");
+                    setRecipePicture("");
+                    setRecipePreptime("");
+                    setRecipeQuantity("");
+                    setRecipeServings("");
+                    setRecipeSteps("");
+                    setRecipeUnit("");
+                    setStepsArray([]);
+                    dispatch(removePictureToStore());
+                } else {
+                    alert(recipeData.error);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error.message);
+        alert(`${error.message}`);
     }
-    // }
   };
 
   //Fonction pour ajouter un ingrédient à la liste:
@@ -182,17 +164,16 @@ export default function AddRecipeScreen({navigation}) {
       setRecipeIngredients('');
     }
   };
-  // console.log('ADDED INGREDIENT:', ingredientsList);
 
   //Fonction pour supprimer un ingrédient de la liste
   const handleDeleteIngredient = (id) => {
     setIngredientsList(ingredientsList.filter((ingredient)=> ingredient.id !== id));
   };
 
-  //Fonction pour compter le nombre d'ingrédients ajoutés
+  //compte le nombre d'ingrédients ajoutés
   const ingredientCount = ingredientsList.length;
 
-  //Fonction pour compter le nombre de steps ajoutés
+  //compte le nombre de steps ajoutés
   const stepCount = stepsArray.length;
 
   // Fonction pour ajouter une étape
@@ -252,7 +233,10 @@ export default function AddRecipeScreen({navigation}) {
           <ScrollView style={styles.scroll}>
             {/* SECTION RECIPE : TITLE - DESCRIPTION  - SETTINGS*/}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Recipe______________________________</Text>
+              <View style={styles.separationContainer}>
+                <Text style={styles.sectionTitle}>Recipe</Text>
+                <View  style={styles.separation}/>
+              </View>
               <TextInput placeholder='name*' placeholderTextColor={'grey'} style={styles.formInput} onChangeText={(value) => setRecipeName(value)} value={recipeName}/>
               <TextInput placeholder='description*' placeholderTextColor={'grey'} style={styles.formInput} onChangeText={(value) => setRecipeDescription(value)} value={recipeDescription}/>
               < View style={styles.settings}>
@@ -271,6 +255,7 @@ export default function AddRecipeScreen({navigation}) {
                 <View style={styles.difficultyBloc}>
                   <Text style={styles.label}>difficulty:</Text>
                   <RNPickerSelect
+                  value={recipeDifficulty}
                   onValueChange={(value) => setRecipeDifficulty(value)}
                   items={numbers2}
                   placeholder={{ label: "0", value: null }}
@@ -303,13 +288,17 @@ export default function AddRecipeScreen({navigation}) {
             </View>
                             {/* SECTION INGREDIENTS */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Ingredients _________________________</Text>
+              <View style={styles.separationContainer}>
+              <Text style={styles.sectionTitle}>Ingredients</Text>
+              <View  style={styles.separation}/>
+              </View>
               <View style={styles.ingredientBloc}>
                 <TextInput placeholder='Qty'  keyboardType="numeric" maxLength={3} placeholderTextColor={'grey'} style={styles.quantityInput} onChangeText={(value) => setRecipeQuantity(value)} value={recipeQuantity}/>
                 <RNPickerSelect
-                onValueChange={(value) => setRecipeUnit(value)}
+                value={recipeUnit}
                 items={units}
-                placeholder={{ label: "units", value: null }}
+                onValueChange={(value)=>setRecipeUnit(value)}
+                placeholder={{ label: "units", value: null}}
                 style={pickerSelectStyles}
                 useNativeAndroidPickerStyle={false}
                 />
@@ -339,7 +328,10 @@ export default function AddRecipeScreen({navigation}) {
             </View>
                           {/* SECTION PREPARATION STEPS */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Steps ______________________________</Text>
+              <View style={styles.separationContainer}>
+                <Text style={styles.sectionTitle}>Steps</Text>
+                <View  style={styles.separation}/>
+              </View>
               <View style={styles.stepsInput}>
                 <TextInput placeholder='step*' placeholderTextColor={'grey'} style={styles.formInput}  onChangeText={(value) => setRecipeSteps(value)} value={recipeSteps} multiline={true} textAlignVertical="top"/>
               </View>
@@ -365,10 +357,20 @@ export default function AddRecipeScreen({navigation}) {
             </View>
                                   {/* SECTION PICTURE */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Picture _____________________________</Text>
+              <View style={styles.separationContainer}>
+                <Text style={styles.sectionTitle}>Picture</Text>
+                <View  style={styles.separation}/>
+              </View>
                 <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                   {picture ?
-                    <Image source={{ uri: picture }} alt="photo" accessibilityLabel="photo" style={{ width: 200, height: 200,borderRadius:20, borderWidth:5, borderColor:css.inactiveButtonColor }} />:
+                    <View style={{ width:'100%',height:'100%', alignItems: 'center'}}>
+                    <View style={styles.deleteIcon}>
+                      <TouchableOpacity onPress={() => dispatch(removePictureToStore())} style={styles.cross}>
+                        <FontAwesome name='times' size={20} color={css.activeIconColor}  />
+                      </TouchableOpacity>
+                    </View>
+                    <Image source={{ uri: picture }} alt="photo" accessibilityLabel="photo" style={{ width: 200, height: 200,borderRadius:20, borderWidth:5, borderColor:css.inactiveButtonColor }} />        
+                    </View> :
                     <View style={styles.pictureLogo}> 
                         <TakePhoto name={recipeName}/>
                         <PickImage name={recipeName}/>
@@ -380,7 +382,7 @@ export default function AddRecipeScreen({navigation}) {
         </View>
       </View>
       <MyButton
-          dataFlow={() => handleAddRecipe()}  
+          dataFlow={() => {handleAddRecipe()}}  
           text="Add Recipe"
           buttonType={buttonStyles.buttonThree}
         />
@@ -394,7 +396,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: width * 1,  
     height: height * 1, 
-    paddingVertical: '15%',
+    paddingTop: '15%',
     backgroundColor: css.backgroundColorOne
   }, 
 
@@ -475,6 +477,31 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 5,
     color: css.inactiveButtonColor,
+  },
+
+  separationContainer: {
+    flexDirection:'row',
+    alignItems:'baseline',
+  },
+
+  separation:{
+    borderBottomWidth:2,
+    borderBottomColor:css.inactiveButtonColor,
+    width:'100%'
+  },
+
+  deleteIcon: {
+    zIndex:1,
+    width: '50%',
+    position: 'absolute',
+    paddingTop: '2%',
+  },
+
+  cross: {
+    backgroundColor:css.backgroundColorOne,
+    borderRadius:5,
+    width:'25%',
+    alignItems: 'center',
   },
 
   pictureLogo: {

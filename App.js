@@ -1,6 +1,6 @@
 //Ignore all log notifications
-//import { LogBox } from 'react-native';
-//LogBox.ignoreAllLogs();
+import { LogBox } from 'react-native';
+LogBox.ignoreAllLogs();
 
 // NAVIGATION SETTINGS
 import { NavigationContainer } from "@react-navigation/native";
@@ -51,8 +51,6 @@ const TabNavigator = () => {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarStyle:({ 
-          position: 'absolute',
-            bottom: 0,
             height: 60, // Adjust height
             paddingBottom: 0, // Remove padding
             borderTopWidth: 0, // Remove top border

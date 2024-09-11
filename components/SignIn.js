@@ -42,7 +42,7 @@ export default function SignIn({navigation}) {
           }
         })
         .catch((error) => {
-          console.error('Sign-in failed', error);
+          console.error('Sign-in failed', error.message);
         })
     };
 
