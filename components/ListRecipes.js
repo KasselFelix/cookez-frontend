@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, FlatList, SafeAreaView, TouchableOpacity, TextInput} from "react-native";
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import css from '../styles/Global';
 
 
 
-
+cc
 // the filter
 export default function ListRecipes ({ searchRecipe, setClicked, data, onItemPress}) {
     

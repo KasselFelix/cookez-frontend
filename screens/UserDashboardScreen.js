@@ -11,8 +11,7 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 import * as Animatable from 'react-native-animatable';
 import ListRecipes from "../components/ListRecipes";
 import SearchRecipe from "../components/SearchRecipe";
-import { useDispatch, useSelector } from "react-redux";
-import recipe, {updateRecipeToStore,removeAllRecipeToStore,addRecipeToStore} from "../reducers/recipe";
+
 
 
 
@@ -20,8 +19,6 @@ import recipe, {updateRecipeToStore,removeAllRecipeToStore,addRecipeToStore} fro
 export default function UserDashboardScreen({navigation}) {
 
   const modalRef = useRef(null);
-  const dispatch = useDispatch();
-  const recipeSelect= useSelector((state)=>state.recipe.recipes)
 
 
   const [topRecipe,setTopRecipe]=useState(null);
@@ -57,9 +54,33 @@ export default function UserDashboardScreen({navigation}) {
     recipeAll(); 
   }, [])
 
-  useEffect(() => {
-    
-  }, []);
+
+  const recipeAll = async () => {
+    try{
+      const response = await fetch(`http://${addressIp}:3000/recipes/all`, {
+        method:'POST',
+        headers:{}
+      });
+      const data = await response.json();
+      if (data.result) {
+        setFoundRecipe(data.recipes);
+        const sortRecipes = data.recipes.sort((a, b) => b.votes.length - a.votes.length ) || [];
+        const top=sortRecipes[0];
+        const latest= data.recipes[data.recipes.length-1];
+        setTopRecipe(top);
+        setLatestRecipe(latest)
+        fetchImageUrl(top?.name,top?.date,setImageUrlTop);
+        fetchImageUrl(latest?.name,latest?.date,setImageUrlLatest);
+      }
+    } catch (error) {
+      console.error('error fetching data 🧐', error);
+      alert('error', error);
+    }
+  }
+
+  function update(){
+    recipeAll();
+  } 
 
 
 // FETCH THE RECIPE ROUTE BY NAME 
@@ -88,47 +109,20 @@ const handleFetchRecipe = async (recipe) => {
 
 	
 
-  function onItemPress(props){
+  function onItemPress(props){ // change name of params - avoid using (props)
+
     
     const votes = props?.votes.length;
     const note= props?.votes.reduce((accumulator,current)=>accumulator+current.note,0)/votes;
     if(modalRef.current){
       modalRef.current.animate('slideOutUp', 800).then(() => {
         setModalVisible(false);
-        navigation.navigate('Recipe', { props, note: note, votes: votes, update:update })
+        navigation.navigate('Recipe', { props, note: note, votes: votes, update:update }) // avoid using (props) it's params
         })
     }
 
   }
 
-  const recipeAll = async () => {
-    try{
-      const response = await fetch(`http://${addressIp}:3000/recipes/all`, {
-        method:'POST',
-        headers:{}
-      });
-      const data = await response.json();
-      if (data.result) {
-        setFoundRecipe(data.recipes);
-        const sortRecipes = data.recipes.sort((a, b) => b.votes.length - a.votes.length ) || [];
-        const top=sortRecipes[0];
-        const latest= data.recipes[data.recipes.length-1];
-        setTopRecipe(top);
-        setLatestRecipe( latest)
-        fetchImageUrl(top?.name,top?.date,setImageUrlTop);
-        fetchImageUrl(latest?.name,latest?.date,setImageUrlLatest);
-      }
-    } catch (error) {
-      console.error('error fetching data 🧐', error);
-      alert('error', error);
-    }
-  }
-
-  
-
-  function update(){
-    recipeAll();
-  } 
 
 // map on 'foundRecipe' to retrieve 'votes'
   
@@ -277,11 +271,11 @@ const topStars = [];
       </View>
       <Modal visible={modalVisible} animationtType="none" transparent>
        		 		<View style={styles.modal}>
-       		 		    <Animatable.View
-						ref={modalRef}
-						animation="slideInUp"
-						duration={700}   
-						style={styles.modalBackgound}>
+       		 		  <Animatable.View
+                  ref={modalRef}
+                  animation="slideInUp"
+                  duration={700}   
+                  style={styles.modalBackgound}>
 							<View style={styles.modalContainer}>
 
 								<SearchRecipe
@@ -407,12 +401,14 @@ imageBlock:{
 topImage:{
   width:'100%',
   height:'100%',
-  resizeMode:'center'
+  resizeMode:'center',
+  objectFit:'cover',
 },
 latestImage:{
   width:'100%',
   height:'100%',
-  resizeMode:'center'
+  resizeMode:'center',
+  objectFit:'cover',
 },
 
 lowerContainers:{

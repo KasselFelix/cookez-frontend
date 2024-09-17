@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, TextInput, View, Text, Keyboard, Button, TouchableOpacity, Image} from "react-native";
 import { Feather, Entypo } from "@expo/vector-icons";
-import { useSelector } from "react-redux";
+
 import css from "../styles/Global";
 
 export default function SearchRecipe ({clicked, searchRecipe, setSearchRecipe, setClicked, setDataListRecipe}) {
