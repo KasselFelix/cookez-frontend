@@ -51,7 +51,7 @@ export default function Comments( { upDownCountInitial, alreadyUp, alreadyDown, 
     // HANDLE UP BY CLICK
     const handleUpComment = async (username, _id) => {
       try {
-        const response = await fetch(`http://${addressIp}:3000/comments/upvote`, {
+        const response = await fetch(`https://cookez-backend.vercel.app/comments/upvote`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -76,7 +76,7 @@ export default function Comments( { upDownCountInitial, alreadyUp, alreadyDown, 
     // HANDLE DOWN BY CLICK
     const handleDownComment = async (username, _id) => {
       try {
-        const response = await fetch(`http://${addressIp}:3000/comments/downvote`, {
+        const response = await fetch(`https://cookez-backend.vercel.app/comments/downvote`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -100,7 +100,7 @@ export default function Comments( { upDownCountInitial, alreadyUp, alreadyDown, 
 
     const handleAddComment = async () => {
       try {
-        const response = await fetch(`http://${addressIp}:3000/comments/add`, {
+        const response = await fetch(`https://cookez-backend.vercel.app/comments/add`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -127,7 +127,7 @@ export default function Comments( { upDownCountInitial, alreadyUp, alreadyDown, 
     const handleDeleteComment = async () => {
       if(user.username===username){
         try {
-          const response = await fetch(`http://${addressIp}:3000/comments/delete`, {
+          const response = await fetch(`https://cookez-backend.vercel.app/comments/delete`, {
             method: 'DELETE',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -155,7 +155,7 @@ export default function Comments( { upDownCountInitial, alreadyUp, alreadyDown, 
       if(user.username===username){
         console.log('INFO',recipe)
         try {
-          const response = await fetch(`http://${addressIp}:3000/comments/update`, {
+          const response = await fetch(`https://cookez-backend.vercel.app/comments/update`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({

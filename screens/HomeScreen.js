@@ -5,26 +5,9 @@ import buttonStyles from "../styles/Button";
 import MyButton from "../components/MyButton";
 import LottieView from "lottie-react-native";
 
-// import { useFonts, } from '@expo-google-fonts/inter';
-// import * as SplashScreen from 'expo-splash-screen';
-// import {useEffect} from 'react';
 
-// SplashScreen.preventAutoHideAsync();
 
-export default function HomeAsGuest({ navigation }) {
-  // const [loaded, error] = useFonts({
-  //   'Inter_900Black': require('../assets/fonts/Inter_900Black.ttf'),
-  // });
-
-  // useEffect(() => {
-  //   if (loaded || error) {
-  //     SplashScreen.hideAsync();
-  //   }
-  // }, [loaded, error]);
-
-  // if (!loaded && !error) {
-  //   return null;
-  // }
+export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
@@ -33,7 +16,9 @@ export default function HomeAsGuest({ navigation }) {
       <View style={styles.logoContainer}>
         <Image
           style={styles.logo}
-          source={require("../assets/logo/cookez logo.png")}
+          source={require("../assets/logo/cookez_logo.png")}
+          alt="logo"
+          accessibilityLabel="logo"
         />
       </View>
       <LottieView style={styles.lottieAnim} source={require("../assets/animation/Animation - 1723436591199.json")}

@@ -30,7 +30,7 @@ export default function FavoriteScreen({ navigation }) {
     }
 
     const handleFetch =()=>{
-      fetch(`http://${addressIp}:3000/recipes/${user.username}`)
+      fetch(`https://cookez-backend.vercel.app/recipes/${user.username}`)
         .then((res) => res.json())
         .then(data => {
             if(data.result) {

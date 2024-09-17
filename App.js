@@ -1,5 +1,6 @@
+//Ignore all log notifications
 import { LogBox } from 'react-native';
-LogBox.ignoreAllLogs();//Ignore all log notifications
+LogBox.ignoreAllLogs();
 
 // NAVIGATION SETTINGS
 import { NavigationContainer } from "@react-navigation/native";
@@ -26,7 +27,6 @@ import ProfileScreen from "./screens/ProfileScreen";
 import RecapScreen from "./screens/RecapScreen";
 import RecipeScreen from "./screens/RecipeScreen";
 import ResultScreen from "./screens/ResultScreen";
-import SearchRecipeScreen from "./screens/SearchRecipeScreen";
 import UserDashboardScreen from "./screens/UserDashboardScreen";
 import FavoriteScreen from "./screens/FavoriteScreen";
 import CommentScreen from "./screens/CommentScreen";
@@ -51,8 +51,6 @@ const TabNavigator = () => {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarStyle:({ 
-          position: 'absolute',
-            bottom: 0,
             height: 60, // Adjust height
             paddingBottom: 0, // Remove padding
             borderTopWidth: 0, // Remove top border

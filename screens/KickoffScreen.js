@@ -17,13 +17,15 @@ import * as Animatable from 'react-native-animatable';
 
 export default function KickoffScreen({navigation}) {
   	const saveMoney=false;
+	const API_KEY="3bJ5BKRL.zWoKPci3XQUszxDUlGKYGePe6ZlLFrYk";//A securiser dans app.json
 
 
-
-
+	//camera
   	const [hasPermission, setHasPermission] = useState(false);
   	const [type, setType] = useState(CameraType.back);
   	const [flashMode, setFlashMode] = useState(FlashMode.off);
+
+
   	const [pictures, setPictures] = useState([]);
   	const [modalVisible, setModalVisible] = useState(false);
 	const [searchInput, setSearchInput] = useState('');
@@ -35,7 +37,7 @@ export default function KickoffScreen({navigation}) {
 	
   	const dispatch = useDispatch();
   	const isFocused = useIsFocused();
-	  const [imageUrl, setImageUrl] = useState(null);
+	const [imageUrl, setImageUrl] = useState(null);
   	let cameraRef = useRef(null);
 	const modalRef = useRef(null);
 
@@ -63,7 +65,7 @@ export default function KickoffScreen({navigation}) {
     // }, []);
 
 	const handleFetchIngredients = async () => {
-		const response = await fetch(`http://${addressIp}:3000/ingredients/${searchInput}`);
+		const response = await fetch(`https://cookez-backend.vercel.app/ingredients/${searchInput}`);
 		const data =  await response.json();
 		if (data.result) {
 			//console.log('search',data);
@@ -80,21 +82,21 @@ export default function KickoffScreen({navigation}) {
 		}
 	}, [searchInput]);
 
-
-	const fetchImageFromUnsplash = async (ingredientName) => {
-		try {
-			const response = await fetch(`https://api.unsplash.com/search/photos?query=${ingredientName}&client_id=jtpouSnBgNG5G1d0xNZhOXdrd5fyMN-BfcPWG_0uQMQ`);
-			const data = await response.json();
-			if (data.results && data.results.length > 0) {
-				setImageUrl(data.results[0].urls.small);
-				setPictures([...pictures, imageUrl])
-			} else {
-				console.error("No image found");
-			}
-		} catch (error) {
-			console.error("Error fetching image from Unsplash", error);
-		}
-	  };
+	//en cours de dev pour afficher la photo apres recherche
+	// const fetchImageFromUnsplash = async (ingredientName) => {
+	// 	try {
+	// 		const response = await fetch(`https://api.unsplash.com/search/photos?query=${ingredientName}&client_id=jtpouSnBgNG5G1d0xNZhOXdrd5fyMN-BfcPWG_0uQMQ`);
+	// 		const data = await response.json();
+	// 		if (data.results && data.results.length > 0) {
+	// 			setImageUrl(data.results[0].urls.small);
+	// 			setPictures([...pictures, imageUrl])
+	// 		} else {
+	// 			console.error("No image found");
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Error fetching image from Unsplash", error);
+	// 	}
+	//   };
 
 
 	function handleBtn () {
@@ -117,7 +119,7 @@ export default function KickoffScreen({navigation}) {
 										'Authorization': `Api-Key ${API_KEY}`,
 										'Content-Type': 'multipart/form-data',
 										},
-										body: formData,});
+										body: formData});
 							if (response.ok) {
 								const data = await response.json();
 								if(data){
@@ -154,7 +156,7 @@ export default function KickoffScreen({navigation}) {
 	};
 
 	
-
+	//CAMERA
 	if (!hasPermission || !isFocused) {
 		return (
 		  <View style={styles.container}>
@@ -176,7 +178,7 @@ export default function KickoffScreen({navigation}) {
 				  <FontAwesome name='times' size={20} color={css.activeIconColor}/>
 				</TouchableOpacity>
 			</View>
-			<Image source={{ uri: data }} style={styles.photo} />
+			<Image source={{ uri: data }} style={styles.photo} alt="image of one recipe" accessibilityLabel="image of one recipe" />
 		  </View>
 		);
 	  });

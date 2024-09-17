@@ -23,7 +23,7 @@ export default function SearchIngredients ({clicked, searchInput, setSearchInput
         {/* Input field */}
         <TextInput
           style={styles.input}
-          placeholder="Search"
+          placeholder="Search a recipe"
           placeholderTextColor="grey"
           value={searchInput}
           onChangeText={setSearchInput}
