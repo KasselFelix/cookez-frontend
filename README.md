@@ -1,5 +1,6 @@
 ## **[PRESENTATION](/Cookez_MVP.pdf)**
 [lien presentation PDF](./Cookez_MVP.pdf)
+
 Le projet Cookez vise à développer une application innovante qui propose des
 recettes personnalisées en fonction des besoins caloriques, des restrictions
 alimentaires, des ingrédients disponibles, et du temps de préparation. L'application
