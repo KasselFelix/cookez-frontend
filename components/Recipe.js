@@ -1,0 +1,130 @@
+import { FontAwesome } from "@expo/vector-icons";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import css from "../styles/Global";
+
+export default function Recipe( props ) {
+
+  
+
+    const note =
+      Array.isArray(props.votes) && props.votes.length
+        ? Math.floor(props.votes.reduce((acc, v) => acc + v.note, 0) / props.votes.length)
+        : 0;
+
+    const voteRecipe= () => {
+      let stars = [];
+      for (let i=0; i < 5; i++) {
+        stars.push(<FontAwesome key={i} name='star' size={18} color={i < note ? "#FFD700" : "#C0C0C0"} />) //#d4b413
+      }
+
+      return stars;
+    }
+
+
+    return (
+        <View style={styles.recipeContainer}>
+          <TouchableOpacity 
+            style={styles.recipeContainer} 
+            onPress={() => {
+              props.navigation.navigate('Recipe', {
+                recipe: {
+                  _id:             props._id,
+                  name:            props.name,
+                  description:     props.description,
+                  ingredients:     props.ingredients,
+                  steps:           props.steps,
+                  votes:           props.votes,
+                  origin:          props.origin,
+                  picture:         props.picture,
+                  date:            props.date,
+                  preparationTime: props.preparationTime,
+                  difficulty:      props.difficulty,
+                },
+              });
+            }}
+          > 
+            <View style={styles.nameContainer}>
+              <Text style={styles.name}>{props.name}</Text>
+              <Text> {props.origin}</Text>
+            </View>
+            <View style={styles.imageContainer}>
+              <Image 
+                style={styles.image} 
+                source={{uri: `https://res.cloudinary.com/dnym6kt4p/image/upload/${props.picture}.jpg?_a=BAMAGSWO0` }|| null} 
+                alt="picture of one recipe" accessibilityLabel="picture of one recipe"
+              />
+              <View style={styles.voteContainer}> 
+                <View style={styles.vote}>
+                  {voteRecipe()}
+                </View>
+                  <Text> votes: {props.votes?.length ?? 0}</Text>
+              </View>
+            </View>
+            <View style={styles.infos}>
+              <Text style={styles.text}>Difficulty: {props.difficulty}/5</Text>
+              <Text style={styles.text}>Preparation Time: {props.preparationTime}m</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+    )
+}
+
+const styles = StyleSheet.create({
+
+  recipeContainer: {
+    width: 330,
+    height: 340,
+    borderRadius: 10,
+    backgroundColor: css.palette.surfaceCard,
+    marginBottom: '5%',
+    shadowColor: css.palette.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+
+  nameContainer: {
+    paddingLeft: '3%',
+  },
+
+  name: {
+    fontSize: css.typography.bodySize,
+    fontWeight: 'bold',
+  },
+
+  imageContainer: {
+    flex: 1,
+    alignItems: 'center',
+    marginTop: '3%',
+    marginLeft: '10%',
+    width: '80%',
+  },
+
+  image: {
+    width: '110%',
+    height: '94%',
+    borderRadius: 10,
+    backgroundColor: css.palette.secondary500,
+  },
+
+  voteContainer: {
+    flex: 0,
+    alignItems: 'flex-end',
+    width: '100%',
+  },
+
+  vote:{
+    flex: 0,
+    flexDirection: 'row',
+  },
+
+  infos: {
+    marginTop: '6%',
+    marginBottom: '3%',
+    paddingLeft: '3%',
+  },
+
+  text: {
+    fontSize: 16,
+    },
+})
