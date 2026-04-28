@@ -87,7 +87,11 @@ export default function KickoffScreen({navigation}) {
 	//en cours de dev pour afficher la photo apres recherche
 	// const fetchImageFromUnsplash = async (ingredientName) => {
 	// 	try {
-	// 		const response = await fetch(`https://api.unsplash.com/search/photos?query=${ingredientName}&client_id=${process.env.EXPO_PUBLIC_UNSPLASH_KEY}`);
+	// 		const response = await fetch(`https://api.pexels.com/v1/search?query=${ingredientName}`, {
+	// 			headers: {
+	// 				Authorization: PEXELS_API_KEY,
+	// 			},
+	// 		});
 	// 		const data = await response.json();
 	// 		if (data.results && data.results.length > 0) {
 	// 			setImageUrl(data.results[0].urls.small);
