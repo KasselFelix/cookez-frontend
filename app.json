@@ -3,6 +3,12 @@
     "name": "Cookez",
     "slug": "cookez",
     "version": "2.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/ffa99151-e290-4b35-a40f-aafbf548676b"
+    },
     "orientation": "portrait",
     "icon": "./assets/logo/cook.png",
     "scheme": "cookez",
