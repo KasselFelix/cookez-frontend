@@ -87,7 +87,7 @@ export default function KickoffScreen({navigation}) {
 	//en cours de dev pour afficher la photo apres recherche
 	// const fetchImageFromUnsplash = async (ingredientName) => {
 	// 	try {
-	// 		const response = await fetch(`https://api.unsplash.com/search/photos?query=${ingredientName}&client_id=jtpouSnBgNG5G1d0xNZhOXdrd5fyMN-BfcPWG_0uQMQ`);
+	// 		const response = await fetch(`https://api.unsplash.com/search/photos?query=${ingredientName}&client_id=${process.env.EXPO_PUBLIC_UNSPLASH_KEY}`);
 	// 		const data = await response.json();
 	// 		if (data.results && data.results.length > 0) {
 	// 			setImageUrl(data.results[0].urls.small);
