@@ -1,751 +1,756 @@
-import { AntDesign, FontAwesome } from "@expo/vector-icons";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
-import { Animated, Dimensions, Image, KeyboardAvoidingView, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// ProfileScreen — own-profile entry point.
+//
+// Vague 2 + 3 additions on top of the Vague 1 refactor:
+//   - Bell button → Notifications stack screen, with an unread badge.
+//   - Share button → native Share API with the public profile URL.
+//   - Badges tab fetches /users/badges/:token (6 entries, only
+//     `first_recipe` is real for now; others render dimmed).
+//   - ProfileImpactStats card under stats (placeholder + (beta) label).
+//   - All copy goes through `useT`; tokens come from `useTheme()` so
+//     the screen reacts to theme switches.
+
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  Alert,
+  FlatList,
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+  StatusBar,
+} from 'react-native';
+import {
+  Award,
+  Bell,
+  Bookmark,
+  Clock,
+  LayoutGrid,
+  MessageCircle,
+  Settings as SettingsIcon,
+  Share2,
+  Star,
+} from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import MyButton from '../components/MyButton';
+
 import addressIp from '../modules/addressIp';
-import { setComments } from '../reducers/comment';
-import { clearIngredients } from '../reducers/ingredient';
-import { clearPicture } from '../reducers/picture';
-import { clearRecipes } from '../reducers/recipe';
-import { removeUserToStore, updateUserInStore } from '../reducers/user';
-import buttonStyles from '../styles/Button';
-import css from '../styles/Global';
+import { availableImages } from '../modules/avatars';
+import reducer, { updateUserInStore } from '../reducers/user';
+import BadgeCircle from '../components/profile/BadgeCircle';
+import ProfileIdentityBlock from '../components/profile/ProfileIdentityBlock';
+import ProfileImpactStats from '../components/profile/ProfileImpactStats';
+import ProfileScreenContainer from '../components/profile/ProfileScreenContainer';
+import ProfileStatsRow from '../components/profile/ProfileStatsRow';
+import { useTheme } from '../contexts/ThemeProvider';
+import useT from '../i18n/useT';
+import { useResponsive } from '../styles/responsive';
+import { css } from 'react-native-reanimated';
 
-const { width, height } = Dimensions.get('window');
-
-
-
-export default function  ProfilScreen({navigation}){
-
-  const dispatch = useDispatch();
-  const user = useSelector((state)=>state.user.value);
-
-
-  const [modalVisible, setModalVisible] = useState(false);
-  const [profileImage, setProfileImage] = useState(user.image);
-  const animatedValue = new Animated.Value(0);
-  const [editModalVisible, setEditModalVisible] = useState(false);
-
-  
-  //un seul état pour gérer tous les inputs de la modal du update:
-  const [updatedUser, setUpdatedUser] = useState({  
-    email: user.email,
-    firstname: user.firstname,
-    lastname: user.lastname,
-    username: user.username,
-    age: user.age,
-    allergy: user?.settings?.allergy.join(' ') || '',
-    householdComposition: user?.settings?.householdComposition || 0
-  });
-
-
-
-  // Animation d'apparition avec interpolation
-  useEffect(() => {
-    Animated.timing(animatedValue, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  
-  // SI PLUS D'UTILISATEUR, ON NE REND RIEN (évite les crashs au moment du logout)
-  if (!user || !user.token) {
-    return null; 
-  }
-
-  
-
-  const handleImageChange = (newImage) => {
-    setProfileImage(newImage);
-    setModalVisible(false);
-    handleUpdate(newImage); 
-  };
-
-  const Genre = ['M','F'];
-
-  // Interpolation de la valeur pour l'opacité et la translation
-  const translateY = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [50, 0], // Déplacement vertical de 50 à 0
-  });
-  const opacity = animatedValue;
-
-  const availableImages=[
-    {nameFile: "default_M",path:require('../assets/profile/avatar_M.jpg')},
-    {nameFile: "default_F",path:require('../assets/profile/avatar_F.jpg')},
-    {nameFile: "default_M1",path:require('../assets/profile/avatar_M1.jpg')},
-    {nameFile: "default_M2",path:require('../assets/profile/avatar_M2.jpg')},
-    {nameFile: "avatar_M3",path:require('../assets/profile/avatar_M3.jpg')},
-    {nameFile: "avatar_M4",path:require('../assets/profile/avatar_M4.jpg')},
-    {nameFile: "avatar_F1",path:require('../assets/profile/avatar_F1.jpg')},
-    {nameFile: "avatar_F2",path:require('../assets/profile/avatar_F2.jpg')},
-    {nameFile: "avatar_F3",path:require('../assets/profile/avatar_F3.jpg')},
-    {nameFile: "avatar_F4",path:require('../assets/profile/avatar_F4.jpg')},
-  ]
-  
-// FONCTION POUR HANDLE L'UPDATE DES INFOS USER
-const handleUpdate = (imageToSave = profileImage) => {
-  const bodyToSend = {
-    token: user.token,
-    firstname: updatedUser.firstname,
-    lastname: updatedUser.lastname,
-    email: updatedUser.email,
-    age: updatedUser.age,
-    allergy: updatedUser.allergy || "", 
-    householdComposition: updatedUser.householdComposition || 0
-  };
-
-  fetch(`${addressIp}/users/update`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(bodyToSend),
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.result) {
-      dispatch(updateUserInStore(data.updatedUser));
-      setEditModalVisible(false);
-    } else {
-      alert('Error: ' + data.error);
-    }
-  })
-  .catch(error => console.log(error));
+const TAB_KEYS = ['recipes', 'favorites', 'activity', 'badges'];
+const TAB_ICONS = {
+  recipes: LayoutGrid,
+  favorites: Bookmark,
+  activity: MessageCircle,
+  badges: Award,
 };
 
-  
-  
+// ---- Recipe tile -----------------------------------------------------------
+
+function RecipeTile({ item, css, navigation }) {
+  const imageSource =
+    typeof item?.picture === 'string' 
+    ? { uri: `https://res.cloudinary.com/dnym6kt4p/image/upload/${item.picture}.jpg?_a=BAMAGSWO0` }
+    : null;
+      
+
   return (
-    <SafeAreaView style={styles.container}>
-
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => setEditModalVisible(true)}>
-          <FontAwesome name={"edit"} size={30} color={css.palette.primary800} style={styles.iconEdit}/>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={async () => {
-          try {
-            // 1. Nettoyage du stockage physique
-            await AsyncStorage.removeItem('userToken');
-            // 2. Nettoyage du Store Redux
-            dispatch(removeUserToStore());
-            dispatch(clearIngredients());
-            dispatch(clearRecipes());
-            dispatch(setComments([]));
-            dispatch(clearPicture());
-            // 3. Redirection vers l'accueil ou le login
-            navigation.navigate("Home");
-          } catch (error) {
-            console.error("Erreur lors de la déconnexion", error);
-          }
-        }}>
-          <AntDesign name={"logout"} size={25} color={css.palette.primary800} style={styles.iconEdit}/>
-        </TouchableOpacity>
+    <TouchableOpacity
+      style={[
+        styles.tile,
+        {
+          backgroundColor: css.palette.surfaceCard,
+          borderRadius: css.radius.md,
+          borderColor: css.palette.neutral200,
+          marginHorizontal: css.spacing.xs,
+        },
+      ]}
+      onPress={() => {
+        navigation.navigate('Recipe', {
+          recipe: {
+            _id: item._id,
+            name: item.name,
+            description: item.description,
+            ingredients: item.ingredients,
+            steps: item.steps,
+            votes: item.votes,
+            origin: item.origin,
+            picture: item.picture,
+            date: item.date,
+            preparationTime: item.preparationTime,
+            difficulty: item.difficulty,
+          },
+        });
+      }}
+    > 
+      {imageSource ? (
+        <Image
+          source={imageSource}
+          style={[styles.tileImage, { backgroundColor: css.palette.neutral200 }]}
+          resizeMode="cover"
+          accessibilityIgnoresInvertColors
+          accessibilityLabel={item?.name || 'Recipe image'}
+        />
+      ) : (
+        <View
+          style={[styles.tileImagePlaceholder, { backgroundColor: css.palette.neutral200 }]}
+          accessibilityRole="image"
+          accessibilityLabel="Recipe placeholder"
+        />
+      )}
+      <View style={[styles.tileBody, { padding: css.spacing.sm }]}>
+        <Text
+          style={[
+            styles.tileTitle,
+            {
+              fontFamily: css.typography.fontUI,
+              fontSize: css.typography.h6Size,
+              lineHeight: css.typography.h6Line,
+              color: css.palette.neutral900,
+            },
+          ]}
+          numberOfLines={2}
+        >
+          {item?.name || 'Untitled'}
+        </Text>
+        <View style={styles.tileMetaRow}>
+          <Clock size={12} color={css.palette.neutral500} />
+          <Text
+            style={[
+              styles.tileMeta,
+              {
+                fontFamily: css.typography.fontUI,
+                fontSize: css.typography.h6Size,
+                lineHeight: css.typography.h6Line,
+                color: css.palette.neutral500,
+                marginLeft: css.spacing.xs,
+              },
+            ]}
+          >
+            {item?.preparationTime ? `${item.preparationTime} min` : '25 min'}
+          </Text>
+          <Star
+            size={12}
+            color={css.palette.neutral500}
+            style={{ marginLeft: css.spacing.sm }}
+          />
+          <Text
+            style={[
+              styles.tileMeta,
+              {
+                fontFamily: css.typography.fontUI,
+                fontSize: css.typography.h6Size,
+                lineHeight: css.typography.h6Line,
+                color: css.palette.neutral500,
+                marginLeft: css.spacing.xs,
+              },
+            ]}
+          >
+            {(item?.votes.reduce((som, vote) => som + vote.note, 0)/item?.votes.length).toFixed(1) || 0}
+          </Text>
+        </View>
       </View>
+    </TouchableOpacity>
+  );
+}
 
-      <Animated.View
+function RecipeGrid({ data, prefix, emptyLabel, columns, css, navigation }) {
+  if (!data || data.length === 0) {
+    return (
+      <View style={[styles.tabEmpty, { paddingVertical: css.spacing.xl }]}>
+        <Text
+          style={{
+            fontFamily: css.typography.fontUI,
+            fontSize: css.typography.h6Size,
+            lineHeight: css.typography.h6Line,
+            color: css.palette.neutral500,
+          }}
+        >
+          {emptyLabel}
+        </Text>
+      </View>
+    );
+  }
+  return (
+    <FlatList
+      data={data}
+      numColumns={columns}
+      key={`grid-${columns}`}
+      keyExtractor={(item, idx) => item?._id || `${prefix}-${idx}`}
+      renderItem={({ item }) => <RecipeTile item={item} css={css} navigation={navigation} />}
+      columnWrapperStyle={[styles.gridRow, { marginBottom: css.spacing.sm }]}
+      contentContainerStyle={[styles.gridContainer, { paddingBottom: css.spacing.md }]}
+      scrollEnabled={false}
+    />
+  );
+}
+
+function TopBarButton({ label, onPress, badge, children, css }) {
+  return (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      hitSlop={8}
+      onPress={onPress}
+      style={[
+        styles.topBarBtn,
+        {
+          paddingHorizontal: css.spacing.sm,
+          paddingVertical: css.spacing.xs,
+        },
+      ]}
+    >
+      {children}
+      {badge ? (
+        <View
+          style={[
+            styles.badgeDot,
+            { backgroundColor: css.palette.error, borderColor: css.palette.surfaceCard },
+          ]}
+          accessibilityLabel={`${badge}`}
+        >
+          <Text
+            style={{
+              color: css.palette.white,
+              fontSize: 10,
+              fontFamily: css.typography.fontUI,
+              fontWeight: '700',
+            }}
+          >
+            {badge > 9 ? '9+' : badge}
+          </Text>
+        </View>
+      ) : null}
+    </TouchableOpacity>
+  );
+}
+
+// ---- Screen ----------------------------------------------------------------
+
+export default function ProfileScreen({ navigation }) {
+  const css = useTheme();
+  const t = useT();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.value);
+  const unread = useSelector((state) => state.notifications?.value?.unread || 0);
+  const { gridColumns } = useResponsive();
+
+  const [activeTab, setActiveTab] = useState('recipes');
+  const [avatarModalVisible, setAvatarModalVisible] = useState(false);
+  const [badges, setBadges] = useState([]);
+  const [badgesLoading, setBadgesLoading] = useState(false);
+
+  // Badges fetch — only when user is logged in. The 6 stub badges live
+  // server-side; we just mirror their unlocked state here.
+  useEffect(() => {
+    if (!user?.token) return;
+    let cancelled = false;
+    setBadgesLoading(true);
+    (async () => {
+      try {
+        const res = await fetch(`${addressIp}/users/badges/${user.token}`);
+        const data = await res.json();
+        if (!cancelled && data.result) {
+          setBadges(data.badges || []);
+        }
+      } catch {
+        // Silent: tab will fall back to a generic 3-stub display.
+      } finally {
+        if (!cancelled) setBadgesLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.token]);
+
+  if (!user || !user.token) {
+    return null;
+  }
+
+  const handleImageChange = async (newImage) => {
+    setAvatarModalVisible(false);
+    try {
+      const res = await fetch(`${addressIp}/users/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: user.token, image: newImage }),
+      });
+      const data = await res.json();
+      if (data.result) {
+        dispatch(updateUserInStore(data.updatedUser || { image: newImage }));
+      } else {
+        Alert.alert(t('common.error'), data.error || t('common.networkError'));
+      }
+    } catch {
+      Alert.alert(t('common.error'), t('common.networkError'));
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: t('profile.shareMessage', { username: user.username }),
+      });
+    } catch {
+      // User-cancelled share is not an error worth surfacing.
+    }
+  };
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'recipes':
+        return (
+          <RecipeGrid
+            data={user.recipes}
+            prefix="r"
+            emptyLabel={t('profile.empty.recipes')}
+            columns={gridColumns}
+            css={css}
+          />
+        );
+      case 'favorites':
+        return (
+          <RecipeGrid
+            data={user.favorites}
+            prefix="f"
+            emptyLabel={t('profile.empty.favorites')}
+            columns={gridColumns}
+            css={css}
+            navigation={navigation}
+          />
+        );
+      case 'activity':
+        return (
+          <View
+            style={[
+              styles.activityCard,
+              {
+                backgroundColor: css.palette.surfaceCard,
+                borderRadius: css.radius.md,
+                paddingVertical: css.spacing.xl,
+                paddingHorizontal: css.spacing.md,
+                borderColor: css.palette.neutral200,
+              },
+            ]}
+          >
+            <Text
+              style={{
+                fontFamily: css.typography.fontUI,
+                fontSize: css.typography.h6Size,
+                lineHeight: css.typography.h6Line,
+                color: css.palette.neutral500,
+              }}
+            >
+              {t('profile.empty.activity')}
+            </Text>
+          </View>
+        );
+      case 'badges':
+      default:
+        return (
+          <View
+            style={[
+              styles.badgesRow,
+              {
+                paddingVertical: css.spacing.md,
+              },
+            ]}
+          >
+            {(badges.length ? badges : DEFAULT_BADGES).map((badge) => (
+              <View
+                key={badge.key}
+                style={{ opacity: badge.unlocked ? 1 : 0.4, alignItems: 'center' }}
+                accessibilityLabel={badge.label}
+              >
+                <BadgeCircle
+                  icon={<Award size={18} color={css.palette.neutral900} />}
+                  label={t(`profile.badges.${badge.key}`, { defaultValue: badge.label })}
+                />
+              </View>
+            ))}
+          </View>
+        );
+    }
+  };
+
+  const recipeCount = user.recipes?.length || 0;
+  const favoriteCount = user.favorites?.length || 0;
+  const unlockedBadgesCount = badges.filter((b) => b.unlocked).length;
+  const stats = useMemo(
+    () => [
+      { value: recipeCount, label: t('profile.stats.recipes') },
+      { value: favoriteCount, label: t('profile.stats.favorites') },
+      { value: '0', label: t('profile.stats.cooked') },
+      { value: unlockedBadgesCount, label: t('profile.stats.badges') },
+    ],
+    [recipeCount, favoriteCount, unlockedBadgesCount, t],
+  );
+
+  // Goal-aware identity subtitle. Falls back to default subtitle inside
+  // ProfileIdentityBlock if no goal is set.
+  const goalKey = user?.nutritionalGoal;
+  const subtitleOverride = goalKey
+    ? t(`profile.subtitle.${goalKey}`, { defaultValue: undefined })
+    : undefined;
+
+  return (
+    <ProfileScreenContainer
+      header={
+        <View
+          style={[
+            styles.topBar,
+            {
+              backgroundColor: css.palette.surfaceCard,
+              borderBottomColor: css.palette.neutral200,
+              paddingVertical: css.spacing.cardGap,
+              paddingHorizontal: css.spacing.md,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.topBarUsername,
+              {
+                fontFamily: css.typography.fontUI,
+                fontSize: css.typography.h6Size,
+                lineHeight: css.typography.h6Line,
+                color: css.palette.neutral500,
+              },
+            ]}
+            numberOfLines={1}
+          >
+            @{user.username}
+          </Text>
+          <View style={styles.topBarActions}>
+            <TopBarButton
+              label={t('profile.topBarShare')}
+              onPress={handleShare}
+              css={css}
+            >
+              <Share2 size={18} color={css.palette.neutral900} />
+            </TopBarButton>
+            <TopBarButton
+              label={t('profile.topBarNotifications')}
+              onPress={() => navigation.navigate('Notifications')}
+              badge={unread}
+              css={css}
+            >
+              <Bell size={18} color={css.palette.neutral900} />
+            </TopBarButton>
+            <TopBarButton
+              label={t('profile.topBarSettings')}
+              onPress={() => navigation.navigate('Settings')}
+              css={css}
+            >
+              <SettingsIcon size={18} color={css.palette.neutral900} />
+            </TopBarButton>
+          </View>
+        </View>
+      }
+    >
+      <ProfileIdentityBlock
+        user={user}
+        editable
+        onAvatarPress={() => setAvatarModalVisible(true)}
+        subtitleOverride={subtitleOverride}
+      />
+
+      <ProfileStatsRow stats={stats} style={css} />
+
+      {/* <ProfileImpactStats /> */}
+
+      <View
         style={[
-          styles.profileHeader,
+          styles.tabsRow,
           {
-            opacity: opacity,
-            transform: [{ translateY: translateY }],
+            backgroundColor: css.palette.surfaceCard,
+            paddingTop: css.spacing.cardGap,
           },
         ]}
       >
-        <TouchableOpacity onPress={() => setModalVisible(true)} >
-          <Image source={availableImages.find(e => e.nameFile === profileImage)?.path || availableImages[0].path} style={styles.profileImage} alt="profil icon" />
-        </TouchableOpacity>
-        <Text  style={styles.profileName}>
-          {user?.firstname} {user?.lastname}
-        </Text>
-        <Text style={styles.profileUsername}>@{user?.username}</Text>
-      </Animated.View>
-     
-      <View style={styles.profileInfo}>
-        <ScrollView style={{overflow:'hidden'}} >
-          <Text style={styles.infoTitle}>Email:</Text>
-          <Text style={styles.infoText}>{user?.email}</Text>
-
-          <Text style={styles.infoTitle}>Ages:</Text>
-          <Text style={styles.infoText}>{user?.age} year</Text>
-
-          <Text style={styles.infoTitle}>Genre:</Text>
-          <Text style={styles.infoText}>{user?.settings?.gender ?? "none"}</Text>
-
-          <Text style={styles.infoTitle}>Allergy:</Text>
-          <Text style={styles.infoText}>
-            {user?.settings?.allergy?.length > 0
-              ? user.settings.allergy.join(', ')
-              : 'Aucune'}
-          </Text>
-
-          <Text style={styles.infoTitle}>House hold composition:</Text>
-          <Text style={styles.infoText}>
-            {user?.settings?.householdComposition ?? 0}
-          </Text>
-
-          <Text style={styles.infoTitle}>Favorites recipes:</Text>
-          <Text style={styles.infoText}>{user?.favorites?.length || 0}</Text>
-
-          <Text style={styles.infoTitle}>Published recipes:</Text>
-          <Text style={styles.infoText}>{user?.recipes?.length || 0}</Text>
-
-          <Text style={styles.infoTitle}>Comments:</Text>
-          <Text style={styles.infoText}>{user?.comments?.length || 0}</Text>
-        </ScrollView >
+        {TAB_KEYS.map((key) => {
+          const Icon = TAB_ICONS[key];
+          const isActive = activeTab === key;
+          return (
+            <Pressable
+              key={key}
+              onPress={() => setActiveTab(key)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isActive }}
+              accessibilityLabel={t(`profile.tabs.${key}`)}
+              hitSlop={4}
+              style={styles.tab}
+            >
+              <View
+                style={[
+                  styles.tabInner,
+                  {
+                    paddingHorizontal: css.spacing.xs,
+                    paddingBottom: css.spacing.sm,
+                  },
+                  !isActive && styles.tabInnerInactive,
+                ]}
+              >
+                <Icon size={16} color={css.palette.neutral900} />
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    {
+                      fontFamily: css.typography.fontUI,
+                      fontSize: css.typography.h6Size,
+                      lineHeight: css.typography.h6Line,
+                      color: css.palette.neutral900,
+                      marginTop: css.spacing.xs,
+                    },
+                    isActive && styles.tabLabelActive,
+                  ]}
+                  numberOfLines={1}
+                >
+                  {t(`profile.tabs.${key}`)}
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.tabUnderline,
+                  isActive && { backgroundColor: css.palette.neutral900 },
+                ]}
+              />
+            </Pressable>
+          );
+        })}
       </View>
 
-      {/* <View>
-      <MyButton
-            dataFlow={() => {
-              navigation.navigate("Home");
-              dispatch( removeUserToStore());
-              dispatch(clearIngredients());
-              dispatch(clearRecipes());
-              dispatch(setComments([]));
-              dispatch(clearPicture())}}
-            text={"LOG OUT"}
-            buttonType={buttonStyles.buttonOne}
-          />
-      </View> */}
-
-      {/* Modal pour sélectionner l'image */}
-      <Modal
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+      <View
+        style={[
+          styles.tabContent,
+          { backgroundColor: css.palette.surface , paddingTop: css.spacing.md },
+        ]}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select your Avatar !</Text>
-            <ScrollView contentContainerStyle={styles.imageOptions}>
-              {availableImages.map((image, index) => index>1 && (
+        {renderTabContent()}
+      </View>
+
+      <Modal
+        transparent
+        visible={avatarModalVisible}
+        animationType="fade"
+        onRequestClose={() => setAvatarModalVisible(false)}
+      >
+        <Pressable
+          style={[styles.modalOverlay, { backgroundColor: css.palette.overlayDark }]}
+          onPress={() => setAvatarModalVisible(false)}
+          accessibilityLabel={t('profile.avatarModalDismiss')}
+        >
+          <Pressable
+            style={[
+              styles.modalCard,
+              {
+                backgroundColor: css.palette.surfaceCard,
+                borderRadius: css.radius.lg,
+                padding: css.spacing.md,
+                ...css.shadow.card,
+              },
+            ]}
+            onPress={() => {}}
+          >
+            <Text
+              style={{
+                fontFamily: css.typography.fontHeading,
+                fontSize: css.typography.h4Size,
+                lineHeight: css.typography.h4Line,
+                color: css.palette.neutral900,
+                fontWeight: '600',
+                marginBottom: css.spacing.md,
+              }}
+            >
+              {t('profile.avatarModalTitle')}
+            </Text>
+            <ScrollView contentContainerStyle={styles.avatarGrid}>
+              {availableImages.slice(2).map((image) => (
                 <TouchableOpacity
-                  key={index}
-                  onPress={() => {handleImageChange(image.nameFile)}}
+                  key={image.nameFile}
+                  onPress={() => handleImageChange(image.nameFile)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('profile.avatarChoose', { name: image.nameFile })}
+                  style={styles.avatarOptionWrap}
                 >
-                  <Image source={image.path} style={styles.optionImage} />
+                  <Image
+                    source={image.path}
+                    style={[
+                      styles.avatarOption,
+                      {
+                        borderRadius: css.radius.md,
+                        backgroundColor: css.palette.neutral200,
+                      },
+                    ]}
+                    accessibilityIgnoresInvertColors
+                  />
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            </View>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
-
-      {/* MODAL POUR UPDATE USER INFO */}
-      <Modal 
-      transparent={true} 
-      visible={editModalVisible} 
-      onRequestClose={() => setEditModalVisible(false)}
-      >
-        <View style={styles.modalEditContainer}>
-          <KeyboardAvoidingView style={styles.modalEditContent}> 
-          <ScrollView  contentContainerStyle={styles.scrollModalEdit} >
-            <Text style={styles.modalTitle}>Update your profile</Text>
-            <TextInput 
-            placeholder='firstname' 
-            placeholderTextColor={'grey'}  
-            style={styles.input} 
-            value={updatedUser.firstname} //utilisation de la valeur d'état unique 'updatedUser' pour chaque input 
-            onChangeText={(text) => setUpdatedUser({ ...updatedUser, firstname: text })} //pareil pour le setter unique
-            />
-            <TextInput  
-            placeholder='lastname' 
-            placeholderTextColor={'grey'}  
-            style={styles.input} 
-            value={updatedUser.lastname}
-            onChangeText={(text) => setUpdatedUser({ ...updatedUser, lastname: text })}
-            />
-            {/* <TextInput  
-            placeholder='username' 
-            placeholderTextColor={'grey'}  
-            style={styles.input} 
-            value={updatedUser.username} 
-            onChangeText={(text) => setUpdatedUser({ ...updatedUser, username: text })}
-            /> */}
-            <TextInput 
-            placeholder='email' 
-            placeholderTextColor={'grey'}  
-            KeyboardType={'email-address'} 
-            InputModeOptions={'email'} 
-            textContentType={'emailAddress'} 
-            autoCapitalize={'email'}  
-            style={styles.input} 
-            value={updatedUser.email} 
-            onChangeText={(text) => setUpdatedUser({ ...updatedUser, email: text })}
-            />
-            <TextInput 
-            placeholder='age' 
-            placeholderTextColor={'grey'}
-            keyboardType="numeric" 
-            style={styles.input} 
-            value={updatedUser.age.toString()} 
-            onChangeText={(text) => setUpdatedUser({ ...updatedUser, age: Number(text) })}
-            />
-            <TextInput
-             placeholder='allergy' 
-             placeholderTextColor={'grey'}  
-             style={styles.input} 
-             value={updatedUser.allergy} 
-             onChangeText={(text)=> setUpdatedUser({ ...updatedUser,allergy: text})}
-             />
-            <TextInput
-              placeholder='household composition' 
-              placeholderTextColor={'grey'}
-              keyboardType="numeric" 
-              style={styles.input} 
-              value={updatedUser.householdComposition} 
-              onChangeText={(text)=> setUpdatedUser({ ...updatedUser,householdComposition:text})}/>
-           
-              <MyButton 
-              dataFlow={() => handleUpdate()}
-              text="Update"
-              buttonType={buttonStyles.buttonThree}/>
-
-              <MyButton
-              dataFlow={() => setEditModalVisible(false)}
-              text="Cancel"
-              buttonType={buttonStyles.buttonThree}/>
-              </ScrollView>
-           </KeyboardAvoidingView> 
-        </View>
-      </Modal>
-    </SafeAreaView>
+    </ProfileScreenContainer>
   );
-};
+}
+
+// Fallback when /users/badges/:token is unreachable: render the same
+// 6 keys the backend exposes so the UX shape is stable.
+const DEFAULT_BADGES = [
+  { key: 'first_recipe', label: 'First recipe', unlocked: false },
+  { key: 'ten_cooked', label: '10 cooked', unlocked: false },
+  { key: 'seasonal', label: 'Seasonal', unlocked: false },
+  { key: 'top_chef', label: 'Top chef', unlocked: false },
+  { key: 'fifty_recipes', label: '50 recipes', unlocked: false },
+  { key: 'rated', label: 'Top rated', unlocked: false },
+];
 
 const styles = StyleSheet.create({
-  container: {
-    //flex:1,
-    width: width * 1,  
-    height: height * 1, 
-    paddingVertical: '20%',
-    //justifyContent:'space-between',
-    backgroundColor: css.palette.secondary500,
-    alignItems: 'center',
-    paddingTop: '10%',
-    backgroundColor: css.palette.secondary500
-  }, 
-
-  header: {
-    flex: 0,
-    width: '90%',
+  topBar: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    borderBottomWidth: 1,
   },
-
-  iconEdit:{
-    justifyContent: 'flex-end',
-    padding: 10,
+  topBarUsername: {
+    flexShrink: 1,
   },
-
-  profileHeader: {
-    alignItems: 'center',
-    height: height * 0.20,
-    width: width * 0.9,
-    marginBottom: '5%',
-  },
-
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 75,
-    borderWidth: 2,
-    borderColor: css.palette.accent500,
-    marginBottom: '1%',
-  },
-
-  profileName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFF',
-  },
-
-  profileUsername: {
-    fontSize: 18,
-    color: css.palette.accent500,
-  },
-
-  profileInfo: {
-    height: height*0.5,
-    width: width* 0.8,
-    backgroundColor: '#FFF',
-    borderRadius: 10,
-    padding: '6%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
-    marginBottom:'20%',
-    //marginBottom:'4%',
-  },
-
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: css.palette.primary800,
-    marginTop: 10,
-  },
-
-  infoText: {
-    fontSize: 16,
-    color: 'black',
-  },
-
-  logoutSection: {
-    height:height*0.1,
-  },
-
-  modalContainer: {
-    width: width * 1,  
-    height: height * 1, 
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-
-  modalContent: {
-    width: '85%',
-    height: '40%',
-    padding: '2.5%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    alignItems: 'center',
-    flexWrap:'wrap',
-  },
-
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: '2%',
-  },
-
-  imageOptions: {
-    height:'100%',
-    width: '100%',
+  topBarActions: {
     flexDirection: 'row',
-    flexWrap : 'wrap',
-    justifyContent: 'space-around',
+    alignItems: 'center',
   },
-  optionImage: {
-    width: 80,
-    height: 80,
-    margin: '1%',
-    borderRadius: 10,
-    marginBottom:'15%',
+  topBarBtn: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
-   modalEditContainer:{
+  badgeDot: {
+    position: 'absolute',
+    top: 2,
+    right: 0,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+  },
+
+  tabsRow: {
+    flexDirection: 'row',
+  },
+  tab: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  modalEditContent:{
-    width: '90%',
-    height:'60%',
-    marginTop:'20%',
-    padding: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
+  tabInner: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  tabInnerInactive: { opacity: 0.5 },
+  tabLabel: {
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    fontWeight: '500',
+  },
+  tabLabelActive: { fontWeight: '600' },
+  tabUnderline: {
+    height: 2,
+    width: '60%',
+    backgroundColor: 'transparent',
   },
 
-  scrollModalEdit: {
-    alignItems: "center",
-    justifyContent:"center",
-    width: "100%"
+  tabContent: {
+    height: '100%',
   },
 
-  input: {
-    height: 40,
-    borderColor: 'gray',
+  gridContainer: {},
+  gridRow: {
+    justifyContent: 'space-between',
+  },
+  tile: {
+    flex: 1,
     borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 10,
-    width: '80%',
+    overflow: 'hidden',
   },
- 
+  tileImage: {
+    width: '100%',
+    height: 90,
+  },
+  tileImagePlaceholder: {
+    width: '100%',
+    height: 90,
+  },
+  tileBody: {},
+  tileTitle: {
+    fontWeight: '600',
+  },
+  tileMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  tileMeta: {},
+
+  tabEmpty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  activityCard: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+
+  badgesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    rowGap: 16,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 480,
+  },
+  avatarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  avatarOptionWrap: {
+    width: '30%',
+    aspectRatio: 1,
+    marginBottom: 12,
+  },
+  avatarOption: {
+    width: '100%',
+    height: '100%',
+  },
 });
-
-
-
-
-
-
-// const ProfilScreen = () => {
-//   const user =useSelector((state)=>state.user.value);
-//   const [modalVisible, setModalVisible] = useState(false);
-//   const [profileImage, setProfileImage] = useState(user?.image);
-//   const [email, setEmail] = useState(user?.email);
-//   const [age, setAge] = useState(user?.age?.toString());
-//   const [householdComposition, setHouseholdComposition] = useState(
-//     user?.settings?.householdComposition?.toString()
-//   );
-//   const [allergy, setAllergy] = useState(user?.settings?.allergy || []);
-//   const [newAllergy, setNewAllergy] = useState('');
-//   const animatedValue = new Animated.Value(0);
-
-
-//   // Images disponibles dans le répertoire assets
-
-
-//   React.useEffect(() => {
-//     Animated.timing(animatedValue, {
-//       toValue: 1,
-//       duration: 1000,
-//       useNativeDriver: true,
-//     }).start();
-//   }, []);
-
-//   const translateY = animatedValue.interpolate({
-//     inputRange: [0, 1],
-//     outputRange: [50, 0],
-//   });
-
-//   const opacity = animatedValue;
-
-//   const handleImageChange = (newImage) => {
-//     setProfileImage(newImage);
-//     setModalVisible(false); // Ferme la modal après la sélection
-//   };
-
-//   const handleAddAllergy = () => {
-//     if (newAllergy.trim() !== '' && !allergy.includes(newAllergy)) {
-//       setAllergy([...allergy, newAllergy]);
-//       setNewAllergy('');
-//     }
-//   };
-
-//   const handleRemoveAllergy = (allergy) => {
-//     setAllergy(allergy.filter((item) => item !== allergy));
-//   };
-
-//   const handleSave = () => {
-//     // Validation de l'email
-//     if (!email.includes('@')) {
-//       Alert.alert('Erreur', "Veuillez entrer un email valide.");
-//       return;
-//     }
-
-//     // Validation de l'âge
-//     const ageNumber = parseInt(age, 10);
-//     if (isNaN(ageNumber) || ageNumber < 1 || ageNumber > 130) {
-//       Alert.alert('Erreur', "Veuillez entrer un âge valide (1-130).");
-//       return;
-//     }
-
-//     // Validation de la composition du foyer
-//     const householdNumber = parseInt(householdComposition, 10);
-//     if (isNaN(householdNumber) || householdNumber < 1) {
-//       Alert.alert('Erreur', "Veuillez entrer une composition du foyer valide.");
-//       return;
-//     }
-
-//     // Simuler la sauvegarde des données ici
-//     Alert.alert('Succès', "Les modifications ont été enregistrées.");
-//   };
-
-//   return (
-//     <ScrollView contentContainerStyle={styles.container}>
-//       <Animated.View
-//         style={[
-//           styles.profileHeader,
-//           {
-//             opacity: opacity,
-//             transform: [{ translateY: translateY }],
-//           },
-//         ]}
-//       >
-//         <TouchableOpacity onPress={() => setModalVisible(true)}>
-        
-//         </TouchableOpacity>
-//         <Text style={styles.profileName}>
-//           {user?.firstname} {user?.lastname}
-//         </Text>
-//         <Text style={styles.profileUsername}>@{user?.username}</Text>
-//       </Animated.View>
-
-//       <View style={styles.profileInfo}>
-//         <Text style={styles.infoTitle}>Email:</Text>
-//         <TextInput
-//           style={styles.input}
-//           value={email}
-//           onChangeText={setEmail}
-//           keyboardType="email-address"
-//         />
-
-//         <Text style={styles.infoTitle}>Âge:</Text>
-//         <TextInput
-//           style={styles.input}
-//           value={age}
-//           onChangeText={setAge}
-//           keyboardType="numeric"
-//         />
-
-//         <Text style={styles.infoTitle}>Composition du foyer:</Text>
-//         <TextInput
-//           style={styles.input}
-//           value={householdComposition}
-//           onChangeText={setHouseholdComposition}
-//           keyboardType="numeric"
-//         />
-
-//         <Text style={styles.infoTitle}>Allergy:</Text>
-//         <View style={styles.allergyList}>
-//           {allergy.map((allergy, index) => (
-//             <View key={index} style={styles.allergyItem}>
-//               <Text style={styles.allergyText}>{allergy}</Text>
-//               <TouchableOpacity
-//                 style={styles.removeButton}
-//                 onPress={() => handleRemoveAllergy(allergy)}
-//               >
-//                 <Text style={styles.removeButtonText}>X</Text>
-//               </TouchableOpacity>
-//             </View>
-//           ))}
-//         </View>
-
-//         <TextInput
-//           style={styles.input}
-//           value={newAllergy}
-//           onChangeText={setNewAllergy}
-//           placeholder="Ajouter une allergie"
-//         />
-//         <Button title="Ajouter" onPress={handleAddAllergy} />
-//       </View>
-
-//       <Button title="Sauvegarder" onPress={handleSave} />
-
-//       {/* Modal pour sélectionner l'image */}
-//       <Modal
-//         animationType="slide"
-//         transparent={true}
-//         visible={modalVisible}
-//         onRequestClose={() => setModalVisible(false)}
-//       >
-//         <View style={styles.modalContainer}>
-//           <View style={styles.modalContent}>
-//             <Text style={styles.modalTitle}>Sélectionnez une image</Text>
-//             <View style={styles.imageOptions}>
-             
-//             </View>
-//             <Button title="Fermer" onPress={() => setModalVisible(false)} />
-//           </View>
-//         </View>
-//       </Modal>
-//     </ScrollView>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flexGrow: 1,
-//     padding: 20,
-//     backgroundColor: '#f0f4f8',
-//     alignItems: 'center',
-//   },
-//   profileHeader: {
-//     alignItems: 'center',
-//     marginBottom: 20,
-//   },
-//   profileImage: {
-//     width: 120,
-//     height: 120,
-//     borderRadius: 60,
-//     borderWidth: 2,
-//     borderColor: '#ddd',
-//     marginBottom: 10,
-//   },
-//   profileName: {
-//     fontSize: 24,
-//     fontWeight: 'bold',
-//     color: '#333',
-//   },
-//   profileUsername: {
-//     fontSize: 18,
-//     color: '#777',
-//   },
-//   profileInfo: {
-//     width: '100%',
-//     backgroundColor: '#fff',
-//     borderRadius: 10,
-//     padding: 20,
-//     shadowColor: '#000',
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.1,
-//     shadowRadius: 5,
-//     elevation: 5,
-//   },
-//   infoTitle: {
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//     color: '#333',
-//     marginTop: 10,
-//   },
-//   input: {
-//     fontSize: 16,
-//     color: '#666',
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#ccc',
-//     marginBottom: 10,
-//     paddingVertical: 5,
-//   },
-//   allergyList: {
-//     flexDirection: 'row',
-//     flexWrap: 'wrap',
-//     marginBottom: 10,
-//   },
-//   allergyItem: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     backgroundColor: '#e0e0e0',
-//     borderRadius: 15,
-//     paddingHorizontal: 10,
-//     paddingVertical: 5,
-//     margin: 5,
-//   },
-//   allergyText: {
-//     marginRight: 10,
-//     color: '#333',
-//   },
-//   removeButton: {
-//     backgroundColor: '#ff5252',
-//     borderRadius: 10,
-//     padding: 2,
-//   },
-//   removeButtonText: {
-//     color: '#fff',
-//     fontSize: 12,
-//   },
-//   modalContainer: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-//   },
-//   modalContent: {
-//     width: 300,
-//     padding: 20,
-//     backgroundColor: '#fff',
-//     borderRadius: 10,
-//     alignItems: 'center',
-//   },
-//   modalTitle: {
-//     fontSize: 18,
-//     fontWeight: 'bold',
-//     marginBottom: 10,
-//   },
-//   imageOptions: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-around',
-//     marginBottom: 20,
-//   },
-//   optionImage: {
-//     width: 80,
-//     height: 80,
-//     borderRadius: 10,
-//   },
-// });

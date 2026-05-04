@@ -3,9 +3,7 @@
     "name": "Cookez",
     "slug": "cookez",
     "version": "2.0.0",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "2.0.0",
     "updates": {
       "url": "https://u.expo.dev/ffa99151-e290-4b35-a40f-aafbf548676b"
     },
@@ -15,7 +13,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.v2.cookez",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +27,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.v2.cookez"
     },
     "web": {
       "output": "static",
@@ -45,11 +48,19 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ffa99151-e290-4b35-a40f-aafbf548676b"
+      }
+    },
+    "owner": "wycherley"
   }
 }

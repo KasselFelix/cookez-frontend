@@ -1,0 +1,195 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "cancel": "Annuler",
+    "retry": "Réessayer",
+    "close": "Fermer",
+    "back": "Retour",
+    "comingSoon": "Bientôt disponible",
+    "loading": "Chargement…",
+    "ok": "OK",
+    "yes": "Oui",
+    "no": "Non",
+    "done": "Terminé",
+    "error": "Une erreur est survenue",
+    "networkError": "Erreur réseau. Réessayez.",
+    "logoutTitle": "Se déconnecter",
+    "logoutMessage": "Voulez-vous vraiment vous déconnecter ?",
+    "deleteTitle": "Supprimer le compte",
+    "deleteMessage": "Bientôt disponible."
+  },
+  "profile": {
+    "topBarShare": "Partager le profil",
+    "topBarNotifications": "Notifications",
+    "topBarSettings": "Paramètres",
+    "tabs": {
+      "recipes": "Recettes",
+      "favorites": "Favoris",
+      "activity": "Activité",
+      "badges": "Badges"
+    },
+    "stats": {
+      "recipes": "Recettes",
+      "favorites": "Favoris",
+      "cooked": "Cuisinées",
+      "badges": "Badges"
+    },
+    "empty": {
+      "recipes": "Pas encore de recettes.",
+      "favorites": "Pas encore de favoris.",
+      "activity": "Activité bientôt disponible."
+    },
+    "avatarModalTitle": "Choisis ton avatar",
+    "avatarModalDismiss": "Fermer le sélecteur d'avatar",
+    "avatarChoose": "Choisir {{name}}",
+    "shareMessage": "Découvre {{username}} sur Cookez : https://cookez.app/u/{{username}}",
+    "impactStats": {
+      "title": "Impact (bêta)",
+      "seasonal": "Saisonnier ce mois",
+      "cooked": "Recettes cuisinées",
+      "seasonalIngredients": "Ingrédients de saison"
+    },
+    "subtitle": {
+      "weight_loss": "Objectif : perte de poids",
+      "muscle_gain": "Objectif : prise de muscle",
+      "balanced": "Objectif : équilibré",
+      "seasonal_local": "Objectif : saisonnier & local"
+    },
+    "badges": {
+      "first_recipe": "Première recette",
+      "ten_cooked": "10 cuisinées",
+      "seasonal": "Saisonnier",
+      "top_chef": "Top chef",
+      "fifty_recipes": "50 recettes",
+      "rated": "Bien noté"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "sections": {
+      "account": "Compte",
+      "culinary": "Profil culinaire",
+      "appPreferences": "Préférences app",
+      "social": "Social",
+      "about": "À propos",
+      "danger": "Zone de danger"
+    },
+    "account": {
+      "personal": "Informations personnelles",
+      "security": "Sécurité & mot de passe"
+    },
+    "culinary": {
+      "nutritionalGoal": "Objectif nutritionnel",
+      "diets": "Régimes alimentaires",
+      "allergies": "Allergies",
+      "household": "Mon foyer"
+    },
+    "appPrefs": {
+      "language": "Langue",
+      "theme": "Thème",
+      "location": "Localisation",
+      "locationOn": "Activée",
+      "locationOff": "Désactivée",
+      "notifications": "Silencier les notifications"
+    },
+    "socialSection": {
+      "invite": "Inviter des amis",
+      "shareLink": "Essaie Cookez avec moi : https://cookez.app/install"
+    },
+    "about": {
+      "version": "Version",
+      "appVersion": "v1.0.0"
+    },
+    "danger": {
+      "logout": "Se déconnecter",
+      "delete": "Supprimer mon compte"
+    },
+    "modals": {
+      "personalTitle": "Informations personnelles",
+      "fields": {
+        "firstname": "Prénom",
+        "lastname": "Nom",
+        "email": "Email",
+        "age": "Âge",
+        "bio": "Bio",
+        "region": "Ville / Région",
+        "cuisineSpecialty": "Cuisine de prédilection"
+      },
+      "householdTitle": "Mon foyer",
+      "householdLabel": "Nombre de personnes",
+      "allergiesTitle": "Allergies",
+      "allergiesLabel": "Allergies (séparées par des virgules)",
+      "allergiesPlaceholder": "ex : arachides, crustacés"
+    },
+    "nutritionalGoals": {
+      "title": "Objectif nutritionnel",
+      "weight_loss": "Perte de poids",
+      "muscle_gain": "Prise de muscle",
+      "balanced": "Équilibré",
+      "seasonal_local": "Saisonnier & local",
+      "none": "Aucun"
+    },
+    "diets": {
+      "title": "Régimes alimentaires",
+      "subtitle": "Coche tout ce qui s'applique",
+      "gluten_free": "Sans gluten",
+      "dairy_free": "Sans lactose",
+      "no_pork": "Sans porc",
+      "no_meat": "Sans viande",
+      "no_nuts": "Sans fruits à coque",
+      "no_red_fruits": "Sans fruits rouges",
+      "noneSelected": "Aucun"
+    },
+    "language": {
+      "title": "Langue",
+      "system": "Système",
+      "english": "Anglais",
+      "french": "Français"
+    },
+    "theme": {
+      "title": "Thème",
+      "subtitle": "Choisis l'ambiance qui colle à ta cuisine",
+      "light": "Clair",
+      "dark": "Sombre",
+      "pastelMint": "Menthe pastel",
+      "pastelPeach": "Pêche pastel",
+      "pastelLavender": "Lavande pastel"
+    },
+    "location": {
+      "permissionTitle": "Autorisation de localisation",
+      "permissionMessage": "Autoriser Cookez à utiliser ta localisation approximative pour faire ressortir les ingrédients de saison près de chez toi ?",
+      "deniedTitle": "Permission refusée",
+      "deniedMessage": "Nous n'accéderons pas à ta localisation.",
+      "errorTitle": "Erreur de localisation",
+      "errorMessage": "Impossible de récupérer ta localisation."
+    }
+  },
+  "publicProfile": {
+    "title": "@{{username}}",
+    "headerBack": "Retour",
+    "headerMore": "Plus d'options",
+    "follow": "Suivre",
+    "unfollow": "Abonné",
+    "editProfile": "Modifier le profil",
+    "stats": {
+      "recipes": "Recettes",
+      "followers": "Abonnés",
+      "following": "Abonnements"
+    },
+    "bioFallback": "Pas encore de bio — mais les recettes parlent d'elles-mêmes.",
+    "search": "Rechercher des recettes",
+    "filters": "Ouvrir les filtres",
+    "empty": "Pas encore de recettes.",
+    "emptyMatch": "Aucun résultat.",
+    "loadMore": "Charger plus"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "empty": "Aucune notification pour l'instant.",
+    "newRecipe": "@{{username}} a publié une nouvelle recette : {{title}}",
+    "newFollower": "@{{username}} a commencé à te suivre",
+    "loadMore": "Charger plus"
+  }
+}

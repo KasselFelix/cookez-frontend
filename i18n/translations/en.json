@@ -1,0 +1,195 @@
+{
+  "common": {
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "close": "Close",
+    "back": "Back",
+    "comingSoon": "Coming soon",
+    "loading": "Loading…",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+    "done": "Done",
+    "error": "Something went wrong",
+    "networkError": "Network error. Please try again.",
+    "logoutTitle": "Log out",
+    "logoutMessage": "Are you sure you want to log out?",
+    "deleteTitle": "Delete account",
+    "deleteMessage": "Coming soon."
+  },
+  "profile": {
+    "topBarShare": "Share profile",
+    "topBarNotifications": "Notifications",
+    "topBarSettings": "Settings",
+    "tabs": {
+      "recipes": "Recipes",
+      "favorites": "Favorites",
+      "activity": "Activity",
+      "badges": "Badges"
+    },
+    "stats": {
+      "recipes": "Recipes",
+      "favorites": "Favorites",
+      "cooked": "Cooked",
+      "badges": "Badges"
+    },
+    "empty": {
+      "recipes": "No recipes yet.",
+      "favorites": "No favorites yet.",
+      "activity": "Activity coming soon."
+    },
+    "avatarModalTitle": "Select your avatar",
+    "avatarModalDismiss": "Dismiss avatar picker",
+    "avatarChoose": "Choose {{name}}",
+    "shareMessage": "Discover {{username}} on Cookez: https://cookez.app/u/{{username}}",
+    "impactStats": {
+      "title": "Impact stats (beta)",
+      "seasonal": "Seasonal this month",
+      "cooked": "Recipes cooked",
+      "seasonalIngredients": "Seasonal ingredients"
+    },
+    "subtitle": {
+      "weight_loss": "Goal: weight loss",
+      "muscle_gain": "Goal: muscle gain",
+      "balanced": "Goal: balanced",
+      "seasonal_local": "Goal: seasonal & local"
+    },
+    "badges": {
+      "first_recipe": "First recipe",
+      "ten_cooked": "10 cooked",
+      "seasonal": "Seasonal",
+      "top_chef": "Top chef",
+      "fifty_recipes": "50 recipes",
+      "rated": "Top rated"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "sections": {
+      "account": "Account",
+      "culinary": "Culinary profile",
+      "appPreferences": "App preferences",
+      "social": "Social",
+      "about": "About",
+      "danger": "Danger zone"
+    },
+    "account": {
+      "personal": "Personal info",
+      "security": "Security & password"
+    },
+    "culinary": {
+      "nutritionalGoal": "Nutritional goal",
+      "diets": "Dietary restrictions",
+      "allergies": "Allergies",
+      "household": "My household"
+    },
+    "appPrefs": {
+      "language": "Language",
+      "theme": "Theme",
+      "location": "Location",
+      "locationOn": "On",
+      "locationOff": "Off",
+      "notifications": "Silence notifications"
+    },
+    "socialSection": {
+      "invite": "Invite friends",
+      "shareLink": "Try Cookez with me: https://cookez.app/install"
+    },
+    "about": {
+      "version": "Version",
+      "appVersion": "v2.0.0"
+    },
+    "danger": {
+      "logout": "Log out",
+      "delete": "Delete my account"
+    },
+    "modals": {
+      "personalTitle": "Personal info",
+      "fields": {
+        "firstname": "First name",
+        "lastname": "Last name",
+        "email": "Email",
+        "age": "Age",
+        "bio": "Bio",
+        "region": "City / Region",
+        "cuisineSpecialty": "Cuisine specialty"
+      },
+      "householdTitle": "My household",
+      "householdLabel": "Number of people",
+      "allergiesTitle": "Allergies",
+      "allergiesLabel": "Allergies (comma-separated)",
+      "allergiesPlaceholder": "e.g. peanuts, shellfish"
+    },
+    "nutritionalGoals": {
+      "title": "Nutritional goal",
+      "weight_loss": "Weight loss",
+      "muscle_gain": "Muscle gain",
+      "balanced": "Balanced",
+      "seasonal_local": "Seasonal & local",
+      "none": "None"
+    },
+    "diets": {
+      "title": "Dietary restrictions",
+      "subtitle": "Pick everything that applies",
+      "gluten_free": "Gluten free",
+      "dairy_free": "Dairy free",
+      "no_pork": "No pork",
+      "no_meat": "No meat",
+      "no_nuts": "No nuts",
+      "no_red_fruits": "No red fruits",
+      "noneSelected": "None"
+    },
+    "language": {
+      "title": "Language",
+      "system": "System",
+      "english": "English",
+      "french": "French"
+    },
+    "theme": {
+      "title": "Theme",
+      "subtitle": "Pick the look that fits your kitchen",
+      "light": "Light",
+      "dark": "Dark",
+      "pastelMint": "Pastel Mint",
+      "pastelPeach": "Pastel Peach",
+      "pastelLavender": "Pastel Lavender"
+    },
+    "location": {
+      "permissionTitle": "Location permission",
+      "permissionMessage": "Allow Cookez to use your approximate location to surface seasonal ingredients near you?",
+      "deniedTitle": "Permission denied",
+      "deniedMessage": "We will not access your location.",
+      "errorTitle": "Location error",
+      "errorMessage": "Could not retrieve your location."
+    }
+  },
+  "publicProfile": {
+    "title": "@{{username}}",
+    "headerBack": "Go back",
+    "headerMore": "More options",
+    "follow": "Follow",
+    "unfollow": "Following",
+    "editProfile": "Edit profile",
+    "stats": {
+      "recipes": "Recipes",
+      "followers": "Followers",
+      "following": "Following"
+    },
+    "bioFallback": "No bio yet — but the recipes speak for themselves.",
+    "search": "Search recipes",
+    "filters": "Open filters",
+    "empty": "No recipes yet.",
+    "emptyMatch": "No matches.",
+    "loadMore": "Load more"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "empty": "No notifications yet.",
+    "newRecipe": "@{{username}} posted a new recipe: {{title}}",
+    "newFollower": "@{{username}} started following you",
+    "loadMore": "Load more"
+  }
+}

@@ -131,6 +131,14 @@ const typography = {
   metadataSize:   12,
   metadataColor:  "#6b7280",           // neutral500
   metadataFamily: "VarelaRound_400Regular",
+
+  // H6 — Micro labels (badge captions, stat labels, tab pills, tag captions)
+  // Officializes the 9-12 px tier that was previously orphaned across the
+  // profile screens. Use for uppercase mini-labels and dense metadata rows.
+  h6Size:   12,
+  h6Line:   16,
+  h6Weight: "500",
+  h6Family: _varelaR,
 };
 
 // ─────────────────────────────────────────────
@@ -325,7 +333,11 @@ const layout = {
   screenHeight:   SCREEN_HEIGHT,
   paddingTop:     "15%",
   screenPaddingH: spacing.md,
-  maxContentWidth:428,    // cap wide-tablet layouts
+  // `legacyMaxContentWidth` preserves the 428-px cap that older screens
+  // depend on for narrow centering. New profile/settings screens should
+  // use `maxContentWidth` (720 px) so tablet layouts breathe.
+  legacyMaxContentWidth: 428,
+  maxContentWidth:       720,
 };
 
 // ─────────────────────────────────────────────

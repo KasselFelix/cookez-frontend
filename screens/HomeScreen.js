@@ -3,10 +3,12 @@ import { Image, StyleSheet, View } from "react-native";
 import MyButton from "../components/MyButton";
 import buttonStyles from "../styles/Button";
 import css from "../styles/Global";
+import { useSelector } from "react-redux";
 
 
 
 export default function HomeScreen({ navigation }) {
+  const user = useSelector((state) => state.user.value);
   return (
     <View style={styles.container}>
       <View style={styles.backgroundLeft}></View>
@@ -29,15 +31,15 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.buttons}>
           <MyButton
             dataFlow={() => navigation.navigate("Kickoff")}
-            text={"START"}
+            text={"SNAP 📸"}
             buttonType={buttonStyles.buttonTwo}
           />
         </View>
 
         <View style={styles.buttons}>
           <MyButton
-            dataFlow={() => navigation.navigate("Login")}
-            text={"LOGIN"}
+            dataFlow={() => user.token ? navigation.navigate("TabNavigator", { screen: "UserDashboard" }) : navigation.navigate("Login")}
+            text={"CONNECT"}
             buttonType={buttonStyles.buttonOne}
           />
         </View>
