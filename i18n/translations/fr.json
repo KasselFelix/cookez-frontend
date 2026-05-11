@@ -253,6 +253,7 @@
     "newFollower": "@{{username}} a commencé à te suivre",
     "expiryWarning": "Votre {{ingredient}} périme dans {{days}} jours.",
     "expiryWarningFallbackName": "un ingrédient",
+    "deleteAction": "Supprimer la notification",
     "loadMore": "Charger plus"
   }
 }

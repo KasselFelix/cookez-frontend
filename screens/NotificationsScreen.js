@@ -28,7 +28,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { CheckCheck, ChevronLeft, ImageOff } from 'lucide-react-native';
+import { Swipeable } from 'react-native-gesture-handler';
+import { CheckCheck, ChevronLeft, ImageOff, Trash2 } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
@@ -38,6 +39,7 @@ import {
   appendNotifications,
   markAllRead,
   markRead,
+  removeNotification,
   setNotifications,
   setUnread,
 } from '../reducers/notifications';
@@ -152,6 +154,68 @@ export default function NotificationsScreen({ navigation }) {
     await sendMarkRead('all');
   };
 
+  // Swipe-to-delete handler. Optimistic remove from Redux + DELETE request;
+  // on failure we re-fetch the page so the row reappears (cheaper than
+  // keeping a deep clone of the row around for a manual rollback).
+  const handleDelete = async (notif) => {
+    if (!notif?._id || !user?.token) return;
+    dispatch(removeNotification(notif._id));
+    try {
+      const res = await fetch(`${addressIp}/notifications/${notif._id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      const data = await res.json();
+      if (data?.result && typeof data.unread === 'number') {
+        dispatch(setUnread(data.unread));
+      } else if (!data?.result) {
+        fetchPage({ mode: 'replace' });
+      }
+    } catch {
+      fetchPage({ mode: 'replace' });
+    }
+  };
+
+  // Right swipe action: a full-height red panel with a trash icon. Confirms
+  // the delete on press rather than on full-swipe-release to avoid accidental
+  // deletes while just exploring the gesture.
+  const renderRightActions = (notif) => (
+    <TouchableOpacity
+      onPress={() => handleDelete(notif)}
+      accessibilityRole="button"
+      accessibilityLabel={t('notifications.deleteAction')}
+      style={[
+        styles.swipeAction,
+        { backgroundColor: css.palette.error },
+      ]}
+    >
+      <Trash2 size={22} color={css.palette.white} />
+    </TouchableOpacity>
+  );
+
+  // Swipe-to-delete handler. Optimistic remove from Redux + DELETE request;
+  // on failure we re-fetch the page so the row reappears (cheaper than
+  // keeping a deep clone of the row around for a manual rollback).
+  const handleDelete = async (notif) => {
+    if (!notif?._id || !user?.token) return;
+    dispatch(removeNotification(notif._id));
+    try {
+      const res = await fetch(`${addressIp}/notifications/${notif._id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      const data = await res.json();
+      if (data?.result && typeof data.unread === 'number') {
+        dispatch(setUnread(data.unread));
+      } else if (!data?.result) {
+        // 404 / 401 / etc — reconcile by re-fetching from the top.
+        fetchPage({ mode: 'replace' });
+      }
+    } catch {
+      fetchPage({ mode: 'replace' });
+    }
+  };
+
   const handleTap = async (notif) => {
     if (!notif?._id) return;
     if (!notif.read) {
@@ -178,12 +242,18 @@ export default function NotificationsScreen({ navigation }) {
   };
 
   const renderItem = ({ item }) => (
-    <NotificationRow
-      notif={item}
-      onPress={() => handleTap(item)}
-      css={css}
-      t={t}
-    />
+    <Swipeable
+      renderRightActions={() => renderRightActions(item)}
+      overshootRight={false}
+      friction={2}
+    >
+      <NotificationRow
+        notif={item}
+        onPress={() => handleTap(item)}
+        css={css}
+        t={t}
+      />
+    </Swipeable>
   );
 
   const ListEmpty = () => {
@@ -496,5 +566,10 @@ const styles = StyleSheet.create({
     minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  swipeAction: {
+    width: 72,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

@@ -15,7 +15,8 @@
 //     naturally as the user scrolls the item list. The other three tabs
 //     keep the existing ScrollView container for a minimum diff.
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   Alert,
   Animated,
@@ -60,6 +61,7 @@ import {
   setPantry,
   updateItem,
 } from '../reducers/pantry';
+import { setUnread } from '../reducers/notifications';
 import { updateUserInStore } from '../reducers/user';
 import BadgeCircle from '../components/profile/BadgeCircle';
 import ProfileIdentityBlock from '../components/profile/ProfileIdentityBlock';
@@ -290,6 +292,33 @@ export default function ProfileScreen({ navigation, route }) {
 
   const [activeTab, setActiveTab] = useState('recipes');
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
+
+  // Refresh the unread notifications counter every time Profile takes the
+  // focus. The cron creates rows asynchronously while the app is open, but
+  // without a websocket we have no push channel — polling-on-focus is the
+  // cheapest way to keep the bell badge honest. limit=1 to keep payload tiny.
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.token) return;
+      let cancelled = false;
+      (async () => {
+        try {
+          const res = await fetch(`${addressIp}/notifications?limit=1`, {
+            headers: { Authorization: `Bearer ${user.token}` },
+          });
+          const data = await res.json();
+          if (!cancelled && data?.result && typeof data.unread === 'number') {
+            dispatch(setUnread(data.unread));
+          }
+        } catch {
+          // Silent — the badge stays at its last known value, no UX harm.
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, [user?.token, dispatch]),
+  );
 
   // Deep-link entry point — e.g. tapping an `expiry_warning` notification
   // navigates here with `{ initialTab: 'inventory' }`. Switch tabs once,

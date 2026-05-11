@@ -65,6 +65,20 @@ const notificationsSlice = createSlice({
       state.value.unread = 0;
     },
 
+    // Permanently drop a notification (swipe-to-delete). If the removed one
+    // was unread, drop the counter by 1 — same drift-tolerant arithmetic as
+    // markRead, since the server is the source of truth and will overwrite
+    // via setUnread on the next mark/list call.
+    removeNotification: (state, action) => {
+      const id = action.payload;
+      if (!id) return;
+      const target = state.value.items.find((n) => n._id === id);
+      state.value.items = state.value.items.filter((n) => n._id !== id);
+      if (target && !target.read) {
+        state.value.unread = Math.max(0, state.value.unread - 1);
+      }
+    },
+
     // Lets the API response override the local count when the server
     // is the authority (e.g., it dedupes deletions we don't see).
     setUnread: (state, action) => {
@@ -86,6 +100,7 @@ export const {
   appendNotifications,
   markRead,
   markAllRead,
+  removeNotification,
   setUnread,
   clearNotifications,
 } = notificationsSlice.actions;
