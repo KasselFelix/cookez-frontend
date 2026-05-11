@@ -28,7 +28,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { CheckCheck, ChevronLeft } from 'lucide-react-native';
+import { CheckCheck, ChevronLeft, ImageOff } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
@@ -164,6 +164,13 @@ export default function NotificationsScreen({ navigation }) {
     }
     if (notif.type === 'new_follower' && notif.actor?.username) {
       navigateToProfile(navigation, notif.actor.username, user?.username);
+      return;
+    }
+    // Expiry warnings target the inventory; the Inventory tab lives inside
+    // the Profile screen, so we route to the Profile tab and let the user
+    // pick the expiring item from there.
+    if (notif.type === 'expiry_warning') {
+      navigation.navigate('TabNavigator', { screen: 'Profile' });
     }
   };
 
@@ -300,15 +307,38 @@ export default function NotificationsScreen({ navigation }) {
 function NotificationRow({ notif, onPress, css, t }) {
   const username = notif.actor?.username || '';
   const recipeTitle = notif.recipe?.title || '';
-  const messageKey =
-    notif.type === 'new_recipe' ? 'notifications.newRecipe' : 'notifications.newFollower';
-  const message = t(messageKey, { username, title: recipeTitle });
+
+  // Expiry warnings render an ingredient photo (Pexels) in the avatar
+  // slot rather than the actor avatar — there is no actor for cron-issued
+  // notifications. Pre-compute everything once so the JSX stays flat.
+  const isExpiry = notif.type === 'expiry_warning';
+  const photoUrl = isExpiry ? notif.ingredient?.photoUrl : null;
+  const ingredientName =
+    notif.ingredient?.name || t('notifications.expiryWarningFallbackName');
+  const days =
+    isExpiry && notif.expiryDate
+      ? Math.max(0, Math.ceil((new Date(notif.expiryDate) - Date.now()) / 86400000))
+      : 0;
+
+  // Explicit if/else replaces the previous binary ternary that defaulted
+  // to `newFollower` for any non-`new_recipe` type — that fallback would
+  // wrongly label `expiry_warning` rows as follow events.
+  let message;
+  if (isExpiry) {
+    message = t('notifications.expiryWarning', { ingredient: ingredientName, days });
+  } else if (notif.type === 'new_recipe') {
+    message = t('notifications.newRecipe', { username, title: recipeTitle });
+  } else {
+    message = t('notifications.newFollower', { username });
+  }
 
   const recipeImage =
     typeof notif.recipe?.image === 'string' && notif.recipe.image.startsWith('http')
       ? { uri: notif.recipe.image }
       : null;
   const avatarSource = getAvatarSource(notif.actor?.image);
+  const hasIngredientPhoto =
+    typeof photoUrl === 'string' && photoUrl.startsWith('http');
 
   return (
     <TouchableOpacity
@@ -325,17 +355,44 @@ function NotificationRow({ notif, onPress, css, t }) {
         },
       ]}
     >
-      <Image
-        source={avatarSource}
-        style={[
-          styles.avatar,
-          {
-            backgroundColor: css.palette.neutral200,
-            borderRadius: 22,
-          },
-        ]}
-        accessibilityIgnoresInvertColors
-      />
+      {isExpiry ? (
+        hasIngredientPhoto ? (
+          <Image
+            source={{ uri: photoUrl }}
+            style={[
+              styles.avatar,
+              { backgroundColor: css.palette.neutral200, borderRadius: 22 },
+            ]}
+            accessibilityIgnoresInvertColors
+          />
+        ) : (
+          <View
+            style={[
+              styles.avatar,
+              {
+                backgroundColor: css.palette.neutral200,
+                borderRadius: 22,
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+            ]}
+          >
+            <ImageOff size={20} color={css.palette.neutral500} />
+          </View>
+        )
+      ) : (
+        <Image
+          source={avatarSource}
+          style={[
+            styles.avatar,
+            {
+              backgroundColor: css.palette.neutral200,
+              borderRadius: 22,
+            },
+          ]}
+          accessibilityIgnoresInvertColors
+        />
+      )}
       <View style={styles.rowBody}>
         <Text
           style={{
@@ -350,7 +407,7 @@ function NotificationRow({ notif, onPress, css, t }) {
           {message}
         </Text>
       </View>
-      {recipeImage ? (
+      {!isExpiry && recipeImage ? (
         <Image
           source={recipeImage}
           style={[

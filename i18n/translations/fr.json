@@ -251,6 +251,8 @@
     "empty": "Aucune notification pour l'instant.",
     "newRecipe": "@{{username}} a publié une nouvelle recette : {{title}}",
     "newFollower": "@{{username}} a commencé à te suivre",
+    "expiryWarning": "Votre {{ingredient}} périme dans {{days}} jours.",
+    "expiryWarningFallbackName": "un ingrédient",
     "loadMore": "Charger plus"
   }
 }
