@@ -193,29 +193,6 @@ export default function NotificationsScreen({ navigation }) {
     </TouchableOpacity>
   );
 
-  // Swipe-to-delete handler. Optimistic remove from Redux + DELETE request;
-  // on failure we re-fetch the page so the row reappears (cheaper than
-  // keeping a deep clone of the row around for a manual rollback).
-  const handleDelete = async (notif) => {
-    if (!notif?._id || !user?.token) return;
-    dispatch(removeNotification(notif._id));
-    try {
-      const res = await fetch(`${addressIp}/notifications/${notif._id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-      const data = await res.json();
-      if (data?.result && typeof data.unread === 'number') {
-        dispatch(setUnread(data.unread));
-      } else if (!data?.result) {
-        // 404 / 401 / etc — reconcile by re-fetching from the top.
-        fetchPage({ mode: 'replace' });
-      }
-    } catch {
-      fetchPage({ mode: 'replace' });
-    }
-  };
-
   const handleTap = async (notif) => {
     if (!notif?._id) return;
     if (!notif.read) {
