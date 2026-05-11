@@ -354,7 +354,7 @@ export default function InventoryAddSheet({ bottomSheetRef, initial, onSubmit })
               letterSpacing: 0.5,
             }}
           >
-            {t('profile.inventory.filters.all')}
+            {t('profile.inventory.add_sheet.location_label')}
           </Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: css.spacing.xs }}>
             {LOCATIONS.map((loc) => (

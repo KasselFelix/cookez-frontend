@@ -8,10 +8,8 @@
 import React from 'react';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Pencil, Trash2 } from 'lucide-react-native';
+import { ImageOff, Pencil, Trash2 } from 'lucide-react-native';
 import moment from 'moment';
-
-import { ImageOff } from 'lucide-react-native';
 
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
