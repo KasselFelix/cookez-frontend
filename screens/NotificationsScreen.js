@@ -166,11 +166,14 @@ export default function NotificationsScreen({ navigation }) {
       navigateToProfile(navigation, notif.actor.username, user?.username);
       return;
     }
-    // Expiry warnings target the inventory; the Inventory tab lives inside
-    // the Profile screen, so we route to the Profile tab and let the user
-    // pick the expiring item from there.
+    // Expiry warnings target the Inventory tab inside Profile. We deep-link
+    // via the nested-navigator params shape so ProfileScreen can read
+    // `route.params.initialTab` and switch its in-screen tab on mount.
     if (notif.type === 'expiry_warning') {
-      navigation.navigate('TabNavigator', { screen: 'Profile' });
+      navigation.navigate('TabNavigator', {
+        screen: 'Profile',
+        params: { initialTab: 'inventory' },
+      });
     }
   };
 

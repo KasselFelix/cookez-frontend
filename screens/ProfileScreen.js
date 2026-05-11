@@ -264,7 +264,7 @@ function TopBarButton({ label, onPress, badge, children, css }) {
 
 // ---- Screen ----------------------------------------------------------------
 
-export default function ProfileScreen({ navigation }) {
+export default function ProfileScreen({ navigation, route }) {
   const css = useTheme();
   const t = useT();
   const dispatch = useDispatch();
@@ -277,6 +277,17 @@ export default function ProfileScreen({ navigation }) {
 
   const [activeTab, setActiveTab] = useState('recipes');
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
+
+  // Deep-link entry point — e.g. tapping an `expiry_warning` notification
+  // navigates here with `{ initialTab: 'inventory' }`. Switch tabs once,
+  // then clear the param so navigating back-and-forth doesn't keep forcing
+  // it on top of the user's manual selection.
+  const requestedTab = route?.params?.initialTab;
+  useEffect(() => {
+    if (!requestedTab || !TAB_KEYS.includes(requestedTab)) return;
+    setActiveTab(requestedTab);
+    navigation.setParams({ initialTab: undefined });
+  }, [requestedTab, navigation]);
   const [badges, setBadges] = useState([]);
   // eslint-disable-next-line no-unused-vars
   const [badgesLoading, setBadgesLoading] = useState(false);
