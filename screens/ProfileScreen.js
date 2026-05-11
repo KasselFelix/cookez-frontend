@@ -18,6 +18,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  Animated,
   FlatList,
   Image,
   Modal,
@@ -91,15 +92,27 @@ function RecipeTile({ item, css, navigation }) {
     : null;
 
 
+  // Shadow has to live on the outer wrapper because the TouchableOpacity
+  // uses overflow:'hidden' to clip the top-corner of the image — and on iOS,
+  // shadow + overflow:'hidden' on the same node makes the shadow disappear.
   return (
+    <View
+      style={[
+        styles.tileShadow,
+        css.shadow.sm,
+        {
+          backgroundColor: css.palette.surfaceCard,
+          borderRadius: css.radius.md,
+          marginHorizontal: css.spacing.xs,
+        },
+      ]}
+    >
     <TouchableOpacity
       style={[
         styles.tile,
         {
           backgroundColor: css.palette.surfaceCard,
           borderRadius: css.radius.md,
-          borderColor: css.palette.neutral200,
-          marginHorizontal: css.spacing.xs,
         },
       ]}
       onPress={() => {
@@ -188,6 +201,7 @@ function RecipeTile({ item, css, navigation }) {
         </View>
       </View>
     </TouchableOpacity>
+    </View>
   );
 }
 
@@ -288,6 +302,41 @@ export default function ProfileScreen({ navigation, route }) {
     setActiveTab(requestedTab);
     navigation.setParams({ initialTab: undefined });
   }, [requestedTab, navigation]);
+
+  // ── Tab transition animations ──────────────────────────────────────────────
+  // - `tabsLayoutWidth`: measured once via onLayout so the indicator knows
+  //   how wide each tab slot is.
+  // - `indicatorX`: animated translateX of the sliding underline. We use the
+  //   RN `Animated` API (not reanimated v4) to avoid the babel plugin setup.
+  // - `tabFade`: cross-fade the tab content on switch so the layout swap
+  //   between Branch A (FlatList) and Branch B (ScrollView) doesn't visually
+  //   flash to white.
+  const [tabsLayoutWidth, setTabsLayoutWidth] = useState(0);
+  const indicatorX = useRef(new Animated.Value(0)).current;
+  const tabFade = useRef(new Animated.Value(1)).current;
+  const tabSlotWidth = tabsLayoutWidth / TAB_KEYS.length;
+  const indicatorWidth = tabSlotWidth * 0.6;
+  const indicatorInset = (tabSlotWidth - indicatorWidth) / 2;
+
+  useEffect(() => {
+    if (!tabsLayoutWidth) return;
+    const idx = TAB_KEYS.indexOf(activeTab);
+    if (idx < 0) return;
+    Animated.timing(indicatorX, {
+      toValue: idx * tabSlotWidth + indicatorInset,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  }, [activeTab, tabsLayoutWidth, indicatorInset, indicatorX, tabSlotWidth]);
+
+  useEffect(() => {
+    tabFade.setValue(0);
+    Animated.timing(tabFade, {
+      toValue: 1,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
+  }, [activeTab, tabFade]);
   const [badges, setBadges] = useState([]);
   // eslint-disable-next-line no-unused-vars
   const [badgesLoading, setBadgesLoading] = useState(false);
@@ -614,6 +663,7 @@ export default function ProfileScreen({ navigation, route }) {
           paddingTop: css.spacing.cardGap,
         },
       ]}
+      onLayout={(e) => setTabsLayoutWidth(e.nativeEvent.layout.width)}
     >
       {TAB_KEYS.map((key) => {
         const Icon = TAB_ICONS[key];
@@ -656,15 +706,24 @@ export default function ProfileScreen({ navigation, route }) {
                 {t(`profile.tabs.${key}`)}
               </Text>
             </View>
-            <View
-              style={[
-                styles.tabUnderline,
-                isActive && { backgroundColor: css.palette.neutral900 },
-              ]}
-            />
           </Pressable>
         );
       })}
+      {/* Single sliding indicator — translates between tab slots on
+          activeTab change. Width sits at 60% of a slot to match the
+          previous per-tab underline visual. */}
+      {tabsLayoutWidth > 0 ? (
+        <Animated.View
+          style={[
+            styles.tabIndicator,
+            {
+              width: indicatorWidth,
+              backgroundColor: css.palette.neutral900,
+              transform: [{ translateX: indicatorX }],
+            },
+          ]}
+        />
+      ) : null}
     </View>
   );
 
@@ -744,51 +803,56 @@ export default function ProfileScreen({ navigation, route }) {
 
   if (activeTab === 'inventory') {
     return (
+      // surface (warm cream) instead of surfaceCard (white) so the white
+      // InventoryItemCard pops with its shadow. Matches the visual contrast
+      // we already use on the Favorites tab.
       <SafeAreaView
-        style={[styles.flatContainer, { backgroundColor: css.palette.surfaceCard }]}
+        style={[styles.flatContainer, { backgroundColor: css.palette.surface }]}
         edges={['top']}
       >
-        <FlatList
-          data={filteredItems}
-          keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <InventoryItemCard
-              item={item}
-              onEdit={openEdit}
-              onDelete={handleDelete}
-            />
-          )}
-          ItemSeparatorComponent={() => <View style={{ height: css.spacing.sm }} />}
-          ListHeaderComponent={
-            <View>
-              {headerBar}
-              {identityBlock}
-              {statsRow}
-              {tabBar}
-              <View style={{ paddingTop: css.spacing.md }}>
-                <InventorySummaryRow summary={summary} />
-                <View style={{ height: css.spacing.sm }} />
-                <InventorySearchBar
-                  value={search}
-                  onChange={setSearch}
-                  onAddPress={openAdd}
-                />
-                <View style={{ height: css.spacing.xs }} />
-                <InventoryFilterChips
-                  active={categoryFilter}
-                  onChange={setCategoryFilter}
-                  categories={categories}
-                />
+        <Animated.View style={{ flex: 1, opacity: tabFade }}>
+          <FlatList
+            data={filteredItems}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => (
+              <InventoryItemCard
+                item={item}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+              />
+            )}
+            ItemSeparatorComponent={() => <View style={{ height: css.spacing.sm }} />}
+            ListHeaderComponent={
+              <View>
+                {headerBar}
+                {identityBlock}
+                {statsRow}
+                {tabBar}
+                <View style={{ paddingTop: css.spacing.md }}>
+                  <InventorySummaryRow summary={summary} />
+                  <View style={{ height: css.spacing.sm }} />
+                  <InventorySearchBar
+                    value={search}
+                    onChange={setSearch}
+                    onAddPress={openAdd}
+                  />
+                  <View style={{ height: css.spacing.xs }} />
+                  <InventoryFilterChips
+                    active={categoryFilter}
+                    onChange={setCategoryFilter}
+                    categories={categories}
+                  />
+                </View>
               </View>
-            </View>
-          }
-          ListEmptyComponent={<InventoryEmptyState onAdd={openAdd} />}
-          contentContainerStyle={{ paddingBottom: css.spacing.xxl }}
-          showsVerticalScrollIndicator={false}
-          removeClippedSubviews
-          windowSize={7}
-          initialNumToRender={8}
-        />
+            }
+            ListEmptyComponent={<InventoryEmptyState onAdd={openAdd} />}
+            contentContainerStyle={{ paddingBottom: css.spacing.xxl }}
+            showsVerticalScrollIndicator={false}
+            removeClippedSubviews
+            windowSize={7}
+            initialNumToRender={8}
+          />
+        </Animated.View>
         {avatarModal}
         {addSheet}
       </SafeAreaView>
@@ -807,14 +871,18 @@ export default function ProfileScreen({ navigation, route }) {
 
       {tabBar}
 
-      <View
+      <Animated.View
         style={[
           styles.tabContent,
-          { backgroundColor: css.palette.surface, paddingTop: css.spacing.md },
+          {
+            backgroundColor: css.palette.surface,
+            paddingTop: css.spacing.md,
+            opacity: tabFade,
+          },
         ]}
       >
         {renderTabContent()}
-      </View>
+      </Animated.View>
 
       {avatarModal}
       {addSheet}
@@ -889,10 +957,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   tabLabelActive: { fontWeight: '600' },
-  tabUnderline: {
+  tabIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
     height: 2,
-    width: '60%',
-    backgroundColor: 'transparent',
+    borderRadius: 1,
   },
 
   tabContent: {
@@ -903,9 +973,14 @@ const styles = StyleSheet.create({
   gridRow: {
     justifyContent: 'space-between',
   },
+  tileShadow: {
+    flex: 1,
+    // shadow lives here; inner TouchableOpacity gets overflow:'hidden'
+    // to clip the image's top corners. Splitting the two prevents the
+    // iOS bug where shadow + overflow:'hidden' silently drops the shadow.
+  },
   tile: {
     flex: 1,
-    borderWidth: 1,
     overflow: 'hidden',
   },
   tileImage: {
