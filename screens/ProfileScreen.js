@@ -63,7 +63,6 @@ import {
 import { updateUserInStore } from '../reducers/user';
 import BadgeCircle from '../components/profile/BadgeCircle';
 import ProfileIdentityBlock from '../components/profile/ProfileIdentityBlock';
-import ProfileScreenContainer from '../components/profile/ProfileScreenContainer';
 import ProfileStatsRow from '../components/profile/ProfileStatsRow';
 import InventoryAddSheet from '../components/inventory/InventoryAddSheet';
 import InventoryEmptyState from '../components/inventory/InventoryEmptyState';
@@ -329,11 +328,15 @@ export default function ProfileScreen({ navigation, route }) {
     }).start();
   }, [activeTab, tabsLayoutWidth, indicatorInset, indicatorX, tabSlotWidth]);
 
+  // Tab content cross-fade. Starts from 0.6 (not 0) so the content stays
+  // visible at all times — the previous 0->1 fade left a ~100 ms window
+  // where the screen was effectively blank between the data swap and the
+  // next paint, which the user perceived as a flash.
   useEffect(() => {
-    tabFade.setValue(0);
+    tabFade.setValue(0.6);
     Animated.timing(tabFade, {
       toValue: 1,
-      duration: 180,
+      duration: 220,
       useNativeDriver: true,
     }).start();
   }, [activeTab, tabFade]);
@@ -799,35 +802,45 @@ export default function ProfileScreen({ navigation, route }) {
     />
   );
 
-  // ---- Branch A: inventory tab → FlatList layout --------------------------
+  // ---- Unified render -----------------------------------------------------
+  // All four tabs share the same FlatList tree so React never unmounts /
+  // remounts the screen scaffolding on tab change. The only things that
+  // swap between tabs are:
+  //   - `data` (filteredItems for inventory, [] for every other tab)
+  //   - the inventory sub-header (Summary + Search + Chips) — gated in
+  //     ListHeaderComponent
+  //   - ListEmptyComponent — InventoryEmptyState for inventory, the legacy
+  //     RecipeGrid / badges grid for the other three
+  // Previously we had two completely different return trees and the swap
+  // produced a ~100 ms flash to the bare SafeAreaView background. Unifying
+  // the tree + the surface background colour kills that entirely.
 
-  if (activeTab === 'inventory') {
-    return (
-      // surface (warm cream) instead of surfaceCard (white) so the white
-      // InventoryItemCard pops with its shadow. Matches the visual contrast
-      // we already use on the Favorites tab.
-      <SafeAreaView
-        style={[styles.flatContainer, { backgroundColor: css.palette.surface }]}
-        edges={['top']}
-      >
-        <Animated.View style={{ flex: 1, opacity: tabFade }}>
-          <FlatList
-            data={filteredItems}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <InventoryItemCard
-                item={item}
-                onEdit={openEdit}
-                onDelete={handleDelete}
-              />
-            )}
-            ItemSeparatorComponent={() => <View style={{ height: css.spacing.sm }} />}
-            ListHeaderComponent={
-              <View>
-                {headerBar}
-                {identityBlock}
-                {statsRow}
-                {tabBar}
+  const isInventory = activeTab === 'inventory';
+
+  return (
+    <SafeAreaView
+      style={[styles.flatContainer, { backgroundColor: css.palette.surface }]}
+      edges={['top']}
+    >
+      <Animated.View style={{ flex: 1, opacity: tabFade }}>
+        <FlatList
+          data={isInventory ? filteredItems : []}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            <InventoryItemCard
+              item={item}
+              onEdit={openEdit}
+              onDelete={handleDelete}
+            />
+          )}
+          ItemSeparatorComponent={() => <View style={{ height: css.spacing.sm }} />}
+          ListHeaderComponent={
+            <View>
+              {headerBar}
+              {identityBlock}
+              {statsRow}
+              {tabBar}
+              {isInventory ? (
                 <View style={{ paddingTop: css.spacing.md }}>
                   <InventorySummaryRow summary={summary} />
                   <View style={{ height: css.spacing.sm }} />
@@ -843,50 +856,33 @@ export default function ProfileScreen({ navigation, route }) {
                     categories={categories}
                   />
                 </View>
+              ) : null}
+            </View>
+          }
+          ListEmptyComponent={
+            isInventory ? (
+              <InventoryEmptyState onAdd={openAdd} />
+            ) : (
+              <View
+                style={[
+                  styles.tabContent,
+                  { paddingTop: css.spacing.md, backgroundColor: 'transparent' },
+                ]}
+              >
+                {renderTabContent()}
               </View>
-            }
-            ListEmptyComponent={<InventoryEmptyState onAdd={openAdd} />}
-            contentContainerStyle={{ paddingBottom: css.spacing.xxl }}
-            showsVerticalScrollIndicator={false}
-            removeClippedSubviews
-            windowSize={7}
-            initialNumToRender={8}
-          />
-        </Animated.View>
-        {avatarModal}
-        {addSheet}
-      </SafeAreaView>
-    );
-  }
-
-  // ---- Branch B: recipes / favorites / badges → original layout -----------
-
-  return (
-    <ProfileScreenContainer header={headerBar}>
-      {identityBlock}
-
-      {statsRow}
-
-      {/* <ProfileImpactStats /> */}
-
-      {tabBar}
-
-      <Animated.View
-        style={[
-          styles.tabContent,
-          {
-            backgroundColor: css.palette.surface,
-            paddingTop: css.spacing.md,
-            opacity: tabFade,
-          },
-        ]}
-      >
-        {renderTabContent()}
+            )
+          }
+          contentContainerStyle={{ paddingBottom: css.spacing.xxl }}
+          showsVerticalScrollIndicator={false}
+          removeClippedSubviews
+          windowSize={7}
+          initialNumToRender={8}
+        />
       </Animated.View>
-
       {avatarModal}
       {addSheet}
-    </ProfileScreenContainer>
+    </SafeAreaView>
   );
 }
 
