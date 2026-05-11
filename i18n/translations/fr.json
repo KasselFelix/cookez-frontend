@@ -26,7 +26,7 @@
     "tabs": {
       "recipes": "Recettes",
       "favorites": "Favoris",
-      "activity": "Activité",
+      "inventory": "Garde-manger",
       "badges": "Badges"
     },
     "stats": {
@@ -37,8 +37,68 @@
     },
     "empty": {
       "recipes": "Pas encore de recettes.",
-      "favorites": "Pas encore de favoris.",
-      "activity": "Activité bientôt disponible."
+      "favorites": "Pas encore de favoris."
+    },
+    "inventory": {
+      "tab_label": "Garde-manger",
+      "summary": {
+        "total": "Total",
+        "expiring_soon": "Bientôt périmés",
+        "expired": "Périmés",
+        "low_stock": "Stock faible"
+      },
+      "search": {
+        "placeholder": "Rechercher dans votre garde-manger…",
+        "a11y_label": "Rechercher un ingrédient"
+      },
+      "filters": {
+        "a11y_label": "Ouvrir les filtres",
+        "all": "Tous",
+        "fridge": "Frigo",
+        "freezer": "Congélateur",
+        "pantry": "Placard",
+        "spices": "Épices",
+        "other": "Autre",
+        "expiring": "Bientôt périmés"
+      },
+      "location": {
+        "fridge": "Frigo",
+        "freezer": "Congélateur",
+        "pantry": "Placard",
+        "spices": "Épices",
+        "other": "Autre"
+      },
+      "card": {
+        "expired": "Périmé",
+        "expires_today": "Périme aujourd'hui",
+        "expires_in": "Périme dans {{days}} jours",
+        "edit_a11y": "Modifier {{name}}",
+        "delete_a11y": "Supprimer {{name}}"
+      },
+      "empty": {
+        "title": "Votre garde-manger est vide",
+        "subtitle": "Ajoutez des ingrédients pour suivre les dates et obtenir de meilleures recettes.",
+        "cta": "Ajouter un article",
+        "cta_a11y": "Ajouter un article au garde-manger"
+      },
+      "add_sheet": {
+        "title_add": "Ajouter au garde-manger",
+        "title_edit": "Modifier l'article",
+        "ingredient_placeholder": "Rechercher un ingrédient…",
+        "qty_placeholder": "Quantité",
+        "location_label": "Rangement",
+        "expiry_label": "Date de péremption",
+        "add": "Ajouter",
+        "save": "Enregistrer"
+      },
+      "errors": {
+        "load_failed": "Impossible de charger votre garde-manger.",
+        "add_failed": "Impossible d'ajouter cet article.",
+        "update_failed": "Impossible de modifier cet article.",
+        "delete_failed": "Impossible de supprimer cet article.",
+        "ingredient_required": "Sélectionnez un ingrédient.",
+        "quantity_required": "Saisissez une quantité."
+      }
     },
     "avatarModalTitle": "Choisis ton avatar",
     "avatarModalDismiss": "Fermer le sélecteur d'avatar",

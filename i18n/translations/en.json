@@ -26,7 +26,7 @@
     "tabs": {
       "recipes": "Recipes",
       "favorites": "Favorites",
-      "activity": "Activity",
+      "inventory": "Inventory",
       "badges": "Badges"
     },
     "stats": {
@@ -37,8 +37,68 @@
     },
     "empty": {
       "recipes": "No recipes yet.",
-      "favorites": "No favorites yet.",
-      "activity": "Activity coming soon."
+      "favorites": "No favorites yet."
+    },
+    "inventory": {
+      "tab_label": "Inventory",
+      "summary": {
+        "total": "Total",
+        "expiring_soon": "Expiring soon",
+        "expired": "Expired",
+        "low_stock": "Low stock"
+      },
+      "search": {
+        "placeholder": "Search your pantry…",
+        "a11y_label": "Search inventory items"
+      },
+      "filters": {
+        "a11y_label": "Open filters",
+        "all": "All",
+        "fridge": "Fridge",
+        "freezer": "Freezer",
+        "pantry": "Pantry",
+        "spices": "Spices",
+        "other": "Other",
+        "expiring": "Expiring"
+      },
+      "location": {
+        "fridge": "Fridge",
+        "freezer": "Freezer",
+        "pantry": "Pantry",
+        "spices": "Spices",
+        "other": "Other"
+      },
+      "card": {
+        "expired": "Expired",
+        "expires_today": "Expires today",
+        "expires_in": "Expires in {{days}} days",
+        "edit_a11y": "Edit {{name}}",
+        "delete_a11y": "Delete {{name}}"
+      },
+      "empty": {
+        "title": "Your pantry is empty",
+        "subtitle": "Add ingredients to track expiry and get smarter recipes.",
+        "cta": "Add an item",
+        "cta_a11y": "Add a pantry item"
+      },
+      "add_sheet": {
+        "title_add": "Add to inventory",
+        "title_edit": "Edit item",
+        "ingredient_placeholder": "Search an ingredient…",
+        "qty_placeholder": "Quantity",
+        "location_label": "Storage",
+        "expiry_label": "Expiry date",
+        "add": "Add",
+        "save": "Save"
+      },
+      "errors": {
+        "load_failed": "Could not load your pantry.",
+        "add_failed": "Could not add this item.",
+        "update_failed": "Could not update this item.",
+        "delete_failed": "Could not delete this item.",
+        "ingredient_required": "Pick an ingredient.",
+        "quantity_required": "Enter a quantity."
+      }
     },
     "avatarModalTitle": "Select your avatar",
     "avatarModalDismiss": "Dismiss avatar picker",
