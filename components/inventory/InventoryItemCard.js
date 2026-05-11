@@ -11,13 +11,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Pencil, Trash2 } from 'lucide-react-native';
 import moment from 'moment';
 
+import { ImageOff } from 'lucide-react-native';
+
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
-
-// NOTE: the binary placeholder asset will be dropped in by the user in a
-// later step. Keeping the require path here so the import graph is wired
-// up; once the PNG exists in /assets, no code change is needed.
-const PLACEHOLDER = require('../../assets/placeholder-ingredient.png');
 
 const resolveDaysUntilExpiry = (item) => {
   if (item == null) return null;
@@ -35,9 +32,7 @@ export default function InventoryItemCard({ item, onEdit, onDelete }) {
   if (!item || !item.ingredient) return null;
 
   const days = resolveDaysUntilExpiry(item);
-  const photoSource = item.ingredient.photoUrl
-    ? { uri: item.ingredient.photoUrl }
-    : PLACEHOLDER;
+  const photoUrl = item.ingredient.photoUrl;
 
   let expiryColor = null;
   let expiryLabel = null;
@@ -82,13 +77,31 @@ export default function InventoryItemCard({ item, onEdit, onDelete }) {
         },
       ]}
     >
-      <Image
-        source={photoSource}
-        style={[styles.photo, { borderRadius: css.radius.md }]}
-        contentFit="cover"
-        transition={200}
-        accessibilityIgnoresInvertColors
-      />
+      {photoUrl ? (
+        <Image
+          source={{ uri: photoUrl }}
+          style={[styles.photo, { borderRadius: css.radius.md }]}
+          contentFit="cover"
+          transition={200}
+          accessibilityIgnoresInvertColors
+        />
+      ) : (
+        // No Pexels hit yet — render a tokenized placeholder tile rather
+        // than requiring a binary asset that Metro would have to bundle.
+        <View
+          style={[
+            styles.photo,
+            {
+              borderRadius: css.radius.md,
+              backgroundColor: css.palette.neutral200,
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+          ]}
+        >
+          <ImageOff size={24} color={css.palette.neutral500} />
+        </View>
+      )}
 
       <View style={[styles.textBlock, { marginLeft: css.spacing.md }]}>
         <Text
