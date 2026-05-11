@@ -49,7 +49,8 @@
       },
       "search": {
         "placeholder": "Rechercher dans votre garde-manger…",
-        "a11y_label": "Rechercher un ingrédient"
+        "a11y_label": "Rechercher un ingrédient",
+        "add_a11y": "Ajouter un article au garde-manger"
       },
       "filters": {
         "a11y_label": "Ouvrir les filtres",

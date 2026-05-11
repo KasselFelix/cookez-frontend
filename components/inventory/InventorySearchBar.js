@@ -1,4 +1,7 @@
-// InventorySearchBar — pill-shaped search input with a filter-icon button.
+// InventorySearchBar — pill-shaped search input + a primary "add item"
+// pill button. The button stays visible at all times (even when the list is
+// populated) so adding a second/third item never requires scrolling back to
+// the empty-state CTA.
 //
 // Debouncing intentionally lives in the parent screen (T2.3), not here.
 // This component just emits raw onChange so the parent can decide whether
@@ -7,12 +10,12 @@
 
 import React from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { Search, SlidersHorizontal } from 'lucide-react-native';
+import { Plus, Search } from 'lucide-react-native';
 
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
 
-export default function InventorySearchBar({ value, onChange, onFilterPress }) {
+export default function InventorySearchBar({ value, onChange, onAddPress }) {
   const css = useTheme();
   const t = useT();
 
@@ -57,20 +60,20 @@ export default function InventorySearchBar({ value, onChange, onFilterPress }) {
         />
       </View>
       <Pressable
-        onPress={onFilterPress}
+        onPress={onAddPress}
         accessibilityRole="button"
-        accessibilityLabel={t('profile.inventory.filters.a11y_label')}
+        accessibilityLabel={t('profile.inventory.search.add_a11y')}
         hitSlop={8}
         style={({ pressed }) => [
           styles.iconBtn,
           {
-            backgroundColor: css.palette.secondary200,
+            backgroundColor: css.palette.accent500,
             borderRadius: css.radius.pill,
-            opacity: pressed ? 0.7 : 1,
+            opacity: pressed ? 0.8 : 1,
           },
         ]}
       >
-        <SlidersHorizontal size={20} color={css.palette.neutral700} />
+        <Plus size={22} color={css.palette.white || '#ffffff'} />
       </Pressable>
     </View>
   );

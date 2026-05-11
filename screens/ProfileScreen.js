@@ -760,11 +760,7 @@ export default function ProfileScreen({ navigation }) {
                 <InventorySearchBar
                   value={search}
                   onChange={setSearch}
-                  onFilterPress={() => {
-                    // Filter sheet is a future hook; chips below already
-                    // cover single-axis filtering. Tapping does nothing
-                    // for now rather than throwing.
-                  }}
+                  onAddPress={openAdd}
                 />
                 <View style={{ height: css.spacing.xs }} />
                 <InventoryFilterChips

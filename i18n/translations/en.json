@@ -49,7 +49,8 @@
       },
       "search": {
         "placeholder": "Search your pantry…",
-        "a11y_label": "Search inventory items"
+        "a11y_label": "Search inventory items",
+        "add_a11y": "Add an item to your pantry"
       },
       "filters": {
         "a11y_label": "Open filters",
