@@ -8,7 +8,13 @@
 import React from 'react';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ImageOff, Pencil, Trash2 } from 'lucide-react-native';
+import {
+  AlertOctagon,
+  AlertTriangle,
+  ImageOff,
+  Pencil,
+  Trash2,
+} from 'lucide-react-native';
 import moment from 'moment';
 
 import { useTheme } from '../../contexts/ThemeProvider';
@@ -32,18 +38,26 @@ export default function InventoryItemCard({ item, onEdit, onDelete }) {
   const days = resolveDaysUntilExpiry(item);
   const photoUrl = item.ingredient.photoUrl;
 
+  // Build expiry label + colour AND a leading icon. The icon doubles as a
+  // colourblind-safe channel: red vs orange become near-identical under
+  // protanopia/deuteranopia, but AlertOctagon vs AlertTriangle stay
+  // distinguishable by shape alone.
   let expiryColor = null;
   let expiryLabel = null;
+  let ExpiryIcon = null;
   if (days !== null) {
     if (days < 0) {
       expiryColor = css.palette.error;
       expiryLabel = t('profile.inventory.card.expired');
+      ExpiryIcon = AlertOctagon;
     } else if (days === 0) {
       expiryColor = css.palette.accent500;
       expiryLabel = t('profile.inventory.card.expires_today');
+      ExpiryIcon = AlertTriangle;
     } else if (days <= 2) {
       expiryColor = css.palette.accent500;
       expiryLabel = t('profile.inventory.card.expires_in', { days });
+      ExpiryIcon = AlertTriangle;
     } else {
       // No neutral600 token exists; neutral700 is the closest body sub-tone.
       expiryColor = css.palette.neutral700;
@@ -125,18 +139,23 @@ export default function InventoryItemCard({ item, onEdit, onDelete }) {
           {subLine}
         </Text>
         {expiryLabel ? (
-          <Text
-            numberOfLines={1}
-            style={{
-              fontFamily: css.typography.fontBody,
-              fontSize: 12,
-              color: expiryColor,
-              marginTop: 2,
-              fontWeight: '500',
-            }}
-          >
-            {expiryLabel}
-          </Text>
+          <View style={styles.expiryRow}>
+            {ExpiryIcon ? (
+              <ExpiryIcon size={12} color={expiryColor} strokeWidth={2.5} />
+            ) : null}
+            <Text
+              numberOfLines={1}
+              style={{
+                fontFamily: css.typography.fontBody,
+                fontSize: 12,
+                color: expiryColor,
+                fontWeight: '500',
+                marginLeft: ExpiryIcon ? 4 : 0,
+              }}
+            >
+              {expiryLabel}
+            </Text>
+          </View>
         ) : null}
       </View>
 
@@ -185,6 +204,11 @@ const styles = StyleSheet.create({
   },
   textBlock: {
     flex: 1,
+  },
+  expiryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
   },
   actions: {
     flexDirection: 'row',

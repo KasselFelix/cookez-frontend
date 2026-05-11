@@ -1,10 +1,16 @@
-// InventorySummaryRow — row of 4 mini-cards summarizing pantry health.
+// InventorySummaryRow — 2x2 grid of mini-cards summarizing pantry health.
 //
-// Each card reuses MonoStat for the value+label rendering. Because MonoStat
-// hardcodes the value text to `style.palette.neutral900`, we clone the
-// theme object with that key overridden for the two coloured cards
-// (expiringSoon = accent500, expired = palette.error). This keeps MonoStat
-// untouched while letting the SummaryRow drive its colour palette.
+// 4 cards in a single row clipped the French labels (BIENT… / PÉRIM… /
+// STOCK…) at 360pt viewports. The 2x2 grid gives each card ~155pt of
+// inner width — enough to fit the longest label uncropped while letting
+// the orange + red pair land together on the second row, which doubles
+// as a visual "needs attention" cluster.
+//
+// Each card reuses MonoStat. Because MonoStat hardcodes the value text
+// to `style.palette.neutral900`, we clone the theme object with that key
+// overridden for the two coloured cards (expiringSoon = accent500,
+// expired = palette.error). This keeps MonoStat untouched while letting
+// the SummaryRow drive its colour palette.
 
 import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -46,53 +52,68 @@ export default function InventorySummaryRow({ summary }) {
     },
   ];
 
+  // One entry per card. The order is deliberate: top row is informational
+  // baseline, bottom row groups the two attention-demanding cells.
+  const cards = [
+    {
+      key: 'total',
+      theme: css,
+      value: safeSummary.total,
+      label: t('profile.inventory.summary.total'),
+    },
+    {
+      key: 'low_stock',
+      theme: css,
+      value: safeSummary.lowStock,
+      label: t('profile.inventory.summary.low_stock'),
+    },
+    {
+      key: 'expiring_soon',
+      theme: accentTheme,
+      value: safeSummary.expiringSoon,
+      label: t('profile.inventory.summary.expiring_soon'),
+    },
+    {
+      key: 'expired',
+      theme: errorTheme,
+      value: safeSummary.expired,
+      label: t('profile.inventory.summary.expired'),
+    },
+  ];
+
   return (
     <View
       style={[
-        styles.row,
+        styles.grid,
         { gap: css.spacing.sm, paddingHorizontal: css.spacing.md },
       ]}
-      accessibilityLabel={t('profile.inventory.summary.total')}
     >
-      <View style={cardStyle}>
-        <MonoStat
-          style={css}
-          value={safeSummary.total}
-          label={t('profile.inventory.summary.total')}
-        />
-      </View>
-      <View style={cardStyle}>
-        <MonoStat
-          style={accentTheme}
-          value={safeSummary.expiringSoon}
-          label={t('profile.inventory.summary.expiring_soon')}
-        />
-      </View>
-      <View style={cardStyle}>
-        <MonoStat
-          style={errorTheme}
-          value={safeSummary.expired}
-          label={t('profile.inventory.summary.expired')}
-        />
-      </View>
-      <View style={cardStyle}>
-        <MonoStat
-          style={css}
-          value={safeSummary.lowStock}
-          label={t('profile.inventory.summary.low_stock')}
-        />
-      </View>
+      {cards.map((c) => (
+        <View
+          key={c.key}
+          style={cardStyle}
+          accessibilityRole="text"
+          // Per-card label so screen readers announce each cell distinctly,
+          // e.g. "Bientôt périmés : 2". Without this, the parent View used
+          // to swallow all four cards into a single "Total" announcement.
+          accessibilityLabel={`${c.label} : ${c.value}`}
+        >
+          <MonoStat style={c.theme} value={c.value} label={c.label} />
+        </View>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: {
+  grid: {
     flexDirection: 'row',
-    alignItems: 'stretch',
+    flexWrap: 'wrap',
   },
   card: {
-    flex: 1,
+    // 48% so two cards fit per row with the css.spacing.sm gap between them.
+    flexBasis: '48%',
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },

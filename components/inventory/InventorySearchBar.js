@@ -73,7 +73,7 @@ export default function InventorySearchBar({ value, onChange, onAddPress }) {
           },
         ]}
       >
-        <Plus size={22} color={css.palette.white || '#ffffff'} />
+        <Plus size={22} color={css.palette.white} />
       </Pressable>
     </View>
   );
