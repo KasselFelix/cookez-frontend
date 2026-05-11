@@ -28,7 +28,7 @@ export const pantrySlice = createSlice({
     // Optimistic insert after POST /inventory. If the same `_id` is
     // already present (rare race: optimistic add followed by server echo)
     // replace in place so we don't end up with duplicates in the list.
-    addPantryItem: (state, action) => {
+    addItem: (state, action) => {
       const item = action.payload;
       if (!item?._id) return;
       const i = state.value.items.findIndex((x) => x._id === item._id);
@@ -40,7 +40,7 @@ export const pantrySlice = createSlice({
     // full doc so we can merge fields (quantity bumps, expiry edits, …)
     // without losing populated relations like `ingredient.image`.
     // Unknown `_id` is a no-op — never crash on a stale id.
-    updatePantryItem: (state, action) => {
+    updateItem: (state, action) => {
       const { _id, patch } = action.payload || {};
       if (!_id || !patch) return;
       const i = state.value.items.findIndex((x) => x._id === _id);
@@ -49,7 +49,7 @@ export const pantrySlice = createSlice({
 
     // Remove by id — filter is a no-op when the id is unknown, so
     // double-deletes during pessimistic UI flows stay safe.
-    removePantryItem: (state, action) => {
+    removeItem: (state, action) => {
       state.value.items = state.value.items.filter((x) => x._id !== action.payload);
     },
 
@@ -71,9 +71,9 @@ export const pantrySlice = createSlice({
 
 export const {
   setPantry,
-  addPantryItem,
-  updatePantryItem,
-  removePantryItem,
+  addItem,
+  updateItem,
+  removeItem,
   setLoading,
   setError,
   clearPantry,
