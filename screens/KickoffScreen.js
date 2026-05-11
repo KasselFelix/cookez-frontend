@@ -215,7 +215,7 @@ export default function KickoffScreen({navigation}) {
 
 	function onItemPress(data){
 		setValidatedIngredient([...validatedIngredient,data.id])
-		dispatch(addIngredient({photo: data.photo, data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
+		dispatch(addIngredient({photo: data.photo, data: {_id: data.id, display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
 	}
 
 	function onItemRemove(data) {
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		width: '60%',
-		background: 'red',
+		//background: 'red',
 	},
 
 	validButton: {

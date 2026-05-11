@@ -378,7 +378,7 @@ export default function ProfileScreen({ navigation }) {
                 accessibilityLabel={badge.label}
               >
                 <BadgeCircle
-                  icon={<Award size={18} color={css.palette.neutral900} />}
+                  icon={<Award size={20} color={css.palette.neutral900} />}
                   label={t(`profile.badges.${badge.key}`, { defaultValue: badge.label })}
                 />
               </View>
@@ -442,7 +442,7 @@ export default function ProfileScreen({ navigation }) {
               onPress={handleShare}
               css={css}
             >
-              <Share2 size={18} color={css.palette.neutral900} />
+              <Share2 size={25} color={css.palette.neutral900} />
             </TopBarButton>
             <TopBarButton
               label={t('profile.topBarNotifications')}
@@ -450,14 +450,14 @@ export default function ProfileScreen({ navigation }) {
               badge={unread}
               css={css}
             >
-              <Bell size={18} color={css.palette.neutral900} />
+              <Bell size={25} color={css.palette.neutral900} />
             </TopBarButton>
             <TopBarButton
               label={t('profile.topBarSettings')}
               onPress={() => navigation.navigate('Settings')}
               css={css}
             >
-              <SettingsIcon size={18} color={css.palette.neutral900} />
+              <SettingsIcon size={25} color={css.palette.neutral900} />
             </TopBarButton>
           </View>
         </View>

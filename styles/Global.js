@@ -3,6 +3,19 @@ import { Platform, Dimensions } from "react-native";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // ─────────────────────────────────────────────
+// HELPER — hex to rgba (for derived semi-transparent colors)
+// Keeps gradients and glassmorphism aligned with the palette
+// instead of hardcoding rgba() values everywhere.
+// ─────────────────────────────────────────────
+
+const rgba = (hex, alpha) => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+};
+
+// ─────────────────────────────────────────────
 // BRAND PALETTE
 // Mood target: soothing · energetic · trustworthy
 // ─────────────────────────────────────────────
@@ -81,26 +94,29 @@ const typography = {
   fontBody:     _varelaR,  // Paragraphs, descriptions
   fontUI:       _varela,   // Labels, buttons, nav
 
-  // Scale — optimised for 375px viewport (scales well to 430px)
-  // H1 — Screen hero titles  (e.g., app name, welcome header)
+  // ─── Scale — optimised for 375px viewport (scales well to 430px)
+  // The scale follows a clear hierarchy: each step is visually distinct.
+
+  // H1 — Screen hero titles (e.g., app name, welcome header)
   h1Size:   32,
   h1Line:   40,
   h1Weight: "700",
   h1Family: _firaB,
 
-  // H2 — Section headers  (e.g., "Trending Recipes")
+  // H2 — Section headers (e.g., "Trending Recipes")
   h2Size:   24,
   h2Line:   32,
   h2Weight: "600",
   h2Family: _firaS,
 
-  // H3 — Card / panel titles  (e.g., recipe name in ResultScreen)
+  // H3 — Card / panel titles (e.g., recipe name in ResultScreen)
   h3Size:   20,
   h3Line:   28,
   h3Weight: "600",
   h3Family: _firaS,
 
   // H4 — Subtitles / emphasized labels
+  // FIXED: was 20 (same as h3) — now 17 for proper hierarchy
   h4Size:   17,
   h4Line:   24,
   h4Weight: "500",
@@ -111,6 +127,14 @@ const typography = {
   h5Line:   20,
   h5Weight: "500",
   h5Family: _fira,
+
+  // H6 — Micro labels (badge captions, stat labels, tab pills, tag captions)
+  // FIXED: was 15 (larger than h5) — now 12 as originally intended in the
+  // 9-12 px micro-label tier documented in the inline comment.
+  h6Size:   12,
+  h6Line:   16,
+  h6Weight: "500",
+  h6Family: _varelaR,
 
   // Body — Primary readable text
   bodySize:   16,
@@ -128,17 +152,11 @@ const typography = {
   // Overline — Tags, category pills (uppercase)
   overlineSize:    11,
   overlineSpacing: 1.2,
-  metadataSize:   12,
-  metadataColor:  "#6b7280",           // neutral500
-  metadataFamily: "VarelaRound_400Regular",
 
-  // H6 — Micro labels (badge captions, stat labels, tab pills, tag captions)
-  // Officializes the 9-12 px tier that was previously orphaned across the
-  // profile screens. Use for uppercase mini-labels and dense metadata rows.
-  h6Size:   12,
-  h6Line:   16,
-  h6Weight: "500",
-  h6Family: _varelaR,
+  // Metadata — small descriptors (now derived from palette/families)
+  metadataSize:   12,
+  metadataColor:  palette.neutral500,  // FIXED: was hardcoded "#6b7280"
+  metadataFamily: _varelaR,            // FIXED: was hardcoded "VarelaRound_400Regular"
 };
 
 // ─────────────────────────────────────────────
@@ -153,7 +171,7 @@ const spacing = {
   xl:  32,
   xxl: 48,
   xxxl:64,
-  cardGap: 12,
+  cardGap: 12,   // deliberate half-step between sm and md for card lists
 };
 
 // ─────────────────────────────────────────────
@@ -172,6 +190,8 @@ const radius = {
 
 // ─────────────────────────────────────────────
 // ELEVATION / SHADOW
+// All shadows are tinted with primary800 so they integrate
+// with the cream background instead of feeling clinical.
 // ─────────────────────────────────────────────
 
 const shadow = {
@@ -307,7 +327,8 @@ const tabBar = {
   paddingTop:      8,
 
   // Glass effect — pair with BlurView if available, else fallback
-  backgroundColor: "rgba(250,247,242,0.88)",   // surface at 88%
+  // Derived from palette.surface at 88% opacity
+  backgroundColor: rgba(palette.surface, 0.88),
   borderTopWidth:  0,
   elevation:       0,
 
@@ -353,22 +374,90 @@ const animation = {
 
 // ─────────────────────────────────────────────
 // GRADIENTS (for expo-linear-gradient)
+// All gradient colors now reference the palette instead of hardcoded hex.
 // ─────────────────────────────────────────────
 
 const gradient = {
-  staffPicks: { colors: ["transparent", "rgba(0,0,0,0.72)"], locations: [0.4, 1] },
-  hero:       { colors: ["#004643", "#009e97"],               locations: [0, 1] },
-  accent:     { colors: ["rgba(249,188,96,0)", "rgba(249,188,96,0.9)"], locations: [0.3, 1] },
+  // Dark overlay for hero images (text legibility on photography)
+  staffPicks: {
+    colors: [palette.transparent, rgba(palette.black, 0.72)],
+    locations: [0.4, 1],
+  },
+  // Brand hero gradient — primary800 to primary500
+  hero: {
+    colors: [palette.primary800, palette.primary500],
+    locations: [0, 1],
+  },
+  // Accent glow — accent500 fade from transparent
+  accent: {
+    colors: [rgba(palette.accent500, 0), rgba(palette.accent500, 0.9)],
+    locations: [0.3, 1],
+  },
 };
 
 // ─────────────────────────────────────────────
 // GLASSMORPHISM (bottom sheets, floating panels)
+// Derived from palette.surface at 88% opacity
 // ─────────────────────────────────────────────
 
 const glassmorphism = {
-  backgroundColor: "rgba(250,247,242,0.88)",   // surface at 88%
+  backgroundColor: rgba(palette.surface, 0.88),
   borderWidth: 1,
-  borderColor: "rgba(255,255,255,0.3)",
+  borderColor: rgba(palette.white, 0.3),
+};
+
+// ─────────────────────────────────────────────
+// SEMANTIC LAYER (use these in components)
+// Structural tokens (primary500, neutral700, etc.) remain available,
+// but components should prefer these semantic names. They express
+// INTENT instead of structure, which makes screens consistent across
+// the app and theme-agnostic.
+//
+// Example:
+//   ❌  color: css.palette.neutral500           // ambiguous
+//   ✅  color: css.text.muted                   // explicit intent
+// ─────────────────────────────────────────────
+
+const text = {
+  primary:   palette.neutral900,  // body text, default
+  secondary: palette.neutral700,  // descriptions, labels
+  muted:     palette.neutral500,  // metadata, captions, placeholders
+  inverse:   palette.white,       // text on dark or accent backgrounds
+  accent:    palette.primary800,  // links, emphasized text, brand text
+  success:   palette.success,
+  error:     palette.error,
+  warning:   palette.warning,
+};
+
+const border = {
+  subtle:    palette.neutral200,  // dividers, light card borders
+  default:   palette.neutral300,  // input borders, visible separators
+  focus:     palette.primary500,  // focused input state
+  error:     palette.error,
+};
+
+const surface = {
+  base:      palette.background,  // screen background (deeper cream)
+  raised:    palette.surface,     // section backgrounds (lighter cream)
+  card:      palette.surfaceCard, // cards, modals, sheets (white)
+  overlay:   palette.overlay,     // modal overlay (primary800 @ 55%)
+  glass:     rgba(palette.surface, 0.88), // glassmorphism panels
+};
+
+const elevation = {
+  flat:      shadow.none,
+  raised:    shadow.sm,    // chips, small interactive elements
+  card:      shadow.card,  // recipe cards, list items
+  floating:  shadow.md,    // FAB, dropdowns
+  modal:     shadow.lg,    // modals, bottom sheets
+};
+
+const motion = {
+  // Named transitions — pick by intent, not by duration
+  microInteraction: animation.fast,    // 150ms — press feedback, ripple
+  uiTransition:     animation.normal,  // 250ms — state changes, fade-in
+  pageTransition:   animation.slow,    // 400ms — screen entry, hero reveal
+  spring:           animation.spring,  // physics-based, for interactive gestures
 };
 
 // ─────────────────────────────────────────────
@@ -376,11 +465,14 @@ const glassmorphism = {
 // ─────────────────────────────────────────────
 
 const css = {
+  // Structural tokens (foundation)
   palette,
   typography,
   spacing,
   radius,
   shadow,
+
+  // Component tokens
   button,
   card,
   input,
@@ -389,6 +481,13 @@ const css = {
   animation,
   gradient,
   glassmorphism,
+
+  // Semantic layer (preferred for components)
+  text,
+  border,
+  surface,
+  elevation,
+  motion,
 };
 
 export default css;

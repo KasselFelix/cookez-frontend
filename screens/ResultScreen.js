@@ -21,6 +21,7 @@ export default function ResultScreen({ navigation,route }) {
 
   const handleFetch= async ()=>{
     const ingredientSelected = ingredients.map((e)=> {
+      console.log("Debug - Ingredient in state:", e); // Debug : Affiche l'ingrédient tel qu'il est dans le state
       return e = {
         name: e.data.display_name ,
         image: e.photo,

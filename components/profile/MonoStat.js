@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: MONO_FONT,
-    fontSize: 9,
+    fontSize: 13,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginTop: 2,

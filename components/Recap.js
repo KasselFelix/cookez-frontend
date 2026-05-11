@@ -161,7 +161,7 @@ export default function Recap( props ) {
 
   const generateImageFromPexels = async (ingredientName) => {
     try {
-        const response = await fetch(`https://api.pexels.com/v1/search?query=${ingredientName}`, {
+        const response = await fetch(`https://api.pexels.com/v1/search?query=${ingredientName}&per_page=1`, {
             headers: {
                 Authorization: PEXELS_API_KEY,
             },
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
       infoGramsContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'red',
+        //backgroundColor: 'red',
         width: 80,
         height: 30,
         backgroundColor: 'white',
