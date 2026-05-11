@@ -62,6 +62,7 @@ import ingredient from "./reducers/ingredient";
 import locale from './reducers/locale';
 import notifications from './reducers/notifications';
 import origin from "./reducers/origin";
+import pantry from './reducers/pantry';
 import picture from "./reducers/picture";
 import recipe from './reducers/recipe';
 import user from './reducers/user';
@@ -83,6 +84,7 @@ const store = configureStore({
     locale,
     notifications,
     follow,
+    pantry,
   },
 });
 
