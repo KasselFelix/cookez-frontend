@@ -19,10 +19,16 @@ import * as Haptics from 'expo-haptics';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { updateRecipeVote } from '../reducers/recipe';
 import { toggleFavorite } from '../reducers/user';
+import {
+  setServings,
+  incrementServings,
+  decrementServings,
+} from '../reducers/recipeFilters';
 // MODULES
 import addressIp from '../modules/addressIp';
 import imageRecipe from '../modules/images';
 import css from '../styles/Global';
+import useT from '../i18n/useT';
 // COMPONENTS
 import HeroImageParallax, { HERO_HEIGHT } from '../components/recipe/HeroImageParallax';
 import StickyHeader from '../components/recipe/StickyHeader';
@@ -30,6 +36,13 @@ import ActionRow from '../components/recipe/ActionRow';
 import CommentsSection from '../components/recipe/CommentsSection';
 import CommentComposer from '../components/recipe/CommentComposer';
 import FloatingFAB from '../components/recipe/FloatingFAB';
+import ServingsStepper from '../components/recipeFilters/ServingsStepper';
+import NutritionPill from '../components/recipe/NutritionPill';
+import NutritionSheet from '../components/recipe/NutritionSheet';
+import ExpiryAlert from '../components/recipe/ExpiryAlert';
+import ShoppingList from '../components/recipe/ShoppingList';
+
+const NUTRITION_ORDER = ['calories', 'proteins', 'carbs', 'fat', 'fibers'];
 
 const SNAP_POINTS = ['45%', '85%'];
 
@@ -62,7 +75,11 @@ export default function RecipeScreen({ route, navigation }) {
   );
 
   const user = useSelector((state) => state.user.value);
+  const currentServings = useSelector(
+    (state) => state.recipeFilters.value.currentServings
+  );
   const dispatch = useDispatch();
+  const t = useT();
 
   // Local UI state — kept minimal
   const [popover, setPopover] = useState(null); // null | 'auth' | 'vote'
@@ -72,7 +89,12 @@ export default function RecipeScreen({ route, navigation }) {
 
   // Bottom sheet — controlled imperatively via ref
   const bottomSheetRef = useRef(null);
+  const nutritionSheetRef = useRef(null);
   const animatableModalRef = useRef(null);
+
+  const openNutritionSheet = useCallback(() => {
+    nutritionSheetRef.current?.snapToIndex(0);
+  }, []);
 
   // Derived recipe metrics
   const avgNote = useMemo(() => {
@@ -214,6 +236,43 @@ export default function RecipeScreen({ route, navigation }) {
   const localHeroSource = recipe.picture && imageRecipe[`${recipe.picture}.jpg`];
   const heroUri = `https://res.cloudinary.com/dnym6kt4p/image/upload/${recipe.picture}.jpg`;
 
+  // Servings scaling — derive from Redux current + recipe base
+  const effectiveServings = currentServings ?? recipe.servings ?? 1;
+  const servingsRatio =
+    recipe.servings && recipe.servings > 0
+      ? effectiveServings / recipe.servings
+      : 1;
+  const scaledIngredients = (recipe.ingredients || []).map((ing) => ({
+    ...ing,
+    scaledQuantity:
+      Math.round((ing.quantity || 0) * servingsRatio * 10) / 10,
+  }));
+
+  // Pinned iteration order (backend may not freeze object key order)
+  const orderedNutrition = recipe.nutritionPerServing
+    ? Object.fromEntries(
+        NUTRITION_ORDER.filter(
+          (k) => recipe.nutritionPerServing[k] != null
+        ).map((k) => [k, recipe.nutritionPerServing[k]])
+      )
+    : null;
+
+  const onServingsIncrement = () => {
+    if (currentServings == null) {
+      dispatch(setServings(Math.min((recipe.servings || 1) + 1, 12)));
+    } else {
+      dispatch(incrementServings());
+    }
+  };
+
+  const onServingsDecrement = () => {
+    if (currentServings == null) {
+      dispatch(setServings(Math.max((recipe.servings || 1) - 1, 1)));
+    } else {
+      dispatch(decrementServings());
+    }
+  };
+
   // Star vote modal display
   const starsVotes = [];
   for (let i = 0; i < 5; i++) {
@@ -278,6 +337,11 @@ export default function RecipeScreen({ route, navigation }) {
                   Difficulty {recipe.difficulty}/5
                 </Text>
               </View>
+              <NutritionPill
+                caloriesPerServing={orderedNutrition?.calories}
+                currentServings={effectiveServings}
+                onPress={openNutritionSheet}
+              />
             </View>
 
             <ActionRow
@@ -289,6 +353,20 @@ export default function RecipeScreen({ route, navigation }) {
               nbVotes={nbVotes}
             />
 
+            <View style={styles.servingsRow}>
+              <Text style={styles.servingsLabel}>
+                {t('recipe.servings.label')}
+              </Text>
+              <ServingsStepper
+                value={effectiveServings}
+                onIncrement={onServingsIncrement}
+                onDecrement={onServingsDecrement}
+              />
+            </View>
+
+            {/* Expiry alert — surfaces ingredients about to expire */}
+            <ExpiryAlert ingredients={recipe.expiringIngredients || []} />
+
             {/* Description */}
             <Animatable.View animation="fadeInUp" duration={500} style={styles.section}>
               <Text style={styles.sectionTitle}>Description</Text>
@@ -298,12 +376,15 @@ export default function RecipeScreen({ route, navigation }) {
             {/* Ingredients */}
             <Animatable.View animation="fadeInUp" duration={550} style={styles.section}>
               <Text style={styles.sectionTitle}>Ingredients</Text>
-              {recipe.ingredients?.map((ing, i) => (
+              {scaledIngredients.map((ing, i) => (
                 <Text key={`${ing.name}-${i}`} style={styles.body}>
-                  •  {ing.quantity}g {ing.name}
+                  •  {ing.scaledQuantity}{ing.unit || 'g'} {ing.name}
                 </Text>
               ))}
             </Animatable.View>
+
+            {/* Shopping list — Amazon CTAs for missing ingredients */}
+            <ShoppingList items={recipe.missingIngredients || []} />
 
             {/* Steps */}
             <Animatable.View animation="fadeInUp" duration={600} style={styles.section}>
@@ -351,6 +432,12 @@ export default function RecipeScreen({ route, navigation }) {
             </Animatable.View>
           </View>
         </Modal>
+
+        <NutritionSheet
+          ref={nutritionSheetRef}
+          nutritionPerServing={orderedNutrition}
+          baseServings={recipe.servings}
+        />
 
         <BottomSheet
           ref={bottomSheetRef}
@@ -421,6 +508,18 @@ const styles = StyleSheet.create({
     fontFamily: css.typography.fontUI,
     fontSize: css.typography.captionSize,
     color: css.palette.primary800,
+  },
+  servingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: css.spacing.md,
+    marginTop: css.spacing.md,
+  },
+  servingsLabel: {
+    fontFamily: css.typography.fontUI,
+    fontSize: css.typography.captionSize,
+    color: css.palette.neutral700,
   },
   section: {
     marginTop: css.spacing.lg,
