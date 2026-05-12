@@ -50,6 +50,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
+import { patchUserSettings } from '../modules/recipesApi';
 import { clearCache as clearRecipeCache } from '../modules/recipeCache';
 import { setComments } from '../reducers/comment';
 import { clearIngredients } from '../reducers/ingredient';
@@ -68,6 +69,8 @@ import NutritionalGoalPicker from '../components/profile/NutritionalGoalPicker';
 import ProfileScreenContainer from '../components/profile/ProfileScreenContainer';
 import SettingsRow from '../components/profile/SettingsRow';
 import ThemePickerSheet from '../components/profile/ThemePickerSheet';
+import ExcludedIngredientsSection from '../components/settings/ExcludedIngredientsSection';
+import TagPreferencesSection from '../components/settings/TagPreferencesSection';
 import { useTheme, useThemeControls } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
 
@@ -92,6 +95,34 @@ export default function SettingsScreen({ navigation }) {
   const [languageSheetVisible, setLanguageSheetVisible] = useState(false);
   const [dietPickerVisible, setDietPickerVisible] = useState(false);
   const [goalPickerVisible, setGoalPickerVisible] = useState(false);
+
+  // Debounced PATCH /users/settings — used by the three preference
+  // editors (preferred tags, excluded tags, excluded ingredients). 500ms
+  // is enough to coalesce a burst of chip toggles into one network call
+  // without making the save feel sluggish. Declared BEFORE the early
+  // return below to keep the hook order stable across renders.
+  const debouncedSave = useMemo(() => {
+    let timer;
+    return (partial) => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        try {
+          const res = await patchUserSettings({
+            token: user?.token,
+            partial,
+          });
+          if (res?.result) {
+            dispatch(updateUserInStore({ settings: res.settings }));
+          }
+        } catch (err) {
+          // Settings save failures are non-blocking: the redux state
+          // already holds the user's intent, so the next save attempt
+          // will reconcile.
+          console.warn('Failed to save settings:', err);
+        }
+      }, 500);
+    };
+  }, [user?.token, dispatch]);
 
   if (!user || !user.token) {
     return null;
@@ -125,6 +156,10 @@ export default function SettingsScreen({ navigation }) {
       setIsSaving(false);
     }
   };
+
+  const preferredTags = user?.settings?.preferredTags || [];
+  const excludedTags = user?.settings?.excludedTags || [];
+  const excludedIngredients = user?.settings?.excludedIngredients || [];
 
   const handleLogout = async () => {
     try {
@@ -329,6 +364,23 @@ export default function SettingsScreen({ navigation }) {
         value={`${householdValue}`}
         onPress={() => openModal('household')}
       />
+
+      <View style={{ paddingHorizontal: css.spacing.md, paddingTop: css.spacing.sm }}>
+        <TagPreferencesSection
+          variant="preferred"
+          value={preferredTags}
+          onChange={(v) => debouncedSave({ preferredTags: v })}
+        />
+        <TagPreferencesSection
+          variant="excluded"
+          value={excludedTags}
+          onChange={(v) => debouncedSave({ excludedTags: v })}
+        />
+        <ExcludedIngredientsSection
+          value={excludedIngredients}
+          onChange={(v) => debouncedSave({ excludedIngredients: v })}
+        />
+      </View>
 
       <SectionHeader css={css}>{t('settings.sections.appPreferences')}</SectionHeader>
       <SettingsRow
