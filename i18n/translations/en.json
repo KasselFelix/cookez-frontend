@@ -224,6 +224,14 @@
       "deniedMessage": "We will not access your location.",
       "errorTitle": "Location error",
       "errorMessage": "Could not retrieve your location."
+    },
+    "preferredTags": {
+      "title": "Tags I like",
+      "helper": "We'll prefer recipes with these."
+    },
+    "excludedTags": {
+      "title": "Tags I'd rather avoid",
+      "helper": "We'll rank these lower (but not hide them)."
     }
   },
   "publicProfile": {

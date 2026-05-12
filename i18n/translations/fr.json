@@ -224,6 +224,14 @@
       "deniedMessage": "Nous n'accéderons pas à ta localisation.",
       "errorTitle": "Erreur de localisation",
       "errorMessage": "Impossible de récupérer ta localisation."
+    },
+    "preferredTags": {
+      "title": "Tags que j'apprécie",
+      "helper": "Nous privilégierons les recettes avec ces tags."
+    },
+    "excludedTags": {
+      "title": "Tags à éviter",
+      "helper": "Ces recettes seront classées plus bas (mais pas masquées)."
     }
   },
   "publicProfile": {
