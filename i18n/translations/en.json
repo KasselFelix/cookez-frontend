@@ -280,7 +280,11 @@
       "heading": "Cook from your pantry",
       "orAddMore": "Or add more ingredients below ↓",
       "toggleA11y": "Toggle {{name}} in the cooking list"
-    }
+    },
+    "next": "Next",
+    "nextWithCount": "Next ({{count}})",
+    "removeIngredientA11y": "Remove {{name}}",
+    "removePhotoA11y": "Remove photo"
   },
   "recap": {
     "ingredient": "Ingredient",

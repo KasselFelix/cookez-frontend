@@ -280,7 +280,11 @@
       "heading": "Cuisiner avec votre garde-manger",
       "orAddMore": "Ou ajoutez d'autres ingrédients ci-dessous ↓",
       "toggleA11y": "Basculer {{name}} dans la liste de cuisine"
-    }
+    },
+    "next": "Suivant",
+    "nextWithCount": "Suivant ({{count}})",
+    "removeIngredientA11y": "Retirer {{name}}",
+    "removePhotoA11y": "Retirer la photo"
   },
   "recap": {
     "ingredient": "Ingrédient",

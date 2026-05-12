@@ -52,8 +52,6 @@ export default function KickoffScreen({navigation}) {
   	let cameraRef = useRef(null);
 	const modalRef = useRef(null);
 
-  	const background = [];
-
 	const [permission, requestPermission] = useCameraPermissions();
 	useEffect(() => {
 		if (!permission || permission.status !== 'granted') {
@@ -82,7 +80,7 @@ export default function KickoffScreen({navigation}) {
         	const uniqueIngredients = data.ingredients.filter((value, index, self) =>
            		 index === self.findIndex((t) => t.name === value.name)
         	);
-			setDataListIngredient( uniqueIngredients.map((e) => {return {id: e.name, name: e.name, display_name: e.name, photo: e.image, g_per_serving: e.quantity, nutrition: e.nutrition }}));
+			setDataListIngredient( uniqueIngredients.map((e) => {return {id: e._id || e.name, name: e.name, display_name: e.name, photo: e.image, g_per_serving: e.quantity, nutrition: e.nutrition }}));
 			//console.log('datalist: ', dataListIngredient)
 		} else {
 			setDataListIngredient(data.error);
@@ -185,32 +183,76 @@ export default function KickoffScreen({navigation}) {
 	}
 	
 
-	const photos = pictures.map((data, i) => {
-		return (
-		  <View key={i} style={styles.photoContainer}>
-			<View style={styles.deleteIcon}>
-				<TouchableOpacity onPress={() => {
-					let copyPictures = pictures.filter(e=>e!==data);
-					setPictures(copyPictures)
-					}}>
-				  <FontAwesome name='times' size={20} color={css.palette.error}/>
-				</TouchableOpacity>
-			</View>
-			<Image source={{ uri: data }} style={styles.photo} alt="image of one recipe" accessibilityLabel="image of one recipe" />
-		  </View>
-		);
-	  });
+	// Unified slot model — `camera` slots are URIs from the camera (no name yet,
+	// Foodvisor runs on Next), `search` slots come from Redux ingredients added
+	// via the Search modal (have photo + display_name immediately).
+	const slots = [
+		...pictures.map((uri) => ({ kind: 'camera', uri, key: `cam-${uri}` })),
+		...ingredients.map((ing) => ({
+			kind: 'search',
+			ing,
+			uri: ing.photo,
+			name: ing?.data?.display_name,
+			key: `ing-${ing?.data?._id || ing?.data?.display_name}`,
+		})),
+	];
 
-	const backgroundIngredient = () => {
-		for (let i = pictures.length; i < 3; i++) {
-				background.push(<View key={i} style={styles.addPicturesContainer}>
+	const renderFilledSlot = (slot) => {
+		const isSearch = slot.kind === 'search';
+		const removeLabel = isSearch
+			? t('kickoff.removeIngredientA11y', { name: slot.name || '' })
+			: t('kickoff.removePhotoA11y');
+
+		return (
+			<View key={slot.key} style={styles.photoContainer}>
+				<View style={styles.deleteIcon}>
+					<TouchableOpacity
+						onPress={() => {
+							if (isSearch) {
+								dispatch(removeIngredient(slot.ing));
+							} else {
+								setPictures(pictures.filter((e) => e !== slot.uri));
+							}
+						}}
+						accessibilityRole="button"
+						accessibilityLabel={removeLabel}
+						hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+					>
+						<FontAwesome name="times" size={20} color={css.palette.error} />
+					</TouchableOpacity>
+				</View>
+				<Image
+					source={{ uri: slot.uri }}
+					style={styles.photo}
+					accessibilityLabel={isSearch && slot.name ? slot.name : 'ingredient image'}
+				/>
+				{isSearch && !!slot.name && (
+					<View style={styles.nameBand} pointerEvents="none">
+						<Text
+							style={[styles.nameBandText, { color: theme.palette.white }]}
+							numberOfLines={1}
+						>
+							{slot.name}
+						</Text>
+					</View>
+				)}
+			</View>
+		);
+	};
+
+	const renderSlots = () => {
+		const rendered = slots.map(renderFilledSlot);
+		// Pad with empty placeholders so a minimum of 3 slot frames are visible.
+		for (let i = slots.length; i < 3; i++) {
+			rendered.push(
+				<View key={`ph-${i}`} style={styles.addPicturesContainer}>
 					<FontAwesome name="camera-retro" size={70} color="rgba(255,255,255, 0.4)" />
 					<Text style={styles.text}>Ingredient</Text>
-				</View>);	
-				
-		}	
-		return  background;
-	}
+				</View>
+			);
+		}
+		return rendered;
+	};
 
 	// function onItemPress(data){
 	// 	//fetchImageFromUnsplash (data.name)
@@ -259,11 +301,11 @@ export default function KickoffScreen({navigation}) {
 		}
 	}
 
-	const displayAddedIngredients = () => {
-		const nameIngredientsAdded = ingredients.map((e, i) => e.data.display_name)
-		return nameIngredientsAdded.join(', ');
-	}
-	
+	const totalSlots = pictures.length + ingredients.length;
+	const nextText = totalSlots > 0
+		? t('kickoff.nextWithCount', { count: totalSlots })
+		: t('kickoff.next');
+
   	return (
 		  <View style={styles.container} >
 			<Modal visible={modalVisible} animationtType="none" transparent>
@@ -359,29 +401,17 @@ export default function KickoffScreen({navigation}) {
 				</>
 			)}
 
-        	<ScrollView horizontal  contentContainerStyle={styles.galleryContainer} style={{ flexGrow: 0, maxHeight: 170 }}>
-				{photos}
-				{backgroundIngredient()}
+        	<ScrollView
+				horizontal
+				contentContainerStyle={styles.galleryContainer}
+				style={{ flexGrow: 0, maxHeight: 170 }}
+				showsHorizontalScrollIndicator={false}
+			>
+				{renderSlots()}
         	</ScrollView>
-			{ ingredients.length > 0 && !modalVisible &&
-			<View style={styles.ingredientsAddedContainter}>
-				<View styles={styles.ingredientsTotal}>
-					<Text>
-						Added ingredients ({ingredients.length}):
-					</Text>
-				</View>
-				<ScrollView horizontal  contentContainerStyle={styles.galleryContainer}>
-				<View style={styles.ingredientsAdded}>
-					<Text>
-						{displayAddedIngredients()}
-					</Text>
-				</View>
-				</ScrollView>
-			</View>
-			}
-		
+
 			<View style={styles.containerButtonBottom}>
-								
+
 				<View style={styles.buttonSearch}>
 					<MyButton
 						dataFlow={()=> setModalVisible(true)}
@@ -389,11 +419,11 @@ export default function KickoffScreen({navigation}) {
         				buttonType={buttonStyles.buttonFour}
 					/>
 				</View>
-			
+
 				<View style={styles.buttonNext}>
 					<MyButton
 						dataFlow={()=>handleBtn()}
-						text={"Next"}
+						text={nextText}
         				buttonType={buttonStyles.buttonFour}
 					/>
 				</View>
@@ -528,18 +558,41 @@ const styles = StyleSheet.create({
 		alignItems:'center',
 	},
 
+	photoContainer: {
+		width: 150,
+		height: 150,
+		margin: 5,
+		position: 'relative',
+		overflow: 'hidden',
+	},
+
 	deleteIcon: {
         width: '95%',
         alignItems: 'flex-end',
         position: 'absolute',
-        zIndex: 1,
+        zIndex: 2,
         paddingTop: '3%',
       },
 
 	photo: {
 		width: 150,
 		height: 150,
-		margin: 5,
+	},
+
+	nameBand: {
+		position: 'absolute',
+		left: 0,
+		right: 0,
+		bottom: 0,
+		paddingVertical: 4,
+		paddingHorizontal: 6,
+		backgroundColor: 'rgba(0,0,0,0.55)',
+		zIndex: 1,
+	},
+
+	nameBandText: {
+		fontSize: 12,
+		textAlign: 'center',
 	},
 
 	addPicturesContainer: {
@@ -557,20 +610,6 @@ const styles = StyleSheet.create({
 
 	text: {
 		color: 'rgba(255,255,255, 0.4)',
-	},
-
-	ingredientsAddedContainter: {
-		flex: 0,
-		flexDirection: 'row',
-		alignItems: 'center',
-		backgroundColor: 'rgba(255,255,255, 0.7)',
-		height: 30,
-		marginBottom: 15,
-		paddingLeft: 10,
-	},
-
-	ingredientsAdded: {
-		paddingLeft: 6,
 	},
 
 	containerButtonBottom: {
