@@ -124,6 +124,11 @@ export default function SettingsScreen({ navigation }) {
     };
   }, [user?.token, dispatch]);
 
+  // Must stay above the early-return below so the hook count is stable
+  // across renders (logout flips `user` to null, which would otherwise
+  // skip this hook on the post-logout render).
+  const dietRestrictions = useMemo(() => readDietRestrictions(user), [user]);
+
   if (!user || !user.token) {
     return null;
   }
@@ -259,7 +264,6 @@ export default function SettingsScreen({ navigation }) {
   };
 
   const householdValue = user.settings?.householdComposition || 0;
-  const dietRestrictions = useMemo(() => readDietRestrictions(user), [user]);
   const allergyCount = user.settings?.allergy?.length || 0;
   const goalLabelKey = user?.nutritionalGoal
     ? `settings.nutritionalGoals.${user.nutritionalGoal}`
