@@ -306,6 +306,11 @@
     }
   },
   "result": {
+    "title": "Results",
+    "empty": {
+      "line1": "Try with more ingredients again 🤔",
+      "line2": "Maybe it's time to go shopping!"
+    },
     "matchBadge": {
       "label": "{{ratio}}% owned",
       "a11y": "You own {{ratio}}% of the ingredients"

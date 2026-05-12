@@ -306,6 +306,11 @@
     }
   },
   "result": {
+    "title": "Résultats",
+    "empty": {
+      "line1": "Essayez avec plus d'ingrédients 🤔",
+      "line2": "Il est peut-être temps d'aller faire les courses !"
+    },
     "matchBadge": {
       "label": "{{ratio}}% possédé",
       "a11y": "Vous possédez {{ratio}}% des ingrédients"
