@@ -14,7 +14,7 @@ import css from "../styles/Global";
 import RNPickerSelect from 'react-native-picker-select';
 
 import Recap from "../components/Recap";
-import { setOrigin } from "../reducers/origin";
+import { setOrigin } from "../reducers/recipeFilters";
 
 export default function RecapScreen({ navigation }) {
 

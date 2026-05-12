@@ -56,15 +56,16 @@ import SettingsScreen from "./screens/SettingsScreen";
 import UserDashboardScreen from "./screens/UserDashboardScreen";
 
 // REDUCERS
+import appConfig from './reducers/appConfig';
 import comment from './reducers/comment';
 import follow from './reducers/follow';
 import ingredient from "./reducers/ingredient";
 import locale from './reducers/locale';
 import notifications from './reducers/notifications';
-import origin from "./reducers/origin";
 import pantry from './reducers/pantry';
 import picture from "./reducers/picture";
 import recipe from './reducers/recipe';
+import recipeFilters from "./reducers/recipeFilters";
 import user from './reducers/user';
 
 // Keep splash visible until fonts are ready
@@ -79,7 +80,8 @@ const store = configureStore({
     recipe,
     comment,
     ingredient,
-    origin,
+    recipeFilters,
+    appConfig,
     picture,
     locale,
     notifications,

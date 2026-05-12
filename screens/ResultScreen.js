@@ -15,7 +15,7 @@ export default function ResultScreen({ navigation,route }) {
   const user =useSelector((state)=>state.user.value);
   const recipeData = useSelector((state) => state.recipe.value);
   const ingredients = useSelector((state) => state.ingredient.value);
-  const origin= useSelector((state)=>state.origin.value);
+  const origin= useSelector((state)=>state.recipeFilters.value.selectedOrigin);
   const dispatch= useDispatch();
 
 
