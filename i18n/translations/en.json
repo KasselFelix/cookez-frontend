@@ -312,6 +312,14 @@
     },
     "seasonalBadge": {
       "label": "Seasonal"
+    },
+    "offline": {
+      "title": "Please connect to the Internet",
+      "body": "We need a connection to find recipes matching your inventory. Your filters are saved.",
+      "retry": "Try again"
+    },
+    "staleCache": {
+      "message": "Showing results from your last search. Connect to refresh."
     }
   }
 }
