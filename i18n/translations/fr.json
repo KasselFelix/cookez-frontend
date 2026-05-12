@@ -304,5 +304,14 @@
       "main_course": "Plat principal",
       "savory": "Salé"
     }
+  },
+  "result": {
+    "matchBadge": {
+      "label": "{{ratio}}% possédé",
+      "a11y": "Vous possédez {{ratio}}% des ingrédients"
+    },
+    "seasonalBadge": {
+      "label": "De saison"
+    }
   }
 }

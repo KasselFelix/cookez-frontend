@@ -304,5 +304,14 @@
       "main_course": "Main course",
       "savory": "Savory"
     }
+  },
+  "result": {
+    "matchBadge": {
+      "label": "{{ratio}}% owned",
+      "a11y": "You own {{ratio}}% of the ingredients"
+    },
+    "seasonalBadge": {
+      "label": "Seasonal"
+    }
   }
 }
