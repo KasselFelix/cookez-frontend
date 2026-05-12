@@ -1,145 +1,275 @@
-import React, { useState, useEffect } from "react";
-import { ScrollView, StyleSheet, Text, View, TouchableOpacity} from 'react-native';
+// RecapScreen — Plan 003 Phase C.4.
+//
+// Before this refactor the screen had a single "meal type" dropdown that
+// conflated origin and tags. Phase C splits that into three theme-aware
+// filter blocks (servings stepper, origin picker, multi-select tags)
+// backed by the new `recipeFilters` slice. Tokens come from the active
+// theme via `useTheme()` so the screen now switches with light/dark/
+// pastel themes; strings go through `useT()`.
+
+import React, { useCallback, useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearIngredients } from '../reducers/ingredient';
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome } from '@expo/vector-icons';
 import * as Animatable from 'react-native-animatable';
+import Popover from 'react-native-popover-view';
 
-import Popover from "react-native-popover-view"; 
-import MyButton from "../components/MyButton";
-import MySmallButton from "../components/MySmallButton";
-import buttonStyles from "../styles/Button";
-import css from "../styles/Global";
-import RNPickerSelect from 'react-native-picker-select';
-
-import Recap from "../components/Recap";
-import { setOrigin } from "../reducers/recipeFilters";
+import { clearIngredients } from '../reducers/ingredient';
+import {
+  setOrigin,
+  setServings,
+  incrementServings,
+  decrementServings,
+  toggleTag,
+} from '../reducers/recipeFilters';
+import MyButton from '../components/MyButton';
+import MySmallButton from '../components/MySmallButton';
+import Recap from '../components/Recap';
+import ServingsStepper from '../components/recipeFilters/ServingsStepper';
+import OriginPicker from '../components/recipeFilters/OriginPicker';
+import TagsMultiSelect from '../components/recipeFilters/TagsMultiSelect';
+import buttonStyles from '../styles/Button';
+import { useTheme } from '../contexts/ThemeProvider';
+import useT from '../i18n/useT';
 
 export default function RecapScreen({ navigation }) {
-
-  const [showPopover, setShowPopover]=useState(false);
+  const css = useTheme();
+  const t = useT();
   const dispatch = useDispatch();
   const ingredients = useSelector((state) => state.ingredient.value);
-  const [selectOrigin, setSelectOrigin] = useState(null);
+  const filters = useSelector((state) => state.recipeFilters.value);
+  const [showPopover, setShowPopover] = useState(false);
 
-  const handleShowPopover =() => {
-    setShowPopover(true)
-}
+  // First press of "+" when no override is set yet jumps to a sensible
+  // default (2 servings) — incrementing from null would otherwise land
+  // on 1 which feels wrong for a "more people" gesture.
+  const handleIncrement = useCallback(() => {
+    if (filters.currentServings == null) {
+      dispatch(setServings(2));
+    } else {
+      dispatch(incrementServings());
+    }
+  }, [dispatch, filters.currentServings]);
 
-  let listIngredients=<></>;
-  if (ingredients.length > 0) {
-    listIngredients= ingredients.map((data, i) => {
-      return <Recap key={data.data.display_name} {...data}/>
-    })
-  };
+  const handleDecrement = useCallback(() => {
+    if (filters.currentServings == null) {
+      dispatch(setServings(1));
+    } else {
+      dispatch(decrementServings());
+    }
+  }, [dispatch, filters.currentServings]);
 
-  const handleReturn = () => {
-    navigation.navigate("Kickoff")
-  };
-
-  const handleRemove = () => {
+  const handleClearAll = () => {
     setShowPopover(false);
     dispatch(clearIngredients());
   };
 
-  const display =  (
-    ingredients.length > 0 ?
-      <View style={styles.popoverContainer}>
-      <Text>Sure about removing them all ?!</Text>
-      <View style={styles.removebtnContainer}>
-        <TouchableOpacity style={styles.popoverCancelBtn} activeOpacity={0.8} onPress={() => setShowPopover(false)} >
-            <FontAwesome name='times' size={22} color={css.palette.error} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.popoverValidBtn} activeOpacity={0.8} onPress={() => handleRemove()} >
-            <FontAwesome name={'check'} size={22} color={'#2E8B57'}/>
-        </TouchableOpacity>
-      </View>
-    </View> :
-      <View style={styles.popoverContainer}>
-      <Text>No ingredients to remove again 😊</Text>
-    </View>
-  )
-
-  const originRecipes = [
-    { label: "France", value: "France" },
-    { label: "Cambodia", value: "Cambodia" },
-    { label: "Cuba", value: "Cuba" },
-    { label: "Colombia", value: "Colombia" },
-    { label: "Italy", value: "Italy" },
-    { label: "Spain", value: "Spain" },
-    { label: "Japan", value: "Japan" },
-    { label: "India", value: "India" },
-    { label: "Mexico", value: "Mexico" },
-    { label: "Thailand", value: "Thailand" },
-    { label: "Breakfast", value: "Breakfast" },
-    { label: "Dessert", value: "Dessert" },
-    { label: "Main Course", value: "Main Course" },
-    { label: "Appetizer", value: "Appetizer" },
-    { label: "Sweet", value: "Sweet" },
-    { label: "Savory", value: "Savory" }
-  ];
-
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: css.palette.secondary500 },
+      ]}
+    >
       <View style={styles.header}>
         <MySmallButton
-        	dataFlow={()=> handleReturn()}
-          text={<FontAwesome name='angle-double-left' size={30} color={'white'}/>}
+          dataFlow={() => navigation.navigate('Kickoff')}
+          text={
+            <FontAwesome
+              name="angle-double-left"
+              size={30}
+              color={css.palette.white}
+            />
+          }
           buttonType={buttonStyles.buttonSmall}
         />
-        <Text style={styles.titlePage}>{ingredients.length === 1 ? 'Ingredient' : 'Ingredients'}</Text>
-        <View>
-        <Popover 
-              placement= "floating"
-              backgroundStyle={styles.popoverBackground}
-              isVisible={showPopover}
-              onRequestClose={()=> setShowPopover(false)}
-              from={(
-              <TouchableOpacity style={styles.favoriteButton} /*onPress={()=> {handleShowPopover();}}*/>
-                <MySmallButton
-                  dataFlow={()=> {handleShowPopover()}}
-                  text={<FontAwesome name='times' size={25} color={css.palette.error} />}
-                  buttonType={buttonStyles.buttonSmall}
-                />
-              </TouchableOpacity>
-              )}>
-              {display}
-            </Popover>
-        </View>
-      </View>
-      <View>
-        <Text style={styles.textMenu}>1. Select your ingredients 🎯</Text>
-        <View style={styles.separator}><Text><Text>--------------------------------------------------------------------------------------</Text></Text></View>
-      </View>
-      { ingredients.length === 0 && <Animatable.View animation="slideInDown" duration={700} style={styles.noIngredientsContainer}>
-        <View style={styles.noIngredients}><Text>Go back to add your ingredients by 📸 or 🔎</Text><Text> Your futures recipes awaits you 🥘 !  </Text></View> 
-      </Animatable.View>}
-      <ScrollView contentContainerStyle={styles.galleryContainer}>
-          {listIngredients}
-      </ScrollView>
-      <View>
-        <Text style={styles.textMenu}>2. Choose your meal type 😋 </Text>
-        <View style={styles.separator}><Text><Text>--------------------------------------------------------------------------------------</Text></Text></View>
-        <View style={styles.difficultyBloc}>
-                  <RNPickerSelect
-                  value={selectOrigin}
-                  onValueChange={(value) => {setSelectOrigin(value);dispatch(setOrigin(value))}}
-                  items={originRecipes}
-                  placeholder={{ label: "All recipes", value: "All recipes" }}
-                  style={pickerSelectStyles} 
-                  useNativeAndroidPickerStyle={false}
+        <Text
+          style={{
+            fontSize: css.typography.h5Size,
+            fontFamily: css.typography.fontHeading,
+            color: css.palette.neutral900,
+          }}
+          accessibilityRole="header"
+        >
+          {ingredients.length === 1
+            ? t('recap.ingredient')
+            : t('recap.ingredients')}
+        </Text>
+        <Popover
+          placement="floating"
+          backgroundStyle={styles.popoverBackground}
+          isVisible={showPopover}
+          onRequestClose={() => setShowPopover(false)}
+          from={
+            <TouchableOpacity accessibilityLabel={t('recap.confirmClear')}>
+              <MySmallButton
+                dataFlow={() => setShowPopover(true)}
+                text={
+                  <FontAwesome
+                    name="times"
+                    size={25}
+                    color={css.palette.error}
                   />
-                </View>   
+                }
+                buttonType={buttonStyles.buttonSmall}
+              />
+            </TouchableOpacity>
+          }
+        >
+          <View style={styles.popoverContainer}>
+            <Text
+              style={{
+                color: css.palette.neutral900,
+                fontFamily: css.typography.fontBody,
+                fontSize: css.typography.bodySize,
+                textAlign: 'center',
+              }}
+            >
+              {ingredients.length > 0
+                ? t('recap.confirmClear')
+                : t('recap.noIngredients')}
+            </Text>
+            {ingredients.length > 0 && (
+              <View style={styles.removeBtnRow}>
+                <TouchableOpacity
+                  onPress={() => setShowPopover(false)}
+                  accessibilityLabel={t('common.cancel')}
+                  style={[
+                    styles.popoverBtn,
+                    { backgroundColor: css.palette.secondary500 },
+                  ]}
+                >
+                  <FontAwesome
+                    name="times"
+                    size={22}
+                    color={css.palette.error}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleClearAll}
+                  accessibilityLabel={t('common.yes')}
+                  style={[
+                    styles.popoverBtn,
+                    { backgroundColor: css.palette.secondary500 },
+                  ]}
+                >
+                  <FontAwesome
+                    name="check"
+                    size={22}
+                    color={css.palette.success}
+                  />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </Popover>
       </View>
-      <View style={styles.buttonBottom}>
-        <MyButton
-			    dataFlow={()=>navigation.navigate('Result')}
-			    text="Recipes >>"
-			    buttonType={buttonStyles.buttonTwo}
-		    />
-      </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Step 1 — Ingredient gallery */}
+        <SectionHeading css={css}>{t('recap.step1')}</SectionHeading>
+        {ingredients.length === 0 ? (
+          <Animatable.View
+            animation="slideInDown"
+            duration={700}
+            style={styles.emptyBlock}
+          >
+            <Text
+              style={{
+                color: css.palette.neutral700,
+                fontFamily: css.typography.fontBody,
+                fontSize: css.typography.bodySize,
+                textAlign: 'center',
+              }}
+            >
+              {t('recap.emptyHint1')}
+            </Text>
+            <Text
+              style={{
+                color: css.palette.neutral700,
+                fontFamily: css.typography.fontBody,
+                fontSize: css.typography.bodySize,
+                textAlign: 'center',
+                marginTop: 4,
+              }}
+            >
+              {t('recap.emptyHint2')}
+            </Text>
+          </Animatable.View>
+        ) : (
+          <View style={styles.gallery}>
+            {ingredients.map((data) => (
+              <Recap key={data.data.display_name} {...data} />
+            ))}
+          </View>
+        )}
+
+        {/* Step 2 — Servings */}
+        <SectionHeading css={css}>{`${t('recap.step2')} 👨‍👩‍👧‍👦`}</SectionHeading>
+        <View style={styles.filterRow}>
+          <ServingsStepper
+            value={filters.currentServings}
+            onIncrement={handleIncrement}
+            onDecrement={handleDecrement}
+          />
+        </View>
+
+        {/* Step 3 — Origin */}
+        <SectionHeading css={css}>{`${t('recap.step3')} 🌍`}</SectionHeading>
+        <View style={styles.filterRow}>
+          <OriginPicker
+            value={filters.selectedOrigin}
+            onChange={(v) => dispatch(setOrigin(v))}
+          />
+        </View>
+
+        {/* Step 4 — Tags */}
+        <SectionHeading css={css}>{`${t('recap.step4')} 🏷️`}</SectionHeading>
+        <View style={styles.filterRow}>
+          <TagsMultiSelect
+            value={filters.selectedTags}
+            onToggle={(tag) => dispatch(toggleTag(tag))}
+          />
+        </View>
+
+        <View style={styles.cta}>
+          <MyButton
+            dataFlow={() => navigation.navigate('Result')}
+            text={t('recap.goToResults')}
+            buttonType={buttonStyles.buttonTwo}
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function SectionHeading({ css, children }) {
+  return (
+    <Text
+      style={[
+        styles.sectionHeading,
+        {
+          color: css.palette.neutral900,
+          fontFamily: css.typography.fontHeading,
+          fontSize: css.typography.h5Size,
+        },
+      ]}
+      accessibilityRole="header"
+    >
+      {children}
+    </Text>
   );
 }
 
@@ -148,130 +278,65 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingTop: '15%',
-    backgroundColor: css.palette.secondary500
-  }, 
-
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '90%',
+  },
   popoverBackground: {
     backgroundColor: 'transparent',
   },
-
-  popoverContainer:{
-    width:300,
-    height:70,
-    textAlign:'center',
-    alignItems:'center',
-    justifyContent:'center',
-    paddingTop: '2%',
+  popoverContainer: {
+    width: 280,
+    minHeight: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
   },
-
-
-  removebtnContainer: {
+  removeBtnRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: 100,
+    marginTop: 8,
   },
-
-  popoverCancelBtn:{
-    flex: 0,
-    margin: '2%',
-    alignItems:'center',
-    justifyContent:'center',
+  popoverBtn: {
+    margin: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 32,
+    height: 32,
     borderRadius: 100,
-    width: 30,
-    height: 30,
-    backgroundColor: css.palette.secondary500,
   },
-
-  popoverValidBtn:{
-    flex: 0,
-    margin: '2%',
-    alignItems:'center',
-    justifyContent:'center',
-    borderRadius: 100,
-    width: 30,
-    height: 30,
-    backgroundColor: css.palette.secondary500,
+  scroll: {
+    width: '100%',
   },
-
-  header: {
-    flex: 0,
+  scrollContent: {
+    alignItems: 'center',
+    paddingBottom: 32,
+  },
+  sectionHeading: {
+    marginTop: 16,
+    marginBottom: 8,
     width: '90%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
   },
-
-  titlePage: {
-    fontSize: css.typography.h5Size,
+  filterRow: {
+    width: '90%',
   },
-
-  textMenu: {
-    marginTop: '2%',
-    fontSize: css.typography.bodySize,
-  },
-
-  separator: {
-    height: 2,
-    width: "90%",
-    backgroundColor: "black",
-    marginBottom: '3%',
-  },
-
-  noIngredientsContainer: {
-    flex: 0,
+  emptyBlock: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: '50%',
+    marginTop: 16,
+    paddingHorizontal: 16,
+    width: '90%',
   },
-
-  noIngredients: {
-    flex: 0,
+  gallery: {
     alignItems: 'center',
-    justifyContent: 'center',
+    width: '100%',
   },
-
-  galleryContainer: {
-    marginHorizontal: '7%',
+  cta: {
+    marginTop: 24,
+    alignItems: 'center',
   },
-
-  buttonBottom: {
-    marginBottom: 30,
-  }
-
 });
-const pickerSelectStyles = StyleSheet.create({
-  label: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  
-  inputIOS: {
-    marginLeft: '1%',
-    width: 350,
-    height: 40,
-    fontSize: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 5,
-    borderWidth: 2,
-    borderColor: css.palette.primary800,
-    borderRadius: 5,
-    backgroundColor: 'white',
-    color: 'black',
-    marginBottom: '4%',
-  },
-
-  inputAndroid: {
-    marginLeft: '2%',
-    width: 350,
-    height: 40,
-    fontSize: 12,
-    alignItems: 'center',
-    paddingHorizontal: 5,
-    paddingVertical: 8,
-    borderWidth: 2,
-    borderColor: css.palette.primary800,
-    borderRadius: 5,
-    backgroundColor: 'white',
-    color: 'black',
-    marginBottom: '4%',
-  },
-})

@@ -256,6 +256,19 @@
     "deleteAction": "Supprimer la notification",
     "loadMore": "Charger plus"
   },
+  "recap": {
+    "ingredient": "Ingrédient",
+    "ingredients": "Ingrédients",
+    "step1": "1. Sélectionnez vos ingrédients 🎯",
+    "step2": "2. Portions",
+    "step3": "3. Choisissez l'origine",
+    "step4": "4. Choisissez les tags",
+    "goToResults": "Recettes >>",
+    "confirmClear": "Voulez-vous vraiment tout supprimer ?",
+    "noIngredients": "Plus d'ingrédients à supprimer 😊",
+    "emptyHint1": "Revenez en arrière pour ajouter vos ingrédients via 📸 ou 🔎",
+    "emptyHint2": "Vos prochaines recettes vous attendent 🥘 !"
+  },
   "recipe": {
     "servings": {
       "label": "Portions",

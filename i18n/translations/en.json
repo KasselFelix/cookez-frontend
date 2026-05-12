@@ -256,6 +256,19 @@
     "deleteAction": "Delete notification",
     "loadMore": "Load more"
   },
+  "recap": {
+    "ingredient": "Ingredient",
+    "ingredients": "Ingredients",
+    "step1": "1. Select your ingredients 🎯",
+    "step2": "2. Servings",
+    "step3": "3. Choose your origin",
+    "step4": "4. Choose tags",
+    "goToResults": "Recipes >>",
+    "confirmClear": "Sure about removing them all ?!",
+    "noIngredients": "No ingredients to remove again 😊",
+    "emptyHint1": "Go back to add your ingredients by 📸 or 🔎",
+    "emptyHint2": "Your future recipes await you 🥘 !"
+  },
   "recipe": {
     "servings": {
       "label": "Servings",
