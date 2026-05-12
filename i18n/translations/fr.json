@@ -255,5 +255,12 @@
     "expiryWarningFallbackName": "un ingrédient",
     "deleteAction": "Supprimer la notification",
     "loadMore": "Charger plus"
+  },
+  "recipe": {
+    "servings": {
+      "label": "Portions",
+      "increment": "Augmenter les portions",
+      "decrement": "Diminuer les portions"
+    }
   }
 }

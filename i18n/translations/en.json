@@ -255,5 +255,12 @@
     "expiryWarningFallbackName": "an ingredient",
     "deleteAction": "Delete notification",
     "loadMore": "Load more"
+  },
+  "recipe": {
+    "servings": {
+      "label": "Servings",
+      "increment": "Increase servings",
+      "decrement": "Decrease servings"
+    }
   }
 }
