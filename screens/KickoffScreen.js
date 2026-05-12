@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { StyleSheet, TouchableOpacity, ScrollView, View, Image, Text, Modal, KeyboardAvoidingView, Platform } from "react-native";
-import { CameraView, useCameraPermissions } from "expo-camera"; 
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { useDispatch, useSelector } from "react-redux";
 import { addIngredient, removeIngredient } from "../reducers/ingredient";
 import { FontAwesome } from "@expo/vector-icons";
@@ -12,8 +12,11 @@ import ListIngredients from "../components/ListIngredients";
 import SearchIngredients from "../components/SearchIngredients";
 import MySmallButton from "../components/MySmallButton";
 import MyButton from '../components/MyButton';
+import InventoryGrid from "../components/kickoff/InventoryGrid";
 import buttonStyles from '../styles/Button';
 import css from "../styles/Global";
+import { useTheme } from "../contexts/ThemeProvider";
+import useT from "../i18n/useT";
 import * as Animatable from 'react-native-animatable';
 
 export default function KickoffScreen({navigation}) {
@@ -34,7 +37,15 @@ export default function KickoffScreen({navigation}) {
 	const [validatedIngredient, setValidatedIngredient] = useState([]);
 	
 	const ingredients = useSelector((state) => state.ingredient.value)
-	
+	// Plan 003 D.2 — gate the inventory grid behind (logged-in) && (pantry non-empty).
+	// `state.pantry.value.items` is the canonical array; `.value` itself is the
+	// envelope `{ items, loading, error }` from Plan 002's slice.
+	const user = useSelector((state) => state.user.value);
+	const pantryItems = useSelector((state) => state.pantry?.value?.items || []);
+	const showGrid = !!user?.token && pantryItems.length > 0;
+	const theme = useTheme();
+	const t = useT();
+
   	const dispatch = useDispatch();
   	const isFocused = useIsFocused();
 	const [imageUrl, setImageUrl] = useState(null);
@@ -323,6 +334,31 @@ export default function KickoffScreen({navigation}) {
 			</View>
 			
 
+			{showGrid && (
+				<>
+					<Text style={[styles.gridHeader, {
+						color: theme.palette.neutral900,
+						fontFamily: theme.typography.fontHeading,
+						fontSize: theme.typography.h3Size,
+					}]}>
+						{t('kickoff.grid.heading')}
+					</Text>
+					<ScrollView
+						style={styles.gridScroll}
+						contentContainerStyle={styles.gridScrollContent}
+						showsVerticalScrollIndicator={false}
+					>
+						<InventoryGrid />
+					</ScrollView>
+					<Text style={[styles.gridDivider, {
+						color: theme.palette.neutral700,
+						fontFamily: theme.typography.fontUI,
+					}]}>
+						{t('kickoff.grid.orAddMore')}
+					</Text>
+				</>
+			)}
+
         	<ScrollView horizontal  contentContainerStyle={styles.galleryContainer} style={{ flexGrow: 0, maxHeight: 170 }}>
 				{photos}
 				{backgroundIngredient()}
@@ -562,5 +598,32 @@ const styles = StyleSheet.create({
 		borderRadius: css.radius.pill,
 		marginTop:10,
 		marginBottom: '4%'
+	},
+
+	// Plan 003 D.2 — inventory grid for logged-in users with pantry data.
+	// The maxHeight cap is critical: this screen has no master scroll, so
+	// without a height ceiling a large pantry would push the bottom action
+	// row (Search / Next / shutter) off-screen on smaller devices.
+	gridHeader: {
+		marginTop: 16,
+		marginBottom: 8,
+		paddingHorizontal: 16,
+		alignSelf: 'stretch',
+	},
+	gridScroll: {
+		flexGrow: 0,
+		maxHeight: 280,
+		width: '100%',
+	},
+	gridScrollContent: {
+		paddingHorizontal: 4,
+	},
+	gridDivider: {
+		marginTop: 12,
+		marginBottom: 8,
+		paddingHorizontal: 16,
+		textAlign: 'center',
+		fontSize: 13,
+		alignSelf: 'stretch',
 	},
 })
