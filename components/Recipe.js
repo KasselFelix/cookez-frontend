@@ -1,6 +1,8 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import css from "../styles/Global";
+import MatchBadge from './result/MatchBadge';
+import SeasonalBadge from './result/SeasonalBadge';
 
 export default function Recipe( props ) {
 
@@ -60,6 +62,10 @@ export default function Recipe( props ) {
                   <Text> votes: {props.votes?.length ?? 0}</Text>
               </View>
             </View>
+            <View style={styles.badgeRow}>
+              <MatchBadge ratio={props.matchRatio} />
+              {props.isSeasonal && <SeasonalBadge />}
+            </View>
             <View style={styles.infos}>
               <Text style={styles.text}>Difficulty: {props.difficulty}/5</Text>
               <Text style={styles.text}>Preparation Time: {props.preparationTime}m</Text>
@@ -116,6 +122,13 @@ const styles = StyleSheet.create({
   vote:{
     flex: 0,
     flexDirection: 'row',
+  },
+
+  badgeRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingLeft: '3%',
+    marginTop: 8,
   },
 
   infos: {
