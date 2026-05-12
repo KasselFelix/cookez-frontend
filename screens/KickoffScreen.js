@@ -539,9 +539,12 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "flex-end",
 		justifyContent: "space-between",
-		paddingTop: 20,
-		paddingLeft: 20,
-		paddingRight: 20,
+		// cameraContainer has a pill borderRadius (99) + overflow: hidden,
+		// so the top corners clip anything placed too close to the edges.
+		// These paddings push the buttons inside the visible inner area.
+		paddingTop: 40,
+		paddingLeft: 40,
+		paddingRight: 40,
 	},
 
 	buttonsCamera: {
