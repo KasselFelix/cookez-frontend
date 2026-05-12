@@ -261,6 +261,35 @@
       "label": "Servings",
       "increment": "Increase servings",
       "decrement": "Decrease servings"
+    },
+    "filters": {
+      "origin": {
+        "label": "Origin",
+        "title": "Choose origin",
+        "placeholder": "All origins",
+        "searchPlaceholder": "Search countries…",
+        "clear": "All origins (clear)"
+      },
+      "tags": {
+        "title": "Choose tags",
+        "openModal": "Add tags",
+        "empty": "No tags selected"
+      }
+    },
+    "tags": {
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "gluten_free": "Gluten-free",
+      "dairy_free": "Dairy-free",
+      "nut_free": "Nut-free",
+      "high_protein": "High protein",
+      "low_calorie": "Low calorie",
+      "quick": "Quick",
+      "breakfast": "Breakfast",
+      "dessert": "Dessert",
+      "appetizer": "Appetizer",
+      "main_course": "Main course",
+      "savory": "Savory"
     }
   }
 }

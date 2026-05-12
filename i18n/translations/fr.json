@@ -261,6 +261,35 @@
       "label": "Portions",
       "increment": "Augmenter les portions",
       "decrement": "Diminuer les portions"
+    },
+    "filters": {
+      "origin": {
+        "label": "Origine",
+        "title": "Choisir l'origine",
+        "placeholder": "Toutes les origines",
+        "searchPlaceholder": "Rechercher un pays…",
+        "clear": "Toutes les origines (effacer)"
+      },
+      "tags": {
+        "title": "Choisir les tags",
+        "openModal": "Ajouter des tags",
+        "empty": "Aucun tag sélectionné"
+      }
+    },
+    "tags": {
+      "vegetarian": "Végétarien",
+      "vegan": "Végan",
+      "gluten_free": "Sans gluten",
+      "dairy_free": "Sans lait",
+      "nut_free": "Sans noix",
+      "high_protein": "Riche en protéines",
+      "low_calorie": "Faible en calories",
+      "quick": "Rapide",
+      "breakfast": "Petit-déjeuner",
+      "dessert": "Dessert",
+      "appetizer": "Entrée",
+      "main_course": "Plat principal",
+      "savory": "Salé"
     }
   }
 }
