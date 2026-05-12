@@ -232,6 +232,17 @@
     "excludedTags": {
       "title": "Tags à éviter",
       "helper": "Ces recettes seront classées plus bas (mais pas masquées)."
+    },
+    "excludedIngredients": {
+      "title": "Ingrédients exclus",
+      "helper": "Nous ne suggérerons jamais de recettes contenant ces ingrédients.",
+      "add": "Ajouter",
+      "addA11y": "Ajouter un ingrédient à exclure",
+      "removeA11y": "Retirer {{name}} de la liste d'exclusion",
+      "searchPlaceholder": "Rechercher un ingrédient…",
+      "searchA11y": "Rechercher un ingrédient à exclure",
+      "noResults": "Aucun ingrédient correspondant.",
+      "alreadyExcluded": "Déjà exclu"
     }
   },
   "publicProfile": {
