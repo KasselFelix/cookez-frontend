@@ -275,6 +275,16 @@
       "increment": "Augmenter les portions",
       "decrement": "Diminuer les portions"
     },
+    "nutrition": {
+      "title": "Nutrition",
+      "kcal": "{{count}} kcal",
+      "openSheet": "Voir les détails nutritionnels",
+      "calories": "Calories",
+      "proteins": "Protéines (g)",
+      "carbs": "Glucides (g)",
+      "fat": "Lipides (g)",
+      "fibers": "Fibres (g)"
+    },
     "filters": {
       "origin": {
         "label": "Origine",

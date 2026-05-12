@@ -275,6 +275,16 @@
       "increment": "Increase servings",
       "decrement": "Decrease servings"
     },
+    "nutrition": {
+      "title": "Nutrition",
+      "kcal": "{{count}} kcal",
+      "openSheet": "Open nutrition details",
+      "calories": "Calories",
+      "proteins": "Proteins (g)",
+      "carbs": "Carbs (g)",
+      "fat": "Fat (g)",
+      "fibers": "Fibers (g)"
+    },
     "filters": {
       "origin": {
         "label": "Origin",
