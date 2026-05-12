@@ -313,6 +313,18 @@
       "appetizer": "Appetizer",
       "main_course": "Main course",
       "savory": "Savory"
+    },
+    "expiry": {
+      "title": "⚠️ Cook this recipe soon!",
+      "body": "Your {{items}} expires in less than 48h."
+    },
+    "shopping": {
+      "title": "🛒 Shopping list",
+      "percentOwned": "You own {{ratio}}%",
+      "buyOnAmazon": {
+        "label": "Buy on Amazon",
+        "a11y": "Buy {{name}} on Amazon"
+      }
     }
   },
   "result": {

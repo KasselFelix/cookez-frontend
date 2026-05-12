@@ -313,6 +313,18 @@
       "appetizer": "Entrée",
       "main_course": "Plat principal",
       "savory": "Salé"
+    },
+    "expiry": {
+      "title": "⚠️ Cuisinez cette recette bientôt !",
+      "body": "Votre {{items}} expire dans moins de 48h."
+    },
+    "shopping": {
+      "title": "🛒 Liste de courses",
+      "percentOwned": "Vous possédez {{ratio}}%",
+      "buyOnAmazon": {
+        "label": "Acheter sur Amazon",
+        "a11y": "Acheter {{name}} sur Amazon"
+      }
     }
   },
   "result": {
