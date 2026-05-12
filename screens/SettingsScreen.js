@@ -50,6 +50,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
+import { clearCache as clearRecipeCache } from '../modules/recipeCache';
 import { setComments } from '../reducers/comment';
 import { clearIngredients } from '../reducers/ingredient';
 import { clearPicture } from '../reducers/picture';
@@ -128,6 +129,11 @@ export default function SettingsScreen({ navigation }) {
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('userToken');
+      // Purge the offline recipe cache BEFORE clearing the user from
+      // redux. If the dispatch runs first the screen may unmount mid-
+      // logout and the cache write is left dangling — the await here
+      // guarantees the AsyncStorage cleanup completes first.
+      await clearRecipeCache();
       dispatch(removeUserToStore());
       dispatch(clearIngredients());
       dispatch(clearRecipes());
