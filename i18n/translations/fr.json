@@ -256,6 +256,13 @@
     "deleteAction": "Supprimer la notification",
     "loadMore": "Charger plus"
   },
+  "kickoff": {
+    "grid": {
+      "heading": "Cuisiner avec votre garde-manger",
+      "orAddMore": "Ou ajoutez d'autres ingrédients ci-dessous ↓",
+      "toggleA11y": "Basculer {{name}} dans la liste de cuisine"
+    }
+  },
   "recap": {
     "ingredient": "Ingrédient",
     "ingredients": "Ingrédients",

@@ -256,6 +256,13 @@
     "deleteAction": "Delete notification",
     "loadMore": "Load more"
   },
+  "kickoff": {
+    "grid": {
+      "heading": "Cook from your pantry",
+      "orAddMore": "Or add more ingredients below ↓",
+      "toggleA11y": "Toggle {{name}} in the cooking list"
+    }
+  },
   "recap": {
     "ingredient": "Ingredient",
     "ingredients": "Ingredients",
