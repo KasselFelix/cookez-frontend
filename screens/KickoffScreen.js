@@ -343,17 +343,15 @@ export default function KickoffScreen({navigation}) {
 
   	return (
 		  <View style={styles.container} >
-			{navigation.canGoBack() && (
-				<TouchableOpacity
-					onPress={() => navigation.goBack()}
-					accessibilityRole="button"
-					accessibilityLabel={t('common.back')}
-					hitSlop={10}
-					style={styles.backButton}
-				>
-					<FontAwesome name="chevron-left" size={20} color={css.palette.white} />
-				</TouchableOpacity>
-			)}
+			<TouchableOpacity
+				onPress={() => navigation.navigate('Home')}
+				accessibilityRole="button"
+				accessibilityLabel={t('common.home')}
+				hitSlop={10}
+				style={styles.backButton}
+			>
+				<FontAwesome name="home" size={22} color={css.palette.white} />
+			</TouchableOpacity>
 			<Modal
 				visible={modalVisible}
 				animationType="none"

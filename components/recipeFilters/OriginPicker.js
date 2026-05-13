@@ -21,7 +21,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
-  FlatList,
   Keyboard,
   Modal,
   PanResponder,
@@ -29,10 +28,20 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+// RN's <Modal> renders into a separate native window, which the App-root
+// GestureHandlerRootView doesn't cover. Without a nested root inside the
+// modal, RNGH's TouchableOpacity silently no-ops on Android (iOS is more
+// forgiving). Wrapping the modal content in a local GestureHandlerRootView
+// gives RNGH a touch surface to listen on, and pairing the RNGH FlatList
+// with the RNGH TouchableOpacity keeps the gesture pipeline uniform.
+import {
+  FlatList,
+  GestureHandlerRootView,
+  TouchableOpacity,
+} from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
@@ -322,6 +331,7 @@ export default function OriginPicker({ value, onChange }) {
         navigationBarTranslucent
         onRequestClose={closeSheet}
       >
+        <GestureHandlerRootView style={{ flex: 1 }}>
         {/* Backdrop dim — opacity driven by a dedicated timing animation
             (425ms) instead of interpolating translateY. Decoupling the two
             lets the fade keep its own tempo regardless of how fast the
@@ -498,6 +508,7 @@ export default function OriginPicker({ value, onChange }) {
             </View>
           </Animated.View>
         </Animated.View>
+        </GestureHandlerRootView>
       </Modal>
     </>
   );
