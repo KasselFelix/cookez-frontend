@@ -36,11 +36,37 @@ export const ingredientSlice = createSlice({
                 (e) => e.data.display_name.toLowerCase() !== action.payload.data.display_name.toLowerCase()
             );
         },
+        // RecapScreen lets the user override the reference quantity (e.g. 250
+        // instead of 100 ml) before fetching results. We persist it back into
+        // the ingredient slice so navigating away and back doesn't reset the
+        // input to the BDD reference value.
+        updateIngredientQuantity: (state, action) => {
+            const { display_name, quantity } = action.payload;
+            const target = state.value.find(
+                (e) => e.data.display_name.toLowerCase() === display_name.toLowerCase()
+            );
+            if (target) {
+                target.data.g_per_serving = quantity;
+            }
+        },
+        // Unit override per ingredient — RecapScreen exposes a picker so the
+        // user can express "1 kg" or "2 tbsp" instead of being locked to the
+        // ingredient's defaultUnit. The backend's `convertToBaseUnit` handles
+        // all supported aliases (g, kg, mg, ml, cl, dl, l, tbsp/cs, tsp/cc).
+        updateIngredientUnit: (state, action) => {
+            const { display_name, unit } = action.payload;
+            const target = state.value.find(
+                (e) => e.data.display_name.toLowerCase() === display_name.toLowerCase()
+            );
+            if (target) {
+                target.data.unit = unit;
+            }
+        },
         clearIngredients: (state) => {
             state.value = [];
         },
     },
 });
 
-export const { addIngredient, removeIngredient, clearIngredients } = ingredientSlice.actions;
+export const { addIngredient, removeIngredient, updateIngredientQuantity, updateIngredientUnit, clearIngredients } = ingredientSlice.actions;
 export default ingredientSlice.reducer;

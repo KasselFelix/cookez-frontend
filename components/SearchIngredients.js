@@ -1,13 +1,9 @@
 import React from "react";
-import { StyleSheet, TextInput, View, Text, Keyboard, Button, TouchableOpacity } from "react-native";
-import { Feather, Entypo } from "@expo/vector-icons";
-import { useSelector } from "react-redux";
+import { StyleSheet, TextInput, View, TouchableOpacity } from "react-native";
+import { Feather } from "@expo/vector-icons";
 import css from "../styles/Global";
 
 export default function SearchIngredients ({clicked, searchInput, setSearchInput, setClicked, setDataListIngredient}) {
-
-  const ingredients = useSelector((state) => state.ingredient.value)
-
   return (
     <View style={styles.container}>
       <View
@@ -31,25 +27,24 @@ export default function SearchIngredients ({clicked, searchInput, setSearchInput
             setClicked(true);
           }}
         />
-        {/* cross Icon, depending on whether the search bar is clicked or not */}
+        {/* Clear-text button — x-circle is the universally-recognized affordance
+            for "wipe this input"; primary800 (teal brand) is visible without
+            shouting like red would. */}
         {clicked && (
-          <Entypo name="cross" size={20} color="black" style={{ padding: 1 }} onPress={() => {
+          <TouchableOpacity
+            onPress={() => {
               setSearchInput("");
               setDataListIngredient([]);
-          }}/>
+            }}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Clear search"
+            style={{ padding: 1 }}
+          >
+            <Feather name="x-circle" size={20} color={css.palette.primary800} />
+          </TouchableOpacity>
         )}
       </View>
-      {/* cancel button, depending on whether the search bar is clicked or not */}
-      {clicked && (
-        <View style={styles.basket}>
-           <TouchableOpacity activeOpacity={0.8} style={styles.basketTwo} onPress={() => {Keyboard.dismiss(); setClicked(false)}}>
-            <Text stype={styles.text}>Added ingredient{ingredients.length > 1 && 's'}: {ingredients.length.toString()}</Text>
-          </TouchableOpacity>
-          {/* <TouchableOpacity activeOpacity={0.8}>
-            <Entypo name="cross" size={20} color="red" style={styles.removeBtn} onPress={() => {setSearchInput("")}}/>
-          </TouchableOpacity> */}
-        </View>
-      )}
     </View>
   );
 };
@@ -62,6 +57,9 @@ const styles = StyleSheet.create({
     width: "90%",
   },
 
+  // Unified width regardless of focus state — the previous "clicked" style
+  // shrunk the bar from 95% to 80% which caused a visible jump on focus.
+  // Now the bar stays put; only the clear (x-circle) icon appears/disappears.
   searchBar__unclicked: {
     padding: 10,
     flexDirection: "row",
@@ -74,34 +72,16 @@ const styles = StyleSheet.create({
   searchBar__clicked: {
     padding: 10,
     flexDirection: "row",
-    width: "80%",
+    width: "95%",
     backgroundColor: "white",
     borderRadius: 15,
     alignItems: "center",
-    justifyContent: "space-evenly",
   },
 
   input: {
+    flex: 1,
     fontSize: 20,
     marginLeft: 10,
-    width: "90%",
   },
 
-  basket: {
-    flex: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    backgroundColor: css.palette.secondary500,
-    width: '70%',
-    height: 30,
-  },
-
-  basketTwo: {
-    backgroundColor: css.palette.secondary500,
-  },
-
-  removeBtn: {
-    backgroundColor: css.palette.secondary500,
-  }
 });

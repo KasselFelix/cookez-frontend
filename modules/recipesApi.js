@@ -31,9 +31,15 @@ export async function fetchRecipeResult({
       _id: i.data?._id || i._id,
       name: i.data?.display_name || i.name,
       quantity: i.data?.g_per_serving ?? i.quantity ?? 100,
+      // Send the user's chosen unit; falls back to the ingredient's
+      // defaultUnit, then to "g". Backend convertToBaseUnit normalizes.
+      unit: i.data?.unit || i.data?.defaultUnit || 'g',
     })),
     allergy,
-    origin: filters?.selectedOrigin || 'All recipes',
+    // Multi-origin: backend matches when the recipe's origins are a
+    // subset of this array. Empty array = no origin filter (backend
+    // returns all recipes including those with no declared origin).
+    origins: filters?.selectedOrigins || [],
     tagsFilter: filters?.selectedTags || [],
     manualServings: filters?.currentServings ?? undefined,
   };

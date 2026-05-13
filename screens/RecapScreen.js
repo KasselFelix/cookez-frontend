@@ -7,15 +7,17 @@
 // theme via `useTheme()` so the screen now switches with light/dark/
 // pastel themes; strings go through `useT()`.
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Animated,
+  Easing,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { FontAwesome } from '@expo/vector-icons';
 import * as Animatable from 'react-native-animatable';
@@ -23,7 +25,7 @@ import Popover from 'react-native-popover-view';
 
 import { clearIngredients } from '../reducers/ingredient';
 import {
-  setOrigin,
+  setOrigins,
   setServings,
   incrementServings,
   decrementServings,
@@ -42,34 +44,89 @@ import useT from '../i18n/useT';
 export default function RecapScreen({ navigation }) {
   const css = useTheme();
   const t = useT();
+  const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const ingredients = useSelector((state) => state.ingredient.value);
   const filters = useSelector((state) => state.recipeFilters.value);
   const [showPopover, setShowPopover] = useState(false);
 
-  // First press of "+" when no override is set yet jumps to a sensible
-  // default (2 servings) — incrementing from null would otherwise land
-  // on 1 which feels wrong for a "more people" gesture.
+  // The slice now defaults currentServings to 1, so the stepper never
+  // displays "-" or null. Increment/decrement just delegate to the
+  // slice reducers which clamp [1, 12].
   const handleIncrement = useCallback(() => {
-    if (filters.currentServings == null) {
-      dispatch(setServings(2));
-    } else {
-      dispatch(incrementServings());
-    }
-  }, [dispatch, filters.currentServings]);
+    dispatch(incrementServings());
+  }, [dispatch]);
 
   const handleDecrement = useCallback(() => {
-    if (filters.currentServings == null) {
-      dispatch(setServings(1));
-    } else {
-      dispatch(decrementServings());
-    }
-  }, [dispatch, filters.currentServings]);
+    dispatch(decrementServings());
+  }, [dispatch]);
 
   const handleClearAll = () => {
     setShowPopover(false);
     dispatch(clearIngredients());
   };
+
+  // Inner-scroll "more below" indicator. Tracking three measurements:
+  //  - contentH (full list height)         via onContentSizeChange
+  //  - visibleH (ScrollView frame height)  via onLayout
+  //  - scrollY (current offset)            via onScroll
+  // Indicator shows iff list is taller than its frame AND user isn't
+  // already at (or within 12px of) the bottom.
+  const galleryScrollRef = useRef(null);
+  const [scrollState, setScrollState] = useState({
+    contentH: 0,
+    visibleH: 0,
+    scrollY: 0,
+  });
+  const showScrollHint =
+    scrollState.contentH > scrollState.visibleH &&
+    scrollState.scrollY + scrollState.visibleH < scrollState.contentH - 12;
+
+  const hintY = useRef(new Animated.Value(0)).current;
+  const hintOpacity = useRef(new Animated.Value(1)).current;
+
+  // Loop the bounce + fade pulse while the indicator is visible. The loop
+  // is restarted on each show because Animated.loop stops on cleanup,
+  // and the dependencies (showScrollHint) act as the gate.
+  useEffect(() => {
+    if (!showScrollHint) {
+      hintY.setValue(0);
+      hintOpacity.setValue(1);
+      return undefined;
+    }
+    const loop = Animated.loop(
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(hintY, {
+            toValue: 6,
+            duration: 600,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(hintY, {
+            toValue: 0,
+            duration: 600,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.sequence([
+          Animated.timing(hintOpacity, {
+            toValue: 0.5,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(hintOpacity, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [showScrollHint, hintY, hintOpacity]);
 
   return (
     <SafeAreaView
@@ -208,29 +265,78 @@ export default function RecapScreen({ navigation }) {
             </Text>
           </Animatable.View>
         ) : (
-          <View style={styles.gallery}>
-            {ingredients.map((data) => (
-              <Recap key={data.data.display_name} {...data} />
-            ))}
+          <View style={styles.galleryWrapper}>
+            <ScrollView
+              ref={galleryScrollRef}
+              style={styles.galleryScroll}
+              contentContainerStyle={styles.galleryScrollContent}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator
+              onLayout={(e) => {
+                // Synthetic events are pooled in React Native — extract the
+                // value synchronously before scheduling the state update,
+                // otherwise `e.nativeEvent` may be nulled when setState runs.
+                const h = e.nativeEvent.layout.height;
+                setScrollState((s) => ({ ...s, visibleH: h }));
+              }}
+              onContentSizeChange={(_w, h) =>
+                setScrollState((s) => ({ ...s, contentH: h }))
+              }
+              onScroll={(e) => {
+                const y = e.nativeEvent.contentOffset.y;
+                setScrollState((s) => ({ ...s, scrollY: y }));
+              }}
+              scrollEventThrottle={16}
+            >
+              <View style={styles.gallery}>
+                {ingredients.map((data) => (
+                  <Recap key={data.data.display_name} {...data} />
+                ))}
+              </View>
+            </ScrollView>
+            {showScrollHint && (
+              <TouchableOpacity
+                onPress={() =>
+                  galleryScrollRef.current?.scrollToEnd({ animated: true })
+                }
+                accessibilityRole="button"
+                accessibilityLabel={t('recap.scrollMore')}
+                hitSlop={10}
+                style={styles.scrollHint}
+              >
+                <Animated.View
+                  style={{
+                    transform: [{ translateY: hintY }],
+                    opacity: hintOpacity,
+                  }}
+                >
+                  <FontAwesome
+                    name="angle-double-down"
+                    size={28}
+                    color={css.palette.primary800}
+                  />
+                </Animated.View>
+              </TouchableOpacity>
+            )}
           </View>
         )}
 
-        {/* Step 2 — Servings */}
-        <SectionHeading css={css}>{`${t('recap.step2')} 👨‍👩‍👧‍👦`}</SectionHeading>
+        {/* Step 2 — Origin (multi-select cuisine filter) */}
+        <SectionHeading css={css}>{`${t('recap.step2')} 🌍`}</SectionHeading>
+        <View style={styles.filterRow}>
+          <OriginPicker
+            value={filters.selectedOrigins}
+            onChange={(v) => dispatch(setOrigins(v))}
+          />
+        </View>
+
+        {/* Step 3 — Servings */}
+        <SectionHeading css={css}>{`${t('recap.step3')} 👨‍👩‍👧‍👦`}</SectionHeading>
         <View style={styles.filterRow}>
           <ServingsStepper
             value={filters.currentServings}
             onIncrement={handleIncrement}
             onDecrement={handleDecrement}
-          />
-        </View>
-
-        {/* Step 3 — Origin */}
-        <SectionHeading css={css}>{`${t('recap.step3')} 🌍`}</SectionHeading>
-        <View style={styles.filterRow}>
-          <OriginPicker
-            value={filters.selectedOrigin}
-            onChange={(v) => dispatch(setOrigin(v))}
           />
         </View>
 
@@ -242,15 +348,27 @@ export default function RecapScreen({ navigation }) {
             onToggle={(tag) => dispatch(toggleTag(tag))}
           />
         </View>
-
-        <View style={styles.cta}>
-          <MyButton
-            dataFlow={() => navigation.navigate('Result')}
-            text={t('recap.goToResults')}
-            buttonType={buttonStyles.buttonTwo}
-          />
-        </View>
       </ScrollView>
+
+      {/* Sticky CTA — stays anchored at the bottom regardless of scroll,
+          so the user's thumb always finds it. paddingBottom uses the
+          safe-area inset so the button doesn't sit on top of the device's
+          gesture bar / nav bar. */}
+      <View
+        style={[
+          styles.stickyCta,
+          {
+            backgroundColor: css.palette.secondary500,
+            paddingBottom: 12 + insets.bottom,
+          },
+        ]}
+      >
+        <MyButton
+          dataFlow={() => navigation.navigate('Result')}
+          text={t('recap.goToResults')}
+          buttonType={buttonStyles.buttonTwo}
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -314,7 +432,20 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     alignItems: 'center',
-    paddingBottom: 32,
+    // Bottom inset matches stickyCta height so the last filter card
+    // isn't hidden under the floating button.
+    paddingBottom: 96,
+  },
+  stickyCta: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.08)',
   },
   sectionHeading: {
     marginTop: 16,
@@ -334,6 +465,27 @@ const styles = StyleSheet.create({
   gallery: {
     alignItems: 'center',
     width: '100%',
+  },
+  galleryWrapper: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  // Cap the ingredient list at ~4 visible cards (~105px each + 10px gap).
+  // Beyond that the user scrolls inside the inner ScrollView while the
+  // outer screen remains anchored, keeping the Tags/Origin sections in view.
+  galleryScroll: {
+    width: '100%',
+    maxHeight: 420,
+  },
+  galleryScrollContent: {
+    alignItems: 'center',
+    paddingBottom: 4,
+  },
+  scrollHint: {
+    alignSelf: 'center',
+    marginTop: 4,
+    marginBottom: 2,
+    padding: 6,
   },
   cta: {
     marginTop: 24,

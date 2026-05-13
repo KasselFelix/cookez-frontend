@@ -5,16 +5,62 @@ import { OPENAI_API_KEY, UNSPLASH_API_KEY, DEEPAI_API_KEY, PEXELS_API_KEY } from
 import css from "../styles/Global";
 import { FontAwesome } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
-import { removeIngredient } from '../reducers/ingredient';
+import { removeIngredient, updateIngredientQuantity, updateIngredientUnit } from '../reducers/ingredient';
+
+// Units the backend's convertToBaseUnit knows. Mass + volume crossover is
+// allowed for g/ml-based ingredients under the kitchen-shorthand assumption
+// 1 g ≈ 1 ml. Accurate for water-density liquids (water, milk, broth);
+// approximate for fats and dense solids (flour, sugar, honey). Worth it for
+// the UX flexibility — the imprecision is comparable to recipe variance.
+// `unit` is exposed everywhere so the user can express "3 apples" without
+// guessing the gram weight — convertToBaseUnit('unit', referenceWeight)
+// multiplies by the Ingredient.quantity reference recorded in the BDD.
+const UNIT_OPTIONS_BY_BASE = {
+    g:    ['g', 'kg', 'mg', 'ml', 'cl', 'dl', 'l', 'tbsp', 'tsp', 'unit'],
+    ml:   ['ml', 'cl', 'dl', 'l', 'g', 'kg', 'mg', 'tbsp', 'tsp', 'unit'],
+    unit: ['unit'],
+};
 
 const { width } = Dimensions.get('window');
 
 export default function Recap( props ) {
-    const [grammes, setGrammes] = useState([]);
+    // The canonical quantity lives in Redux (`data.g_per_serving`), so
+    // navigating away from RecapScreen and back preserves the override.
+    // Local state mirrors Redux for fluid typing — `updateIngredientQuantity`
+    // is dispatched on every change with the parsed numeric value.
+    const [grammes, setGrammes] = useState(
+        props.data.g_per_serving != null ? String(props.data.g_per_serving) : ''
+    );
     const [modalVisible, setModalVisible] = useState(false);
+    const [unitModalVisible, setUnitModalVisible] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
-    
+
     const dispatch = useDispatch()
+
+    const baseUnit = props.data.defaultUnit || 'g';
+    const unitOptions = UNIT_OPTIONS_BY_BASE[baseUnit] || ['g'];
+    const currentUnit = props.data.unit || baseUnit;
+    const isUnitEditable = unitOptions.length > 1;
+
+    const handleQuantityChange = (value) => {
+        // Strip non-digit characters defensively, then mirror to Redux.
+        // Empty string is allowed in local state (mid-edit) but is stored
+        // as 0 in Redux so the recipe-result query still has a number.
+        const cleaned = value.replace(/[^0-9]/g, '');
+        setGrammes(cleaned);
+        dispatch(updateIngredientQuantity({
+            display_name: props.data.display_name,
+            quantity: cleaned === '' ? 0 : Number(cleaned),
+        }));
+    };
+
+    const handleUnitPick = (u) => {
+        setUnitModalVisible(false);
+        dispatch(updateIngredientUnit({
+            display_name: props.data.display_name,
+            unit: u,
+        }));
+    };
 
     // --- SWIPE ---
     // On utilise des Animated.Value persistantes
@@ -215,8 +261,29 @@ export default function Recap( props ) {
           </View>
           <View style={styles.infoGramsContainer}>
             <View style={styles.infoGrams}>
-            <TextInput keyboardType="numeric" maxLength={4} placeholder={`${props.data.g_per_serving}`} placeholderTextColor={'black'} value={grammes} onChangeText={(value) => setGrammes(value)}/>
-            <Text>g</Text>
+            <TextInput
+              keyboardType="numeric"
+              maxLength={5}
+              value={grammes}
+              onChangeText={handleQuantityChange}
+              style={styles.qtyInput}
+              selectTextOnFocus
+              accessibilityLabel={`Quantity for ${props.data.display_name}`}
+            />
+            {isUnitEditable ? (
+              <TouchableOpacity
+                onPress={() => setUnitModalVisible(true)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={`Change unit (current: ${currentUnit})`}
+                style={styles.unitTrigger}
+              >
+                <Text style={styles.qtyUnit}>{currentUnit}</Text>
+                <FontAwesome name="caret-down" size={12} color="black" style={{ marginLeft: 2 }} />
+              </TouchableOpacity>
+            ) : (
+              <Text style={styles.qtyUnit}>{currentUnit}</Text>
+            )}
             </View>
           </View>
           <View style={styles.infoBtn}>
@@ -260,6 +327,31 @@ export default function Recap( props ) {
                       </View>
                 </View>
               </View>
+          </Modal>
+          <Modal visible={unitModalVisible} animationType="fade" transparent onRequestClose={() => setUnitModalVisible(false)}>
+              <TouchableOpacity
+                style={styles.unitBackdrop}
+                activeOpacity={1}
+                onPress={() => setUnitModalVisible(false)}
+              >
+                <View style={styles.unitSheet}>
+                  <Text style={styles.unitSheetTitle}>{props.data.display_name}</Text>
+                  {unitOptions.map((u) => {
+                    const active = u === currentUnit;
+                    return (
+                      <TouchableOpacity
+                        key={u}
+                        onPress={() => handleUnitPick(u)}
+                        style={[styles.unitRow, active && styles.unitRowActive]}
+                        accessibilityRole="button"
+                      >
+                        <Text style={[styles.unitRowText, active && styles.unitRowTextActive]}>{u}</Text>
+                        {active && <FontAwesome name="check" size={16} color={css.palette.white} />}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </TouchableOpacity>
           </Modal>
       </Animated.View>
     )
@@ -341,8 +433,80 @@ const styles = StyleSheet.create({
         borderBottomWidth: 2,
         borderStyle: 'dashed',
         borderColor: 'black',
-        width: 50,
+        width: 60,
         marginBottom: 3,
+      },
+
+      qtyInput: {
+        color: 'black',
+        fontSize: 14,
+        paddingVertical: 0,
+        minWidth: 32,
+        textAlign: 'center',
+      },
+
+      qtyUnit: {
+        color: 'black',
+        fontSize: 14,
+        marginLeft: 2,
+      },
+
+      unitTrigger: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 2,
+      },
+
+      unitBackdrop: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+
+      unitSheet: {
+        backgroundColor: 'white',
+        borderRadius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        width: 240,
+        elevation: 6,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+
+      unitSheetTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        marginBottom: 8,
+        textAlign: 'center',
+        color: 'black',
+      },
+
+      unitRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        marginVertical: 2,
+      },
+
+      unitRowActive: {
+        backgroundColor: css.palette.secondary500,
+      },
+
+      unitRowText: {
+        fontSize: 15,
+        color: 'black',
+      },
+
+      unitRowTextActive: {
+        color: 'white',
+        fontWeight: '600',
       },
 
       infoBtn: {

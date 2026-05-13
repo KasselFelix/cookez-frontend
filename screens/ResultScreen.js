@@ -52,11 +52,12 @@ export default function ResultScreen({ navigation }) {
     setLoading(true);
   }, []);
 
-  // Stable string signal for the tags array — depending on the array
-  // reference directly would re-run the effect on every render because
-  // RTK rebuilds slice references on each action. Pulled out of the
-  // deps array so eslint can statically verify the dependency list.
+  // Stable string signal for the tags & origins arrays — depending on the
+  // array reference directly would re-run the effect on every render because
+  // RTK rebuilds slice references on each action. Pulled out of the deps
+  // array so eslint can statically verify the dependency list.
   const tagsKey = filters.selectedTags.join(',');
+  const originsKey = [...(filters.selectedOrigins || [])].sort().join(',');
 
   useEffect(() => {
     let cancelled = false;
@@ -66,7 +67,7 @@ export default function ResultScreen({ navigation }) {
       const cacheInput = {
         userId: user?._id ?? null,
         ingredientIds: ingredients.map((i) => i.data?._id).filter(Boolean),
-        origin: filters.selectedOrigin,
+        origins: [...(filters.selectedOrigins || [])].sort(),
         tags: filters.selectedTags,
         servings: filters.currentServings,
       };
@@ -124,11 +125,11 @@ export default function ResultScreen({ navigation }) {
     };
     // `filters` itself is intentionally NOT in the dep list — its
     // identity changes on every action; we depend on the three concrete
-    // primitives (selectedOrigin, tagsKey, currentServings) that drive
+    // primitives (originsKey, tagsKey, currentServings) that drive
     // the request shape.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    filters.selectedOrigin,
+    originsKey,
     tagsKey,
     filters.currentServings,
     ingredients,

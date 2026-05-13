@@ -10,8 +10,10 @@
 //   - `accessibilityState.selected` lets screen readers announce the
 //     toggle state — critical for a multi-select control.
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
+  Dimensions,
   Modal,
   Pressable,
   ScrollView,
@@ -20,6 +22,8 @@ import {
   View,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
@@ -32,8 +36,58 @@ export default function TagsMultiSelect({
 }) {
   const css = useTheme();
   const t = useT();
+  // `open` drives intent (user wants the sheet visible or not). `rendered`
+  // keeps the Modal mounted while the closing animation plays — without it
+  // the Modal would unmount instantly on setOpen(false) and the slide-down
+  // would never appear.
   const [open, setOpen] = useState(false);
+  const [rendered, setRendered] = useState(false);
   const selected = new Set(value);
+
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const sheetTranslateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  const openModal = () => {
+    setRendered(true);
+    setOpen(true);
+  };
+
+  const closeModal = () => setOpen(false);
+
+  useEffect(() => {
+    if (open) {
+      // Separate animations: backdrop fades in via opacity; sheet springs
+      // up from off-screen. Both use the native driver.
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: 425,
+          useNativeDriver: true,
+        }),
+        Animated.spring(sheetTranslateY, {
+          toValue: 0,
+          friction: 9,
+          tension: 60,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else if (rendered) {
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: 425,
+          useNativeDriver: true,
+        }),
+        Animated.timing(sheetTranslateY, {
+          toValue: SCREEN_HEIGHT,
+          duration: 150,//315,
+          useNativeDriver: true,
+        }),
+      ]).start(({ finished }) => {
+        if (finished) setRendered(false);
+      });
+    }
+  }, [open, rendered, backdropOpacity, sheetTranslateY]);
 
   return (
     <>
@@ -68,7 +122,7 @@ export default function TagsMultiSelect({
         </ScrollView>
 
         <Pressable
-          onPress={() => setOpen(true)}
+          onPress={openModal}
           hitSlop={10}
           accessibilityRole="button"
           accessibilityLabel={t('recipe.filters.tags.openModal')}
@@ -85,13 +139,33 @@ export default function TagsMultiSelect({
       </View>
 
       <Modal
-        visible={open}
-        animationType="slide"
+        visible={rendered}
+        animationType="none"
         transparent
-        onRequestClose={() => setOpen(false)}
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={closeModal}
       >
-        <View style={[styles.modal, { backgroundColor: css.palette.overlayDark }]}>
-          <View
+        <Animated.View
+          style={[
+            styles.modal,
+            {
+              backgroundColor: css.palette.overlayDark,
+              opacity: backdropOpacity,
+            },
+          ]}
+        >
+          {/* Tap-outside-to-close: Pressable on the dim area dispatches
+              closeModal; the sheet wraps in its own Pressable with no
+              onPress so taps INSIDE the sheet are absorbed (don't bubble
+              up and close it). The fade/slide animations are untouched. */}
+          <Pressable
+            onPress={closeModal}
+            style={styles.backdropTouchable}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+          />
+          <Animated.View
             style={[
               styles.sheet,
               {
@@ -99,8 +173,10 @@ export default function TagsMultiSelect({
                 paddingHorizontal: css.spacing.md,
                 paddingTop: css.spacing.md,
                 paddingBottom: css.spacing.lg,
+                transform: [{ translateY: sheetTranslateY }],
               },
             ]}
+            onStartShouldSetResponder={() => true}
           >
             <View style={styles.sheetHeader}>
               <Text
@@ -113,7 +189,7 @@ export default function TagsMultiSelect({
                 {t('recipe.filters.tags.title')}
               </Text>
               <Pressable
-                onPress={() => setOpen(false)}
+                onPress={closeModal}
                 hitSlop={10}
                 accessibilityRole="button"
                 accessibilityLabel={t('common.close')}
@@ -139,8 +215,8 @@ export default function TagsMultiSelect({
                 ))}
               </View>
             </ScrollView>
-          </View>
-        </View>
+          </Animated.View>
+        </Animated.View>
       </Modal>
     </>
   );
@@ -206,6 +282,9 @@ const styles = StyleSheet.create({
   modal: {
     flex: 1,
     justifyContent: 'flex-end',
+  },
+  backdropTouchable: {
+    ...StyleSheet.absoluteFillObject,
   },
   sheet: {
     borderTopLeftRadius: 20,

@@ -27,10 +27,11 @@ const TTL_MS = 24 * 60 * 60 * 1000;
 // requests always produce the same key. `userId ?? 'anon'` so logged-out
 // users still get caching without colliding with each other across
 // device handoffs (unlikely in practice but cheap to guard).
-export function makeCacheKey({ userId, ingredientIds, origin, tags, servings }) {
+export function makeCacheKey({ userId, ingredientIds, origins, tags, servings }) {
   const ids = [...(ingredientIds || [])].sort().join(',');
   const ts = [...(tags || [])].sort().join(',');
-  return `${PREFIX}${userId ?? 'anon'}:${ids}:${origin ?? ''}:${ts}:${servings ?? ''}`;
+  const os = [...(origins || [])].sort().join(',');
+  return `${PREFIX}${userId ?? 'anon'}:${ids}:${os}:${ts}:${servings ?? ''}`;
 }
 
 // Returns `{ data, stale }` or null on miss / parse failure.

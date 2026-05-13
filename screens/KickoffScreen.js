@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { StyleSheet, TouchableOpacity, ScrollView, View, Image, Text, Modal, KeyboardAvoidingView, Platform } from "react-native";
+import { Animated, StyleSheet, TouchableOpacity, ScrollView, View, Image, Text, Modal, KeyboardAvoidingView, Platform } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useDispatch, useSelector } from "react-redux";
 import { addIngredient, removeIngredient } from "../reducers/ingredient";
@@ -51,6 +51,29 @@ export default function KickoffScreen({navigation}) {
 	const [imageUrl, setImageUrl] = useState(null);
   	let cameraRef = useRef(null);
 	const modalRef = useRef(null);
+	// Dim backdrop for the search modal — fades in/out independently from
+	// the Animatable slide-in/out so the visual feel matches the Tags &
+	// Origin pickers (425ms ease).
+	const backdropOpacity = useRef(new Animated.Value(0)).current;
+
+	useEffect(() => {
+		if (modalVisible) {
+			backdropOpacity.setValue(0);
+			Animated.timing(backdropOpacity, {
+				toValue: 1,
+				duration: 425,
+				useNativeDriver: true,
+			}).start();
+		}
+	}, [modalVisible, backdropOpacity]);
+
+	const fadeOutBackdrop = () => {
+		Animated.timing(backdropOpacity, {
+			toValue: 0,
+			duration: 425,
+			useNativeDriver: true,
+		}).start();
+	};
 
 	const [permission, requestPermission] = useCameraPermissions();
 	useEffect(() => {
@@ -62,9 +85,15 @@ export default function KickoffScreen({navigation}) {
 	// synchronise la sélection
 	useEffect(() => {
     	if (modalVisible) {
-        	// On récupère les noms des ingrédients déjà présents dans le store
-        	const alreadySelectedNames = ingredients.map(ing => ing.data.display_name);
-        	setValidatedIngredient(alreadySelectedNames);
+        	// `itemData.id` in ListIngredients is `_id || display_name`, so we
+        	// must mirror that fallback here. Mapping to display_name only
+        	// caused a race: on first tap the id was appended locally, then
+        	// Redux changed and this effect overwrote the entry with the
+        	// name — wiping the just-set id and dropping the check + color.
+        	const alreadySelectedIds = ingredients.map(
+        	    ing => ing.data._id || ing.data.display_name
+        	);
+        	setValidatedIngredient(alreadySelectedIds);
     	}
 	}, [modalVisible, ingredients]); // Se déclenche à l'ouverture de la modal ou si Redux change
 
@@ -80,7 +109,7 @@ export default function KickoffScreen({navigation}) {
         	const uniqueIngredients = data.ingredients.filter((value, index, self) =>
            		 index === self.findIndex((t) => t.name === value.name)
         	);
-			setDataListIngredient( uniqueIngredients.map((e) => {return {id: e._id || e.name, name: e.name, display_name: e.name, photo: e.image, g_per_serving: e.quantity, nutrition: e.nutrition }}));
+			setDataListIngredient( uniqueIngredients.map((e) => {return {id: e._id || e.name, name: e.name, display_name: e.name, photo: e.image, g_per_serving: e.quantity, defaultUnit: e.defaultUnit || 'g', nutrition: e.nutrition }}));
 			//console.log('datalist: ', dataListIngredient)
 		} else {
 			setDataListIngredient(data.error);
@@ -268,7 +297,8 @@ export default function KickoffScreen({navigation}) {
 
 	function onItemPress(data){
 		setValidatedIngredient([...validatedIngredient,data.id])
-		dispatch(addIngredient({photo: data.photo, data: {_id: data.id, display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
+		const baseUnit = data.defaultUnit || 'g';
+		dispatch(addIngredient({photo: data.photo, data: {_id: data.id, display_name: data.name, g_per_serving: data.g_per_serving, defaultUnit: baseUnit, unit: baseUnit, nutrition: data.nutrition }}))
 	}
 
 	function onItemRemove(data) {
@@ -281,20 +311,25 @@ export default function KickoffScreen({navigation}) {
 
 	const handleAddIngredient = () => {
 		setSearchInput("");
+		fadeOutBackdrop();
 		if(modalRef.current){
-			modalRef.current.animate('slideOutUp', 800).then(() => {
+			// fadeOutDown = downward slide + opacity fade, matching the
+			// backdrop's 425ms feel. Smoother dismiss than the prior
+			// slideOutUp (which moved against the user's instinct).
+			modalRef.current.animate('fadeOutDown', 425).then(() => {
 			setModalVisible(false);
 			setDataListIngredient([]);
 		  	})
 		}
 	}
 
-	
+
 
 	const handleGoBack = () => {
 		setSearchInput("");
+		fadeOutBackdrop();
 		if(modalRef.current){
-			modalRef.current.animate('slideOutUp', 800).then(() => {
+			modalRef.current.animate('fadeOutDown', 425).then(() => {
 			setModalVisible(false);
 			setDataListIngredient([]);
 		  	})
@@ -308,7 +343,36 @@ export default function KickoffScreen({navigation}) {
 
   	return (
 		  <View style={styles.container} >
-			<Modal visible={modalVisible} animationtType="none" transparent>
+			{navigation.canGoBack() && (
+				<TouchableOpacity
+					onPress={() => navigation.goBack()}
+					accessibilityRole="button"
+					accessibilityLabel={t('common.back')}
+					hitSlop={10}
+					style={styles.backButton}
+				>
+					<FontAwesome name="chevron-left" size={20} color={css.palette.white} />
+				</TouchableOpacity>
+			)}
+			<Modal
+				visible={modalVisible}
+				animationType="none"
+				transparent
+				statusBarTranslucent
+				navigationBarTranslucent
+			>
+				{/* Backdrop layer — opacity is driven by the Animated value so
+				    the dim fades in/out smoothly. pointerEvents="none" lets
+				    touches pass through to the KeyboardAvoidingView below
+				    (which keeps catching keyboard adjustments). */}
+				<Animated.View
+					style={[
+						StyleSheet.absoluteFillObject,
+						styles.modalBackdrop,
+						{ opacity: backdropOpacity },
+					]}
+					pointerEvents="none"
+				/>
 				<KeyboardAvoidingView
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
 				style={styles.key}>
@@ -468,6 +532,11 @@ const styles = StyleSheet.create({
 		flex: 1,
 		alignContent: 'center',
 		alignItems:'center',
+		// No backgroundColor here — the dim is rendered by `modalBackdrop`
+		// behind so it can fade independently from this layer.
+	},
+
+	modalBackdrop: {
 		backgroundColor: 'rgba(0,0,0,0.5)',
 	},
 
@@ -479,6 +548,12 @@ const styles = StyleSheet.create({
 		borderRadius: css.radius.card,
 		height: 310,
 		width:350,
+		// iOS shadow only — the Animatable.View parent is the one being
+		// animated (fadeOutDown), and Android's `elevation` shadow is
+		// rendered out-of-band by the system. It doesn't follow the
+		// transform/opacity smoothly, producing a "lingering" shadow ghost
+		// during close. Dropping elevation removes that artifact; the iOS
+		// shadow still animates in-band with the view.
 		shadowColor: css.palette.black,
 		shadowOffset: {
 		  width: 0,
@@ -486,7 +561,6 @@ const styles = StyleSheet.create({
 		},
 		shadowOpacity: 0.25,
 		shadowRadius: 4,
-		elevation: 5,
 		marginBottom: 15,
 	},
 
@@ -554,6 +628,22 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		backgroundColor: "rgba(0, 0, 0, 0.2)",
 		borderRadius: css.radius.pill,
+	},
+
+	// Floating back button — sits above the camera view, top-left, with a
+	// translucent dark pill backdrop so the white chevron stays readable
+	// against any camera background.
+	backButton: {
+		position: 'absolute',
+		top: Platform.OS === 'ios' ? 78 : 52,
+		left: 12,
+		width: 44,
+		height: 44,
+		alignItems: 'center',
+		justifyContent: 'center',
+		backgroundColor: 'rgba(0, 0, 0, 0.35)',
+		borderRadius: css.radius.pill,
+		zIndex: 10,
 	},
 
 	galleryContainer: {

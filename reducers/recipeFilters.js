@@ -14,9 +14,12 @@ import { createSlice } from '@reduxjs/toolkit';
 //                          "no override" with a sentinel like 0.
 const initialState = {
   value: {
-    selectedOrigin: null,   // string | null
+    selectedOrigins: [],    // string[] — multi-select country origins
     selectedTags: [],       // string[] (multi-select)
-    currentServings: null,  // number | null — null = "use backend default"
+    currentServings: 1,     // number — default 1 so the stepper never shows
+                            // "-" or null in guest mode. The backend still
+                            // treats this as "manual" if it differs from the
+                            // user's saved householdComposition.
   },
 };
 
@@ -24,11 +27,19 @@ const recipeFiltersSlice = createSlice({
   name: 'recipeFilters',
   initialState,
   reducers: {
-    setOrigin: (state, action) => {
-      state.value.selectedOrigin = action.payload;
+    // Multi-select origin support: a recipe matches when its declared
+    // origins are a subset of selectedOrigins (see backend $setIsSubset).
+    setOrigins: (state, action) => {
+      state.value.selectedOrigins = Array.isArray(action.payload) ? action.payload : [];
     },
-    clearOrigin: (state) => {
-      state.value.selectedOrigin = null;
+    toggleOrigin: (state, action) => {
+      const origin = action.payload;
+      const i = state.value.selectedOrigins.indexOf(origin);
+      if (i >= 0) state.value.selectedOrigins.splice(i, 1);
+      else state.value.selectedOrigins.push(origin);
+    },
+    clearOrigins: (state) => {
+      state.value.selectedOrigins = [];
     },
     // Toggle a tag in/out of the multi-select set. Using indexOf+splice keeps
     // RTK's Immer happy (mutating draft in place) without rebuilding the array.
@@ -62,8 +73,9 @@ const recipeFiltersSlice = createSlice({
 });
 
 export const {
-  setOrigin,
-  clearOrigin,
+  setOrigins,
+  toggleOrigin,
+  clearOrigins,
   toggleTag,
   setTags,
   clearTags,
