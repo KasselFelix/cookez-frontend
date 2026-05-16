@@ -3,6 +3,7 @@
     "name": "Cookez",
     "slug": "cookez",
     "version": "2.0.0",
+    "privacy": "hidden",
     "runtimeVersion": "2.0.0",
     "updates": {
       "url": "https://u.expo.dev/ffa99151-e290-4b35-a40f-aafbf548676b"
