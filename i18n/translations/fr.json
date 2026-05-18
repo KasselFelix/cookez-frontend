@@ -20,6 +20,22 @@
     "deleteTitle": "Supprimer le compte",
     "deleteMessage": "Bientôt disponible."
   },
+  "auth": {
+    "gate": {
+      "title": "Créez un compte pour continuer",
+      "reason": {
+        "generic": "Inscrivez-vous pour profiter pleinement de Cookez.",
+        "vote": "Pour noter cette recette, créez votre compte. Ça prend moins d'une minute.",
+        "favorite": "Sauvegardez vos recettes préférées en créant un compte gratuit.",
+        "comment": "Partagez votre avis avec la communauté — créez un compte pour commenter.",
+        "comment_vote": "Aidez les meilleurs commentaires à émerger — inscrivez-vous pour voter."
+      },
+      "cta": {
+        "signup": "Créer un compte",
+        "cancel": "Plus tard"
+      }
+    }
+  },
   "profile": {
     "topBarShare": "Partager le profil",
     "topBarNotifications": "Notifications",
@@ -309,6 +325,7 @@
     },
     "nutrition": {
       "title": "Nutrition",
+      "perServing": "Par portion",
       "kcal": "{{count}} kcal",
       "openSheet": "Voir les détails nutritionnels",
       "calories": "Calories",

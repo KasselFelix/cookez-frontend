@@ -15,6 +15,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
+import { formatQuantity } from '../../modules/units';
 import AmazonAffiliateButton from './AmazonAffiliateButton';
 
 export default function ShoppingList({ items = [] }) {
@@ -47,34 +48,38 @@ export default function ShoppingList({ items = [] }) {
         {t('recipe.shopping.title')}
       </Text>
 
-      {items.map((it, i) => (
+      {items.map((it, i) => {
         // Composite key: name alone can collide when an ingredient appears
         // twice in different units. Index suffix is a safe tiebreaker.
-        <View key={`${it.name}-${i}`} style={styles.row}>
-          <View style={styles.itemBody}>
-            <Text
-              style={[
-                styles.name,
-                {
-                  color: css.palette.neutral900,
-                  fontFamily: css.typography.fontBody,
-                },
-              ]}
-            >
-              {it.quantityMissing}
-              {it.unit} {it.name}
-            </Text>
-            <Text style={[styles.subtitle, { color: css.palette.neutral700 }]}>
-              {t('recipe.shopping.percentOwned', { ratio: it.percentOwned })}
-            </Text>
+        // Les items arrivent déjà calculés (RecipeScreen recompute via le
+        // memo `shoppingList`), donc on formate juste pour l'affichage.
+        const { value, unit } = formatQuantity(it.quantityMissing, it.unit);
+        return (
+          <View key={`${it.name}-${i}`} style={styles.row}>
+            <View style={styles.itemBody}>
+              <Text
+                style={[
+                  styles.name,
+                  {
+                    color: css.palette.neutral900,
+                    fontFamily: css.typography.fontBody,
+                  },
+                ]}
+              >
+                {value}{unit} {it.name}
+              </Text>
+              <Text style={[styles.subtitle, { color: css.palette.neutral700 }]}>
+                {t('recipe.shopping.percentOwned', { ratio: it.percentOwned })}
+              </Text>
+            </View>
+            <AmazonAffiliateButton
+              ingredientName={it.name}
+              quantity={it.quantityMissing}
+              unit={it.unit}
+            />
           </View>
-          <AmazonAffiliateButton
-            ingredientName={it.name}
-            quantity={it.quantityMissing}
-            unit={it.unit}
-          />
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 }

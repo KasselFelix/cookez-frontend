@@ -3,6 +3,12 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import css from "../styles/Global";
 import MatchBadge from './result/MatchBadge';
 import SeasonalBadge from './result/SeasonalBadge';
+import { flagForOriginName } from '../modules/countries';
+
+const formatOrigin = (origin) => {
+  const items = Array.isArray(origin) ? origin : origin ? [origin] : [];
+  return items.map((name) => `${flagForOriginName(name)} ${name}`).join(' · ');
+};
 
 export default function Recipe( props ) {
 
@@ -47,7 +53,7 @@ export default function Recipe( props ) {
           > 
             <View style={styles.nameContainer}>
               <Text style={styles.name}>{props.name}</Text>
-              <Text> {props.origin}</Text>
+              <Text> {formatOrigin(props.origin)}</Text>
             </View>
             <View style={styles.imageContainer}>
               <Image 

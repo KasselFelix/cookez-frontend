@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { FontAwesome } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -42,9 +42,11 @@ export default function ResultScreen({ navigation }) {
 
   const [staleHit, setStaleHit] = useState(false);
   const [offlineNoCache, setOfflineNoCache] = useState(false);
-  // `loading` is kept for the retry path — flipping it back to true
-  // forces the effect to re-evaluate via dependency invalidation.
-  // eslint-disable-next-line no-unused-vars
+  // `loading` gates the list rendering — without it the screen would
+  // flash the previous fetch's recipes (or the App.js boot fetch) for
+  // 200-500ms before the fresh dispatch lands. Flipping it back to true
+  // also forces the effect to re-evaluate via dependency invalidation
+  // on the retry path.
   const [loading, setLoading] = useState(true);
 
   const handleRetry = useCallback(() => {
@@ -62,6 +64,10 @@ export default function ResultScreen({ navigation }) {
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
+    // Re-flag loading on every dep change so that any in-flight re-fetch
+    // (filter change, retry, reconnect) suppresses the stale list until
+    // the new response is dispatched. Idempotent on the first mount.
+    setLoading(true);
 
     (async () => {
       const cacheInput = {
@@ -73,6 +79,13 @@ export default function ResultScreen({ navigation }) {
       };
       const online = isConnected && isInternetReachable;
       let serverSucceeded = false;
+
+      // Tag chaque recette avec le nb de servings utilisé pour la requête.
+      // RecipeScreen en a besoin pour scaler `missingIngredients` correctement
+      // quand le stepper local change (les missingIngredients sont calculées
+      // côté backend pour `manualServings`, pas pour `recipe.servings`).
+      const tagRecipes = (recipes, fetchedAtServings) =>
+        (recipes || []).map((r) => ({ ...r, _fetchedAtServings: fetchedAtServings }));
 
       // Step 1 — only attempt a network fetch when we're plausibly online.
       // The AbortController cancels the request if the screen unmounts
@@ -88,7 +101,8 @@ export default function ResultScreen({ navigation }) {
           });
           if (cancelled) return;
           if (data?.result) {
-            dispatch(setRecipes(data.recipes || []));
+            const fetchedAt = filters?.currentServings ?? 1;
+            dispatch(setRecipes(tagRecipes(data.recipes, fetchedAt)));
             if (data.amazonConfig) dispatch(setAmazonConfig(data.amazonConfig));
             await setCachedResult(cacheInput, data);
             setStaleHit(false);
@@ -106,7 +120,8 @@ export default function ResultScreen({ navigation }) {
       if (!serverSucceeded && !cancelled) {
         const cached = await getCachedResult(cacheInput);
         if (cached) {
-          dispatch(setRecipes(cached.data?.recipes || []));
+          const fetchedAt = cached.data?.fetchedAtServings ?? filters?.currentServings ?? 1;
+          dispatch(setRecipes(tagRecipes(cached.data?.recipes, fetchedAt)));
           if (cached.data?.amazonConfig) {
             dispatch(setAmazonConfig(cached.data.amazonConfig));
           }
@@ -158,7 +173,18 @@ export default function ResultScreen({ navigation }) {
       </View>
       {staleHit && <StaleCacheBanner />}
       <ScrollView contentContainerStyle={styles.scroll}>
-        {recipes.length > 0 ? (
+        {loading ? (
+          // While the fetch is in flight, suppress the recipes list entirely.
+          // Reading `recipes.length` here would leak stale data from the
+          // previous fetch (or App.js boot) for the duration of the request.
+          <View
+            style={styles.loader}
+            accessibilityRole="progressbar"
+            accessibilityLabel={t('result.title')}
+          >
+            <ActivityIndicator size="large" color={css.palette.surface} />
+          </View>
+        ) : recipes.length > 0 ? (
           recipes.map((r, i) => (
             <Recipe key={r._id || i} {...r} navigation={navigation} />
           ))
@@ -188,4 +214,5 @@ const styles = StyleSheet.create({
   headerSpacer: { width: 30 },
   scroll: { marginHorizontal: '7%' },
   empty: { alignItems: 'center', marginTop: '120%' },
+  loader: { alignItems: 'center', justifyContent: 'center', marginTop: '60%' },
 });

@@ -19,17 +19,16 @@ import * as Haptics from 'expo-haptics';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { updateRecipeVote } from '../reducers/recipe';
 import { toggleFavorite } from '../reducers/user';
-import {
-  setServings,
-  incrementServings,
-  decrementServings,
-} from '../reducers/recipeFilters';
 // MODULES
 import addressIp from '../modules/addressIp';
 import imageRecipe from '../modules/images';
 import css from '../styles/Global';
 import useT from '../i18n/useT';
+import { flagForOriginName } from '../modules/countries';
+import { formatQuantity } from '../modules/units';
+import { convertToBaseUnit } from '../modules/unitConversion';
 // COMPONENTS
+import { useAuthGate } from '../contexts/AuthGateProvider';
 import HeroImageParallax, { HERO_HEIGHT } from '../components/recipe/HeroImageParallax';
 import StickyHeader from '../components/recipe/StickyHeader';
 import ActionRow from '../components/recipe/ActionRow';
@@ -41,6 +40,7 @@ import NutritionPill from '../components/recipe/NutritionPill';
 import NutritionSheet from '../components/recipe/NutritionSheet';
 import ExpiryAlert from '../components/recipe/ExpiryAlert';
 import ShoppingList from '../components/recipe/ShoppingList';
+import SeasonalBadge from '../components/result/SeasonalBadge';
 
 const NUTRITION_ORDER = ['calories', 'proteins', 'carbs', 'fat', 'fibers'];
 
@@ -75,14 +75,23 @@ export default function RecipeScreen({ route, navigation }) {
   );
 
   const user = useSelector((state) => state.user.value);
-  const currentServings = useSelector(
-    (state) => state.recipeFilters.value.currentServings
-  );
+  // Pantry = inventory user entré depuis RecapScreen. Source de vérité
+  // pour le possédé — utilisé par le memo shoppingList pour calculer la
+  // différence (required - possessed) sans dépendre du snapshot backend.
+  const pantry = useSelector((state) => state.ingredient.value, shallowEqual);
   const dispatch = useDispatch();
   const t = useT();
+  const { requireAuth } = useAuthGate();
+
+  // Servings local au RecipeScreen — découplé de Redux pour ne PAS
+  // déclencher de re-fetch côté ResultScreen (qui a currentServings dans
+  // ses deps et remplacerait state.recipe.value en arrière-plan → la
+  // recette courante disparaîtrait du store et tomberait sur navRecipe
+  // sans les champs Plan 003). Initialisé à recipe.servings (la valeur
+  // par défaut de l'auteur de la recette). Cap à 999 (UX, pas de perf).
+  const [servings, setServings] = useState(recipe.servings ?? 1);
 
   // Local UI state — kept minimal
-  const [popover, setPopover] = useState(null); // null | 'auth' | 'vote'
   const [voteModalVisible, setVoteModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [starNote, setStarNote] = useState(0);
@@ -111,13 +120,6 @@ export default function RecipeScreen({ route, navigation }) {
       scrollY.value = e.contentOffset.y;
     },
   });
-
-  // Auto-close popover after 5.5s
-  useEffect(() => {
-    if (!popover) return;
-    const t = setTimeout(() => setPopover(null), 5500);
-    return () => clearTimeout(t);
-  }, [popover]);
 
   // Vote — fire-and-forget API → updates Redux on success
   const handleFetchVote = useCallback(
@@ -162,16 +164,13 @@ export default function RecipeScreen({ route, navigation }) {
   }, [starNote, user.token, handleFetchVote]);
 
   const handleVote = () => {
-    if (user.token) setVoteModalVisible(true);
-    else setPopover('vote');
+    if (!requireAuth('vote')) return;
+    setVoteModalVisible(true);
   };
 
   // Favorite — Redux-source toggle
   const handleFavoriteToggle = useCallback(async () => {
-    if (!user.token) {
-      setPopover('auth');
-      return;
-    }
+    if (!requireAuth('favorite')) return;
     const action = isFavorite ? 'remove' : 'add';
     try {
       const response = await fetch(`${addressIp}/users/favorites/${action}`, {
@@ -189,17 +188,14 @@ export default function RecipeScreen({ route, navigation }) {
     } catch (err) {
       console.error('Favorite sync failed', err);
     }
-  }, [user.token, isFavorite, selectedRecipeId, recipe, dispatch]);
+  }, [requireAuth, user.token, isFavorite, selectedRecipeId, recipe, dispatch]);
 
   // Composer
   const openComposer = useCallback(() => {
-    if (!user.token) {
-      setPopover('auth');
-      return;
-    }
+    if (!requireAuth('comment')) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     bottomSheetRef.current?.snapToIndex(0);
-  }, [user.token]);
+  }, [requireAuth]);
 
   const closeComposer = useCallback(() => {
     bottomSheetRef.current?.close();
@@ -236,17 +232,80 @@ export default function RecipeScreen({ route, navigation }) {
   const localHeroSource = recipe.picture && imageRecipe[`${recipe.picture}.jpg`];
   const heroUri = `https://res.cloudinary.com/dnym6kt4p/image/upload/${recipe.picture}.jpg`;
 
-  // Servings scaling — derive from Redux current + recipe base
-  const effectiveServings = currentServings ?? recipe.servings ?? 1;
+  // Scaling local — basé sur `servings` (state local), pas Redux.
+  // Les ingrédients sont stockés à `recipe.servings` (default auteur).
   const servingsRatio =
     recipe.servings && recipe.servings > 0
-      ? effectiveServings / recipe.servings
+      ? servings / recipe.servings
       : 1;
-  const scaledIngredients = (recipe.ingredients || []).map((ing) => ({
-    ...ing,
-    scaledQuantity:
-      Math.round((ing.quantity || 0) * servingsRatio * 10) / 10,
-  }));
+  const scaledIngredients = (recipe.ingredients || []).map((ing) => {
+    const raw = (ing.quantity || 0) * servingsRatio;
+    // Passe defaultUnit pour que `9 tsp farine` → `45g` (pas `45ml`).
+    // Le defaultUnit de l'ingrédient dicte si c'est masse ou volume.
+    const defaultUnit = ing.ingredient?.defaultUnit;
+    const { value, unit } = formatQuantity(raw, ing.unit, defaultUnit);
+    return { ...ing, displayQuantity: value, displayUnit: unit };
+  });
+
+  // Shopping list recalculée 100% client-side à partir de :
+  //   - recipe.ingredients (populated avec ri.ingredient = Ingredient doc)
+  //   - pantry (Redux state.ingredient.value — ce que l'utilisateur possède)
+  //
+  // Bénéfice : réagit instantanément au stepper local sans re-fetch, et
+  // affiche correctement les items qui deviennent insuffisants quand le
+  // nombre de portions augmente (le backend les filtre à la base, donc le
+  // scaling proportionnel de missingIngredients n'aurait pas pu les
+  // ressusciter).
+  const shoppingList = useMemo(() => {
+    if (!recipe?.ingredients?.length || !recipe?.servings) return [];
+    const ratio = servings / recipe.servings;
+
+    return recipe.ingredients
+      .map((ri) => {
+        const ingDoc = ri.ingredient;
+        const ingId = ingDoc?._id || ingDoc;
+        if (!ingId) return null;
+        // NOTE : on n'exclut PAS les BASIC_INGREDIENTS (sucre/sel/farine/...)
+        // de la shopping list. Le backend les ignore pour le matchRatio
+        // (sinon presque tout serait flaggé manquant), mais l'utilisateur
+        // peut quand même avoir besoin d'en acheter.
+
+        const refW = ingDoc?.quantity || 1;
+        const baseUnit = ingDoc?.defaultUnit || 'g';
+        const requiredBase = convertToBaseUnit(ri.quantity, ri.unit, refW) * ratio;
+        if (requiredBase <= 0) return null;
+
+        // Possessed lookup par _id dans le pantry (data.* est le shape)
+        const owned = pantry.find((p) => {
+          const pid = p?.data?._id || p?._id;
+          return pid && String(pid) === String(ingId);
+        });
+        const ownedQty = Number(owned?.data?.g_per_serving) || 0;
+        const ownedUnit = owned?.data?.unit || owned?.data?.defaultUnit || baseUnit;
+        const possessedBase = owned
+          ? convertToBaseUnit(ownedQty, ownedUnit, refW)
+          : 0;
+
+        const missingBase = Math.max(0, requiredBase - possessedBase);
+        if (missingBase <= 0) return null;
+
+        const percentOwned = Math.min(
+          100,
+          Math.round((possessedBase / requiredBase) * 100)
+        );
+        const isUnitBased = ri.unit === 'unit';
+
+        return {
+          name: ri.name,
+          quantityMissing: isUnitBased
+            ? Math.ceil(missingBase / refW)
+            : Math.round(missingBase),
+          unit: isUnitBased ? 'units' : baseUnit,
+          percentOwned,
+        };
+      })
+      .filter(Boolean);
+  }, [recipe, servings, pantry]);
 
   // Pinned iteration order (backend may not freeze object key order)
   const orderedNutrition = recipe.nutritionPerServing
@@ -257,21 +316,8 @@ export default function RecipeScreen({ route, navigation }) {
       )
     : null;
 
-  const onServingsIncrement = () => {
-    if (currentServings == null) {
-      dispatch(setServings(Math.min((recipe.servings || 1) + 1, 12)));
-    } else {
-      dispatch(incrementServings());
-    }
-  };
-
-  const onServingsDecrement = () => {
-    if (currentServings == null) {
-      dispatch(setServings(Math.max((recipe.servings || 1) - 1, 1)));
-    } else {
-      dispatch(decrementServings());
-    }
-  };
+  const onServingsIncrement = () => setServings((s) => Math.min(s + 1, 999));
+  const onServingsDecrement = () => setServings((s) => Math.max(s - 1, 1));
 
   // Star vote modal display
   const starsVotes = [];
@@ -314,7 +360,11 @@ export default function RecipeScreen({ route, navigation }) {
 
           <View style={styles.contentCard}>
             {/* Meta */}
-            <Text style={styles.origin}>{recipe.origin}</Text>
+            <Text style={styles.origin}>
+              {(Array.isArray(recipe.origin) ? recipe.origin : recipe.origin ? [recipe.origin] : [])
+                .map((name) => `${flagForOriginName(name)} ${name}`)
+                .join(' · ')}
+            </Text>
             <Text style={styles.title}>{recipe.name}</Text>
             <View style={styles.metaRow}>
               <View style={styles.metaPill}>
@@ -339,9 +389,9 @@ export default function RecipeScreen({ route, navigation }) {
               </View>
               <NutritionPill
                 caloriesPerServing={orderedNutrition?.calories}
-                currentServings={effectiveServings}
                 onPress={openNutritionSheet}
               />
+              {recipe.isSeasonal && <SeasonalBadge />}
             </View>
 
             <ActionRow
@@ -353,17 +403,6 @@ export default function RecipeScreen({ route, navigation }) {
               nbVotes={nbVotes}
             />
 
-            <View style={styles.servingsRow}>
-              <Text style={styles.servingsLabel}>
-                {t('recipe.servings.label')}
-              </Text>
-              <ServingsStepper
-                value={effectiveServings}
-                onIncrement={onServingsIncrement}
-                onDecrement={onServingsDecrement}
-              />
-            </View>
-
             {/* Expiry alert — surfaces ingredients about to expire */}
             <ExpiryAlert ingredients={recipe.expiringIngredients || []} />
 
@@ -373,18 +412,28 @@ export default function RecipeScreen({ route, navigation }) {
               <Text style={styles.body}>{recipe.description}</Text>
             </Animatable.View>
 
-            {/* Ingredients */}
+            {/* Ingredients — header inclut le stepper de servings :
+                ajuster les portions met à jour les quantités directement
+                dans la même card (feedback visuel immédiat). */}
             <Animatable.View animation="fadeInUp" duration={550} style={styles.section}>
-              <Text style={styles.sectionTitle}>Ingredients</Text>
+              <View style={styles.sectionHeaderRow}>
+                <Text style={styles.sectionTitleInline}>Ingredients</Text>
+                <ServingsStepper
+                  value={servings}
+                  max={999}
+                  onIncrement={onServingsIncrement}
+                  onDecrement={onServingsDecrement}
+                />
+              </View>
               {scaledIngredients.map((ing, i) => (
                 <Text key={`${ing.name}-${i}`} style={styles.body}>
-                  •  {ing.scaledQuantity}{ing.unit || 'g'} {ing.name}
+                  •  {ing.displayQuantity}{ing.displayUnit} {ing.name}
                 </Text>
               ))}
             </Animatable.View>
 
             {/* Shopping list — Amazon CTAs for missing ingredients */}
-            <ShoppingList items={recipe.missingIngredients || []} />
+            <ShoppingList items={shoppingList} />
 
             {/* Steps */}
             <Animatable.View animation="fadeInUp" duration={600} style={styles.section}>
@@ -436,7 +485,6 @@ export default function RecipeScreen({ route, navigation }) {
         <NutritionSheet
           ref={nutritionSheetRef}
           nutritionPerServing={orderedNutrition}
-          baseServings={recipe.servings}
         />
 
         <BottomSheet
@@ -492,6 +540,8 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
     gap: css.spacing.sm,
     marginTop: css.spacing.md,
   },
@@ -509,17 +559,17 @@ const styles = StyleSheet.create({
     fontSize: css.typography.captionSize,
     color: css.palette.primary800,
   },
-  servingsRow: {
+  sectionHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: css.spacing.md,
-    marginTop: css.spacing.md,
+    marginBottom: css.spacing.sm,
+    gap: css.spacing.sm,
   },
-  servingsLabel: {
-    fontFamily: css.typography.fontUI,
-    fontSize: css.typography.captionSize,
-    color: css.palette.neutral700,
+  sectionTitleInline: {
+    fontFamily: css.typography.fontHeading,
+    fontSize: css.typography.h3Size,
+    color: css.palette.neutral900,
   },
   section: {
     marginTop: css.spacing.lg,

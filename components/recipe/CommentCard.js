@@ -1,8 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import Popover from 'react-native-popover-view';
 import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
 import Animated, {
@@ -12,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import addressIp from '../../modules/addressIp';
 import { updateCommentVotes } from '../../reducers/recipe';
+import { useAuthGate } from '../../contexts/AuthGateProvider';
 import css from '../../styles/Global';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -37,7 +37,7 @@ export default function CommentCard({
 }) {
   const user = useSelector((state) => state.user.value);
   const dispatch = useDispatch();
-  const [showPopover, setShowPopover] = useState(false);
+  const { requireAuth } = useAuthGate();
 
   // Derived vote state — pure projection of props
   const alreadyUp = useMemo(
@@ -73,15 +73,6 @@ export default function CommentCard({
     });
   };
 
-  const requireAuth = () => {
-    if (!user.token) {
-      setShowPopover(true);
-      setTimeout(() => setShowPopover(false), 4000);
-      return false;
-    }
-    return true;
-  };
-
   const syncVoteToRedux = (data) => {
     if (!recipeId || !data?.comment) return;
     dispatch(
@@ -97,7 +88,7 @@ export default function CommentCard({
   };
 
   const handleUp = async () => {
-    if (!requireAuth()) return;
+    if (!requireAuth('comment_vote')) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     animatePress(upScale);
     try {
@@ -114,7 +105,7 @@ export default function CommentCard({
   };
 
   const handleDown = async () => {
-    if (!requireAuth()) return;
+    if (!requireAuth('comment_vote')) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     animatePress(downScale);
     try {
@@ -146,79 +137,59 @@ export default function CommentCard({
 
       <Text style={styles.message}>{message}</Text>
 
-      <Popover
-        placement="floating"
-        backgroundStyle={styles.popoverBackground}
-        isVisible={showPopover}
-        onRequestClose={() => setShowPopover(false)}
-        from={
-          <View style={styles.voteRow}>
-            <AnimatedTouchable
-              style={[
-                styles.votePill,
-                alreadyUp && styles.votePillActiveUp,
-                upStyle,
-              ]}
-              onPress={handleUp}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={`Upvote comment, ${up?.length ?? 0} upvotes`}
-              accessibilityState={{ selected: alreadyUp }}
-            >
-              <FontAwesome
-                name="thumbs-up"
-                size={14}
-                color={alreadyUp ? css.palette.success : css.palette.neutral500}
-              />
-              <Text
-                style={[
-                  styles.votePillText,
-                  alreadyUp && styles.votePillTextActiveUp,
-                ]}
-              >
-                {up?.length ?? 0}
-              </Text>
-            </AnimatedTouchable>
+      <View style={styles.voteRow}>
+        <AnimatedTouchable
+          style={[styles.votePill, alreadyUp && styles.votePillActiveUp, upStyle]}
+          onPress={handleUp}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`Upvote comment, ${up?.length ?? 0} upvotes`}
+          accessibilityState={{ selected: alreadyUp }}
+        >
+          <FontAwesome
+            name="thumbs-up"
+            size={14}
+            color={alreadyUp ? css.palette.success : css.palette.neutral500}
+          />
+          <Text
+            style={[
+              styles.votePillText,
+              alreadyUp && styles.votePillTextActiveUp,
+            ]}
+          >
+            {up?.length ?? 0}
+          </Text>
+        </AnimatedTouchable>
 
-            <AnimatedTouchable
-              style={[
-                styles.votePill,
-                alreadyDown && styles.votePillActiveDown,
-                downStyle,
-              ]}
-              onPress={handleDown}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={`Downvote comment, ${down?.length ?? 0} downvotes`}
-              accessibilityState={{ selected: alreadyDown }}
-            >
-              <FontAwesome
-                name="thumbs-down"
-                size={14}
-                color={alreadyDown ? css.palette.error : css.palette.neutral500}
-              />
-              <Text
-                style={[
-                  styles.votePillText,
-                  alreadyDown && styles.votePillTextActiveDown,
-                ]}
-              >
-                {down?.length ?? 0}
-              </Text>
-            </AnimatedTouchable>
+        <AnimatedTouchable
+          style={[styles.votePill, alreadyDown && styles.votePillActiveDown, downStyle]}
+          onPress={handleDown}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`Downvote comment, ${down?.length ?? 0} downvotes`}
+          accessibilityState={{ selected: alreadyDown }}
+        >
+          <FontAwesome
+            name="thumbs-down"
+            size={14}
+            color={alreadyDown ? css.palette.error : css.palette.neutral500}
+          />
+          <Text
+            style={[
+              styles.votePillText,
+              alreadyDown && styles.votePillTextActiveDown,
+            ]}
+          >
+            {down?.length ?? 0}
+          </Text>
+        </AnimatedTouchable>
 
-            <View style={styles.scorePill}>
-              <Text style={styles.scoreText}>
-                {score >= 0 ? `+${score}` : score}
-              </Text>
-            </View>
-          </View>
-        }
-      >
-        <View style={styles.popoverContainer}>
-          <Text style={styles.popoverText}>Sign in to vote on comments</Text>
+        <View style={styles.scorePill}>
+          <Text style={styles.scoreText}>
+            {score >= 0 ? `+${score}` : score}
+          </Text>
         </View>
-      </Popover>
+      </View>
     </View>
   );
 }
@@ -315,20 +286,5 @@ const styles = StyleSheet.create({
     fontFamily: css.typography.fontHeading,
     fontSize: css.typography.captionSize,
     color: css.palette.primary800,
-  },
-  popoverBackground: {
-    backgroundColor: css.palette.transparent,
-  },
-  popoverContainer: {
-    paddingVertical: css.spacing.sm,
-    paddingHorizontal: css.spacing.md,
-    backgroundColor: css.palette.surfaceCard,
-    borderRadius: css.radius.md,
-    ...css.shadow.md,
-  },
-  popoverText: {
-    fontFamily: css.typography.fontBody,
-    fontSize: css.typography.bodySmSize,
-    color: css.palette.neutral900,
   },
 });
