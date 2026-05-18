@@ -1,7 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -13,18 +13,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSelector } from "react-redux";
-//import * as Unicons from "@iconscout/react-native-unicons";
+import { useDispatch, useSelector } from "react-redux";
 
 import ListRecipes from "../components/ListRecipes";
 import SearchRecipe from "../components/SearchRecipe";
 import addressIp from "../modules/addressIp";
-import css from "../styles/Global";
 import { setRecipes } from "../reducers/recipe";
-
-// ─────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────
+import css from "../styles/Global";
 
 const STAFF_CARD_WIDTH = 160;
 const STAFF_CARD_HEIGHT = 213;
@@ -32,10 +27,6 @@ const COMMUNITY_CARD_HEIGHT = 100;
 const COMMUNITY_IMAGE_WIDTH_RATIO = 0.35;
 
 const FILTERS = ["All", "Quick", "Vegan", "Dessert", "Trending"];
-
-// ─────────────────────────────────────────────
-// Pure helpers (outside component — stable refs)
-// ─────────────────────────────────────────────
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -45,19 +36,11 @@ function getGreeting() {
 }
 
 function renderStars(votes, size = 13) {
-  // const rounded = Math.floor(avgNote || 0);
-  // return Array.from({ length: 5 }, (_, i) => (
-  //   <FontAwesome
-  //     key={i}
-  //     name="star"
-  //     size={size}
-  //     color={i < rounded ? css.palette.warning : css.palette.neutral300}
-  //   />
-  const avg = votes?.length 
-    ? votes.reduce((s, v) => s + v.note, 0) / votes.length 
+  const avg = votes?.length
+    ? votes.reduce((s, v) => s + v.note, 0) / votes.length
     : 0;
   const rounded = Math.floor(avg);
-  
+
   return Array.from({ length: 5 }, (_, i) => (
     <FontAwesome
       key={i}
@@ -70,31 +53,72 @@ function renderStars(votes, size = 13) {
 
 function applyFilter(recipes, filter) {
   switch (filter) {
-    case "Quick":    return recipes.filter((r) => r.preparationTime <= 20);
-    case "Vegan":    return recipes.filter((r) => r.origin?.toLowerCase() === "vegan");
-    case "Dessert":  return recipes.filter((r) => r.origin?.toLowerCase() === "dessert");
-    case "Trending": return recipes.filter((r) => (r.votes?.length || 0) >= 3);
-    default:         return recipes;
+    case "Quick":
+      return recipes.filter((r) => r.preparationTime <= 20);
+    case "Vegan":
+      return recipes.filter((r) => r.origin?.toLowerCase() === "vegan");
+    case "Dessert":
+      return recipes.filter((r) => r.origin?.toLowerCase() === "dessert");
+    case "Trending":
+      return recipes.filter((r) => (r.votes?.length || 0) >= 3);
+    default:
+      return recipes;
   }
 }
 
-// ─────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────
-
 export default function UserDashboardScreen({ navigation }) {
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
   const recipes = useSelector((state) => state.recipe.value);
-  
-  //const [recipes, setRecipes]               = useState([]);
-  const [isLoading, setIsLoading]           = useState(true);
-  const [activeFilter, setActiveFilter]     = useState("All");
-  const [modalVisible, setModalVisible]     = useState(false);
-  const [searchRecipe, setSearchRecipe]     = useState("");
-  const [clicked, setClicked]               = useState(false);
+
+  // Loading only matters while the Redux cache is cold. App.js fires a boot
+  // fetch for /recipes/all on mount, but it can fail silently (Vercel cold
+  // start, network blip, data.result === false). Without our own fetch as a
+  // fallback, this screen would lock on the spinner forever.
+  const [isLoading, setIsLoading] = useState(recipes.length === 0);
+  const [loadError, setLoadError] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [searchRecipe, setSearchRecipe] = useState("");
+  const [clicked, setClicked] = useState(false);
   const [dataListRecipe, setDataListRecipe] = useState([]);
 
-  // Derived lists — memoized to avoid re-sorting on every render
+  // Guards against double-mount (screen is registered in both Stack and Tab
+  // navigators — known tech debt).
+  const isFetchingRef = useRef(false);
+
+  const hydrateRecipes = useCallback(async () => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+    setLoadError(false);
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${addressIp}/recipes/all`);
+      const data = await response.json();
+      if (data?.result && Array.isArray(data.recipes)) {
+        dispatch(setRecipes(data.recipes));
+      } else {
+        setLoadError(true);
+      }
+    } catch (error) {
+      console.error("UserDashboardScreen.hydrateRecipes:", error?.message);
+      setLoadError(true);
+    } finally {
+      setIsLoading(false);
+      isFetchingRef.current = false;
+    }
+  }, [dispatch]);
+
+  // Mount-only: re-running on `recipes` change would loop after the dispatch.
+  useEffect(() => {
+    if (recipes.length === 0) {
+      hydrateRecipes();
+    } else {
+      setIsLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const staffPicks = useMemo(
     () =>
       [...recipes]
@@ -109,7 +133,6 @@ export default function UserDashboardScreen({ navigation }) {
     [recipes, activeFilter]
   );
 
-  // ── Search ──
   const handleFetchRecipe = useCallback(async () => {
     if (!searchRecipe.trim()) return;
     try {
@@ -126,36 +149,25 @@ export default function UserDashboardScreen({ navigation }) {
     }
   }, [searchRecipe]);
 
-  // Run search when query changes
   useFocusEffect(
     useCallback(() => {
       if (searchRecipe.length > 0) handleFetchRecipe();
     }, [searchRecipe, handleFetchRecipe])
   );
 
-  // ── Navigate to recipe + persist lastViewed ──
   const navigateToRecipe = useCallback(
     (recipe) => {
       navigation.navigate("Recipe", { recipe });
       if (user?.token) {
+        // Fire-and-forget — must not block navigation.
         fetch(`${addressIp}/users/lastViewed`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token: user.token, recipeId: recipe._id }),
-        }).catch(() => {}); // fire-and-forget — must not block navigation
+        }).catch(() => {});
       }
     },
     [navigation, user]
-  );
-
-  const onItemPress = useCallback(
-    (recipe) => {
-      setModalVisible(false);
-      setSearchRecipe("");
-      setDataListRecipe([]);
-      navigation.navigate("Recipe", { recipe });
-    },
-    [navigation]
   );
 
   const closeModal = useCallback(() => {
@@ -163,6 +175,14 @@ export default function UserDashboardScreen({ navigation }) {
     setSearchRecipe("");
     setDataListRecipe([]);
   }, []);
+
+  const onItemPress = useCallback(
+    (recipe) => {
+      closeModal();
+      navigation.navigate("Recipe", { recipe });
+    },
+    [closeModal, navigation]
+  );
 
   const greeting = getGreeting();
 
@@ -180,7 +200,28 @@ export default function UserDashboardScreen({ navigation }) {
     );
   }
 
-  // ─── Empty state ───
+  // ─── Error state ─── (cache cold AND fetch failed)
+  if (!isLoading && loadError && recipes.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <FontAwesome name="exclamation-triangle" size={48} color={css.palette.neutral300} />
+        <Text style={styles.emptyTitle}>Couldn’t load recipes</Text>
+        <Text style={styles.emptySubtitle}>
+          Check your connection and try again.
+        </Text>
+        <TouchableOpacity
+          style={styles.emptyCtaButton}
+          onPress={hydrateRecipes}
+          accessibilityRole="button"
+          accessibilityLabel="Retry loading recipes"
+        >
+          <Text style={styles.emptyCtaText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // ─── Empty state ─── (loaded successfully but database is empty)
   if (!isLoading && recipes.length === 0) {
     return (
       <View style={styles.emptyContainer}>
@@ -226,7 +267,6 @@ export default function UserDashboardScreen({ navigation }) {
               accessibilityRole="button"
               accessibilityLabel="Scan ingredients"
             >
-              {/* <Unicons.UilCameraPlus size={18} color={css.palette.primary800} /> */}
               <Text style={styles.quickActionText}>Scan</Text>
             </TouchableOpacity>
 
@@ -236,7 +276,6 @@ export default function UserDashboardScreen({ navigation }) {
               accessibilityRole="button"
               accessibilityLabel="Search recipes"
             >
-              {/* <Unicons.UilSearch size={18} color={css.palette.primary800} /> */}
               <Text style={styles.quickActionText}>Search</Text>
             </TouchableOpacity>
 
@@ -415,10 +454,6 @@ export default function UserDashboardScreen({ navigation }) {
   );
 }
 
-// ─────────────────────────────────────────────
-// Styles
-// ─────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -594,11 +629,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: css.spacing.md,
     borderRadius: css.radius.pill,
   },
-  filterChipActive:   { backgroundColor: css.palette.primary800 },
-  filterChipInactive: { backgroundColor: css.palette.secondary200 },
-  filterChipText:     { fontFamily: css.typography.fontUI, fontSize: css.typography.h5Size, fontWeight: "500" },
-  filterChipTextActive:   { color: css.palette.white },
-  filterChipTextInactive: { color: css.palette.primary800 },
+  filterChipActive: {
+    backgroundColor: css.palette.primary800,
+  },
+  filterChipInactive: {
+    backgroundColor: css.palette.secondary200,
+  },
+  filterChipText: {
+    fontFamily: css.typography.fontUI,
+    fontSize: css.typography.h5Size,
+    fontWeight: "500",
+  },
+  filterChipTextActive: {
+    color: css.palette.white,
+  },
+  filterChipTextInactive: {
+    color: css.palette.primary800,
+  },
 
   // Section 4 — Community Favorites
   communityCard: {

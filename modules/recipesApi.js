@@ -30,7 +30,13 @@ export async function fetchRecipeResult({
     ingredients: (ingredients || []).map((i) => ({
       _id: i.data?._id || i._id,
       name: i.data?.display_name || i.name,
-      quantity: i.data?.g_per_serving ?? i.quantity ?? 100,
+      // Default `?? 0` (NOT `?? 100`) : si la quantité possédée est
+      // inconnue, on suppose 0 plutôt que de faker 100g — sinon le
+      // backend croit que l'utilisateur possède 100g de tout ingrédient
+      // sans quantité explicite, gonfle artificiellement matchRatio et
+      // filtre l'item de missingIngredients à tort. Voir Plan 003
+      // Phase F pour le refactor de fond (séparer ref BDD vs override).
+      quantity: i.data?.g_per_serving ?? i.quantity ?? 0,
       // Send the user's chosen unit; falls back to the ingredient's
       // defaultUnit, then to "g". Backend convertToBaseUnit normalizes.
       unit: i.data?.unit || i.data?.defaultUnit || 'g',

@@ -20,6 +20,22 @@
     "deleteTitle": "Delete account",
     "deleteMessage": "Coming soon."
   },
+  "auth": {
+    "gate": {
+      "title": "Create an account to continue",
+      "reason": {
+        "generic": "Sign up to unlock the full Cookez experience.",
+        "vote": "To rate this recipe, you'll need an account. It only takes a minute.",
+        "favorite": "Save recipes to your favorites by creating a free account.",
+        "comment": "Share your thoughts with the community — create an account to comment.",
+        "comment_vote": "Help the best comments rise — sign up to upvote and downvote."
+      },
+      "cta": {
+        "signup": "Create account",
+        "cancel": "Not now"
+      }
+    }
+  },
   "profile": {
     "topBarShare": "Share profile",
     "topBarNotifications": "Notifications",
@@ -309,6 +325,7 @@
     },
     "nutrition": {
       "title": "Nutrition",
+      "perServing": "Per serving",
       "kcal": "{{count}} kcal",
       "openSheet": "Open nutrition details",
       "calories": "Calories",
