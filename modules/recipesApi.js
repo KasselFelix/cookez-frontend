@@ -40,6 +40,10 @@ export async function fetchRecipeResult({
       // Send the user's chosen unit; falls back to the ingredient's
       // defaultUnit, then to "g". Backend convertToBaseUnit normalizes.
       unit: i.data?.unit || i.data?.defaultUnit || 'g',
+      // Forward expiry date from pantry items so the backend's anti-waste
+      // bonus can flag recipes that use ingredients expiring within 48h
+      // (returned as `recipe.expiringIngredients` array on /result).
+      expiryDate: i.data?.expiryDate || null,
     })),
     allergy,
     // Multi-origin: backend matches when the recipe's origins are a

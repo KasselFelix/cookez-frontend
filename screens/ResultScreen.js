@@ -186,7 +186,7 @@ export default function ResultScreen({ navigation }) {
           </View>
         ) : recipes.length > 0 ? (
           recipes.map((r, i) => (
-            <Recipe key={r._id || i} {...r} navigation={navigation} />
+            <Recipe key={r._id || i} {...r} navigation={navigation} fromRecipeSearch />
           ))
         ) : (
           <Animatable.View

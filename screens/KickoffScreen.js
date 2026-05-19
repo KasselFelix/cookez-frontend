@@ -1,18 +1,22 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Animated, StyleSheet, TouchableOpacity, ScrollView, View, Image, Text, Modal, KeyboardAvoidingView, Platform } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-import { addIngredient, removeIngredient } from "../reducers/ingredient";
+import { addIngredient, removeIngredient, updateIngredientQuantity, updateIngredientUnit } from "../reducers/ingredient";
+import { setPantry, setLoading as setPantryLoading, setError as setPantryError } from "../reducers/pantry";
+import { getPantry } from "../modules/pantryApi";
 import { FontAwesome } from "@expo/vector-icons";
-import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused, useFocusEffect } from "@react-navigation/native";
 
 import addressIp from "../modules/addressIp";
 import { FOODVISOR_API_KEY } from '../modules/apiKeys';
 import ListIngredients from "../components/ListIngredients";
 import SearchIngredients from "../components/SearchIngredients";
-import MySmallButton from "../components/MySmallButton";
 import MyButton from '../components/MyButton';
 import InventoryGrid from "../components/kickoff/InventoryGrid";
+import PantryHero from "../components/kickoff/PantryHero";
+import SelectedChips from "../components/kickoff/SelectedChips";
 import buttonStyles from '../styles/Button';
 import css from "../styles/Global";
 import { useTheme } from "../contexts/ThemeProvider";
@@ -48,6 +52,7 @@ export default function KickoffScreen({navigation}) {
 
   	const dispatch = useDispatch();
   	const isFocused = useIsFocused();
+	const insets = useSafeAreaInsets();
 	const [imageUrl, setImageUrl] = useState(null);
   	let cameraRef = useRef(null);
 	const modalRef = useRef(null);
@@ -81,6 +86,63 @@ export default function KickoffScreen({navigation}) {
 			requestPermission();
 		}
 	}, [permission]);
+
+	// Hydratation du pantry au mount. Sans ce fetch, la grille
+	// "Cook from your pantry" reste invisible tant que l'utilisateur n'a
+	// pas visité ProfileScreen (seul autre site qui appelle getPantry).
+	// Idempotent : skip si items déjà présents (cas où on arrive depuis
+	// Profile). Erreur silencieuse → grid simplement cachée, pas de crash.
+	useEffect(() => {
+		if (!user?.token) return;
+		if (pantryItems.length > 0) return;
+		let cancelled = false;
+		(async () => {
+			dispatch(setPantryLoading(true));
+			const { ok, data, error } = await getPantry(user.token);
+			if (cancelled) return;
+			if (ok) dispatch(setPantry(data?.items ?? []));
+			else dispatch(setPantryError(error));
+			dispatch(setPantryLoading(false));
+		})();
+		return () => { cancelled = true; };
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [user?.token]);
+
+	// Sync au focus : les ingrédients sélectionnés sont snapshotés au moment
+	// du toggle (g_per_serving = pantry.quantity à cet instant). Si l'user
+	// edit la quantité d'un pantry item dans Profile puis revient sur
+	// Kickoff, l'entrée Redux `state.ingredient.value` reste stale → Recap
+	// initialise avec l'ancienne valeur. On re-sync au focus de Kickoff.
+	// Le sync s'arrête à Kickoff : ça ne pollue PAS les overrides manuels
+	// que l'user pourrait faire sur RecapScreen (le focus n'y déclenche
+	// rien).
+	useFocusEffect(
+		useCallback(() => {
+			ingredients.forEach((ing) => {
+				const id = ing?.data?._id;
+				if (!id) return;
+				const pantryItem = pantryItems.find((p) => {
+					const pid = p?.ingredient?._id || p?.ingredient;
+					return pid && String(pid) === String(id);
+				});
+				if (!pantryItem) return;
+				if (ing.data.g_per_serving !== pantryItem.quantity) {
+					dispatch(updateIngredientQuantity({
+						display_name: ing.data.display_name,
+						quantity: pantryItem.quantity,
+					}));
+				}
+				const freshUnit = pantryItem.unit || pantryItem.ingredient?.defaultUnit;
+				if (freshUnit && ing.data.unit !== freshUnit) {
+					dispatch(updateIngredientUnit({
+						display_name: ing.data.display_name,
+						unit: freshUnit,
+					}));
+				}
+			});
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+		}, [pantryItems])
+	);
 
 	// synchronise la sélection
 	useEffect(() => {
@@ -122,32 +184,12 @@ export default function KickoffScreen({navigation}) {
 		}
 	}, [searchInput]);
 
-	//en cours de dev pour afficher la photo apres recherche
-	// const fetchImageFromUnsplash = async (ingredientName) => {
-	// 	try {
-	// 		const response = await fetch(`https://api.pexels.com/v1/search?query=${ingredientName}`, {
-	// 			headers: {
-	// 				Authorization: PEXELS_API_KEY,
-	// 			},
-	// 		});
-	// 		const data = await response.json();
-	// 		if (data.results && data.results.length > 0) {
-	// 			setImageUrl(data.results[0].urls.small);
-	// 			setPictures([...pictures, imageUrl])
-	// 		} else {
-	// 			console.error("No image found");
-	// 		}
-	// 	} catch (error) {
-	// 		console.error("Error fetching image from Unsplash", error);
-	// 	}
-	//   };
+	
 
 
 	function handleBtn () {
 		if(!saveMoney){
 			for (let imagePath of pictures){
-				// Make the request
-				// if(!imagePath.includes("https://images.unsplash.com/")){
 				const handleFetch = async (cpt=0)=>{
 					try{						
 						//Create FormData	
@@ -183,7 +225,6 @@ export default function KickoffScreen({navigation}) {
 					}
 				}
 				handleFetch();	 
-			// }
 			}
 		}
 		navigation.navigate('Recap')
@@ -233,7 +274,8 @@ export default function KickoffScreen({navigation}) {
 			: t('kickoff.removePhotoA11y');
 
 		return (
-			<View key={slot.key} style={styles.photoContainer}>
+			<View key={slot.key} style={styles.photoShadowWrap}>
+			<View style={styles.photoContainer}>
 				<View style={styles.deleteIcon}>
 					<TouchableOpacity
 						onPress={() => {
@@ -253,7 +295,7 @@ export default function KickoffScreen({navigation}) {
 				<Image
 					source={{ uri: slot.uri }}
 					style={styles.photo}
-					accessibilityLabel={isSearch && slot.name ? slot.name : 'ingredient image'}
+					accessibilityLabel={isSearch && slot.name ? slot.name : t('kickoff.slot.imageA11y')}
 				/>
 				{isSearch && !!slot.name && (
 					<View style={styles.nameBand} pointerEvents="none">
@@ -265,6 +307,11 @@ export default function KickoffScreen({navigation}) {
 						</Text>
 					</View>
 				)}
+				{/* Dashed border rendered as an absolute overlay so it sits
+				    on top of the Image (and nameBand) instead of being
+				    clipped/hidden by the parent's overflow:'hidden'. */}
+				<View style={styles.slotBorderOverlay} pointerEvents="none" />
+			</View>
 			</View>
 		);
 	};
@@ -276,29 +323,36 @@ export default function KickoffScreen({navigation}) {
 			rendered.push(
 				<View key={`ph-${i}`} style={styles.addPicturesContainer}>
 					<FontAwesome name="camera-retro" size={70} color="rgba(255,255,255, 0.4)" />
-					<Text style={styles.text}>Ingredient</Text>
+					<Text style={styles.text}>{t('kickoff.slot.placeholder')}</Text>
+					{/* Dashed border via absolute overlay — Android rendering
+					    of borderStyle:'dashed' + borderRadius on the same
+					    View is unreliable (fabric/new arch quirks). Layering
+					    the border on an absolute child decouples the two and
+					    gives a consistent dashed look across iOS + Android. */}
+					<View style={styles.placeholderBorderOverlay} pointerEvents="none" />
 				</View>
 			);
 		}
 		return rendered;
 	};
 
-	// function onItemPress(data){
-	// 	//fetchImageFromUnsplash (data.name)
-	// 	setValidatedIngredient([...validatedIngredient,data.id])
-	// 	//dispatch(addIngredient({photo:imageUrl ,data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
-	// 	dispatch(addIngredient({photo: data.photo, data: {display_name: data.name, g_per_serving: data.g_per_serving, nutrition: data.nutrition }}))
-	// 	if(modalRef.current){
-	// 		modalRef.current.animate('slideOutUp', 800).then(() => {
-	// 			setModalVisible(false);
-	// 	  	})
-	// 	}
-	// }
+
 
 	function onItemPress(data){
 		setValidatedIngredient([...validatedIngredient,data.id])
 		const baseUnit = data.defaultUnit || 'g';
-		dispatch(addIngredient({photo: data.photo, data: {_id: data.id, display_name: data.name, g_per_serving: data.g_per_serving, defaultUnit: baseUnit, unit: baseUnit, nutrition: data.nutrition }}))
+		// Si l'ingrédient cherché est aussi dans le pantry de l'utilisateur,
+		// pré-remplir avec la quantité user (ce qu'il possède réellement)
+		// plutôt qu'avec la quantité de référence BDD. Symétrie avec le
+		// tap pantry direct via InventoryGrid : peu importe le chemin
+		// d'ajout, la quantité initiale reflète l'inventaire user.
+		const pantryMatch = pantryItems.find((p) => {
+			const pid = p?.ingredient?._id || p?.ingredient;
+			return pid && String(pid) === String(data.id);
+		});
+		const initialQty = pantryMatch?.quantity ?? data.g_per_serving;
+		const initialUnit = pantryMatch?.unit || baseUnit;
+		dispatch(addIngredient({photo: data.photo, data: {_id: data.id, display_name: data.name, g_per_serving: initialQty, defaultUnit: baseUnit, unit: initialUnit, nutrition: data.nutrition }}))
 	}
 
 	function onItemRemove(data) {
@@ -309,7 +363,7 @@ export default function KickoffScreen({navigation}) {
 		}
 	}
 
-	const handleAddIngredient = () => {
+	const handleCloseModal = () => {
 		setSearchInput("");
 		fadeOutBackdrop();
 		if(modalRef.current){
@@ -323,26 +377,22 @@ export default function KickoffScreen({navigation}) {
 		}
 	}
 
-
-
-	const handleGoBack = () => {
-		setSearchInput("");
-		fadeOutBackdrop();
-		if(modalRef.current){
-			modalRef.current.animate('fadeOutDown', 425).then(() => {
-			setModalVisible(false);
-			setDataListIngredient([]);
-		  	})
-		}
-	}
-
 	const totalSlots = pictures.length + ingredients.length;
-	const nextText = totalSlots > 0
+	// Count-only label ("2") next to the chevron icon; empty when 0.
+	// The chevron itself ("»") communicates "next" universally, so the
+	// "Next"/"Suivant" word is dropped from the visible label.
+	const nextText = totalSlots > 0 ? String(totalSlots) : '';
+	const nextA11y = totalSlots > 0
 		? t('kickoff.nextWithCount', { count: totalSlots })
 		: t('kickoff.next');
 
+	// Safe-area-aware bottom padding so the shutter button never sits flush
+	// with the home indicator / nav bar on tall devices (Pro Max, tablets).
+	// `Math.max` guarantees a minimum gap on devices without a bottom inset.
+	const bottomPadding = Math.max(insets.bottom, css.spacing.md) + css.spacing.lg;
+
   	return (
-		  <View style={styles.container} >
+		  <View style={[styles.container, { paddingBottom: bottomPadding }]} >
 			<TouchableOpacity
 				onPress={() => navigation.navigate('Home')}
 				accessibilityRole="button"
@@ -350,7 +400,7 @@ export default function KickoffScreen({navigation}) {
 				hitSlop={10}
 				style={styles.backButton}
 			>
-				<FontAwesome name="home" size={22} color={css.palette.white} />
+				<FontAwesome name="home" size={22} color={css.palette.black} />
 			</TouchableOpacity>
 			<Modal
 				visible={modalVisible}
@@ -403,19 +453,10 @@ export default function KickoffScreen({navigation}) {
 							</View>
 									
 							<View style={styles.modalButtons}>
-								<View style={styles.backRetour}>
-									<MySmallButton 
-										dataFlow={()=> {handleGoBack()}}
-										text={'Go back'}
-										buttonType={buttonStyles.buttonFour}
-										setSearchInput={setSearchInput}
-										setDataListIngredient={setDataListIngredient}
-									/>
-								</View>
 								<View style={styles.validButton}>
-									<MySmallButton 
-										dataFlow={()=> {handleAddIngredient()}}
-										text={'Add'}
+									<MyButton
+										dataFlow={()=> {handleCloseModal()}}
+										text={t('kickoff.modal.close')}
 										buttonType={buttonStyles.buttonFour}
 									/>
 								</View>
@@ -424,7 +465,7 @@ export default function KickoffScreen({navigation}) {
        		 		</View>
 				</KeyboardAvoidingView>
        		</Modal>
-			<View style={styles.cameraContainer}> 
+			<View style={[styles.cameraContainer, showGrid && styles.cameraContainerCompact]}>
 				<CameraView facing={type} flash={flashMode} ref={(ref) => (cameraRef = ref)} style={StyleSheet.absoluteFillObject} />
 				<View style={styles.buttonsCameraContainer}>
 					<TouchableOpacity onPress={() => setType(type === 'back' ? 'front' : 'back')} style={styles.buttonsCamera}>	
@@ -440,13 +481,14 @@ export default function KickoffScreen({navigation}) {
 
 			{showGrid && (
 				<>
-					<Text style={[styles.gridHeader, {
-						color: theme.palette.neutral900,
-						fontFamily: theme.typography.fontHeading,
-						fontSize: theme.typography.h3Size,
-					}]}>
-						{t('kickoff.grid.heading')}
-					</Text>
+					<SelectedChips
+						ingredients={ingredients}
+						pictures={pictures}
+						onAdd={() => setModalVisible(true)}
+						onRemoveIngredient={(data) => onItemRemove(data)}
+						onRemovePhoto={(uri) => setPictures(pictures.filter((p) => p !== uri))}
+					/>
+					<PantryHero count={pantryItems.length} />
 					<ScrollView
 						style={styles.gridScroll}
 						contentContainerStyle={styles.gridScrollContent}
@@ -454,31 +496,35 @@ export default function KickoffScreen({navigation}) {
 					>
 						<InventoryGrid />
 					</ScrollView>
-					<Text style={[styles.gridDivider, {
-						color: theme.palette.neutral700,
-						fontFamily: theme.typography.fontUI,
-					}]}>
-						{t('kickoff.grid.orAddMore')}
-					</Text>
 				</>
 			)}
 
-        	<ScrollView
-				horizontal
-				contentContainerStyle={styles.galleryContainer}
-				style={{ flexGrow: 0, maxHeight: 170 }}
-				showsHorizontalScrollIndicator={false}
-			>
-				{renderSlots()}
-        	</ScrollView>
+			{/* Guest / pantry vide : ancien row de slots dashed (inchangé) */}
+			{!showGrid && (
+				<ScrollView
+					horizontal
+					contentContainerStyle={styles.galleryContainer}
+					// Layout strategy : marginTop + marginBottom auto centre la
+					// row verticalement entre la caméra et les boutons en mode
+					// guest. Sur petits écrans, les autos collapsent à 0.
+					style={[
+						{ flexGrow: 0, maxHeight: 170 },
+						{ marginTop: 'auto', marginBottom: 'auto' },
+					]}
+					showsHorizontalScrollIndicator={false}
+				>
+					{renderSlots()}
+				</ScrollView>
+			)}
 
-			<View style={styles.containerButtonBottom}>
+			<View style={[styles.containerButtonBottom, showGrid && { marginTop: 'auto' }]}>
 
 				<View style={styles.buttonSearch}>
 					<MyButton
-						dataFlow={()=> setModalVisible(true)}
-						text={"Search"}
-        				buttonType={buttonStyles.buttonFour}
+						dataFlow={() => setModalVisible(true)}
+						icon={{ name: 'plus', size: 24 }}
+						accessibilityLabel={t('kickoff.addIngredient')}
+						buttonType={buttonStyles.buttonFour}
 					/>
 				</View>
 
@@ -486,6 +532,9 @@ export default function KickoffScreen({navigation}) {
 					<MyButton
 						dataFlow={()=>handleBtn()}
 						text={nextText}
+						textColor={css.palette.white}
+						icon={{ name: 'angle-double-right', size: 24, position: 'right' }}
+						accessibilityLabel={nextA11y}
         				buttonType={buttonStyles.buttonFour}
 					/>
 				</View>
@@ -524,10 +573,12 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
+		width: '100%',
 	},
-	
+
 	key: {
 		flex: 1,
+		width: '100%',
 		alignContent: 'center',
 		alignItems:'center',
 		// No backgroundColor here — the dim is rendered by `modalBackdrop`
@@ -562,16 +613,23 @@ const styles = StyleSheet.create({
 		marginBottom: 15,
 	},
 
+	// Sized to match `modalContainer` (350) and centered via `alignSelf`
+	// so the Close button sits visually under the card regardless of the
+	// outer KeyboardAvoidingView's own layout quirks. Using `width: '100%'`
+	// here previously made the row span the full screen, which combined
+	// with the modal's nested flex parents (KeyboardAvoidingView → modal
+	// → animated container) produced an off-center single child.
 	modalButtons: {
-		flex: 0, 
+		flex: 0,
 		flexDirection: 'row',
-		justifyContent: 'space-between',
-		width: '60%',
-		//background: 'red',
+		justifyContent: 'center',
+		alignItems: 'center',
+		alignSelf: 'center',
+		width: 350,
 	},
 
 	validButton: {
-	marginBottom: 20,
+		marginBottom: 20,
 	},
 
 	searchInput: {
@@ -586,18 +644,25 @@ const styles = StyleSheet.create({
 
 	cameraContainer: {
 		backgroundColor: css.palette.black,
-		borderRadius: css.radius.pill,
+		borderRadius: css.radius.camera,
 		overflow: 'hidden',
 		height:'50%',
 		width:'90%',
 		marginBottom:10,
 	},
 
+	// Logged-in mode + pantry items : reduce camera to ~33% to leave room
+	// for the PantryHero, InventoryGrid, and SelectedChips below without
+	// overflow on tall screens (and to fit on iPhone SE-class devices).
+	cameraContainerCompact: {
+		height: '33%',
+	},
+
 	styleCamera:{
 		height:350,
 		width:350,
 		marginBottom:10,
-		borderRadius: 40,
+		borderRadius: css.radius.camera,
 		overflow: "hidden",
 	},
 
@@ -639,7 +704,7 @@ const styles = StyleSheet.create({
 		height: 44,
 		alignItems: 'center',
 		justifyContent: 'center',
-		backgroundColor: 'rgba(0, 0, 0, 0.35)',
+		backgroundColor: css.palette.white,
 		borderRadius: css.radius.pill,
 		zIndex: 10,
 	},
@@ -649,12 +714,43 @@ const styles = StyleSheet.create({
 		alignItems:'center',
 	},
 
+	// Slot rempli : coins arrondis (cohérence avec cameraContainer/backButton)
+	// + bordure solide blanche fine pour encadrer la photo et unifier la
+	// grille avec les placeholders dashed sans brouiller la sémantique
+	// (dashed = vide à remplir, solid = rempli).
+	// Outer wrapper carries the shadow. iOS clips shadows when
+	// `overflow:'hidden'` is set on the same View (UIView's
+	// `masksToBounds = true` applies to shadow too), so the shadow
+	// MUST live on a parent without overflow/radius. Android's
+	// `elevation` survives but is also bumped for visual parity.
+	photoShadowWrap: {
+		margin: 5,
+		borderRadius: css.radius.lg,
+		backgroundColor: 'transparent',
+		...css.shadow.heavy,
+	},
+
 	photoContainer: {
 		width: 150,
 		height: 150,
-		margin: 5,
 		position: 'relative',
 		overflow: 'hidden',
+		borderRadius: css.radius.lg,
+	},
+
+	// Dashed border for filled slots — rendered on top of the photo so
+	// the strokes are visible (not clipped by overflow:'hidden').
+	slotBorderOverlay: {
+		position: 'absolute',
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		borderRadius: css.radius.lg,
+		borderWidth: 2,
+		borderStyle: 'dashed',
+		borderColor: css.palette.white,
+		zIndex: 3,
 	},
 
 	deleteIcon: {
@@ -665,9 +761,11 @@ const styles = StyleSheet.create({
         paddingTop: '3%',
       },
 
+	// La photo remplit le conteneur ; le borderRadius du parent + overflow
+	// hidden suffisent à clipper les coins. Pas besoin de borderRadius ici.
 	photo: {
-		width: 150,
-		height: 150,
+		width: '100%',
+		height: '100%',
 	},
 
 	nameBand: {
@@ -694,9 +792,24 @@ const styles = StyleSheet.create({
 		height: 150,
 		margin: 5,
 		paddingBottom: 10,
+		position: 'relative',
+		borderRadius: css.radius.lg,
+		overflow: 'hidden',
+	},
+
+	// Same pattern as `slotBorderOverlay` but with a translucent stroke
+	// to differentiate empty placeholders from filled slots.
+	placeholderBorderOverlay: {
+		position: 'absolute',
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		borderRadius: css.radius.lg,
 		borderWidth: 2,
 		borderStyle: 'dashed',
 		borderColor: 'rgba(255,255,255, 0.4)',
+		zIndex: 3,
 	},
 
 	text: {
@@ -713,6 +826,8 @@ const styles = StyleSheet.create({
 
 	buttonSearch: {
 		paddingRight:10,
+		alignItems: 'center',
+		justifyContent: 'center',
 	},
 
 	buttonNext: {
@@ -726,8 +841,10 @@ const styles = StyleSheet.create({
 		backgroundColor: css.palette.primary800,
 		width: 100,
 		borderRadius: css.radius.pill,
-		marginTop:10,
-		marginBottom: '4%'
+		marginTop: 10,
+		// Bottom spacing is owned by the container's safe-area-aware
+		// paddingBottom (see render). Keeping a marginBottom here would
+		// double the gap on devices with a home indicator.
 	},
 
 	// Plan 003 D.2 — inventory grid for logged-in users with pantry data.

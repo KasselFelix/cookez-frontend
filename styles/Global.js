@@ -184,6 +184,7 @@ const radius = {
   md:  12,
   lg:  16,
   xl:  24,
+  camera:70, //camera preview on KickoffScreen
   pill:99,   // fully rounded buttons / tags
   card:20,   // recipe cards
 };
@@ -226,6 +227,17 @@ const shadow = {
     shadowOpacity: 0.10,
     shadowRadius: 12,
     elevation: 6,
+  },
+  // Heavy contrast shadow — for cards/slots that sit on PASTEL backgrounds
+  // (secondary500 mint, accent200 cream) where the teal-tinted `primary800`
+  // shadow blends into the background and looks flat. Uses `neutral900`
+  // (near-black) with bumped opacity + radius for clear depth.
+  heavy: {
+    shadowColor: palette.neutral900,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    elevation: 10,
   },
 };
 

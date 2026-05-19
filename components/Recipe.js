@@ -1,5 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import css from "../styles/Global";
 import MatchBadge from './result/MatchBadge';
 import SeasonalBadge from './result/SeasonalBadge';
@@ -10,6 +10,14 @@ const formatOrigin = (origin) => {
   return items.map((name) => `${flagForOriginName(name)} ${name}`).join(' · ');
 };
 
+/**
+ * Recipe card — partagé entre ResultScreen (search flow) et FavoriteScreen.
+ * Par défaut, le card ne propage AUCUN servings override à RecipeScreen.
+ * `fromRecipeSearch={true}` doit être passé UNIQUEMENT depuis ResultScreen
+ * (qui présuppose un passage par RecapScreen). Sinon RecipeScreen tombera
+ * sur la branche `householdComposition` ou `recipe.servings` selon le
+ * contexte (user loggué vs guest).
+ */
 export default function Recipe( props ) {
 
   
@@ -30,9 +38,10 @@ export default function Recipe( props ) {
 
 
     return (
-        <View style={styles.recipeContainer}>
-          <TouchableOpacity 
-            style={styles.recipeContainer} 
+        <View style={styles.shadowWrap}>
+          <TouchableOpacity
+            style={styles.recipeContainer}
+            activeOpacity={0.9}
             onPress={() => {
               props.navigation.navigate('Recipe', {
                 recipe: {
@@ -48,6 +57,7 @@ export default function Recipe( props ) {
                   preparationTime: props.preparationTime,
                   difficulty:      props.difficulty,
                 },
+                fromRecipeSearch: props.fromRecipeSearch === true,
               });
             }}
           > 
@@ -83,16 +93,31 @@ export default function Recipe( props ) {
 
 const styles = StyleSheet.create({
 
-  recipeContainer: {
+  shadowWrap: {
     width: 330,
     height: 340,
     borderRadius: 10,
     backgroundColor: css.palette.surfaceCard,
     marginBottom: '5%',
-    shadowColor: css.palette.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    // iOS: shadow softened (less halo + tighter spread) to keep the card
+    // grounded without overpowering the surrounding peach background.
+    // Android keeps `elevation: 10` from `shadow.heavy` for visual parity.
+    ...css.shadow.heavy,
+    ...Platform.select({
+      ios: {
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.12,
+        shadowRadius: 8,
+      },
+      android: {},
+    }),
+  },
+
+  recipeContainer: {
+    flex: 1,
+    borderRadius: 10,
+    backgroundColor: css.palette.surfaceCard,
+    overflow: 'hidden',
   },
 
   nameContainer: {

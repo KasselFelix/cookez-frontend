@@ -300,8 +300,31 @@
     },
     "next": "Next",
     "nextWithCount": "Next ({{count}})",
+    "addIngredient": "Add ingredient",
     "removeIngredientA11y": "Remove {{name}}",
-    "removePhotoA11y": "Remove photo"
+    "removePhotoA11y": "Remove photo",
+    "pantryHero": {
+      "kicker": "YOUR PANTRY · {{count}} ITEMS",
+      "title": "Tap to cook with what you have"
+    },
+    "selected": {
+      "label": "SELECTED · {{count}}",
+      "add": "+ Add",
+      "photoLabel": "📸 Photo {{index}}",
+      "removeA11y": "Remove {{name}}",
+      "removePhotoA11y": "Remove photo {{index}}"
+    },
+    "slot": {
+      "placeholder": "Ingredient",
+      "imageA11y": "ingredient image"
+    },
+    "modal": {
+      "searchPlaceholder": "Search an ingredient",
+      "clear": "Clear search",
+      "waiting": "Waiting for your search 🧐 ...",
+      "notFound": "No ingredients found, try again! 👍",
+      "close": "Close"
+    }
   },
   "recap": {
     "ingredient": "Ingredient",
@@ -321,7 +344,8 @@
     "servings": {
       "label": "Servings",
       "increment": "Increase servings",
-      "decrement": "Decrease servings"
+      "decrement": "Decrease servings",
+      "adjustedForHousehold": "Adjusted for your household (×{{count}})"
     },
     "nutrition": {
       "title": "Nutrition",
@@ -364,7 +388,7 @@
       "savory": "Savory"
     },
     "expiry": {
-      "title": "⚠️ Cook this recipe soon!",
+      "title": "⚠️ Use these ingredients soon",
       "body": "Your {{items}} expires in less than 48h."
     },
     "shopping": {
@@ -373,6 +397,16 @@
       "buyOnAmazon": {
         "label": "Buy on Amazon",
         "a11y": "Buy {{name}} on Amazon"
+      }
+    },
+    "steps": {
+      "title": "Steps"
+    },
+    "comments": {
+      "title": "Comments",
+      "empty": {
+        "title": "Be the first to comment",
+        "hint": "Share your tips or ask the chef a question."
       }
     }
   },

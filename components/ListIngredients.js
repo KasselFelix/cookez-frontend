@@ -2,9 +2,11 @@ import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput} from "re
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from "@expo/vector-icons";
 import css from '../styles/Global';
+import useT from '../i18n/useT';
 
 // the filter
 export default function ListIngredients ({ searchInput, setClicked, data, onItemPress, onItemRemove, validatedIngredient,setValidatedIngredient}) {
+  const t = useT();
 
   const Item = ({ name, itemData }) => {
     // On vérifie si l'ingrédient est déjà dans la liste des validés
@@ -62,8 +64,8 @@ export default function ListIngredients ({ searchInput, setClicked, data, onItem
             setClicked(false);
           }}
         >
-          {data.length === 0 && <Text style={styles.text}>Waiting for your search 🧐 ...</Text>}
-          {data === "No ingredients found"  && <Text style={styles.text}>{data} sorry... try again ! 👍</Text>}
+          {data.length === 0 && <Text style={styles.text}>{t('kickoff.modal.waiting')}</Text>}
+          {data === "No ingredients found"  && <Text style={styles.text}>{t('kickoff.modal.notFound')}</Text>}
           <FlatList
             data={data}
             renderItem={renderItem}
