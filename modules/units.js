@@ -79,7 +79,10 @@ function ceil1(value) {
 
 // Helper interne pour les unités métriques : applique seuil 1000 et formatage.
 // g/ml sous le seuil → entier (Math.floor pour ne pas dépasser la quantité
-// nominale). kg/L après conversion → 2 décimales max.
+// nominale), avec plancher à 1 pour éviter "0g salt" quand la quantité
+// nominale × ratio de scaling < 1 (ex : 2g × 0.25 = 0.5 → "1g"). Garanti par
+// l'early return q ≤ 0 dans formatQuantity : tout flux arrivant ici a qBase > 0.
+// kg/L après conversion → 2 décimales max.
 function formatMetric(qBase, baseUnit) {
   const isMass = METRIC_MASS.has(baseUnit) || baseUnit === 'g';
   const isVolume = METRIC_VOLUME.has(baseUnit) || baseUnit === 'ml';
@@ -90,8 +93,8 @@ function formatMetric(qBase, baseUnit) {
   if (isVolume && qBase >= 1000) {
     return { value: round2(qBase / 1000), unit: 'L' };
   }
-  // g/ml sub-1000 → entier (pas de décimale)
-  return { value: String(Math.floor(qBase)), unit: isMass ? 'g' : 'ml' };
+  // g/ml sub-1000 → entier (pas de décimale), plancher à 1
+  return { value: String(Math.max(1, Math.floor(qBase))), unit: isMass ? 'g' : 'ml' };
 }
 
 // DISPLAY format : préserve l'unité d'origine si possible, max 2 décimales,

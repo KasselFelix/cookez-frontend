@@ -300,8 +300,31 @@
     },
     "next": "Suivant",
     "nextWithCount": "Suivant ({{count}})",
+    "addIngredient": "Ajouter un ingrédient",
     "removeIngredientA11y": "Retirer {{name}}",
-    "removePhotoA11y": "Retirer la photo"
+    "removePhotoA11y": "Retirer la photo",
+    "pantryHero": {
+      "kicker": "VOTRE GARDE-MANGER · {{count}} ARTICLES",
+      "title": "Tape pour cuisiner avec ce que tu as"
+    },
+    "selected": {
+      "label": "SÉLECTIONNÉS · {{count}}",
+      "add": "+ Ajouter",
+      "photoLabel": "📸 Photo {{index}}",
+      "removeA11y": "Retirer {{name}}",
+      "removePhotoA11y": "Retirer la photo {{index}}"
+    },
+    "slot": {
+      "placeholder": "Ingrédient",
+      "imageA11y": "image d'ingrédient"
+    },
+    "modal": {
+      "searchPlaceholder": "Rechercher un ingrédient",
+      "clear": "Effacer la recherche",
+      "waiting": "En attente de votre recherche 🧐 ...",
+      "notFound": "Aucun ingrédient trouvé, réessayez ! 👍",
+      "close": "Fermer"
+    }
   },
   "recap": {
     "ingredient": "Ingrédient",
@@ -321,7 +344,8 @@
     "servings": {
       "label": "Portions",
       "increment": "Augmenter les portions",
-      "decrement": "Diminuer les portions"
+      "decrement": "Diminuer les portions",
+      "adjustedForHousehold": "Ajusté pour votre foyer (×{{count}})"
     },
     "nutrition": {
       "title": "Nutrition",
@@ -364,7 +388,7 @@
       "savory": "Salé"
     },
     "expiry": {
-      "title": "⚠️ Cuisinez cette recette bientôt !",
+      "title": "⚠️ Ingrédients à utiliser rapidement",
       "body": "Votre {{items}} expire dans moins de 48h."
     },
     "shopping": {
@@ -373,6 +397,16 @@
       "buyOnAmazon": {
         "label": "Acheter sur Amazon",
         "a11y": "Acheter {{name}} sur Amazon"
+      }
+    },
+    "steps": {
+      "title": "Étapes"
+    },
+    "comments": {
+      "title": "Commentaires",
+      "empty": {
+        "title": "Soyez le premier à commenter",
+        "hint": "Partagez vos astuces ou posez une question au chef."
       }
     }
   },

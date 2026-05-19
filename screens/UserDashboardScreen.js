@@ -109,13 +109,13 @@ export default function UserDashboardScreen({ navigation }) {
     }
   }, [dispatch]);
 
-  // Mount-only: re-running on `recipes` change would loop after the dispatch.
+  // Always re-hydrate on mount: the Redux cache may have been populated by
+  // a different endpoint (e.g. POST /recipes/result on ResultScreen which
+  // returns a different shape) and the cached recipes would be missing
+  // dashboard-only fields like imageUrl. The fetch is idempotent and cheap
+  // (Vercel edge cache), so the safety > the bandwidth cost.
   useEffect(() => {
-    if (recipes.length === 0) {
-      hydrateRecipes();
-    } else {
-      setIsLoading(false);
-    }
+    hydrateRecipes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

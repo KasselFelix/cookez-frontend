@@ -4,6 +4,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useSelector, shallowEqual } from 'react-redux';
 import CommentCard from './CommentCard';
 import css from '../../styles/Global';
+import useT from '../../i18n/useT';
 
 /**
  * CommentsSection
@@ -13,6 +14,7 @@ import css from '../../styles/Global';
  * @param {() => void} onPromptCompose — opens the BottomSheet composer
  */
 export default function CommentsSection({ recipeId, onPromptCompose }) {
+  const t = useT();
   const comments = useSelector((state) => {
     const recipe = state.recipe.value.find((r) => r._id === recipeId);
     return recipe?.comments ?? [];
@@ -34,7 +36,7 @@ export default function CommentsSection({ recipeId, onPromptCompose }) {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>
-          Comments {hasComments ? `(${comments.length})` : ''}
+          {t('recipe.comments.title')}{hasComments ? ` (${comments.length})` : ''}
         </Text>
       </View>
 
@@ -43,7 +45,7 @@ export default function CommentsSection({ recipeId, onPromptCompose }) {
           style={styles.emptyState}
           onPress={onPromptCompose}
           accessibilityRole="button"
-          accessibilityLabel="Be the first to comment"
+          accessibilityLabel={t('recipe.comments.empty.title')}
           activeOpacity={0.7}
         >
           <FontAwesome
@@ -51,9 +53,9 @@ export default function CommentsSection({ recipeId, onPromptCompose }) {
             size={32}
             color={css.palette.primary600}
           />
-          <Text style={styles.emptyTitle}>Be the first to comment</Text>
+          <Text style={styles.emptyTitle}>{t('recipe.comments.empty.title')}</Text>
           <Text style={styles.emptyHint}>
-            Share your tips or ask the chef a question.
+            {t('recipe.comments.empty.hint')}
           </Text>
         </TouchableOpacity>
       ) : (

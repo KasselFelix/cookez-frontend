@@ -1,7 +1,9 @@
 import { FontAwesome } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Animated as RNAnimated,
   Modal,
+  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
@@ -64,7 +66,7 @@ const SNAP_POINTS = ['45%', '85%'];
  *   </BottomSheet>
  */
 export default function RecipeScreen({ route, navigation }) {
-  const { recipe: navRecipe = {} } = route.params ?? {};
+  const { recipe: navRecipe = {}, fromRecipeSearch = false } = route.params ?? {};
   const selectedRecipeId = navRecipe._id;
 
   // Always read recipe from Redux — guarantees comments stay in sync after add/vote
@@ -87,9 +89,36 @@ export default function RecipeScreen({ route, navigation }) {
   // déclencher de re-fetch côté ResultScreen (qui a currentServings dans
   // ses deps et remplacerait state.recipe.value en arrière-plan → la
   // recette courante disparaîtrait du store et tomberait sur navRecipe
-  // sans les champs Plan 003). Initialisé à recipe.servings (la valeur
-  // par défaut de l'auteur de la recette). Cap à 999 (UX, pas de perf).
-  const [servings, setServings] = useState(recipe.servings ?? 1);
+  // sans les champs Plan 003). Cap à 999 (UX, pas de perf).
+  //
+  // Cascade de seed :
+  //   1. fromRecipeSearch=true (entrée depuis ResultScreen) → `currentServings`
+  //      de Redux (la stepper que l'user vient de régler sur RecapScreen)
+  //   2. user loggué avec householdComposition > 0 → cette HH (compo de foyer)
+  //   3. Fallback : `recipe.servings` (auteur) puis 1
+  // Le seed est lu une seule fois (initializer de useState), donc les
+  // changements futurs de Redux ne re-rendent pas ce screen.
+  const userServings = useSelector(
+    (state) => state.recipeFilters?.value?.currentServings ?? null
+  );
+  const householdComposition = useSelector(
+    (state) => state.user?.value?.settings?.householdComposition ?? null
+  );
+  // Capture la source du seed initial — utilisé pour afficher le badge
+  // "Ajusté pour votre foyer (×N)" quand le seed vient de HH. Source figée
+  // au mount, ne change pas si l'user manipule la stepper ensuite.
+  const [seedSource] = useState(() => {
+    if (fromRecipeSearch && userServings) return 'search';
+    const hh = Number(householdComposition);
+    if (user?.token && hh > 0) return 'household';
+    return 'recipe';
+  });
+  const [servings, setServings] = useState(() => {
+    if (fromRecipeSearch && userServings) return userServings;
+    const hh = Number(householdComposition);
+    if (user?.token && hh > 0) return hh;
+    return recipe.servings ?? 1;
+  });
 
   // Local UI state — kept minimal
   const [voteModalVisible, setVoteModalVisible] = useState(false);
@@ -100,6 +129,42 @@ export default function RecipeScreen({ route, navigation }) {
   const bottomSheetRef = useRef(null);
   const nutritionSheetRef = useRef(null);
   const animatableModalRef = useRef(null);
+
+  // Vote backdrop fade — same pattern qu'la modal search de KickoffScreen.
+  // Animated.Value RN classique (useNativeDriver pour opacity), 425ms.
+  const voteBackdropOpacity = useRef(new RNAnimated.Value(0)).current;
+  // Guard pour éviter que le seed du vote précédent (au ouverture de la
+  // modal) re-déclenche le POST via le useEffect [starNote]. Bypass le
+  // prochain fire et reset.
+  const skipNextVoteFetch = useRef(false);
+
+  // Fade in backdrop quand la modal s'ouvre.
+  useEffect(() => {
+    if (voteModalVisible) {
+      voteBackdropOpacity.setValue(0);
+      RNAnimated.timing(voteBackdropOpacity, {
+        toValue: 1,
+        duration: 425,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [voteModalVisible, voteBackdropOpacity]);
+
+  // Fermeture commune : fade out backdrop + slideOutUp card, puis hide.
+  const closeVoteModal = useCallback(() => {
+    RNAnimated.timing(voteBackdropOpacity, {
+      toValue: 0,
+      duration: 425,
+      useNativeDriver: true,
+    }).start();
+    if (animatableModalRef.current) {
+      animatableModalRef.current
+        .animate('slideOutUp', 425)
+        .then(() => setVoteModalVisible(false));
+    } else {
+      setVoteModalVisible(false);
+    }
+  }, [voteBackdropOpacity]);
 
   const openNutritionSheet = useCallback(() => {
     nutritionSheetRef.current?.snapToIndex(0);
@@ -142,22 +207,20 @@ export default function RecipeScreen({ route, navigation }) {
               votes: data.votes,
             })
           );
-          if (animatableModalRef.current) {
-            animatableModalRef.current
-              .animate('slideOutUp', 800)
-              .then(() => setVoteModalVisible(false));
-          } else {
-            setVoteModalVisible(false);
-          }
+          closeVoteModal();
         }
       } catch (err) {
         console.error('Vote failed', err);
       }
     },
-    [user.token, user.username, selectedRecipeId, dispatch]
+    [user.token, user.username, selectedRecipeId, dispatch, closeVoteModal]
   );
 
   useEffect(() => {
+    if (skipNextVoteFetch.current) {
+      skipNextVoteFetch.current = false;
+      return;
+    }
     if (starNote > 0 && user.token) {
       handleFetchVote(starNote);
     }
@@ -165,6 +228,20 @@ export default function RecipeScreen({ route, navigation }) {
 
   const handleVote = () => {
     if (!requireAuth('vote')) return;
+    // Pré-remplit les étoiles avec le vote précédent de l'user pour cette
+    // recette (si existant). Le schéma stocke `{ user: ObjectId, note }`,
+    // donc on compare par ID (string) plutôt que par username. Le guard
+    // `skipNextVoteFetch` évite que le seed re-déclenche un POST inutile
+    // via le useEffect [starNote].
+    const myId = user?._id ? String(user._id) : null;
+    const previous = myId
+      ? recipe?.votes?.find((v) => String(v.user) === myId)
+      : null;
+    const previousNote = previous?.note ?? 0;
+    if (previousNote !== starNote) {
+      skipNextVoteFetch.current = true;
+      setStarNote(previousNote);
+    }
     setVoteModalVisible(true);
   };
 
@@ -297,9 +374,12 @@ export default function RecipeScreen({ route, navigation }) {
 
         return {
           name: ri.name,
+          // Plancher à 1 : missingBase > 0 mais < 0.5 produirait "0g" avec
+          // Math.round (cas typique : scaling factor petit sur petite qté).
+          // isUnitBased utilise déjà Math.ceil → garanti ≥ 1.
           quantityMissing: isUnitBased
             ? Math.ceil(missingBase / refW)
-            : Math.round(missingBase),
+            : Math.max(1, Math.round(missingBase)),
           unit: isUnitBased ? 'units' : baseUnit,
           percentOwned,
         };
@@ -425,6 +505,11 @@ export default function RecipeScreen({ route, navigation }) {
                   onDecrement={onServingsDecrement}
                 />
               </View>
+              {seedSource === 'household' && (
+                <Text style={styles.householdBadge}>
+                  {t('recipe.servings.adjustedForHousehold', { count: servings })}
+                </Text>
+              )}
               {scaledIngredients.map((ing, i) => (
                 <Text key={`${ing.name}-${i}`} style={styles.body}>
                   •  {ing.displayQuantity}{ing.displayUnit} {ing.name}
@@ -437,7 +522,7 @@ export default function RecipeScreen({ route, navigation }) {
 
             {/* Steps */}
             <Animatable.View animation="fadeInUp" duration={600} style={styles.section}>
-              <Text style={styles.sectionTitle}>Steps</Text>
+              <Text style={styles.sectionTitle}>{t('recipe.steps.title')}</Text>
               {recipe.steps?.map((text, i) => (
                 <Text key={`step-${i}`} style={styles.body}>
                   {i + 1}. {text}
@@ -467,19 +552,41 @@ export default function RecipeScreen({ route, navigation }) {
 
         <FloatingFAB onPress={openComposer} />
 
-        {/* VOTE STAR MODAL */}
-        <Modal visible={voteModalVisible} animationType="none" transparent>
-          <View style={styles.modal}>
-            <Animatable.View
-              ref={animatableModalRef}
-              animation="slideInDown"
-              duration={500}
-              style={styles.voteModalContainer}
-            >
-              <Text style={styles.voteModalTitle}>Rate this recipe</Text>
-              <View style={styles.starsRow}>{starsVotes}</View>
-            </Animatable.View>
-          </View>
+        {/* VOTE STAR MODAL — backdrop animée + tap-to-dismiss */}
+        <Modal
+          visible={voteModalVisible}
+          animationType="none"
+          transparent
+          statusBarTranslucent
+          navigationBarTranslucent
+          onRequestClose={closeVoteModal}
+        >
+          {/* Backdrop fade-in/out indépendant du slide de la card. */}
+          <RNAnimated.View
+            style={[
+              StyleSheet.absoluteFillObject,
+              styles.modalBackdrop,
+              { opacity: voteBackdropOpacity },
+            ]}
+            pointerEvents="none"
+          />
+          <Pressable
+            style={styles.modalCenter}
+            onPress={closeVoteModal}
+            accessibilityLabel={t('common.close')}
+          >
+            <Pressable onPress={(e) => e.stopPropagation()}>
+              <Animatable.View
+                ref={animatableModalRef}
+                animation="slideInDown"
+                duration={500}
+                style={styles.voteModalContainer}
+              >
+                <Text style={styles.voteModalTitle}>Rate this recipe</Text>
+                <View style={styles.starsRow}>{starsVotes}</View>
+              </Animatable.View>
+            </Pressable>
+          </Pressable>
         </Modal>
 
         <NutritionSheet
@@ -571,6 +678,13 @@ const styles = StyleSheet.create({
     fontSize: css.typography.h3Size,
     color: css.palette.neutral900,
   },
+  householdBadge: {
+    fontFamily: css.typography.fontUI,
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: css.palette.primary700,
+    marginBottom: css.spacing.sm,
+  },
   section: {
     marginTop: css.spacing.lg,
     backgroundColor: css.palette.surfaceCard,
@@ -591,10 +705,12 @@ const styles = StyleSheet.create({
     color: css.palette.neutral700,
     marginBottom: css.spacing.xs,
   },
-  modal: {
+  modalCenter: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modalBackdrop: {
     backgroundColor: css.palette.overlayDark,
   },
   voteModalContainer: {
