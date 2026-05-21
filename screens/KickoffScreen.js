@@ -394,7 +394,11 @@ export default function KickoffScreen({navigation}) {
   	return (
 		  <View style={[styles.container, { paddingBottom: bottomPadding }]} >
 			<TouchableOpacity
-				onPress={() => navigation.navigate('Home')}
+				onPress={() =>
+					user?.token
+						? navigation.navigate('TabNavigator', { screen: 'UserDashboard' })
+						: navigation.navigate('Home')
+				}
 				accessibilityRole="button"
 				accessibilityLabel={t('common.home')}
 				hitSlop={10}

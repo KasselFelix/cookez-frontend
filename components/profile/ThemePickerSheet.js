@@ -3,10 +3,18 @@
 // Each card shows the theme's primary color block + label. Tapping a
 // card commits via ThemeProvider.setTheme and closes. The active theme
 // gets a visible ring.
+//
+// Modal construction follows the canonical pattern: `statusBarTranslucent`
+// + custom Animated fade/slide + `rendered` state for mount control +
+// PanResponder drag-to-close on the header zone (kept clear of the ScrollView
+// so card scrolling stays smooth). Reference: TagsMultiSelect.js.
 
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Animated,
+  Dimensions,
   Modal,
+  PanResponder,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -20,12 +28,96 @@ import { useTheme, useThemeControls } from '../../contexts/ThemeProvider';
 import { THEMES } from '../../styles/themes';
 import useT from '../../i18n/useT';
 
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const DRAG_DISMISS_THRESHOLD = 100;
+const DRAG_VELOCITY_THRESHOLD = 0.5;
+
 const ORDER = ['light', 'dark', 'pastelMint', 'pastelPeach', 'pastelLavender'];
 
 export default function ThemePickerSheet({ visible, onClose }) {
   const css = useTheme();
   const { themeKey, setTheme } = useThemeControls();
   const t = useT();
+
+  const [rendered, setRendered] = useState(false);
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const sheetTranslateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const dragStartY = useRef(0);
+
+  useEffect(() => {
+    if (visible) {
+      setRendered(true);
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.spring(sheetTranslateY, {
+          toValue: 0,
+          friction: 9,
+          tension: 60,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else if (rendered) {
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(sheetTranslateY, {
+          toValue: SCREEN_HEIGHT,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start(({ finished }) => {
+        if (finished) setRendered(false);
+      });
+    }
+  }, [visible, rendered, backdropOpacity, sheetTranslateY]);
+
+  // PanResponder attached to header only — the ScrollView below needs to
+  // own vertical gestures for card scrolling on small screens.
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 4,
+        onPanResponderGrant: () => {
+          sheetTranslateY.stopAnimation((value) => {
+            dragStartY.current = value;
+          });
+        },
+        onPanResponderMove: (_, g) => {
+          const next = Math.max(0, dragStartY.current + g.dy);
+          sheetTranslateY.setValue(next);
+        },
+        onPanResponderRelease: (_, g) => {
+          const total = dragStartY.current + g.dy;
+          if (total > DRAG_DISMISS_THRESHOLD || g.vy > DRAG_VELOCITY_THRESHOLD) {
+            onClose?.();
+          } else {
+            Animated.spring(sheetTranslateY, {
+              toValue: 0,
+              friction: 9,
+              tension: 60,
+              useNativeDriver: true,
+            }).start();
+          }
+        },
+        onPanResponderTerminate: () => {
+          Animated.spring(sheetTranslateY, {
+            toValue: 0,
+            friction: 9,
+            tension: 60,
+            useNativeDriver: true,
+          }).start();
+        },
+      }),
+    [onClose, sheetTranslateY]
+  );
 
   const handlePick = async (key) => {
     await setTheme(key);
@@ -34,17 +126,26 @@ export default function ThemePickerSheet({ visible, onClose }) {
 
   return (
     <Modal
-      visible={visible}
+      visible={rendered}
+      animationType="none"
       transparent
-      animationType="slide"
-      onRequestClose={onClose}
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={() => onClose?.()}
     >
-      <Pressable
-        style={[styles.overlay, { backgroundColor: css.palette.overlayDark }]}
-        onPress={onClose}
-        accessibilityLabel={t('common.close')}
+      <Animated.View
+        style={[
+          styles.overlay,
+          { backgroundColor: css.palette.overlayDark, opacity: backdropOpacity },
+        ]}
       >
         <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={() => onClose?.()}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.close')}
+        />
+        <Animated.View
           style={[
             styles.sheet,
             {
@@ -52,46 +153,49 @@ export default function ThemePickerSheet({ visible, onClose }) {
               borderTopLeftRadius: css.radius.lg,
               borderTopRightRadius: css.radius.lg,
               padding: css.spacing.md,
+              transform: [{ translateY: sheetTranslateY }],
             },
           ]}
-          onPress={() => {}}
+          onStartShouldSetResponder={() => true}
         >
-          <View style={styles.handleRow}>
-            <View style={[styles.handle, { backgroundColor: css.palette.neutral300 }]} />
-          </View>
-          <View style={styles.headerRow}>
+          <View {...panResponder.panHandlers}>
+            <View style={styles.handleRow}>
+              <View style={[styles.handle, { backgroundColor: css.palette.neutral300 }]} />
+            </View>
+            <View style={styles.headerRow}>
+              <Text
+                style={{
+                  fontFamily: css.typography.fontHeading,
+                  fontSize: css.typography.h4Size,
+                  lineHeight: css.typography.h4Line,
+                  color: css.palette.neutral900,
+                  fontWeight: '600',
+                }}
+              >
+                {t('settings.theme.title')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => onClose?.()}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.close')}
+                hitSlop={8}
+                style={styles.closeBtn}
+              >
+                <X size={20} color={css.palette.neutral900} />
+              </TouchableOpacity>
+            </View>
             <Text
               style={{
-                fontFamily: css.typography.fontHeading,
-                fontSize: css.typography.h4Size,
-                lineHeight: css.typography.h4Line,
-                color: css.palette.neutral900,
-                fontWeight: '600',
+                fontFamily: css.typography.fontBody,
+                fontSize: css.typography.bodySmSize,
+                lineHeight: css.typography.bodySmLine,
+                color: css.palette.neutral500,
+                marginBottom: css.spacing.md,
               }}
             >
-              {t('settings.theme.title')}
+              {t('settings.theme.subtitle')}
             </Text>
-            <TouchableOpacity
-              onPress={onClose}
-              accessibilityRole="button"
-              accessibilityLabel={t('common.close')}
-              hitSlop={8}
-              style={styles.closeBtn}
-            >
-              <X size={20} color={css.palette.neutral900} />
-            </TouchableOpacity>
           </View>
-          <Text
-            style={{
-              fontFamily: css.typography.fontBody,
-              fontSize: css.typography.bodySmSize,
-              lineHeight: css.typography.bodySmLine,
-              color: css.palette.neutral500,
-              marginBottom: css.spacing.md,
-            }}
-          >
-            {t('settings.theme.subtitle')}
-          </Text>
 
           <ScrollView contentContainerStyle={styles.cardsRow}>
             {ORDER.map((key) => {
@@ -151,8 +255,8 @@ export default function ThemePickerSheet({ visible, onClose }) {
               );
             })}
           </ScrollView>
-        </Pressable>
-      </Pressable>
+        </Animated.View>
+      </Animated.View>
     </Modal>
   );
 }

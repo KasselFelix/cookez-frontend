@@ -49,7 +49,10 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
       });
       const data = await res.json();
       if (data.result) {
-        dispatch(updateUserInStore(data.updatedUser || { nutritionalGoal: goal }));
+        // Targeted partial dispatch — PUT /profile does not populate
+        // recipes/favorites, so we only update the field we changed to
+        // avoid clobbering populated arrays in the Redux store.
+        dispatch(updateUserInStore({ nutritionalGoal: data.updatedUser?.nutritionalGoal ?? goal }));
         onClose?.();
       } else {
         Alert.alert(t('common.error'), data.error || t('common.networkError'));
@@ -114,8 +117,10 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
               <TouchableOpacity
                 key={key}
                 onPress={() => {
-                  setSelected(key);
-                  save(key);
+                  // Tap on the active row clears the goal (toggle off).
+                  const next = isOn ? null : key;
+                  setSelected(next);
+                  save(next);
                 }}
                 disabled={isSaving}
                 accessibilityRole="radio"

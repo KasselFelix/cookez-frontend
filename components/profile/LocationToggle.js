@@ -45,7 +45,11 @@ export default function LocationToggle() {
       });
       const data = await res.json();
       if (data.result) {
-        dispatch(updateUserInStore(data.updatedUser || { location: payload }));
+        // Targeted partial dispatch: PUT /profile returns the user without
+        // populating recipes/favorites, so spreading the whole `updatedUser`
+        // overwrites the populated arrays we already have in memory with
+        // bare ObjectIds (cards then render "Untitled"). Touch only `location`.
+        dispatch(updateUserInStore({ location: data.updatedUser?.location ?? payload }));
       } else {
         Alert.alert(t('common.error'), data.error || t('common.networkError'));
       }
@@ -76,6 +80,20 @@ export default function LocationToggle() {
 
     try {
       setIsWorking(true);
+
+      // 1) OS-level pre-check — on Android, even with the runtime
+      // permission granted, getCurrentPositionAsync silently throws if
+      // GPS / Location services are turned off at the device level.
+      // We surface a dedicated message instead of the generic error.
+      const servicesOn = await Location.hasServicesEnabledAsync();
+      if (!servicesOn) {
+        Alert.alert(
+          t('settings.location.servicesDisabledTitle'),
+          t('settings.location.servicesDisabledMessage'),
+        );
+        return;
+      }
+
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         await persist({ consent: false });
@@ -85,7 +103,41 @@ export default function LocationToggle() {
         );
         return;
       }
-      const pos = await Location.getCurrentPositionAsync({});
+
+      // 2) Balanced accuracy + 10s timeout — Android can hang indefinitely
+      // on slow / cold-start GPS fixes. Race against a manual timeout so
+      // we can fall back to the last-known position rather than freezing
+      // the UI on the spinner.
+      let pos;
+      try {
+        pos = await Promise.race([
+          Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('TIMEOUT')), 10000),
+          ),
+        ]);
+      } catch (err) {
+        // 3) Fallback on timeout — try the OS cache. If we get something
+        // recent, persist those coords; otherwise show a timeout-specific
+        // message rather than the generic one.
+        if (err?.message === 'TIMEOUT') {
+          const cached = await Location.getLastKnownPositionAsync();
+          if (cached?.coords) {
+            await persist({
+              coords: { lat: cached.coords.latitude, lng: cached.coords.longitude },
+              consent: true,
+            });
+            return;
+          }
+          Alert.alert(
+            t('settings.location.errorTitle'),
+            t('settings.location.timeoutMessage'),
+          );
+          return;
+        }
+        throw err;
+      }
+
       await persist({
         coords: { lat: pos.coords.latitude, lng: pos.coords.longitude },
         consent: true,

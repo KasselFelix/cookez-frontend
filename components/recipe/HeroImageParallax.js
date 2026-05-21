@@ -54,8 +54,8 @@ export default function HeroImageParallax({ scrollY, uri, localSource }) {
         />
       </Animated.View>
       <LinearGradient
-        colors={css.gradient.staffPicks.colors}
-        locations={css.gradient.staffPicks.locations}
+        colors={css.gradient.imageOverlay.colors}
+        locations={css.gradient.imageOverlay.locations}
         style={styles.gradient}
         pointerEvents="none"
       />

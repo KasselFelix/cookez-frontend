@@ -1,41 +1,45 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
+import { SlidersHorizontal } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Image,
-  Modal,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
-import ListRecipes from "../components/ListRecipes";
-import SearchRecipe from "../components/SearchRecipe";
+import FiltersModal from "../components/FiltersModal";
+import { useTheme } from "../contexts/ThemeProvider";
+import useTabBarHeight from "../hooks/useTabBarHeight";
+import useT from "../i18n/useT";
 import addressIp from "../modules/addressIp";
 import { setRecipes } from "../reducers/recipe";
-import css from "../styles/Global";
 
-const STAFF_CARD_WIDTH = 160;
-const STAFF_CARD_HEIGHT = 213;
+// Recently Viewed cards scale with the viewport so small devices (iPhone SE
+// ~375pt) don't get oversized images while wider devices keep good density.
+// ~42% of the screen yields ~2.3 cards visible at a glance; clamped to keep
+// the layout legible at both extremes. Aspect ratio 4:5 (height = w * 1.1)
+// gives the gradient overlay room for a 2-line title + 5 stars without the
+// previous 3:4 portrait shape that wasted vertical space.
+const STAFF_CARD_WIDTH_RATIO = 0.42;
+const STAFF_CARD_MIN_WIDTH = 140;
+const STAFF_CARD_MAX_WIDTH = 180;
+const STAFF_CARD_ASPECT = 1.1;
 const COMMUNITY_CARD_HEIGHT = 100;
 const COMMUNITY_IMAGE_WIDTH_RATIO = 0.35;
 
 const FILTERS = ["All", "Quick", "Vegan", "Dessert", "Trending"];
 
-function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
-}
-
-function renderStars(votes, size = 13) {
+function renderStars(votes, size = 13, css) {
   const avg = votes?.length
     ? votes.reduce((s, v) => s + v.note, 0) / votes.length
     : 0;
@@ -56,20 +60,63 @@ function applyFilter(recipes, filter) {
     case "Quick":
       return recipes.filter((r) => r.preparationTime <= 20);
     case "Vegan":
-      return recipes.filter((r) => r.origin?.toLowerCase() === "vegan");
+      return recipes.filter((r) =>
+        r.tags?.some?.((tag) => tag?.toLowerCase() === "vegan")
+      );
     case "Dessert":
-      return recipes.filter((r) => r.origin?.toLowerCase() === "dessert");
+      return recipes.filter((r) =>
+        r.tags?.some?.((tag) => tag?.toLowerCase() === "dessert")
+      );
     case "Trending":
-      return recipes.filter((r) => (r.votes?.length || 0) >= 3);
+      return recipes.filter((r) => {
+        const votes = r.votes ?? [];
+        if (votes.length < 5) return false;
+        const avg = votes.reduce((sum, v) => sum + (v?.note ?? 0), 0) / votes.length;
+        return avg >= 4.0;
+      });
     default:
       return recipes;
   }
+}
+
+function recipeAvgNote(votes) {
+  if (!Array.isArray(votes) || votes.length === 0) return 0;
+  return votes.reduce((sum, v) => sum + (v?.note ?? 0), 0) / votes.length;
+}
+
+// Bayesian-weighted score: combines rating quality and vote volume so a
+// 5★/1-vote recipe doesn't outrank a 4★/50-votes one. See IMDb Top 250.
+function bayesianRank(recipes, m = 3) {
+  const rated = recipes.filter((r) => Array.isArray(r.votes) && r.votes.length > 0);
+  const C = rated.length
+    ? rated.reduce((sum, r) => sum + recipeAvgNote(r.votes), 0) / rated.length
+    : 0;
+  return [...recipes]
+    .map((r) => {
+      const v = r.votes?.length ?? 0;
+      const R = recipeAvgNote(r.votes);
+      const score = v + m === 0 ? 0 : (v / (v + m)) * R + (m / (v + m)) * C;
+      return { recipe: r, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .map(({ recipe }) => recipe);
 }
 
 export default function UserDashboardScreen({ navigation }) {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
   const recipes = useSelector((state) => state.recipe.value);
+  const t = useT();
+  const css = useTheme();
+  const tabBarHeight = useTabBarHeight();
+  const { width: screenWidth } = useWindowDimensions();
+
+  // Responsive staff card dimensions — recomputed on rotation / split-view.
+  const staffCardWidth = useMemo(() => {
+    const target = screenWidth * STAFF_CARD_WIDTH_RATIO;
+    return Math.round(Math.min(STAFF_CARD_MAX_WIDTH, Math.max(STAFF_CARD_MIN_WIDTH, target)));
+  }, [screenWidth]);
+  const staffCardHeight = Math.round(staffCardWidth * STAFF_CARD_ASPECT);
 
   // Loading only matters while the Redux cache is cold. App.js fires a boot
   // fetch for /recipes/all on mount, but it can fail silently (Vercel cold
@@ -78,10 +125,12 @@ export default function UserDashboardScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(recipes.length === 0);
   const [loadError, setLoadError] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
-  const [modalVisible, setModalVisible] = useState(false);
-  const [searchRecipe, setSearchRecipe] = useState("");
-  const [clicked, setClicked] = useState(false);
-  const [dataListRecipe, setDataListRecipe] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [requiredTags, setRequiredTags] = useState([]);
+  const [excludedTags, setExcludedTags] = useState([]);
+  const [requiredOrigins, setRequiredOrigins] = useState([]);
+  const [excludedOrigins, setExcludedOrigins] = useState([]);
+  const [filtersModalVisible, setFiltersModalVisible] = useState(false);
 
   // Guards against double-mount (screen is registered in both Stack and Tab
   // navigators — known tech debt).
@@ -119,83 +168,124 @@ export default function UserDashboardScreen({ navigation }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const staffPicks = useMemo(
-    () =>
-      [...recipes]
-        .filter((r) => (r.avgNote || 0) > 0)
-        .sort((a, b) => (b.avgNote || 0) - (a.avgNote || 0))
-        .slice(0, 8),
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
+
+  const fetchRecentlyViewed = useCallback(async () => {
+    if (!user?.token) {
+      setRecentlyViewed([]);
+      return;
+    }
+    try {
+      const response = await fetch(`${addressIp}/users/lastViewed/${user.token}`);
+      const data = await response.json();
+      setRecentlyViewed(data?.result && Array.isArray(data.recipes) ? data.recipes : []);
+    } catch {
+      setRecentlyViewed([]);
+    }
+  }, [user?.token]);
+
+  useFocusEffect(useCallback(() => { fetchRecentlyViewed(); }, [fetchRecentlyViewed]));
+
+  const availableOrigins = useMemo(
+    () => Array.from(new Set(recipes.flatMap((r) => r.origin ?? []))).sort(),
     [recipes]
   );
 
-  const communityRecipes = useMemo(
-    () => applyFilter([...recipes].reverse(), activeFilter).slice(0, 15),
-    [recipes, activeFilter]
-  );
+  const activeFiltersCount =
+    requiredTags.length +
+    excludedTags.length +
+    requiredOrigins.length +
+    excludedOrigins.length;
 
-  const handleFetchRecipe = useCallback(async () => {
-    if (!searchRecipe.trim()) return;
-    try {
-      const response = await fetch(`${addressIp}/recipes/recipeName`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: searchRecipe }),
-      });
-      const data = await response.json();
-      setDataListRecipe(data.result ? data.recipe : []);
-    } catch (error) {
-      console.error("handleFetchRecipe:", error.message);
-      setDataListRecipe([]);
+  const communityRecipes = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    let filtered = applyFilter(recipes, activeFilter);
+    if (q.length > 0) {
+      filtered = filtered.filter((r) => r.name?.toLowerCase().includes(q));
     }
-  }, [searchRecipe]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (searchRecipe.length > 0) handleFetchRecipe();
-    }, [searchRecipe, handleFetchRecipe])
-  );
+    // Tag filters
+    if (requiredTags.length > 0) {
+      filtered = filtered.filter((r) =>
+        requiredTags.every((tag) =>
+          r.tags?.some((t) => t?.toLowerCase() === tag)
+        )
+      );
+    }
+    if (excludedTags.length > 0) {
+      filtered = filtered.filter(
+        (r) =>
+          !excludedTags.some((tag) =>
+            r.tags?.some((t) => t?.toLowerCase() === tag)
+          )
+      );
+    }
+    // Origin filters (OR for required, NOT for excluded)
+    if (requiredOrigins.length > 0) {
+      filtered = filtered.filter((r) =>
+        r.origin?.some((o) => requiredOrigins.includes(o))
+      );
+    }
+    if (excludedOrigins.length > 0) {
+      filtered = filtered.filter(
+        (r) => !r.origin?.some((o) => excludedOrigins.includes(o))
+      );
+    }
+    // Sort (existing logic)
+    if (activeFilter === "All" || activeFilter === "Vegan" || activeFilter === "Dessert") {
+      return bayesianRank(filtered).slice(0, 15);
+    }
+    if (activeFilter === "Quick") {
+      return [...filtered]
+        .sort((a, b) => (a.preparationTime ?? Infinity) - (b.preparationTime ?? Infinity))
+        .slice(0, 15);
+    }
+    return [...filtered].reverse().slice(0, 15);
+  }, [
+    recipes,
+    activeFilter,
+    searchQuery,
+    requiredTags,
+    excludedTags,
+    requiredOrigins,
+    excludedOrigins,
+  ]);
 
   const navigateToRecipe = useCallback(
     (recipe) => {
       navigation.navigate("Recipe", { recipe });
-      if (user?.token) {
-        // Fire-and-forget — must not block navigation.
-        fetch(`${addressIp}/users/lastViewed`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: user.token, recipeId: recipe._id }),
-        }).catch(() => {});
-      }
     },
-    [navigation, user]
+    [navigation]
   );
 
-  const closeModal = useCallback(() => {
-    setModalVisible(false);
-    setSearchRecipe("");
-    setDataListRecipe([]);
-  }, []);
-
-  const onItemPress = useCallback(
-    (recipe) => {
-      closeModal();
-      navigation.navigate("Recipe", { recipe });
-    },
-    [closeModal, navigation]
-  );
-
-  const greeting = getGreeting();
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return t('userDashboard.greeting.morning');
+    if (hour < 18) return t('userDashboard.greeting.afternoon');
+    return t('userDashboard.greeting.evening');
+  }, [t]);
 
   // ─── Loading state ───
   if (isLoading && recipes.length === 0) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor: css.palette.surface }]}>
         <ActivityIndicator
           size="large"
           color={css.palette.primary500}
-          accessibilityLabel="Loading recipes"
+          accessibilityLabel={t('userDashboard.loadingA11y')}
         />
-        <Text style={styles.loadingText}>Loading recipes…</Text>
+        <Text
+          style={[
+            styles.loadingText,
+            {
+              marginTop: css.spacing.md,
+              fontFamily: css.typography.fontBody,
+              fontSize: css.typography.bodySize,
+              color: css.palette.neutral500,
+            },
+          ]}
+        >
+          {t('userDashboard.loading')}
+        </Text>
       </View>
     );
   }
@@ -203,19 +293,66 @@ export default function UserDashboardScreen({ navigation }) {
   // ─── Error state ─── (cache cold AND fetch failed)
   if (!isLoading && loadError && recipes.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
+      <View
+        style={[
+          styles.emptyContainer,
+          { backgroundColor: css.palette.surface, paddingHorizontal: css.spacing.xl },
+        ]}
+      >
         <FontAwesome name="exclamation-triangle" size={48} color={css.palette.neutral300} />
-        <Text style={styles.emptyTitle}>Couldn’t load recipes</Text>
-        <Text style={styles.emptySubtitle}>
-          Check your connection and try again.
+        <Text
+          style={[
+            styles.emptyTitle,
+            {
+              marginTop: css.spacing.md,
+              fontFamily: css.typography.fontHeading,
+              fontSize: css.typography.h3Size,
+              color: css.palette.neutral900,
+            },
+          ]}
+        >
+          {t('userDashboard.error.title')}
+        </Text>
+        <Text
+          style={[
+            styles.emptySubtitle,
+            {
+              marginTop: css.spacing.xs,
+              fontFamily: css.typography.fontBody,
+              fontSize: css.typography.bodySize,
+              color: css.palette.neutral500,
+            },
+          ]}
+        >
+          {t('userDashboard.error.subtitle')}
         </Text>
         <TouchableOpacity
-          style={styles.emptyCtaButton}
+          style={[
+            styles.emptyCtaButton,
+            {
+              marginTop: css.spacing.lg,
+              backgroundColor: css.palette.primary800,
+              paddingVertical: css.button.primaryPaddingV,
+              paddingHorizontal: css.button.primaryPaddingH,
+              borderRadius: css.radius.pill,
+            },
+          ]}
           onPress={hydrateRecipes}
           accessibilityRole="button"
-          accessibilityLabel="Retry loading recipes"
+          accessibilityLabel={t('userDashboard.error.retryA11y')}
         >
-          <Text style={styles.emptyCtaText}>Retry</Text>
+          <Text
+            style={[
+              styles.emptyCtaText,
+              {
+                fontFamily: css.typography.fontUI,
+                fontSize: css.typography.bodySize,
+                color: css.palette.white,
+              },
+            ]}
+          >
+            {t('common.retry')}
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -224,17 +361,66 @@ export default function UserDashboardScreen({ navigation }) {
   // ─── Empty state ─── (loaded successfully but database is empty)
   if (!isLoading && recipes.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
+      <View
+        style={[
+          styles.emptyContainer,
+          { backgroundColor: css.palette.surface, paddingHorizontal: css.spacing.xl },
+        ]}
+      >
         <FontAwesome name="cutlery" size={48} color={css.palette.neutral300} />
-        <Text style={styles.emptyTitle}>No recipes yet</Text>
-        <Text style={styles.emptySubtitle}>Be the first to add one!</Text>
+        <Text
+          style={[
+            styles.emptyTitle,
+            {
+              marginTop: css.spacing.md,
+              fontFamily: css.typography.fontHeading,
+              fontSize: css.typography.h3Size,
+              color: css.palette.neutral900,
+            },
+          ]}
+        >
+          {t('userDashboard.empty.title')}
+        </Text>
+        <Text
+          style={[
+            styles.emptySubtitle,
+            {
+              marginTop: css.spacing.xs,
+              fontFamily: css.typography.fontBody,
+              fontSize: css.typography.bodySize,
+              color: css.palette.neutral500,
+            },
+          ]}
+        >
+          {t('userDashboard.empty.subtitle')}
+        </Text>
         <TouchableOpacity
-          style={styles.emptyCtaButton}
+          style={[
+            styles.emptyCtaButton,
+            {
+              marginTop: css.spacing.lg,
+              backgroundColor: css.palette.primary800,
+              paddingVertical: css.button.primaryPaddingV,
+              paddingHorizontal: css.button.primaryPaddingH,
+              borderRadius: css.radius.pill,
+            },
+          ]}
           onPress={() => navigation.navigate("AddRecipe")}
           accessibilityRole="button"
-          accessibilityLabel="Add a recipe"
+          accessibilityLabel={t('userDashboard.empty.addCtaA11y')}
         >
-          <Text style={styles.emptyCtaText}>Add Recipe</Text>
+          <Text
+            style={[
+              styles.emptyCtaText,
+              {
+                fontFamily: css.typography.fontUI,
+                fontSize: css.typography.bodySize,
+                color: css.palette.white,
+              },
+            ]}
+          >
+            {t('userDashboard.empty.addCta')}
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -242,72 +428,97 @@ export default function UserDashboardScreen({ navigation }) {
 
   // ─── Main render ───
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: css.palette.surface }]}>
       <ScrollView
         style={styles.mainScroll}
+        contentContainerStyle={{ paddingBottom: tabBarHeight + css.spacing.lg }}
         showsVerticalScrollIndicator={false}
       >
         {/* ════ SECTION 1 — Personalized Header ════ */}
         <LinearGradient
           colors={css.gradient.hero.colors}
           locations={css.gradient.hero.locations}
-          style={styles.headerGradient}
+          style={[
+            styles.headerGradient,
+            {
+              paddingBottom: css.spacing.lg,
+              paddingHorizontal: css.spacing.md,
+            },
+          ]}
         >
-          <Text style={styles.greetingText}>
-            {greeting}, {user?.username || "Chef"} {"👋"}
+          <Text
+            style={[
+              styles.greetingText,
+              {
+                fontFamily: css.typography.fontHeading,
+                fontSize: css.typography.h2Size,
+                lineHeight: css.typography.h2Line,
+                color: css.palette.white,
+              },
+            ]}
+          >
+            {greeting}, {user?.username || t('userDashboard.greeting.fallbackUsername')} {"👋"}
           </Text>
-          <Text style={styles.greetingSubtitle}>
-            What are we cooking today?
+          <Text
+            style={[
+              styles.greetingSubtitle,
+              {
+                fontFamily: css.typography.fontBody,
+                fontSize: css.typography.captionSize,
+                color: css.palette.secondary200,
+                marginTop: css.spacing.xs,
+              },
+            ]}
+          >
+            {t('userDashboard.greeting.subtitle')}
           </Text>
-
-          <View style={styles.quickActionsRow}>
-            <TouchableOpacity
-              style={styles.quickActionChip}
-              onPress={() => navigation.navigate("Kickoff")}
-              accessibilityRole="button"
-              accessibilityLabel="Scan ingredients"
-            >
-              <Text style={styles.quickActionText}>Scan</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.quickActionChip}
-              onPress={() => setModalVisible(true)}
-              accessibilityRole="button"
-              accessibilityLabel="Search recipes"
-            >
-              <Text style={styles.quickActionText}>Search</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.quickActionChip}
-              onPress={() => navigation.navigate("Favorite")}
-              accessibilityRole="button"
-              accessibilityLabel="View favorites"
-            >
-              <FontAwesome name="heart" size={16} color={css.palette.favorite} />
-              <Text style={styles.quickActionText}>Favorites</Text>
-            </TouchableOpacity>
-          </View>
         </LinearGradient>
 
-        {/* ════ SECTION 2 — Staff Picks ════ */}
-        {staffPicks.length > 0 && (
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Staff Picks</Text>
+        {/* ════ SECTION 2 — Recently Viewed ════ */}
+        {recentlyViewed.length > 0 && (
+          <View
+            style={[
+              styles.sectionContainer,
+              { marginTop: css.spacing.lg, paddingHorizontal: css.spacing.md },
+            ]}
+          >
+            <Text
+              style={[
+                styles.sectionTitle,
+                {
+                  fontFamily: css.typography.fontHeading,
+                  fontSize: css.typography.h3Size,
+                  color: css.palette.neutral900,
+                  marginBottom: css.spacing.md,
+                },
+              ]}
+            >
+              {t('userDashboard.recentlyViewed')}
+            </Text>
             <FlatList
-              data={staffPicks}
+              data={recentlyViewed}
               horizontal
               showsHorizontalScrollIndicator={false}
               keyExtractor={(item) => item._id}
-              contentContainerStyle={styles.staffPicksScroll}
+              contentContainerStyle={[
+                styles.recentlyViewedScroll,
+                { paddingRight: css.spacing.md, gap: css.spacing.cardGap },
+              ]}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={styles.staffCard}
+                  style={[
+                    styles.staffCard,
+                    {
+                      width: staffCardWidth,
+                      height: staffCardHeight,
+                      borderRadius: css.radius.card,
+                      backgroundColor: css.palette.neutral200,
+                    },
+                  ]}
                   onPress={() => navigateToRecipe(item)}
                   activeOpacity={0.85}
                   accessibilityRole="button"
-                  accessibilityLabel={`View recipe: ${item.name}`}
+                  accessibilityLabel={t('userDashboard.viewRecipeA11y', { name: item.name })}
                 >
                   <Image
                     source={{ uri: item.imageUrl }}
@@ -315,21 +526,61 @@ export default function UserDashboardScreen({ navigation }) {
                     resizeMode="cover"
                   />
                   <LinearGradient
-                    colors={css.gradient.staffPicks.colors}
-                    locations={css.gradient.staffPicks.locations}
-                    style={styles.staffCardOverlay}
+                    colors={css.gradient.imageOverlay.colors}
+                    locations={css.gradient.imageOverlay.locations}
+                    style={[
+                      styles.staffCardOverlay,
+                      {
+                        paddingHorizontal: css.spacing.sm,
+                        paddingBottom: css.spacing.sm,
+                      },
+                    ]}
                   >
-                    <Text style={styles.staffCardName} numberOfLines={2}>
+                    <Text
+                      style={[
+                        styles.staffCardName,
+                        {
+                          fontFamily: css.typography.fontHeading,
+                          fontSize: css.typography.h5Size,
+                          color: css.palette.white,
+                        },
+                      ]}
+                      numberOfLines={2}
+                    >
                       {item.name}
                     </Text>
-                    <View style={styles.starRow}>
-                      {renderStars(item.votes, 11)}
+                    <View style={[styles.starRow, { marginTop: css.spacing.xs }]}>
+                      {renderStars(item.votes, 11, css)}
                     </View>
                   </LinearGradient>
 
-                  {item.origin ? (
-                    <View style={styles.originPill}>
-                      <Text style={styles.originPillText}>{item.origin}</Text>
+                  {Array.isArray(item.origin) && item.origin.length > 0 ? (
+                    <View
+                      style={[
+                        styles.originPill,
+                        {
+                          top: css.spacing.sm,
+                          right: css.spacing.sm,
+                          backgroundColor: css.pill.bgNeutral,
+                          paddingVertical: css.card.tagPaddingV,
+                          paddingHorizontal: css.card.tagPaddingH,
+                          borderRadius: css.radius.pill,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.originPillText,
+                          {
+                            fontFamily: css.typography.fontUI,
+                            fontSize: css.typography.overlineSize,
+                            color: css.pill.textNeutral,
+                            letterSpacing: css.typography.overlineSpacing,
+                          },
+                        ]}
+                      >
+                        {item.origin[0]}
+                      </Text>
                     </View>
                   ) : null}
                 </TouchableOpacity>
@@ -338,26 +589,136 @@ export default function UserDashboardScreen({ navigation }) {
           </View>
         )}
 
+        {/* ════ Persistent Search Bar ════ */}
+        <View
+          style={[
+            styles.searchRow,
+            {
+              marginTop: css.spacing.lg,
+              marginHorizontal: css.spacing.md,
+              gap: css.spacing.sm,
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.searchBarContainer,
+              {
+                paddingHorizontal: css.spacing.md,
+                paddingVertical: css.spacing.sm,
+                backgroundColor: css.palette.surfaceCard,
+                borderRadius: css.radius.pill,
+              },
+              css.shadow.sm,
+            ]}
+          >
+            <FontAwesome
+              name="search"
+              size={16}
+              color={css.palette.neutral500}
+              style={[styles.searchBarIcon, { marginRight: css.spacing.sm }]}
+            />
+            <TextInput
+              style={[
+                styles.searchBarInput,
+                {
+                  fontFamily: css.typography.fontBody,
+                  fontSize: css.typography.bodySize,
+                  color: css.palette.neutral900,
+                },
+              ]}
+              placeholder={t('userDashboard.searchPlaceholder')}
+              placeholderTextColor={css.palette.neutral500}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              returnKeyType="search"
+              accessibilityLabel={t('userDashboard.searchPlaceholder')}
+              autoCorrect={false}
+            />
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.filtersButton,
+              { backgroundColor: css.palette.surfaceCard },
+              css.shadow.sm,
+              activeFiltersCount > 0 && { backgroundColor: css.palette.primary800 },
+            ]}
+            onPress={() => setFiltersModalVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t('userDashboard.filtersButton.a11y')}
+          >
+            <SlidersHorizontal
+              size={20}
+              color={activeFiltersCount > 0 ? css.palette.white : css.palette.neutral700}
+            />
+            {activeFiltersCount > 0 && (
+              <View
+                style={[
+                  styles.filtersBadge,
+                  {
+                    backgroundColor: css.palette.error,
+                    borderColor: css.palette.surface,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.filtersBadgeText,
+                    {
+                      color: css.palette.white,
+                      fontFamily: css.typography.fontUI,
+                    },
+                  ]}
+                >
+                  {activeFiltersCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
         {/* ════ SECTION 3 — Category Filter Bar ════ */}
-        <View style={styles.filterBarContainer}>
+        <View style={[styles.filterBarContainer, { marginTop: css.spacing.lg }]}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterBarScroll}
+            contentContainerStyle={[
+              styles.filterBarScroll,
+              { paddingHorizontal: css.spacing.md, gap: css.spacing.sm },
+            ]}
           >
             {FILTERS.map((filter) => {
               const isActive = filter === activeFilter;
               return (
                 <TouchableOpacity
                   key={filter}
-                  style={[styles.filterChip, isActive ? styles.filterChipActive : styles.filterChipInactive]}
+                  style={[
+                    styles.filterChip,
+                    {
+                      paddingVertical: css.spacing.sm,
+                      paddingHorizontal: css.spacing.md,
+                      borderRadius: css.radius.pill,
+                      backgroundColor: isActive
+                        ? css.pill.bgSelected
+                        : css.pill.bgNeutral,
+                    },
+                  ]}
                   onPress={() => setActiveFilter(filter)}
                   accessibilityRole="button"
-                  accessibilityLabel={`Filter: ${filter}`}
+                  accessibilityLabel={t('userDashboard.filterA11y', { filter: t(`userDashboard.filters.${filter.toLowerCase()}`) })}
                   accessibilityState={{ selected: isActive }}
                 >
-                  <Text style={[styles.filterChipText, isActive ? styles.filterChipTextActive : styles.filterChipTextInactive]}>
-                    {filter}
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      {
+                        fontFamily: css.typography.fontUI,
+                        fontSize: css.typography.h5Size,
+                        color: isActive ? css.pill.textSelected : css.pill.textNeutral,
+                      },
+                    ]}
+                  >
+                    {t(`userDashboard.filters.${filter.toLowerCase()}`)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -366,43 +727,128 @@ export default function UserDashboardScreen({ navigation }) {
         </View>
 
         {/* ════ SECTION 4 — Community Favorites ════ */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Community Favorites</Text>
+        <View
+          style={[
+            styles.sectionContainer,
+            { marginTop: css.spacing.lg, paddingHorizontal: css.spacing.md },
+          ]}
+        >
+          <Text
+            style={[
+              styles.sectionTitle,
+              {
+                fontFamily: css.typography.fontHeading,
+                fontSize: css.typography.h3Size,
+                color: css.palette.neutral900,
+                marginBottom: css.spacing.md,
+              },
+            ]}
+          >
+            {searchQuery.trim().length > 0
+              ? t('userDashboard.searchResults')
+              : t(`userDashboard.sectionTitles.${activeFilter.toLowerCase()}`)}
+          </Text>
 
           {communityRecipes.length === 0 ? (
-            <View style={styles.filterEmptyContainer}>
-              <Text style={styles.filterEmptyText}>No recipes match this filter.</Text>
+            <View style={[styles.filterEmptyContainer, { paddingVertical: css.spacing.xxl }]}>
+              <Text
+                style={[
+                  styles.filterEmptyText,
+                  {
+                    fontFamily: css.typography.fontBody,
+                    fontSize: css.typography.bodySize,
+                    color: css.palette.neutral500,
+                  },
+                ]}
+              >
+                {t('userDashboard.emptyFilter')}
+              </Text>
             </View>
           ) : (
             communityRecipes.map((item) => (
               <TouchableOpacity
                 key={item._id}
-                style={styles.communityCard}
+                style={[
+                  styles.communityCard,
+                  {
+                    backgroundColor: css.palette.surfaceCard,
+                    borderRadius: css.radius.card,
+                    marginBottom: css.spacing.cardGap,
+                  },
+                  css.shadow.card,
+                ]}
                 onPress={() => navigateToRecipe(item)}
                 activeOpacity={0.85}
                 accessibilityRole="button"
-                accessibilityLabel={`View recipe: ${item.name}`}
+                accessibilityLabel={t('userDashboard.viewRecipeA11y', { name: item.name })}
               >
                 <Image
                   source={{ uri: item.imageUrl }}
                   style={styles.communityCardImage}
                   resizeMode="cover"
                 />
-                <View style={styles.communityCardContent}>
-                  <Text style={styles.communityCardName} numberOfLines={2}>
+                <View
+                  style={[
+                    styles.communityCardContent,
+                    {
+                      paddingVertical: css.spacing.sm,
+                      paddingHorizontal: css.spacing.md,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.communityCardName,
+                      {
+                        fontFamily: css.typography.fontHeading,
+                        fontSize: css.typography.h4Size,
+                        color: css.palette.neutral900,
+                      },
+                    ]}
+                    numberOfLines={2}
+                  >
                     {item.name}
                   </Text>
-                  <View style={styles.communityCardMeta}>
-                    <Text style={styles.metadataText}>
-                      {item.preparationTime ? `${item.preparationTime} min` : "–"}
+                  <View style={[styles.communityCardMeta, { marginTop: css.spacing.xs }]}>
+                    <Text
+                      style={[
+                        styles.metadataText,
+                        {
+                          fontFamily: css.typography.metadataFamily,
+                          fontSize: css.typography.metadataSize,
+                          color: css.typography.metadataColor,
+                        },
+                      ]}
+                    >
+                      {item.preparationTime ? `${item.preparationTime} ${t('userDashboard.meta.minutesShort')}` : "–"}
                     </Text>
-                    <Text style={styles.metadataDot}> · </Text>
-                    <Text style={styles.metadataText}>
-                      {item.difficulty ? `Difficulty ${item.difficulty}/5` : "–"}
+                    <Text
+                      style={[
+                        styles.metadataDot,
+                        {
+                          fontFamily: css.typography.metadataFamily,
+                          fontSize: css.typography.metadataSize,
+                          color: css.typography.metadataColor,
+                        },
+                      ]}
+                    >
+                      {" · "}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.metadataText,
+                        {
+                          fontFamily: css.typography.metadataFamily,
+                          fontSize: css.typography.metadataSize,
+                          color: css.typography.metadataColor,
+                        },
+                      ]}
+                    >
+                      {item.difficulty ? t('userDashboard.meta.difficulty', { value: item.difficulty }) : "–"}
                     </Text>
                   </View>
-                  <View style={styles.starRow}>
-                    {renderStars(item.votes, 13)}
+                  <View style={[styles.starRow, { marginTop: css.spacing.xs }]}>
+                    {renderStars(item.votes, 13, css)}
                   </View>
                 </View>
               </TouchableOpacity>
@@ -410,46 +856,21 @@ export default function UserDashboardScreen({ navigation }) {
           )}
         </View>
 
-        <View style={{ height: css.spacing.xxl }} />
       </ScrollView>
 
-      {/* ════ SECTION 5 — Search Bottom Sheet ════ */}
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={closeModal}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
-            <View style={styles.dragHandle} />
-
-            <SearchRecipe
-              searchRecipe={searchRecipe}
-              setSearchRecipe={setSearchRecipe}
-              setDataListRecipe={setDataListRecipe}
-              clicked={clicked}
-              setClicked={setClicked}
-            />
-
-            <ListRecipes
-              searchRecipe={searchRecipe}
-              data={dataListRecipe}
-              setClicked={setClicked}
-              onItemPress={onItemPress}
-            />
-
-            <TouchableOpacity
-              style={styles.modalCloseButton}
-              onPress={closeModal}
-              accessibilityRole="button"
-              accessibilityLabel="Close search"
-            >
-              <Text style={styles.modalCloseText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <FiltersModal
+        visible={filtersModalVisible}
+        onClose={() => setFiltersModalVisible(false)}
+        requiredTags={requiredTags}
+        excludedTags={excludedTags}
+        setRequiredTags={setRequiredTags}
+        setExcludedTags={setExcludedTags}
+        requiredOrigins={requiredOrigins}
+        excludedOrigins={excludedOrigins}
+        setRequiredOrigins={setRequiredOrigins}
+        setExcludedOrigins={setExcludedOrigins}
+        availableOrigins={availableOrigins}
+      />
     </View>
   );
 }
@@ -457,7 +878,6 @@ export default function UserDashboardScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: css.palette.surface,
   },
   mainScroll: {
     flex: 1,
@@ -466,114 +886,81 @@ const styles = StyleSheet.create({
   // Loading
   loadingContainer: {
     flex: 1,
-    backgroundColor: css.palette.surface,
     alignItems: "center",
     justifyContent: "center",
   },
-  loadingText: {
-    marginTop: css.spacing.md,
-    fontFamily: css.typography.fontBody,
-    fontSize: css.typography.bodySize,
-    color: css.palette.neutral500,
-  },
+  loadingText: {},
 
   // Empty
   emptyContainer: {
     flex: 1,
-    backgroundColor: css.palette.surface,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: css.spacing.xl,
   },
-  emptyTitle: {
-    marginTop: css.spacing.md,
-    fontFamily: css.typography.fontHeading,
-    fontSize: css.typography.h3Size,
-    color: css.palette.neutral900,
-  },
+  emptyTitle: {},
   emptySubtitle: {
-    marginTop: css.spacing.xs,
-    fontFamily: css.typography.fontBody,
-    fontSize: css.typography.bodySize,
-    color: css.palette.neutral500,
     textAlign: "center",
   },
-  emptyCtaButton: {
-    marginTop: css.spacing.lg,
-    backgroundColor: css.palette.primary800,
-    paddingVertical: css.button.primaryPaddingV,
-    paddingHorizontal: css.button.primaryPaddingH,
-    borderRadius: css.radius.pill,
-  },
+  emptyCtaButton: {},
   emptyCtaText: {
-    fontFamily: css.typography.fontUI,
-    fontSize: css.typography.bodySize,
     fontWeight: "600",
-    color: css.palette.white,
   },
 
   // Section 1 — Header
   headerGradient: {
     paddingTop: 60,
-    paddingBottom: css.spacing.lg,
-    paddingHorizontal: css.spacing.md,
   },
-  greetingText: {
-    fontFamily: css.typography.fontHeading,
-    fontSize: css.typography.h2Size,
-    lineHeight: css.typography.h2Line,
-    color: css.palette.white,
+  greetingText: {},
+  greetingSubtitle: {},
+
+  // Persistent Search Bar
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  greetingSubtitle: {
-    fontFamily: css.typography.fontBody,
-    fontSize: css.typography.captionSize,
-    color: css.palette.secondary200,
-    marginTop: css.spacing.xs,
+  searchBarContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  quickActionsRow: {
-    flexDirection: "row",
-    marginTop: css.spacing.md,
-    gap: css.spacing.sm,
+  filtersButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  quickActionChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: css.palette.secondary200,
-    paddingVertical: css.spacing.sm,
-    paddingHorizontal: css.spacing.md,
-    borderRadius: css.radius.pill,
-    gap: css.spacing.xs,
+  filtersBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
   },
-  quickActionText: {
-    fontFamily: css.typography.fontUI,
-    fontSize: css.typography.h5Size,
-    color: css.palette.primary800,
-    fontWeight: "500",
+  filtersBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  searchBarIcon: {},
+  searchBarInput: {
+    flex: 1,
+    paddingVertical: 0,
   },
 
   // Shared section
-  sectionContainer: {
-    marginTop: css.spacing.lg,
-    paddingHorizontal: css.spacing.md,
-  },
-  sectionTitle: {
-    fontFamily: css.typography.fontHeading,
-    fontSize: css.typography.h3Size,
-    color: css.palette.neutral900,
-    marginBottom: css.spacing.md,
-  },
+  sectionContainer: {},
+  sectionTitle: {},
 
-  // Section 2 — Staff Picks
-  staffPicksScroll: {
-    paddingRight: css.spacing.md,
-    gap: css.spacing.cardGap,
-  },
+  // Section 2 — Recently Viewed
+  recentlyViewedScroll: {},
   staffCard: {
-    width: STAFF_CARD_WIDTH,
-    height: STAFF_CARD_HEIGHT,
-    borderRadius: css.radius.card,
+    // width + height applied inline (responsive via useWindowDimensions)
     overflow: "hidden",
-    backgroundColor: css.palette.neutral200,
   },
   staffCardImage: {
     width: "100%",
@@ -586,76 +973,32 @@ const styles = StyleSheet.create({
     right: 0,
     height: "60%",
     justifyContent: "flex-end",
-    paddingHorizontal: css.spacing.sm,
-    paddingBottom: css.spacing.sm,
   },
-  staffCardName: {
-    fontFamily: css.typography.fontHeading,
-    fontSize: css.typography.h5Size,
-    color: css.palette.white,
-  },
+  staffCardName: {},
   starRow: {
     flexDirection: "row",
-    marginTop: css.spacing.xs,
     gap: 2,
   },
   originPill: {
     position: "absolute",
-    top: css.spacing.sm,
-    right: css.spacing.sm,
-    backgroundColor: css.palette.secondary200,
-    paddingVertical: css.card.tagPaddingV,
-    paddingHorizontal: css.card.tagPaddingH,
-    borderRadius: css.radius.pill,
   },
   originPillText: {
-    fontFamily: css.typography.fontUI,
-    fontSize: css.typography.overlineSize,
-    color: css.palette.primary800,
     textTransform: "uppercase",
-    letterSpacing: css.typography.overlineSpacing,
   },
 
   // Section 3 — Filter Bar
-  filterBarContainer: {
-    marginTop: css.spacing.lg,
-  },
-  filterBarScroll: {
-    paddingHorizontal: css.spacing.md,
-    gap: css.spacing.sm,
-  },
-  filterChip: {
-    paddingVertical: css.spacing.sm,
-    paddingHorizontal: css.spacing.md,
-    borderRadius: css.radius.pill,
-  },
-  filterChipActive: {
-    backgroundColor: css.palette.primary800,
-  },
-  filterChipInactive: {
-    backgroundColor: css.palette.secondary200,
-  },
+  filterBarContainer: {},
+  filterBarScroll: {},
+  filterChip: {},
   filterChipText: {
-    fontFamily: css.typography.fontUI,
-    fontSize: css.typography.h5Size,
     fontWeight: "500",
-  },
-  filterChipTextActive: {
-    color: css.palette.white,
-  },
-  filterChipTextInactive: {
-    color: css.palette.primary800,
   },
 
   // Section 4 — Community Favorites
   communityCard: {
     flexDirection: "row",
     height: COMMUNITY_CARD_HEIGHT,
-    backgroundColor: css.palette.surfaceCard,
-    borderRadius: css.radius.card,
     overflow: "hidden",
-    marginBottom: css.spacing.cardGap,
-    ...css.shadow.card,
   },
   communityCardImage: {
     width: `${Math.round(COMMUNITY_IMAGE_WIDTH_RATIO * 100)}%`,
@@ -663,76 +1006,17 @@ const styles = StyleSheet.create({
   },
   communityCardContent: {
     flex: 1,
-    paddingVertical: css.spacing.sm,
-    paddingHorizontal: css.spacing.md,
     justifyContent: "center",
   },
-  communityCardName: {
-    fontFamily: css.typography.fontHeading,
-    fontSize: css.typography.h4Size,
-    color: css.palette.neutral900,
-  },
+  communityCardName: {},
   communityCardMeta: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: css.spacing.xs,
   },
-  metadataText: {
-    fontFamily: css.typography.metadataFamily,
-    fontSize: css.typography.metadataSize,
-    color: css.typography.metadataColor,
-  },
-  metadataDot: {
-    fontFamily: css.typography.metadataFamily,
-    fontSize: css.typography.metadataSize,
-    color: css.typography.metadataColor,
-  },
+  metadataText: {},
+  metadataDot: {},
   filterEmptyContainer: {
     alignItems: "center",
-    paddingVertical: css.spacing.xxl,
   },
-  filterEmptyText: {
-    fontFamily: css.typography.fontBody,
-    fontSize: css.typography.bodySize,
-    color: css.palette.neutral500,
-  },
-
-  // Section 5 — Search Modal
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: css.palette.overlayDark,
-  },
-  modalSheet: {
-    backgroundColor: css.palette.surface,
-    borderTopLeftRadius: css.radius.xl,
-    borderTopRightRadius: css.radius.xl,
-    paddingTop: css.spacing.sm,
-    paddingBottom: css.spacing.xxl,
-    paddingHorizontal: css.spacing.md,
-    minHeight: "55%",
-    maxHeight: "85%",
-    alignItems: "center",
-  },
-  dragHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: css.palette.neutral300,
-    alignSelf: "center",
-    marginBottom: css.spacing.md,
-  },
-  modalCloseButton: {
-    marginTop: css.spacing.md,
-    backgroundColor: css.palette.primary800,
-    paddingVertical: css.button.smPaddingV,
-    paddingHorizontal: css.button.smPaddingH,
-    borderRadius: css.radius.pill,
-  },
-  modalCloseText: {
-    fontFamily: css.typography.fontUI,
-    fontSize: css.button.smFontSize,
-    fontWeight: "600",
-    color: css.palette.white,
-  },
+  filterEmptyText: {},
 });

@@ -33,6 +33,7 @@ import Animated, {
 
 import addressIp from '../modules/addressIp';
 import css from '../styles/Global';
+import useTabBarHeight from '../hooks/useTabBarHeight';
 import UserCommentCard from '../components/recipe/UserCommentCard';
 import {
   deleteComment as deleteCommentAction,
@@ -59,6 +60,7 @@ export default function CommentScreen({ navigation }) {
   const user = useSelector((state) => state.user.value);
   const recipesInStore = useSelector((state) => state.recipe.value);
   const dispatch = useDispatch();
+  const tabBarHeight = useTabBarHeight();
 
   const [comments, setComments] = useState([]);
   const [stats, setStats] = useState({ totalComments: 0, totalLikesReceived: 0 });
@@ -370,7 +372,10 @@ export default function CommentScreen({ navigation }) {
           data={sortedComments}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: tabBarHeight + css.spacing.lg },
+          ]}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl

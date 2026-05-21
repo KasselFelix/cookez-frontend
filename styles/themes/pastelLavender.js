@@ -90,6 +90,13 @@ const button = {
   disabledText:        palette.neutral500,
   disabledBorderColor: palette.neutral200,
 };
+
+const pill = {
+  ...css.pill,
+  bgNeutral:   palette.neutral100, // #ebe5f0 — pale aubergine-tinted, on-mood
+  bgSelected:  palette.primary800,
+  textNeutral: palette.primary800,
+};
  
 // Shadows tinted with deep aubergine — watercolor depth
 const shadow = {
@@ -163,6 +170,7 @@ const pastelLavender = {
   input,
   tabBar,
   button,
+  pill,
   shadow,
   gradient,
   glassmorphism,

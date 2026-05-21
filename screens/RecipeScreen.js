@@ -85,6 +85,15 @@ export default function RecipeScreen({ route, navigation }) {
   const t = useT();
   const { requireAuth } = useAuthGate();
 
+  useEffect(() => {
+    if (!user?.token || !recipe?._id) return;
+    fetch(`${addressIp}/users/lastViewed`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: user.token, recipeId: recipe._id }),
+    }).catch(() => {});
+  }, [user?.token, recipe?._id]);
+
   // Servings local au RecipeScreen — découplé de Redux pour ne PAS
   // déclencher de re-fetch côté ResultScreen (qui a currentServings dans
   // ses deps et remplacerait state.recipe.value en arrière-plan → la

@@ -305,6 +305,18 @@ const card = {
   tagFontSize:  typography.overlineSize,
 };
 
+// --- PILLS (filter chips, origin pills, tag chips, any rounded selectable)
+//
+// Semantic tokens for pill-style elements that toggle between neutral and
+// selected states. Theme-aware: light keeps the brand mint; dark/pastels
+// override to stay on-brand without dropping back to a generic surface.
+const pill = {
+  bgNeutral:    palette.secondary200, // #edf6f4 mint
+  bgSelected:   palette.primary800,   // #004643 deep teal
+  textNeutral:  palette.primary800,   // teal text on mint
+  textSelected: palette.white,        // white text on selected teal
+};
+
 // --- INPUTS (AddRecipeScreen, LoginScreen) ---
 const input = {
   bg:              palette.surface,
@@ -391,7 +403,7 @@ const animation = {
 
 const gradient = {
   // Dark overlay for hero images (text legibility on photography)
-  staffPicks: {
+  imageOverlay: {
     colors: [palette.transparent, rgba(palette.black, 0.72)],
     locations: [0.4, 1],
   },
@@ -487,6 +499,7 @@ const css = {
   // Component tokens
   button,
   card,
+  pill,
   input,
   tabBar,
   layout,

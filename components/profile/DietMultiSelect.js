@@ -83,7 +83,10 @@ export default function DietMultiSelect({ visible, onClose }) {
       });
       const data = await res.json();
       if (data.result) {
-        dispatch(updateUserInStore(data.updatedUser || { dietRestrictions: selected }));
+        // Targeted partial dispatch — PUT /profile does not populate
+        // recipes/favorites, so we only update the field we changed to
+        // avoid clobbering populated arrays in the Redux store.
+        dispatch(updateUserInStore({ dietRestrictions: data.updatedUser?.dietRestrictions ?? selected }));
         onClose?.();
       } else {
         Alert.alert(t('common.error'), data.error || t('common.networkError'));
