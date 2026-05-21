@@ -162,7 +162,14 @@ export default function SettingsScreen({ navigation }) {
       });
       const data = await res.json();
       if (data.result) {
-        dispatch(updateUserInStore(data.updatedUser || overrides));
+        // Targeted partial dispatch — PUT /profile does not populate
+        // recipes/favorites, so building a partial from `overrides` keys
+        // (preferring backend value when present) keeps populated arrays
+        // intact in the Redux store.
+        const partial = Object.fromEntries(
+          Object.keys(overrides).map((k) => [k, data.updatedUser?.[k] ?? overrides[k]]),
+        );
+        dispatch(updateUserInStore(partial));
         closeModal();
       } else {
         Alert.alert(t('common.error'), data.error || t('common.networkError'));

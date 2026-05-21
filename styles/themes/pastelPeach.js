@@ -92,6 +92,12 @@ const button = {
   disabledText:        palette.neutral500,
   disabledBorderColor: palette.neutral200,
 };
+
+const pill = {
+  ...css.pill,
+  bgSelected:  palette.primary800,
+  textNeutral: palette.primary800,
+};
  
 // Shadows tinted with deep amber — integrate with peach surfaces
 const shadow = {
@@ -165,6 +171,7 @@ const pastelPeach = {
   input,
   tabBar,
   button,
+  pill,
   shadow,
   gradient,
   glassmorphism,

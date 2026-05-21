@@ -21,9 +21,8 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-// STYLES
-import { FontAwesome } from "@expo/vector-icons";
-import css from "./styles/Global";
+// NAVIGATION — custom tab bar (Direction A: floating glass capsule)
+import FloatingTabBar from './components/navigation/FloatingTabBar';
 
 // STORE
 import { configureStore } from "@reduxjs/toolkit";
@@ -96,38 +95,11 @@ const store = configureStore({
 const TabNavigator = () => {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarStyle: {
-          height:          css.tabBar.height,
-          paddingBottom:   css.tabBar.paddingBottom,
-          paddingTop:      css.tabBar.paddingTop,
-          borderTopWidth:  css.tabBar.borderTopWidth,
-          elevation:       css.tabBar.elevation,
-          backgroundColor: css.tabBar.backgroundColor,
-        },
-        tabBarIcon: ({ color, size }) => {
-          let iconName = "";
-          if (route.name === "UserDashboard") {
-            iconName = "home";
-          } else if (route.name === "Profile") {
-            iconName = "user";
-          } else if (route.name === "AddRecipe") {
-            iconName = "plus";
-          } else if (route.name === "Favorite") {
-            iconName = "heart";
-          } else if (route.name === "Comment") {
-            iconName = "comments";
-          }
-          return <FontAwesome name={iconName} color={color} size={size} />;
-        },
-        headerShown:             false,
-        tabBarActiveTintColor:   css.tabBar.activeTintColor,
-        tabBarInactiveTintColor: css.tabBar.inactiveTintColor,
-        tabBarShowLabel:         css.tabBar.showLabel,
-      })}
+      tabBar={(props) => <FloatingTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
     >
       <Tab.Screen name="UserDashboard" component={UserDashboardScreen} />
-      <Tab.Screen name="Favorite"      component={FavoriteScreen} />
+      <Tab.Screen name="Kickoff"       component={KickoffScreen} options={{ tabBarStyle: { display: 'none' } }} />
       <Tab.Screen name="AddRecipe"     component={AddRecipeScreen} />
       <Tab.Screen name="Comment"       component={CommentScreen} />
       <Tab.Screen name="Profile"       component={ProfileScreen} />

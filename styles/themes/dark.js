@@ -78,6 +78,16 @@ const button = {
   disabledText:        palette.neutral500,
   disabledBorderColor: '#3a3a3c',
 };
+
+// Pills on dark : neutral uses the elevated charcoal surface, selected
+// keeps the brand teal (already shifted to primary500/800 dark variants).
+const pill = {
+  ...css.pill,
+  bgNeutral:    palette.surfaceCard, // #2a2a2c
+  bgSelected:   palette.primary800,  // #33b5af (already overridden above)
+  textNeutral:  palette.primary500,  // #009e97 accent teal
+  textSelected: '#ffffff',
+};
  
 // Shadows on dark: pure black, high opacity for visible depth
 const shadow = {
@@ -95,7 +105,7 @@ const gradient = {
     colors: [palette.primary600, palette.primary400],
     locations: [0, 1],
   },
-  staffPicks: {
+  imageOverlay: {
     colors: ['transparent', 'rgba(0,0,0,0.85)'],
     locations: [0.4, 1],
   },
@@ -152,6 +162,7 @@ const dark = {
   input,
   tabBar,
   button,
+  pill,
   shadow,
   gradient,
   glassmorphism,

@@ -24,11 +24,13 @@ import IngredientsList from "../components/IngredientsList";
 import StepsList from "../components/StepsList";
 import PickImage from "../components/PickImage";
 import TakePhoto from "../components/TakePhoto";
+import useTabBarHeight from "../hooks/useTabBarHeight";
 import { clearPicture } from "../reducers/picture";
 
 const { width, height } = Dimensions.get('window');
 
 export default function AddRecipeScreen({navigation}) {
+  const tabBarHeight = useTabBarHeight();
 
   // ETATS POUR LES PICKERS \\
   const [selectedNumber, setSelectedNumber] = useState(null);
@@ -216,7 +218,7 @@ export default function AddRecipeScreen({navigation}) {
   return (
     <KeyboardAvoidingView
     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    style={styles.container}>
+    style={[styles.container, { paddingBottom: tabBarHeight }]}>
       <View style={styles.header}>
         {/* <View style={styles.buttonReturn}> */}
           <MySmallButton
@@ -230,7 +232,10 @@ export default function AddRecipeScreen({navigation}) {
       </View>
       <View style={styles.formBloc}>
         <View style={styles.formContainer}>
-          <ScrollView style={styles.scroll}>
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={{ paddingBottom: css.spacing.lg, alignItems: 'center' }}
+          >
             {/* SECTION RECIPE : TITLE - DESCRIPTION  - SETTINGS*/}
             <View style={styles.section}>
               <View style={styles.separationContainer}>
@@ -378,14 +383,16 @@ export default function AddRecipeScreen({navigation}) {
                   }
                 </View>
             </View>
+            <View style={{ marginTop: css.spacing.lg }}>
+              <MyButton
+                dataFlow={() => {handleAddRecipe()}}
+                text="Add Recipe"
+                buttonType={buttonStyles.buttonThree}
+              />
+            </View>
           </ScrollView>
         </View>
       </View>
-      <MyButton
-          dataFlow={() => {handleAddRecipe()}}  
-          text="Add Recipe"
-          buttonType={buttonStyles.buttonThree}
-        />
   </KeyboardAvoidingView>
   );
 }
@@ -432,7 +439,7 @@ const styles = StyleSheet.create({
   },
 
   formBloc:{
-    height: '80%',
+    flex: 1,
     width: '95%',
     alignItems: 'center',
     justifyContent: 'center',

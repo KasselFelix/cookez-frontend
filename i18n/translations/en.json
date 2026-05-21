@@ -20,6 +20,13 @@
     "deleteTitle": "Delete account",
     "deleteMessage": "Coming soon."
   },
+  "tabBar": {
+    "userDashboard": "Home",
+    "kickoff": "Scan",
+    "addRecipe": "Add recipe",
+    "comment": "Comments",
+    "profile": "Profile"
+  },
   "auth": {
     "gate": {
       "title": "Create an account to continue",
@@ -240,7 +247,10 @@
       "deniedTitle": "Permission denied",
       "deniedMessage": "We will not access your location.",
       "errorTitle": "Location error",
-      "errorMessage": "Could not retrieve your location."
+      "errorMessage": "Could not retrieve your location.",
+      "servicesDisabledTitle": "Location services off",
+      "servicesDisabledMessage": "Please enable location services in your device settings.",
+      "timeoutMessage": "Could not retrieve your location in time. Please try again."
     },
     "preferredTags": {
       "title": "Tags I like",
@@ -408,6 +418,68 @@
         "title": "Be the first to comment",
         "hint": "Share your tips or ask the chef a question."
       }
+    }
+  },
+  "userDashboard": {
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening",
+      "subtitle": "What are we cooking today?",
+      "fallbackUsername": "Chef"
+    },
+    "recentlyViewed": "Recently Viewed",
+    "searchPlaceholder": "Search recipes...",
+    "searchResults": "Search results",
+    "filtersButton": {
+      "a11y": "Open filters"
+    },
+    "filtersModal": {
+      "title": "Filters",
+      "sectionTags": "Tags",
+      "sectionOrigins": "Origins",
+      "clearAll": "Clear all",
+      "closeA11y": "Close filters",
+      "emptyOrigins": "No origins available",
+      "tagA11y": "Tag {{name}} {{state}}",
+      "originA11y": "Origin {{name}} {{state}}",
+      "stateNeutral": "neutral",
+      "stateRequired": "required",
+      "stateExcluded": "excluded"
+    },
+    "viewRecipeA11y": "View recipe: {{name}}",
+    "filterA11y": "Filter: {{filter}}",
+    "filters": {
+      "all": "All",
+      "quick": "Quick",
+      "vegan": "Vegan",
+      "dessert": "Dessert",
+      "trending": "Trending"
+    },
+    "sectionTitles": {
+      "all": "Community Favorites",
+      "quick": "Quick & Easy",
+      "vegan": "Vegan Picks",
+      "dessert": "Sweet Treats",
+      "trending": "Trending Now"
+    },
+    "meta": {
+      "minutesShort": "min",
+      "difficulty": "Difficulty {{value}}/5"
+    },
+    "emptyFilter": "No recipes match this filter.",
+    "loading": "Loading recipes…",
+    "loadingA11y": "Loading recipes",
+    "error": {
+      "title": "Couldn't load recipes",
+      "subtitle": "Check your connection and try again.",
+      "retryA11y": "Retry loading recipes"
+    },
+    "empty": {
+      "title": "No recipes yet",
+      "subtitle": "Be the first to add one!",
+      "addCta": "Add Recipe",
+      "addCtaA11y": "Add a recipe"
     }
   },
   "result": {
