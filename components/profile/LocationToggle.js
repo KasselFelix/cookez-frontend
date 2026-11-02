@@ -45,11 +45,9 @@ export default function LocationToggle() {
       });
       const data = await res.json();
       if (data.result) {
-        // Targeted partial dispatch: PUT /profile returns the user without
-        // populating recipes/favorites, so spreading the whole `updatedUser`
-        // overwrites the populated arrays we already have in memory with
-        // bare ObjectIds (cards then render "Untitled"). Touch only `location`.
-        dispatch(updateUserInStore({ location: data.updatedUser?.location ?? payload }));
+        // Backend now returns `{ result, updated }` with only the changed
+        // fields (post-normalisation), so we can dispatch it as-is.
+        if (data.updated) dispatch(updateUserInStore(data.updated));
       } else {
         Alert.alert(t('common.error'), data.error || t('common.networkError'));
       }
