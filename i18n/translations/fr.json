@@ -135,6 +135,13 @@
       "cooked": "Recettes cuisinées",
       "seasonalIngredients": "Ingrédients de saison"
     },
+    "statsCard": {
+      "recipes": "Recettes",
+      "followers": "Abonnés",
+      "following": "Abonnements",
+      "a11yLabel": "{{name}} — {{recipes}} recettes, {{followers}} abonnés, {{following}} abonnements",
+      "a11yHint": "Ouvre le profil complet"
+    },
     "subtitle": {
       "weight_loss": "Objectif : perte de poids",
       "muscle_gain": "Objectif : prise de muscle",

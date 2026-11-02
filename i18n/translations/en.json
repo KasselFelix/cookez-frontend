@@ -135,6 +135,13 @@
       "cooked": "Recipes cooked",
       "seasonalIngredients": "Seasonal ingredients"
     },
+    "statsCard": {
+      "recipes": "Recipes",
+      "followers": "Followers",
+      "following": "Following",
+      "a11yLabel": "{{name}} — {{recipes}} recipes, {{followers}} followers, {{following}} following",
+      "a11yHint": "Opens the full profile"
+    },
     "subtitle": {
       "weight_loss": "Goal: weight loss",
       "muscle_gain": "Goal: muscle gain",

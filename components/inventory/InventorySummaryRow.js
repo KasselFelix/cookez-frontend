@@ -6,13 +6,11 @@
 // the orange + red pair land together on the second row, which doubles
 // as a visual "needs attention" cluster.
 //
-// Each card reuses MonoStat. Because MonoStat hardcodes the value text
-// to `style.palette.neutral900`, we clone the theme object with that key
-// overridden for the two coloured cards (expiringSoon = accent500,
-// expired = palette.error). This keeps MonoStat untouched while letting
-// the SummaryRow drive its colour palette.
+// Each card reuses MonoStat. MonoStat exposes a `valueColor` prop so we can
+// tint the two attention cells (expiringSoon = accent500, expired = error)
+// without forking the component or doing theme cloning.
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../../contexts/ThemeProvider';
@@ -30,18 +28,6 @@ export default function InventorySummaryRow({ summary }) {
     lowStock: summary?.lowStock ?? 0,
   };
 
-  // Clone the theme object and swap neutral900 (the colour MonoStat uses
-  // for the value text) so the same component can render an accent / error
-  // tinted value without forking MonoStat itself.
-  const accentTheme = useMemo(
-    () => ({ ...css, palette: { ...css.palette, neutral900: css.palette.accent500 } }),
-    [css],
-  );
-  const errorTheme = useMemo(
-    () => ({ ...css, palette: { ...css.palette, neutral900: css.palette.error } }),
-    [css],
-  );
-
   const cardStyle = [
     styles.card,
     css.shadow.sm,
@@ -57,27 +43,25 @@ export default function InventorySummaryRow({ summary }) {
   const cards = [
     {
       key: 'total',
-      theme: css,
       value: safeSummary.total,
       label: t('profile.inventory.summary.total'),
     },
     {
       key: 'low_stock',
-      theme: css,
       value: safeSummary.lowStock,
       label: t('profile.inventory.summary.low_stock'),
     },
     {
       key: 'expiring_soon',
-      theme: accentTheme,
       value: safeSummary.expiringSoon,
       label: t('profile.inventory.summary.expiring_soon'),
+      valueColor: css.palette.accent500,
     },
     {
       key: 'expired',
-      theme: errorTheme,
       value: safeSummary.expired,
       label: t('profile.inventory.summary.expired'),
+      valueColor: css.palette.error,
     },
   ];
 
@@ -98,7 +82,7 @@ export default function InventorySummaryRow({ summary }) {
           // to swallow all four cards into a single "Total" announcement.
           accessibilityLabel={`${c.label} : ${c.value}`}
         >
-          <MonoStat style={c.theme} value={c.value} label={c.label} />
+          <MonoStat value={c.value} label={c.label} valueColor={c.valueColor} />
         </View>
       ))}
     </View>
