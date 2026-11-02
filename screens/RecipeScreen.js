@@ -45,7 +45,7 @@ import SeasonalBadge from '../components/result/SeasonalBadge';
 import RecipeVideoButton from '../components/recipe/RecipeVideoButton';
 import { resolveRecipeImageSource } from '../modules/recipeImage';
 import { resolveVideoUrl } from '../modules/recipeVideo';
-import { groupIngredients } from '../modules/ingredientGroups';
+import { groupIngredients, withoutBlockedMembers } from '../modules/ingredientGroups';
 
 const NUTRITION_ORDER = ['calories', 'proteins', 'carbs', 'fat', 'fibers'];
 
@@ -359,7 +359,7 @@ export default function RecipeScreen({ route, navigation }) {
     if (!recipe?.ingredients?.length || !recipe?.servings) return [];
     const ratio = servings / recipe.servings;
 
-    return recipe.ingredients
+    return withoutBlockedMembers(recipe.ingredients)
       .map((ri) => {
         const ingDoc = ri.ingredient;
         const ingId = ingDoc?._id || ingDoc;

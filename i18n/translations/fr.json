@@ -211,8 +211,26 @@
       "householdTitle": "Mon foyer",
       "householdLabel": "Nombre de personnes",
       "allergiesTitle": "Allergies",
-      "allergiesLabel": "Allergies (séparées par des virgules)",
-      "allergiesPlaceholder": "ex : arachides, crustacés"
+      "allergiesLabel": "Autres allergies (séparées par des virgules)",
+      "allergiesPlaceholder": "ex : kiwi, ananas",
+      "allergiesUnknownTitle": "Termes non reconnus",
+      "allergiesUnknownMessage": "Nous ne connaissons pas : {{terms}}. Les recettes qui citent ces mots seront masquées, mais un produit qui en contient sous un autre nom restera visible. Vérifiez toujours les ingrédients."
+    },
+    "allergens": {
+      "gluten": "Gluten",
+      "crustaceans": "Crustacés",
+      "eggs": "Œufs",
+      "fish": "Poisson",
+      "peanuts": "Arachides",
+      "soy": "Soja",
+      "dairy": "Lait",
+      "nuts": "Fruits à coque",
+      "celery": "Céleri",
+      "mustard": "Moutarde",
+      "sesame": "Sésame",
+      "sulphites": "Sulfites",
+      "lupin": "Lupin",
+      "molluscs": "Mollusques"
     },
     "nutritionalGoals": {
       "title": "Objectif nutritionnel",

@@ -211,8 +211,26 @@
       "householdTitle": "My household",
       "householdLabel": "Number of people",
       "allergiesTitle": "Allergies",
-      "allergiesLabel": "Allergies (comma-separated)",
-      "allergiesPlaceholder": "e.g. peanuts, shellfish"
+      "allergiesLabel": "Other allergies (comma-separated)",
+      "allergiesPlaceholder": "e.g. kiwi, pineapple",
+      "allergiesUnknownTitle": "Unrecognized terms",
+      "allergiesUnknownMessage": "We don't know: {{terms}}. Recipes that name these words will be hidden, but a product that contains them under another name stays visible. Always check the ingredients."
+    },
+    "allergens": {
+      "gluten": "Gluten",
+      "crustaceans": "Crustaceans",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "peanuts": "Peanuts",
+      "soy": "Soy",
+      "dairy": "Milk",
+      "nuts": "Tree nuts",
+      "celery": "Celery",
+      "mustard": "Mustard",
+      "sesame": "Sesame",
+      "sulphites": "Sulphites",
+      "lupin": "Lupin",
+      "molluscs": "Molluscs"
     },
     "nutritionalGoals": {
       "title": "Nutritional goal",

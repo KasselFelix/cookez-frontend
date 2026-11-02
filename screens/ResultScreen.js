@@ -90,6 +90,7 @@ export default function ResultScreen({ navigation }) {
         origins: [...(filters.selectedOrigins || [])].sort(),
         tags: filters.selectedTags,
         servings: filters.currentServings,
+        allergy: user?.settings?.allergy,
       };
       const online = isConnected && isInternetReachable;
       let serverSucceeded = false;
