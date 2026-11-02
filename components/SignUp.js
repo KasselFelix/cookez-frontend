@@ -192,10 +192,4 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 
-   
-  lottieAnim:{
-    width:'100%',
-    height:'100%',
-  },
-
 })
