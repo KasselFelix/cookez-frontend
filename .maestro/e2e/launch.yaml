@@ -1,0 +1,9 @@
+# Flow minimal : l'app démarre et affiche son premier écran. Sert à vérifier la chaîne
+# émulateur → adb → Maestro (phase 5), en local comme en CI.
+appId: com.v2.cookez
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: launch
