@@ -412,6 +412,22 @@
     "steps": {
       "title": "Steps"
     },
+    "video": {
+      "watch": "Watch video",
+      "watchOnYoutube": "Watch on YouTube",
+      "hint": "Opens the video in your browser"
+    },
+    "meta": {
+      "difficulty": "Difficulty {{value}}/5",
+      "minutes": "{{count}} min",
+      "noInfo": "–"
+    },
+    "description": {
+      "title": "Description"
+    },
+    "ingredients": {
+      "or": "or"
+    },
     "comments": {
       "title": "Comments",
       "empty": {

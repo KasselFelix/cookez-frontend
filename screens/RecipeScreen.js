@@ -23,7 +23,6 @@ import { updateRecipeVote } from '../reducers/recipe';
 import { toggleFavorite } from '../reducers/user';
 // MODULES
 import addressIp from '../modules/addressIp';
-import imageRecipe from '../modules/images';
 import css from '../styles/Global';
 import useT from '../i18n/useT';
 import { flagForOriginName } from '../modules/countries';
@@ -43,6 +42,9 @@ import NutritionSheet from '../components/recipe/NutritionSheet';
 import ExpiryAlert from '../components/recipe/ExpiryAlert';
 import ShoppingList from '../components/recipe/ShoppingList';
 import SeasonalBadge from '../components/result/SeasonalBadge';
+import RecipeVideoButton from '../components/recipe/RecipeVideoButton';
+import { resolveRecipeImageSource } from '../modules/recipeImage';
+import { resolveVideoUrl } from '../modules/recipeVideo';
 
 const NUTRITION_ORDER = ['calories', 'proteins', 'carbs', 'fat', 'fibers'];
 
@@ -314,9 +316,14 @@ export default function RecipeScreen({ route, navigation }) {
     );
   }
 
-  // Hero image source — local require if mapped, else Cloudinary URL
-  const localHeroSource = recipe.picture && imageRecipe[`${recipe.picture}.jpg`];
-  const heroUri = `https://res.cloudinary.com/dnym6kt4p/image/upload/${recipe.picture}.jpg`;
+  // Hero image source — U-A16: resilient to imported recipes. Funnels through
+  // the shared resolver (imageUrl http > picture local/Cloudinary > placeholder)
+  // so a null/empty picture never yields a broken <Image>.
+  const heroSource = resolveRecipeImageSource(recipe);
+
+  // Video affordance — null-safe. resolveVideoUrl returns null for
+  // missing/empty/non-http, so the button renders nothing in that case.
+  const videoUrl = resolveVideoUrl(recipe);
 
   // Scaling local — basé sur `servings` (state local), pas Redux.
   // Les ingrédients sont stockés à `recipe.servings` (default auteur).
@@ -332,6 +339,7 @@ export default function RecipeScreen({ route, navigation }) {
     const { value, unit } = formatQuantity(raw, ing.unit, defaultUnit);
     return { ...ing, displayQuantity: value, displayUnit: unit };
   });
+
 
   // Shopping list recalculée 100% client-side à partir de :
   //   - recipe.ingredients (populated avec ri.ingredient = Ingredient doc)
@@ -441,11 +449,7 @@ export default function RecipeScreen({ route, navigation }) {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
-          <HeroImageParallax
-            scrollY={scrollY}
-            uri={heroUri}
-            localSource={localHeroSource}
-          />
+          <HeroImageParallax scrollY={scrollY} source={heroSource} />
 
           <View style={styles.contentCard}>
             {/* Meta */}
@@ -456,30 +460,36 @@ export default function RecipeScreen({ route, navigation }) {
             </Text>
             <Text style={styles.title}>{recipe.name}</Text>
             <View style={styles.metaRow}>
-              <View style={styles.metaPill}>
-                <FontAwesome
-                  name="clock-o"
-                  size={14}
-                  color={css.palette.primary800}
+              {recipe.preparationTime != null && (
+                <View style={styles.metaPill}>
+                  <FontAwesome
+                    name="clock-o"
+                    size={14}
+                    color={css.palette.primary800}
+                  />
+                  <Text style={styles.metaPillText}>
+                    {t('recipe.meta.minutes', { count: recipe.preparationTime })}
+                  </Text>
+                </View>
+              )}
+              {recipe.difficulty != null && (
+                <View style={styles.metaPill}>
+                  <FontAwesome
+                    name="signal"
+                    size={14}
+                    color={css.palette.primary800}
+                  />
+                  <Text style={styles.metaPillText}>
+                    {t('recipe.meta.difficulty', { value: recipe.difficulty })}
+                  </Text>
+                </View>
+              )}
+              {orderedNutrition?.calories != null && (
+                <NutritionPill
+                  caloriesPerServing={orderedNutrition.calories}
+                  onPress={openNutritionSheet}
                 />
-                <Text style={styles.metaPillText}>
-                  {recipe.preparationTime} min
-                </Text>
-              </View>
-              <View style={styles.metaPill}>
-                <FontAwesome
-                  name="signal"
-                  size={14}
-                  color={css.palette.primary800}
-                />
-                <Text style={styles.metaPillText}>
-                  Difficulty {recipe.difficulty}/5
-                </Text>
-              </View>
-              <NutritionPill
-                caloriesPerServing={orderedNutrition?.calories}
-                onPress={openNutritionSheet}
-              />
+              )}
               {recipe.isSeasonal && <SeasonalBadge />}
             </View>
 
@@ -492,14 +502,23 @@ export default function RecipeScreen({ route, navigation }) {
               nbVotes={nbVotes}
             />
 
+            {/* Video — renders nothing when the recipe carries no usable videoUrl */}
+            {videoUrl && (
+              <View style={styles.videoRow}>
+                <RecipeVideoButton videoUrl={videoUrl} />
+              </View>
+            )}
+
             {/* Expiry alert — surfaces ingredients about to expire */}
             <ExpiryAlert ingredients={recipe.expiringIngredients || []} />
 
-            {/* Description */}
-            <Animatable.View animation="fadeInUp" duration={500} style={styles.section}>
-              <Text style={styles.sectionTitle}>Description</Text>
-              <Text style={styles.body}>{recipe.description}</Text>
-            </Animatable.View>
+            {/* Description — imported recipes may have none; omit the card then */}
+            {!!recipe.description && (
+              <Animatable.View animation="fadeInUp" duration={500} style={styles.section}>
+                <Text style={styles.sectionTitle}>{t('recipe.description.title')}</Text>
+                <Text style={styles.body}>{recipe.description}</Text>
+              </Animatable.View>
+            )}
 
             {/* Ingredients — header inclut le stepper de servings :
                 ajuster les portions met à jour les quantités directement
@@ -520,8 +539,12 @@ export default function RecipeScreen({ route, navigation }) {
                 </Text>
               )}
               {scaledIngredients.map((ing, i) => (
-                <Text key={`${ing.name}-${i}`} style={styles.body}>
-                  •  {ing.displayQuantity}{ing.displayUnit} {ing.name}
+                <Text
+                  key={`${ing.displayName}-${i}`}
+                  style={styles.body}
+                  accessibilityLabel={`${ing.displayQuantity}${ing.displayUnit} ${ing.displayName}`}
+                >
+                  •  {ing.displayQuantity}{ing.displayUnit} {ing.displayName}
                 </Text>
               ))}
             </Animatable.View>
@@ -674,6 +697,9 @@ const styles = StyleSheet.create({
     fontFamily: css.typography.fontUI,
     fontSize: css.typography.captionSize,
     color: css.palette.primary800,
+  },
+  videoRow: {
+    marginTop: css.spacing.md,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
