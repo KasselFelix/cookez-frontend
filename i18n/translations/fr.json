@@ -211,8 +211,24 @@
       "householdTitle": "Mon foyer",
       "householdLabel": "Nombre de personnes",
       "allergiesTitle": "Allergies",
-      "allergiesLabel": "Allergies (séparées par des virgules)",
-      "allergiesPlaceholder": "ex : arachides, crustacés"
+      "allergiesLabel": "Autres allergies (séparées par des virgules)",
+      "allergiesPlaceholder": "ex : kiwi, ananas"
+    },
+    "allergens": {
+      "gluten": "Gluten",
+      "crustaceans": "Crustacés",
+      "eggs": "Œufs",
+      "fish": "Poisson",
+      "peanuts": "Arachides",
+      "soy": "Soja",
+      "dairy": "Lait",
+      "nuts": "Fruits à coque",
+      "celery": "Céleri",
+      "mustard": "Moutarde",
+      "sesame": "Sésame",
+      "sulphites": "Sulfites",
+      "lupin": "Lupin",
+      "molluscs": "Mollusques"
     },
     "nutritionalGoals": {
       "title": "Objectif nutritionnel",

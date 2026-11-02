@@ -53,6 +53,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
+import { joinAllergies, splitAllergies } from '../modules/allergenOptions';
 import { patchUserSettings } from '../modules/recipesApi';
 import { clearCache as clearRecipeCache } from '../modules/recipeCache';
 import { setComments } from '../reducers/comment';
@@ -73,6 +74,7 @@ import NutritionalGoalPicker from '../components/profile/NutritionalGoalPicker';
 import ProfileScreenContainer from '../components/profile/ProfileScreenContainer';
 import SettingsRow from '../components/profile/SettingsRow';
 import ThemePickerSheet from '../components/profile/ThemePickerSheet';
+import AllergenChips from '../components/settings/AllergenChips';
 import ExcludedIngredientsEditor from '../components/settings/ExcludedIngredientsEditor';
 import TagPreferencesEditor from '../components/settings/TagPreferencesEditor';
 import { useTheme, useThemeControls } from '../contexts/ThemeProvider';
@@ -219,9 +221,11 @@ export default function SettingsScreen({ navigation }) {
       case 'household':
         setDraft({ householdComposition: String(user.settings?.householdComposition ?? 0) });
         break;
-      case 'allergies':
-        setDraft({ allergy: (user.settings?.allergy || []).join(', ') });
+      case 'allergies': {
+        const { keys, other } = splitAllergies(user.settings?.allergy);
+        setDraft({ allergyKeys: keys, allergy: other });
         break;
+      }
       default:
         return;
     }
@@ -248,13 +252,10 @@ export default function SettingsScreen({ navigation }) {
             householdComposition: Number(draft.householdComposition) || 0,
           },
         });
-      case 'allergies': {
-        const list = (draft.allergy || '')
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean);
-        return putUpdate({ settings: { allergy: list } });
-      }
+      case 'allergies':
+        return putUpdate({
+          settings: { allergy: joinAllergies(draft.allergyKeys, draft.allergy) },
+        });
       default:
         return undefined;
     }
@@ -606,6 +607,14 @@ function EditModal({ schemaKind, draft, setDraft, isSaving, onSave, onClose, css
             contentContainerStyle={[styles.modalScrollContent, { paddingBottom: css.spacing.sm }]}
             keyboardShouldPersistTaps="handled"
           >
+            {schemaKind === 'allergies' ? (
+              <View style={[styles.fieldWrap, { marginBottom: css.spacing.cardGap }]}>
+                <AllergenChips
+                  value={draft.allergyKeys}
+                  onChange={(allergyKeys) => setDraft((d) => ({ ...d, allergyKeys }))}
+                />
+              </View>
+            ) : null}
             {schema.fields.map(({ key, label, multiline, ...rest }) => (
               <View key={key} style={[styles.fieldWrap, { marginBottom: css.spacing.cardGap }]}>
                 <Text

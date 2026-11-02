@@ -211,8 +211,24 @@
       "householdTitle": "My household",
       "householdLabel": "Number of people",
       "allergiesTitle": "Allergies",
-      "allergiesLabel": "Allergies (comma-separated)",
-      "allergiesPlaceholder": "e.g. peanuts, shellfish"
+      "allergiesLabel": "Other allergies (comma-separated)",
+      "allergiesPlaceholder": "e.g. kiwi, pineapple"
+    },
+    "allergens": {
+      "gluten": "Gluten",
+      "crustaceans": "Crustaceans",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "peanuts": "Peanuts",
+      "soy": "Soy",
+      "dairy": "Milk",
+      "nuts": "Tree nuts",
+      "celery": "Celery",
+      "mustard": "Mustard",
+      "sesame": "Sesame",
+      "sulphites": "Sulphites",
+      "lupin": "Lupin",
+      "molluscs": "Molluscs"
     },
     "nutritionalGoals": {
       "title": "Nutritional goal",
