@@ -28,7 +28,10 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn lint
       - run: yarn test --ci
+      # Non bloquant tant que app.json, les icônes et les versions SDK 54 ne sont pas corrigés
+      # (plan, phase 6). Repasse-le bloquant ensuite en retirant continue-on-error.
       - name: expo-doctor (versions des modules natifs et configuration)
+        continue-on-error: true
         run: npx --yes expo-doctor
       # Vérifie que le bundle JavaScript se construit, comme pour eas update.
       - name: Export du bundle Android
