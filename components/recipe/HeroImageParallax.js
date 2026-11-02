@@ -18,10 +18,12 @@ export const HERO_HEIGHT = 360;
  * proportionally to scroll. Gradient overlay ensures legibility of any overlaid UI.
  *
  * @param {SharedValue<number>} scrollY — reanimated shared value of scroll offset
- * @param {string} uri — full image URI (Cloudinary)
- * @param {ImageSourcePropType} [localSource] — optional require()'d local fallback
+ * @param {{ uri: string } | number} [source] — a resolved Image source (preferred,
+ *   produced by `resolveRecipeImageSource`). Always non-empty.
+ * @param {string} [uri] — legacy: full image URI (used only if `source` absent).
+ * @param {ImageSourcePropType} [localSource] — legacy: require()'d local fallback.
  */
-export default function HeroImageParallax({ scrollY, uri, localSource }) {
+export default function HeroImageParallax({ scrollY, source, uri, localSource }) {
   const animatedImageStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
@@ -40,13 +42,14 @@ export default function HeroImageParallax({ scrollY, uri, localSource }) {
     };
   });
 
-  const source = localSource ? localSource : { uri };
+  // Prefer the resolved `source`; fall back to the legacy uri/localSource API.
+  const imageSource = source ?? (localSource || { uri });
 
   return (
     <View style={styles.container} accessibilityRole="image" accessible>
       <Animated.View style={[styles.imageWrapper, animatedImageStyle]}>
         <Image
-          source={source}
+          source={imageSource}
           style={styles.image}
           contentFit="cover"
           transition={200}

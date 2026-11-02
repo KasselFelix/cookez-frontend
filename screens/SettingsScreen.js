@@ -162,14 +162,9 @@ export default function SettingsScreen({ navigation }) {
       });
       const data = await res.json();
       if (data.result) {
-        // Targeted partial dispatch — PUT /profile does not populate
-        // recipes/favorites, so building a partial from `overrides` keys
-        // (preferring backend value when present) keeps populated arrays
-        // intact in the Redux store.
-        const partial = Object.fromEntries(
-          Object.keys(overrides).map((k) => [k, data.updatedUser?.[k] ?? overrides[k]]),
-        );
-        dispatch(updateUserInStore(partial));
+        // Backend now returns `{ result, updated }` with only the changed
+        // fields (post-normalisation), so we can dispatch it as-is.
+        if (data.updated) dispatch(updateUserInStore(data.updated));
         closeModal();
       } else {
         Alert.alert(t('common.error'), data.error || t('common.networkError'));

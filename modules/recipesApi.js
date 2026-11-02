@@ -1,5 +1,17 @@
 import addressIp from './addressIp';
 
+// Typed error so callers can tell a reachable-but-errored server (has .status)
+// apart from a true network failure (fetch reject / AbortError → .status
+// undefined). ResultScreen branches on this to avoid a false "offline" screen.
+export class ApiError extends Error {
+  constructor(message, { status, body } = {}) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.body = body;
+  }
+}
+
 // Centralized client for Plan 003's recipe-related endpoints.
 //
 // Why a dedicated module instead of inlining fetch in screens?
@@ -60,7 +72,14 @@ export async function fetchRecipeResult({
     body: JSON.stringify(payload),
     signal,
   });
-  return res.json();
+  // A 5xx/4xx still carries a JSON body ({result:false,...}), so fetch does NOT
+  // reject — without this check a server error silently becomes {result:false}
+  // and the UI mistakes it for "offline".
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new ApiError(data?.error || `HTTP ${res.status}`, { status: res.status, body: data });
+  }
+  return data;
 }
 
 // GET /recipes/origins — returns the list of cuisines for the filter

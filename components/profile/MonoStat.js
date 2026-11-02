@@ -1,6 +1,7 @@
 import React from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
-import css from '../../styles/Global';
+
+import { useTheme } from '../../contexts/ThemeProvider';
 
 // Shared monospace family for numeric stats / placeholder labels.
 export const MONO_FONT = Platform.select({
@@ -9,13 +10,33 @@ export const MONO_FONT = Platform.select({
   default: 'monospace',
 });
 
-export default function MonoStat({ value, label, style }) {
+/**
+ * MonoStat
+ * Single numeric stat cell — value on top, label below, both monospaced.
+ *
+ * Props:
+ *  - value: string | number
+ *  - label: string
+ *  - valueColor: optional palette colour override for the value text
+ *    (lets callers tint a single cell — e.g. accent for "expiring soon",
+ *     error for "expired" — without forking the component).
+ *  - labelColor: optional palette colour override for the label text.
+ */
+export default function MonoStat({ value, label, valueColor, labelColor }) {
+  const css = useTheme();
   return (
     <View style={styles.container}>
-      <Text style={[styles.value,{color: style.palette.neutral900}]} numberOfLines={1} accessibilityRole="text">
+      <Text
+        style={[styles.value, { color: valueColor ?? css.palette.neutral900 }]}
+        numberOfLines={1}
+        accessibilityRole="text"
+      >
         {String(value)}
       </Text>
-      <Text style={[styles.label,{color: style.palette.neutral500}]} numberOfLines={1}>
+      <Text
+        style={[styles.label, { color: labelColor ?? css.palette.neutral500 }]}
+        numberOfLines={1}
+      >
         {label}
       </Text>
     </View>

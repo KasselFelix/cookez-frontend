@@ -135,6 +135,13 @@
       "cooked": "Recettes cuisinées",
       "seasonalIngredients": "Ingrédients de saison"
     },
+    "statsCard": {
+      "recipes": "Recettes",
+      "followers": "Abonnés",
+      "following": "Abonnements",
+      "a11yLabel": "{{name}} — {{recipes}} recettes, {{followers}} abonnés, {{following}} abonnements",
+      "a11yHint": "Ouvre le profil complet"
+    },
     "subtitle": {
       "weight_loss": "Objectif : perte de poids",
       "muscle_gain": "Objectif : prise de muscle",
@@ -412,6 +419,22 @@
     "steps": {
       "title": "Étapes"
     },
+    "video": {
+      "watch": "Voir la vidéo",
+      "watchOnYoutube": "Voir sur YouTube",
+      "hint": "Ouvre la vidéo dans votre navigateur"
+    },
+    "meta": {
+      "difficulty": "Difficulté {{value}}/5",
+      "minutes": "{{count}} min",
+      "noInfo": "–"
+    },
+    "description": {
+      "title": "Description"
+    },
+    "ingredients": {
+      "or": "ou"
+    },
     "comments": {
       "title": "Commentaires",
       "empty": {
@@ -498,6 +521,11 @@
     "offline": {
       "title": "Veuillez vous connecter à Internet",
       "body": "Nous avons besoin d'une connexion pour trouver des recettes correspondant à votre inventaire. Vos filtres sont sauvegardés.",
+      "retry": "Réessayer"
+    },
+    "error": {
+      "title": "Une erreur est survenue",
+      "body": "Impossible de joindre nos serveurs. Tes filtres sont sauvegardés — réessaie.",
       "retry": "Réessayer"
     },
     "staleCache": {

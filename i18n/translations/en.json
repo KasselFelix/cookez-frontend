@@ -135,6 +135,13 @@
       "cooked": "Recipes cooked",
       "seasonalIngredients": "Seasonal ingredients"
     },
+    "statsCard": {
+      "recipes": "Recipes",
+      "followers": "Followers",
+      "following": "Following",
+      "a11yLabel": "{{name}} — {{recipes}} recipes, {{followers}} followers, {{following}} following",
+      "a11yHint": "Opens the full profile"
+    },
     "subtitle": {
       "weight_loss": "Goal: weight loss",
       "muscle_gain": "Goal: muscle gain",
@@ -412,6 +419,22 @@
     "steps": {
       "title": "Steps"
     },
+    "video": {
+      "watch": "Watch video",
+      "watchOnYoutube": "Watch on YouTube",
+      "hint": "Opens the video in your browser"
+    },
+    "meta": {
+      "difficulty": "Difficulty {{value}}/5",
+      "minutes": "{{count}} min",
+      "noInfo": "–"
+    },
+    "description": {
+      "title": "Description"
+    },
+    "ingredients": {
+      "or": "or"
+    },
     "comments": {
       "title": "Comments",
       "empty": {
@@ -498,6 +521,11 @@
     "offline": {
       "title": "Please connect to the Internet",
       "body": "We need a connection to find recipes matching your inventory. Your filters are saved.",
+      "retry": "Try again"
+    },
+    "error": {
+      "title": "Something went wrong",
+      "body": "We couldn't reach the kitchen. Your filters are saved — try again.",
       "retry": "Try again"
     },
     "staleCache": {
