@@ -45,7 +45,7 @@ export default function AllergenChips({ value = [], onChange }) {
                 fontFamily: css.typography.fontUI,
                 fontSize: css.typography.bodySmSize,
                 lineHeight: css.typography.bodySmLine,
-                color: selected ? css.palette.white : css.palette.neutral900,
+                color: selected ? css.text.inverse : css.palette.neutral900,
               }}
             >
               {label}

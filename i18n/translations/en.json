@@ -212,7 +212,9 @@
       "householdLabel": "Number of people",
       "allergiesTitle": "Allergies",
       "allergiesLabel": "Other allergies (comma-separated)",
-      "allergiesPlaceholder": "e.g. kiwi, pineapple"
+      "allergiesPlaceholder": "e.g. kiwi, pineapple",
+      "allergiesUnknownTitle": "Unrecognized terms",
+      "allergiesUnknownMessage": "We don't know: {{terms}}. Recipes that name these words will be hidden, but a product that contains them under another name stays visible. Always check the ingredients."
     },
     "allergens": {
       "gluten": "Gluten",

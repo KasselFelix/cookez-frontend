@@ -41,6 +41,24 @@
  *   - `displayName` {string} — joined names (equals `name` for standalone rows)
  *   - `isAltGroup` {boolean} — true only for multi-member groups
  */
+/**
+ * The rows to buy from: without the group members /recipes/result flagged with
+ * `blockedByAllergy`. The quantity of a group sits on its first member, so a safe
+ * member takes over the quantity of the blocked one.
+ *
+ * @param {Array<object>} ingredients - raw `recipe.ingredients`
+ * @returns {Array<object>}
+ */
+export function withoutBlockedMembers(ingredients = []) {
+  return ingredients
+    .filter((row) => !row.blockedByAllergy)
+    .map((row) => {
+      if (row.altGroup == null || row.quantity) return row;
+      const blocked = ingredients.find((r) => r.blockedByAllergy && r.altGroup === row.altGroup);
+      return blocked ? { ...row, quantity: blocked.quantity, unit: blocked.unit } : row;
+    });
+}
+
 export function groupIngredients(scaledIngredients, connector) {
   if (!Array.isArray(scaledIngredients) || scaledIngredients.length === 0) {
     return [];

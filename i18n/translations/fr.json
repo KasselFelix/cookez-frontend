@@ -212,7 +212,9 @@
       "householdLabel": "Nombre de personnes",
       "allergiesTitle": "Allergies",
       "allergiesLabel": "Autres allergies (séparées par des virgules)",
-      "allergiesPlaceholder": "ex : kiwi, ananas"
+      "allergiesPlaceholder": "ex : kiwi, ananas",
+      "allergiesUnknownTitle": "Termes non reconnus",
+      "allergiesUnknownMessage": "Nous ne connaissons pas : {{terms}}. Les recettes qui citent ces mots seront masquées, mais un produit qui en contient sous un autre nom restera visible. Vérifiez toujours les ingrédients."
     },
     "allergens": {
       "gluten": "Gluten",

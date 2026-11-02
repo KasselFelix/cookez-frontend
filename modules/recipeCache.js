@@ -26,12 +26,15 @@ const TTL_MS = 24 * 60 * 60 * 1000;
 // caller doesn't have to worry about array order — two equivalent
 // requests always produce the same key. `userId ?? 'anon'` so logged-out
 // users still get caching without colliding with each other across
-// device handoffs (unlikely in practice but cheap to guard).
-export function makeCacheKey({ userId, ingredientIds, origins, tags, servings }) {
+// device handoffs (unlikely in practice but cheap to guard). `allergy` is
+// part of the key: a result cached before an allergy was added must never
+// be served after it.
+export function makeCacheKey({ userId, ingredientIds, origins, tags, servings, allergy }) {
   const ids = [...(ingredientIds || [])].sort().join(',');
   const ts = [...(tags || [])].sort().join(',');
   const os = [...(origins || [])].sort().join(',');
-  return `${PREFIX}${userId ?? 'anon'}:${ids}:${os}:${ts}:${servings ?? ''}`;
+  const as = [...(allergy || [])].sort().join(',');
+  return `${PREFIX}${userId ?? 'anon'}:${ids}:${os}:${ts}:${servings ?? ''}:${as}`;
 }
 
 // Returns `{ data, stale }` or null on miss / parse failure.

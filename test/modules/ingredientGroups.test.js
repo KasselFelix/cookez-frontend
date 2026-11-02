@@ -8,7 +8,34 @@
 //   4. Empty array returns empty array
 //   5. A group with a single member (safety net) treats it as standalone
 
-import { groupIngredients } from '../../modules/ingredientGroups';
+import { groupIngredients, withoutBlockedMembers } from '../../modules/ingredientGroups';
+
+describe('withoutBlockedMembers', () => {
+  const butter = { name: 'butter', altGroup: 1, quantity: 100, unit: 'g', blockedByAllergy: true };
+  const margarine = { name: 'margarine', altGroup: 1, quantity: null, unit: null };
+  const tomato = { name: 'tomato', altGroup: null, quantity: 2, unit: 'unit' };
+
+  it('swaps a blocked member for the safe one, with its quantity', () => {
+    expect(withoutBlockedMembers([butter, margarine, tomato])).toEqual([
+      { ...margarine, quantity: 100, unit: 'g' },
+      tomato,
+    ]);
+  });
+
+  it('keeps the quantity a safe member already has', () => {
+    const own = { ...margarine, quantity: 50, unit: 'ml' };
+    expect(withoutBlockedMembers([butter, own])).toEqual([own]);
+  });
+
+  it('leaves a recipe without a blocked row untouched', () => {
+    const open = { ...butter, blockedByAllergy: undefined };
+    expect(withoutBlockedMembers([open, margarine, tomato])).toEqual([open, margarine, tomato]);
+  });
+
+  it('accepts a missing list', () => {
+    expect(withoutBlockedMembers(undefined)).toEqual([]);
+  });
+});
 
 const CONNECTOR = 'or';
 

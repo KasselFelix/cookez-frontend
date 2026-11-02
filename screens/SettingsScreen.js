@@ -168,6 +168,14 @@ export default function SettingsScreen({ navigation }) {
         // fields (post-normalisation), so we can dispatch it as-is.
         if (data.updated) dispatch(updateUserInStore(data.updated));
         closeModal();
+        if (modalKind === 'allergies' && data.unrecognizedAllergies?.length > 0) {
+          Alert.alert(
+            t('settings.modals.allergiesUnknownTitle'),
+            t('settings.modals.allergiesUnknownMessage', {
+              terms: data.unrecognizedAllergies.join(', '),
+            }),
+          );
+        }
       } else {
         Alert.alert(t('common.error'), data.error || t('common.networkError'));
       }
@@ -704,7 +712,7 @@ function EditModal({ schemaKind, draft, setDraft, isSaving, onSave, onClose, css
               <Text
                 style={{
                   fontFamily: css.typography.fontUI,
-                  color: css.palette.white,
+                  color: css.text.inverse,
                   fontWeight: '600',
                 }}
               >
