@@ -45,6 +45,7 @@ import SeasonalBadge from '../components/result/SeasonalBadge';
 import RecipeVideoButton from '../components/recipe/RecipeVideoButton';
 import { resolveRecipeImageSource } from '../modules/recipeImage';
 import { resolveVideoUrl } from '../modules/recipeVideo';
+import { groupIngredients } from '../modules/ingredientGroups';
 
 const NUTRITION_ORDER = ['calories', 'proteins', 'carbs', 'fat', 'fibers'];
 
@@ -340,6 +341,10 @@ export default function RecipeScreen({ route, navigation }) {
     return { ...ing, displayQuantity: value, displayUnit: unit };
   });
 
+  // Group alternative-ingredient rows that share a non-null `altGroup`.
+  // Forward-compatible: when no row carries altGroup (current state of DB),
+  // the output is identical to scaledIngredients.
+  const groupedIngredients = groupIngredients(scaledIngredients, t('recipe.ingredients.or'));
 
   // Shopping list recalculée 100% client-side à partir de :
   //   - recipe.ingredients (populated avec ri.ingredient = Ingredient doc)
@@ -538,7 +543,7 @@ export default function RecipeScreen({ route, navigation }) {
                   {t('recipe.servings.adjustedForHousehold', { count: servings })}
                 </Text>
               )}
-              {scaledIngredients.map((ing, i) => (
+              {groupedIngredients.map((ing, i) => (
                 <Text
                   key={`${ing.displayName}-${i}`}
                   style={styles.body}
