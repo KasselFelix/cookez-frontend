@@ -516,6 +516,11 @@
       "body": "We need a connection to find recipes matching your inventory. Your filters are saved.",
       "retry": "Try again"
     },
+    "error": {
+      "title": "Something went wrong",
+      "body": "We couldn't reach the kitchen. Your filters are saved — try again.",
+      "retry": "Try again"
+    },
     "staleCache": {
       "message": "Showing results from your last search. Connect to refresh."
     }

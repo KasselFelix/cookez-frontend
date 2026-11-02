@@ -15,7 +15,7 @@ export default function OfflineScreen({ onRetry }) {
   const t = useT();
 
   return (
-    <View style={[styles.root, { backgroundColor: css.palette.background }]}>
+    <View testID="result-offline-screen" style={[styles.root, { backgroundColor: css.palette.background }]}>
       <FontAwesome name="wifi" size={64} color={css.palette.neutral500} />
       <Text
         style={[

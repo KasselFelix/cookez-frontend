@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import MySmallButton from '../components/MySmallButton';
 import Recipe from '../components/Recipe';
 import OfflineScreen from '../components/result/OfflineScreen';
+import ErrorScreen from '../components/result/ErrorScreen';
 import StaleCacheBanner from '../components/result/StaleCacheBanner';
 import { useConnectivity } from '../hooks/useConnectivity';
 import { fetchRecipeResult } from '../modules/recipesApi';
@@ -42,6 +43,10 @@ export default function ResultScreen({ navigation }) {
 
   const [staleHit, setStaleHit] = useState(false);
   const [offlineNoCache, setOfflineNoCache] = useState(false);
+  const [serverError, setServerError] = useState(false);
+  // Bumped by handleRetry so a retry re-runs the effect even when filters and
+  // connectivity are unchanged (retryNonce is in the effect deps below).
+  const [retryNonce, setRetryNonce] = useState(0);
   // `loading` gates the list rendering — without it the screen would
   // flash the previous fetch's recipes (or the App.js boot fetch) for
   // 200-500ms before the fresh dispatch lands. Flipping it back to true
@@ -51,7 +56,9 @@ export default function ResultScreen({ navigation }) {
 
   const handleRetry = useCallback(() => {
     setOfflineNoCache(false);
+    setServerError(false);
     setLoading(true);
+    setRetryNonce((n) => n + 1); // re-trigger the effect (deps include retryNonce)
   }, []);
 
   // Stable string signal for the tags & origins arrays — depending on the
@@ -64,10 +71,17 @@ export default function ResultScreen({ navigation }) {
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
+    // 15s client timeout: a slow/hung backend must not strand the spinner.
+    // A timeout abort is classified as a SERVER error, not "offline" — the
+    // didTimeout flag lets the catch tell it apart from an unmount abort.
+    let didTimeout = false;
+    const timeoutId = setTimeout(() => { didTimeout = true; controller.abort(); }, 15000);
     // Re-flag loading on every dep change so that any in-flight re-fetch
     // (filter change, retry, reconnect) suppresses the stale list until
     // the new response is dispatched. Idempotent on the first mount.
     setLoading(true);
+    setOfflineNoCache(false);
+    setServerError(false);
 
     (async () => {
       const cacheInput = {
@@ -79,6 +93,7 @@ export default function ResultScreen({ navigation }) {
       };
       const online = isConnected && isInternetReachable;
       let serverSucceeded = false;
+      let serverErrored = false; // reachable but failed
 
       // Tag chaque recette avec le nb de servings utilisé pour la requête.
       // RecipeScreen en a besoin pour scaler `missingIngredients` correctement
@@ -109,15 +124,18 @@ export default function ResultScreen({ navigation }) {
             serverSucceeded = true;
           }
         } catch (err) {
-          if (err.name !== 'AbortError') {
-            console.warn('Result fetch failed:', err);
-          }
+          if (cancelled) return;
+          if (err.name === 'AbortError' && !didTimeout) return; // unmount — say nothing
+          // Surface the REAL error (lost today). A 5xx/4xx or a timeout while the
+          // device is online is a SERVER problem, not "you're offline".
+          console.warn('Result fetch failed:', err?.status ?? 'network', err?.message);
+          if (online && (err?.status || didTimeout)) serverErrored = true;
         }
       }
+      clearTimeout(timeoutId);
 
-      // Step 2 — fall back to cache when the server didn't succeed
-      // (offline, network error, or `data.result === false`).
-      if (!serverSucceeded && !cancelled) {
+      // Step 2 — cache fallback when not a server error (offline / data.result=false).
+      if (!serverSucceeded && !serverErrored && !cancelled) {
         const cached = await getCachedResult(cacheInput);
         if (cached) {
           const fetchedAt = cached.data?.fetchedAtServings ?? filters?.currentServings ?? 1;
@@ -131,11 +149,28 @@ export default function ResultScreen({ navigation }) {
         }
       }
 
+      // Step 3 — server reachable but errored: prefer stale cache (with banner),
+      // else surface the ErrorScreen (NOT the offline lie).
+      if (serverErrored && !cancelled) {
+        const cached = await getCachedResult(cacheInput);
+        if (cached) {
+          const fetchedAt = cached.data?.fetchedAtServings ?? filters?.currentServings ?? 1;
+          dispatch(setRecipes(tagRecipes(cached.data?.recipes, fetchedAt)));
+          if (cached.data?.amazonConfig) {
+            dispatch(setAmazonConfig(cached.data.amazonConfig));
+          }
+          setStaleHit(true);
+        } else {
+          setServerError(true);
+        }
+      }
+
       if (!cancelled) setLoading(false);
     })();
 
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId);
       controller.abort();
     };
     // `filters` itself is intentionally NOT in the dep list — its
@@ -154,9 +189,11 @@ export default function ResultScreen({ navigation }) {
     user?._id,
     user?.settings?.allergy,
     dispatch,
+    retryNonce,
   ]);
 
   if (offlineNoCache) return <OfflineScreen onRetry={handleRetry} />;
+  if (serverError) return <ErrorScreen onRetry={handleRetry} />;
 
   return (
     <View style={[styles.container, { backgroundColor: css.palette.accent500 }]}>
