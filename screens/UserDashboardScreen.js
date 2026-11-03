@@ -22,6 +22,7 @@ import { useTheme } from "../contexts/ThemeProvider";
 import useTabBarHeight from "../hooks/useTabBarHeight";
 import useT from "../i18n/useT";
 import addressIp from "../modules/addressIp";
+import { rankByPreparationTime, rankRecipes } from "../modules/recipeRanking";
 import { setRecipes } from "../reducers/recipe";
 
 // Recently Viewed cards scale with the viewport so small devices (iPhone SE
@@ -79,28 +80,10 @@ function applyFilter(recipes, filter) {
   }
 }
 
-function recipeAvgNote(votes) {
-  if (!Array.isArray(votes) || votes.length === 0) return 0;
-  return votes.reduce((sum, v) => sum + (v?.note ?? 0), 0) / votes.length;
-}
-
-// Bayesian-weighted score: combines rating quality and vote volume so a
-// 5★/1-vote recipe doesn't outrank a 4★/50-votes one. See IMDb Top 250.
-function bayesianRank(recipes, m = 3) {
-  const rated = recipes.filter((r) => Array.isArray(r.votes) && r.votes.length > 0);
-  const C = rated.length
-    ? rated.reduce((sum, r) => sum + recipeAvgNote(r.votes), 0) / rated.length
-    : 0;
-  return [...recipes]
-    .map((r) => {
-      const v = r.votes?.length ?? 0;
-      const R = recipeAvgNote(r.votes);
-      const score = v + m === 0 ? 0 : (v / (v + m)) * R + (m / (v + m)) * C;
-      return { recipe: r, score };
-    })
-    .sort((a, b) => b.score - a.score)
-    .map(({ recipe }) => recipe);
-}
+// The search runs on the server from this many characters: the dashboard only
+// holds the 200 most recent recipes, the catalog has thousands (plan 013).
+const SEARCH_MIN_LENGTH = 2;
+const SEARCH_DEBOUNCE_MS = 250;
 
 export default function UserDashboardScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -197,12 +180,41 @@ export default function UserDashboardScreen({ navigation }) {
     requiredOrigins.length +
     excludedOrigins.length;
 
-  const communityRecipes = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    let filtered = applyFilter(recipes, activeFilter);
-    if (q.length > 0) {
-      filtered = filtered.filter((r) => r.name?.toLowerCase().includes(q));
+  // Server search, debounced; an answer to an older query never shows.
+  const trimmedQuery = searchQuery.trim();
+  const isSearching = trimmedQuery.length >= SEARCH_MIN_LENGTH;
+  const [searchResults, setSearchResults] = useState([]);
+
+  useEffect(() => {
+    if (!isSearching) {
+      setSearchResults([]);
+      return undefined;
     }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `${addressIp}/recipes/search?q=${encodeURIComponent(trimmedQuery)}&limit=50`,
+          { signal: controller.signal }
+        );
+        const data = await response.json();
+        if (!controller.signal.aborted) {
+          setSearchResults(data?.result && Array.isArray(data.recipes) ? data.recipes : []);
+        }
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          console.error("UserDashboardScreen.search:", error?.message);
+        }
+      }
+    }, SEARCH_DEBOUNCE_MS);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [isSearching, trimmedQuery]);
+
+  const communityRecipes = useMemo(() => {
+    let filtered = applyFilter(isSearching ? searchResults : recipes, activeFilter);
     // Tag filters
     if (requiredTags.length > 0) {
       filtered = filtered.filter((r) =>
@@ -230,20 +242,19 @@ export default function UserDashboardScreen({ navigation }) {
         (r) => !r.origin?.some((o) => excludedOrigins.includes(o))
       );
     }
-    // Sort (existing logic)
-    if (activeFilter === "All" || activeFilter === "Vegan" || activeFilter === "Dessert") {
-      return bayesianRank(filtered).slice(0, 15);
+    // With a search, the name relevance wins over every filter's own order.
+    if (isSearching || activeFilter === "All" || activeFilter === "Vegan" || activeFilter === "Dessert") {
+      return rankRecipes(filtered, { searching: isSearching }).slice(0, 15);
     }
     if (activeFilter === "Quick") {
-      return [...filtered]
-        .sort((a, b) => (a.preparationTime ?? Infinity) - (b.preparationTime ?? Infinity))
-        .slice(0, 15);
+      return rankByPreparationTime(filtered).slice(0, 15);
     }
     return [...filtered].reverse().slice(0, 15);
   }, [
     recipes,
     activeFilter,
-    searchQuery,
+    isSearching,
+    searchResults,
     requiredTags,
     excludedTags,
     requiredOrigins,
@@ -744,7 +755,7 @@ export default function UserDashboardScreen({ navigation }) {
               },
             ]}
           >
-            {searchQuery.trim().length > 0
+            {isSearching
               ? t('userDashboard.searchResults')
               : t(`userDashboard.sectionTitles.${activeFilter.toLowerCase()}`)}
           </Text>

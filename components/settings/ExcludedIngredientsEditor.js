@@ -16,7 +16,7 @@
 //   - Backend endpoint `/ingredients/:name` returns matching ingredients;
 //     same pattern KickoffScreen uses.
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -48,6 +48,16 @@ export default function ExcludedIngredientsEditor({
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [resolvedNames, setResolvedNames] = useState({});
+
+  // Chips in alphabetical order of their name, whatever the order of addition
+  // (plan 013). An id without a resolved name yet sorts by itself.
+  const sortedIds = useMemo(
+    () =>
+      [...value].sort((a, b) =>
+        (resolvedNames[a] || a).localeCompare(resolvedNames[b] || b, undefined, { sensitivity: 'base' })
+      ),
+    [value, resolvedNames]
+  );
 
   // Resolve unknown ids → names. Re-runs whenever `value` changes (after
   // an add or redux hydration). Already-cached ids are skipped.
@@ -172,7 +182,7 @@ export default function ExcludedIngredientsEditor({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.chipRow}
       >
-        {value.map((id) => (
+        {sortedIds.map((id) => (
           <Pressable
             key={id}
             onPress={() => handleRemove(id)}
