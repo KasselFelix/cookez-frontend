@@ -16,7 +16,7 @@
 //   - Backend endpoint `/ingredients/:name` returns matching ingredients;
 //     same pattern KickoffScreen uses.
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -48,6 +48,16 @@ export default function ExcludedIngredientsEditor({
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [resolvedNames, setResolvedNames] = useState({});
+
+  // Chips in alphabetical order of their name, whatever the order of addition
+  // (plan 013). An id without a resolved name yet sorts by itself.
+  const sortedIds = useMemo(
+    () =>
+      [...value].sort((a, b) =>
+        (resolvedNames[a] || a).localeCompare(resolvedNames[b] || b, undefined, { sensitivity: 'base' })
+      ),
+    [value, resolvedNames]
+  );
 
   // Resolve unknown ids → names. Re-runs whenever `value` changes (after
   // an add or redux hydration). Already-cached ids are skipped.
@@ -93,12 +103,16 @@ export default function ExcludedIngredientsEditor({
       return undefined;
     }
     setSearching(true);
+    // A slow answer to "ri" must never replace the answer to "rice".
+    const controller = new AbortController();
     debounceRef.current = setTimeout(async () => {
       try {
         const res = await fetch(
           `${addressIp}/ingredients/${encodeURIComponent(term)}`,
+          { signal: controller.signal },
         );
         const data = await res.json();
+        if (controller.signal.aborted) return;
         if (data?.result && Array.isArray(data.ingredients)) {
           // De-dupe by name (same logic as KickoffScreen) and cap results
           // so a tap-target list doesn't blow up the layout.
@@ -111,13 +125,14 @@ export default function ExcludedIngredientsEditor({
           setResults([]);
         }
       } catch {
-        setResults([]);
+        if (!controller.signal.aborted) setResults([]);
       } finally {
-        setSearching(false);
+        if (!controller.signal.aborted) setSearching(false);
       }
     }, SEARCH_DEBOUNCE_MS);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      controller.abort();
     };
   }, [searchInput, showSearch]);
 
@@ -172,7 +187,7 @@ export default function ExcludedIngredientsEditor({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.chipRow}
       >
-        {value.map((id) => (
+        {sortedIds.map((id) => (
           <Pressable
             key={id}
             onPress={() => handleRemove(id)}

@@ -37,10 +37,16 @@ describe('pantry slice', () => {
     expect(cleared.value.items).toEqual([]);
   });
 
-  it('addItem prepends a new item and replaces in place on duplicate _id', () => {
-    let state = reducer(initial, addItem({ _id: 'x', qty: 1 }));
+  it('addItem inserts a new item at its name place and replaces in place on duplicate _id', () => {
+    const named = (_id, name) => ({ _id, qty: 1, ingredient: { name } });
+    let state = reducer(initial, addItem(named('x', 'tomato')));
+    state = reducer(state, addItem(named('y', 'Égg')));
+    state = reducer(state, addItem(named('z', 'rice')));
+    state = reducer(state, addItem(named('w', 'zucchini')));
+    // Same order as GET /inventory (plan 013): by name, accents ignored.
+    expect(state.value.items.map((i) => i._id)).toEqual(['y', 'z', 'x', 'w']);
+    state = reducer(initial, addItem({ _id: 'x', qty: 1 }));
     state = reducer(state, addItem({ _id: 'y', qty: 1 }));
-    expect(state.value.items.map((i) => i._id)).toEqual(['y', 'x']); // unshift order
 
     // Same _id → replace in place, no duplicate.
     state = reducer(state, addItem({ _id: 'x', qty: 99 }));

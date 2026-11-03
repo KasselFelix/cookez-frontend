@@ -5,7 +5,7 @@ import css from '../styles/Global';
 import useT from '../i18n/useT';
 
 // the filter
-export default function ListIngredients ({ searchInput, setClicked, data, onItemPress, onItemRemove, validatedIngredient,setValidatedIngredient}) {
+export default function ListIngredients ({ setClicked, data, onItemPress, onItemRemove, validatedIngredient,setValidatedIngredient}) {
   const t = useT();
 
   const Item = ({ name, itemData }) => {
@@ -51,10 +51,9 @@ export default function ListIngredients ({ searchInput, setClicked, data, onItem
         if (data === "No ingredients found") {
             return;
         }
-
-        if (item.name.toUpperCase().includes(searchInput.toUpperCase().trim())) {
-          return <Item name={item.name} itemData={item}/>;
-        }
+        // The server already matched and ranked the list (plan 013), aliases
+        // and accents included: "oeuf" returns "egg". No local filter on top.
+        return <Item name={item.name} itemData={item}/>;
   };
 
   return (

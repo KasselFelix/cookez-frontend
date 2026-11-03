@@ -23,6 +23,8 @@ import { useTheme } from "../contexts/ThemeProvider";
 import useT from "../i18n/useT";
 import * as Animatable from 'react-native-animatable';
 
+const SEARCH_DEBOUNCE_MS = 250;
+
 export default function KickoffScreen({navigation}) {
   	const saveMoney=false;
 
@@ -162,9 +164,13 @@ export default function KickoffScreen({navigation}) {
 
 
 	
-	const handleFetchIngredients = async () => {
-		const response = await fetch(`${addressIp}/ingredients/${searchInput}`);
+	// The server ranks the list (exact name first, plan 013): keep its order.
+	// Only the latest query may fill the list, so a slow answer to "ga" never
+	// replaces the answer to "garlic".
+	const handleFetchIngredients = async (query, signal) => {
+		const response = await fetch(`${addressIp}/ingredients/${encodeURIComponent(query)}`, { signal });
 		const data =  await response.json();
+		if (signal.aborted) return;
 		if (data.result) {
 			//console.log('search',data);
 			// filtre les doublons basés sur le nom
@@ -179,9 +185,23 @@ export default function KickoffScreen({navigation}) {
 	}
 
 	useEffect(() => {
-		if (searchInput.length > 0) {
-			handleFetchIngredients()
+		const query = searchInput.trim();
+		if (query.length === 0) {
+			// The list shows the server's results as they are: clear them
+			// with the text, so an old answer never stays on screen.
+			setDataListIngredient([]);
+			return undefined;
 		}
+		const controller = new AbortController();
+		const timer = setTimeout(() => {
+			handleFetchIngredients(query, controller.signal).catch((error) => {
+				if (error?.name !== 'AbortError') console.error('Ingredient search failed:', error?.message);
+			});
+		}, SEARCH_DEBOUNCE_MS);
+		return () => {
+			clearTimeout(timer);
+			controller.abort();
+		};
 	}, [searchInput]);
 
 	
