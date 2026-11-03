@@ -186,7 +186,12 @@ export default function KickoffScreen({navigation}) {
 
 	useEffect(() => {
 		const query = searchInput.trim();
-		if (query.length === 0) return undefined;
+		if (query.length === 0) {
+			// The list shows the server's results as they are: clear them
+			// with the text, so an old answer never stays on screen.
+			setDataListIngredient([]);
+			return undefined;
+		}
 		const controller = new AbortController();
 		const timer = setTimeout(() => {
 			handleFetchIngredients(query, controller.signal).catch((error) => {

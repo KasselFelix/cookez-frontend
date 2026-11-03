@@ -2,7 +2,7 @@
 //
 // Without a search: Bayesian vote score, then name. With a search: the name
 // relevance computed by GET /recipes/search (`matchRank`) comes first, the vote
-// score only breaks ties, then the name. The name tie-break keeps the same list
+// score only breaks ties, then the shortest name, then the alphabet. The name tie-break keeps the same list
 // in the same order on every render.
 
 const collator = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
@@ -33,6 +33,15 @@ export function bayesianScores(recipes, m = 3) {
   );
 }
 
+// Same rule as the server within a match tier: fewer words, then fewer letters.
+const fold = (text) => String(text ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const byShortness = (a, b) => {
+  const fa = fold(a?.name);
+  const fb = fold(b?.name);
+  const words = (s) => s.split(/[^a-z0-9]+/).filter(Boolean).length;
+  return words(fa) - words(fb) || fa.length - fb.length;
+};
+
 const byName = (a, b) =>
   collator.compare(a?.name ?? '', b?.name ?? '') || String(a?._id ?? '').localeCompare(String(b?._id ?? ''));
 
@@ -48,6 +57,7 @@ export function rankRecipes(recipes, { searching = false } = {}) {
     (a, b) =>
       (searching ? rank(a) - rank(b) : 0) ||
       scores.get(b) - scores.get(a) ||
+      (searching ? byShortness(a, b) : 0) ||
       byName(a, b)
   );
 }

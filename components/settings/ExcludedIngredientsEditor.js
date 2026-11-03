@@ -103,12 +103,16 @@ export default function ExcludedIngredientsEditor({
       return undefined;
     }
     setSearching(true);
+    // A slow answer to "ri" must never replace the answer to "rice".
+    const controller = new AbortController();
     debounceRef.current = setTimeout(async () => {
       try {
         const res = await fetch(
           `${addressIp}/ingredients/${encodeURIComponent(term)}`,
+          { signal: controller.signal },
         );
         const data = await res.json();
+        if (controller.signal.aborted) return;
         if (data?.result && Array.isArray(data.ingredients)) {
           // De-dupe by name (same logic as KickoffScreen) and cap results
           // so a tap-target list doesn't blow up the layout.
@@ -121,13 +125,14 @@ export default function ExcludedIngredientsEditor({
           setResults([]);
         }
       } catch {
-        setResults([]);
+        if (!controller.signal.aborted) setResults([]);
       } finally {
-        setSearching(false);
+        if (!controller.signal.aborted) setSearching(false);
       }
     }, SEARCH_DEBOUNCE_MS);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      controller.abort();
     };
   }, [searchInput, showSearch]);
 

@@ -44,6 +44,15 @@ describe('rankRecipes with a search', () => {
     ]);
   });
 
+  it('without votes, puts the shortest name first inside a tier', () => {
+    const list = [
+      { _id: '1', name: 'Pad See Ew', matchRank: 1, votes: [] },
+      { _id: '2', name: 'Pad Thai', matchRank: 1, votes: [] },
+      { _id: '3', name: 'Pad Thai With Shrimp', matchRank: 1, votes: [] },
+    ];
+    expect(names(rankRecipes(list, { searching: true }))).toEqual(['Pad Thai', 'Pad See Ew', 'Pad Thai With Shrimp']);
+  });
+
   it('ignores matchRank when not searching', () => {
     const list = [
       { _id: '1', name: 'B', matchRank: 0, votes: [] },

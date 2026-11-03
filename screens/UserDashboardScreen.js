@@ -23,7 +23,7 @@ import useTabBarHeight from "../hooks/useTabBarHeight";
 import useT from "../i18n/useT";
 import addressIp from "../modules/addressIp";
 import { rankByPreparationTime, rankRecipes } from "../modules/recipeRanking";
-import { setRecipes } from "../reducers/recipe";
+import { addRecipe, setRecipes } from "../reducers/recipe";
 
 // Recently Viewed cards scale with the viewport so small devices (iPhone SE
 // ~375pt) don't get oversized images while wider devices keep good density.
@@ -204,6 +204,8 @@ export default function UserDashboardScreen({ navigation }) {
       } catch (error) {
         if (error?.name !== "AbortError") {
           console.error("UserDashboardScreen.search:", error?.message);
+          // Never leave the previous query's results under the new one.
+          setSearchResults([]);
         }
       }
     }, SEARCH_DEBOUNCE_MS);
@@ -263,9 +265,15 @@ export default function UserDashboardScreen({ navigation }) {
 
   const navigateToRecipe = useCallback(
     (recipe) => {
+      // RecipeScreen reads votes and comments from Redux by _id: a recipe
+      // found by the server search may not be among the loaded ones.
+      // addRecipe skips an _id already present.
+      // eslint-disable-next-line no-unused-vars
+      const { matchRank, ...stored } = recipe;
+      dispatch(addRecipe(stored));
       navigation.navigate("Recipe", { recipe });
     },
-    [navigation]
+    [dispatch, navigation]
   );
 
   const greeting = useMemo(() => {
