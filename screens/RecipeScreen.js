@@ -1,7 +1,9 @@
 import { FontAwesome } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Animated as RNAnimated,
   Modal,
+  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
@@ -19,17 +21,15 @@ import * as Haptics from 'expo-haptics';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { updateRecipeVote } from '../reducers/recipe';
 import { toggleFavorite } from '../reducers/user';
-import {
-  setServings,
-  incrementServings,
-  decrementServings,
-} from '../reducers/recipeFilters';
 // MODULES
 import addressIp from '../modules/addressIp';
-import imageRecipe from '../modules/images';
 import css from '../styles/Global';
 import useT from '../i18n/useT';
+import { flagForOriginName } from '../modules/countries';
+import { formatQuantity } from '../modules/units';
+import { convertToBaseUnit } from '../modules/unitConversion';
 // COMPONENTS
+import { useAuthGate } from '../contexts/AuthGateProvider';
 import HeroImageParallax, { HERO_HEIGHT } from '../components/recipe/HeroImageParallax';
 import StickyHeader from '../components/recipe/StickyHeader';
 import ActionRow from '../components/recipe/ActionRow';
@@ -41,6 +41,11 @@ import NutritionPill from '../components/recipe/NutritionPill';
 import NutritionSheet from '../components/recipe/NutritionSheet';
 import ExpiryAlert from '../components/recipe/ExpiryAlert';
 import ShoppingList from '../components/recipe/ShoppingList';
+import SeasonalBadge from '../components/result/SeasonalBadge';
+import RecipeVideoButton from '../components/recipe/RecipeVideoButton';
+import { resolveRecipeImageSource } from '../modules/recipeImage';
+import { resolveVideoUrl } from '../modules/recipeVideo';
+import { groupIngredients, withoutBlockedMembers } from '../modules/ingredientGroups';
 
 const NUTRITION_ORDER = ['calories', 'proteins', 'carbs', 'fat', 'fibers'];
 
@@ -64,7 +69,7 @@ const SNAP_POINTS = ['45%', '85%'];
  *   </BottomSheet>
  */
 export default function RecipeScreen({ route, navigation }) {
-  const { recipe: navRecipe = {} } = route.params ?? {};
+  const { recipe: navRecipe = {}, fromRecipeSearch = false } = route.params ?? {};
   const selectedRecipeId = navRecipe._id;
 
   // Always read recipe from Redux — guarantees comments stay in sync after add/vote
@@ -75,14 +80,59 @@ export default function RecipeScreen({ route, navigation }) {
   );
 
   const user = useSelector((state) => state.user.value);
-  const currentServings = useSelector(
-    (state) => state.recipeFilters.value.currentServings
-  );
+  // Pantry = inventory user entré depuis RecapScreen. Source de vérité
+  // pour le possédé — utilisé par le memo shoppingList pour calculer la
+  // différence (required - possessed) sans dépendre du snapshot backend.
+  const pantry = useSelector((state) => state.ingredient.value, shallowEqual);
   const dispatch = useDispatch();
   const t = useT();
+  const { requireAuth } = useAuthGate();
+
+  useEffect(() => {
+    if (!user?.token || !recipe?._id) return;
+    fetch(`${addressIp}/users/lastViewed`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: user.token, recipeId: recipe._id }),
+    }).catch(() => {});
+  }, [user?.token, recipe?._id]);
+
+  // Servings local au RecipeScreen — découplé de Redux pour ne PAS
+  // déclencher de re-fetch côté ResultScreen (qui a currentServings dans
+  // ses deps et remplacerait state.recipe.value en arrière-plan → la
+  // recette courante disparaîtrait du store et tomberait sur navRecipe
+  // sans les champs Plan 003). Cap à 999 (UX, pas de perf).
+  //
+  // Cascade de seed :
+  //   1. fromRecipeSearch=true (entrée depuis ResultScreen) → `currentServings`
+  //      de Redux (la stepper que l'user vient de régler sur RecapScreen)
+  //   2. user loggué avec householdComposition > 0 → cette HH (compo de foyer)
+  //   3. Fallback : `recipe.servings` (auteur) puis 1
+  // Le seed est lu une seule fois (initializer de useState), donc les
+  // changements futurs de Redux ne re-rendent pas ce screen.
+  const userServings = useSelector(
+    (state) => state.recipeFilters?.value?.currentServings ?? null
+  );
+  const householdComposition = useSelector(
+    (state) => state.user?.value?.settings?.householdComposition ?? null
+  );
+  // Capture la source du seed initial — utilisé pour afficher le badge
+  // "Ajusté pour votre foyer (×N)" quand le seed vient de HH. Source figée
+  // au mount, ne change pas si l'user manipule la stepper ensuite.
+  const [seedSource] = useState(() => {
+    if (fromRecipeSearch && userServings) return 'search';
+    const hh = Number(householdComposition);
+    if (user?.token && hh > 0) return 'household';
+    return 'recipe';
+  });
+  const [servings, setServings] = useState(() => {
+    if (fromRecipeSearch && userServings) return userServings;
+    const hh = Number(householdComposition);
+    if (user?.token && hh > 0) return hh;
+    return recipe.servings ?? 1;
+  });
 
   // Local UI state — kept minimal
-  const [popover, setPopover] = useState(null); // null | 'auth' | 'vote'
   const [voteModalVisible, setVoteModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [starNote, setStarNote] = useState(0);
@@ -91,6 +141,42 @@ export default function RecipeScreen({ route, navigation }) {
   const bottomSheetRef = useRef(null);
   const nutritionSheetRef = useRef(null);
   const animatableModalRef = useRef(null);
+
+  // Vote backdrop fade — same pattern qu'la modal search de KickoffScreen.
+  // Animated.Value RN classique (useNativeDriver pour opacity), 425ms.
+  const voteBackdropOpacity = useRef(new RNAnimated.Value(0)).current;
+  // Guard pour éviter que le seed du vote précédent (au ouverture de la
+  // modal) re-déclenche le POST via le useEffect [starNote]. Bypass le
+  // prochain fire et reset.
+  const skipNextVoteFetch = useRef(false);
+
+  // Fade in backdrop quand la modal s'ouvre.
+  useEffect(() => {
+    if (voteModalVisible) {
+      voteBackdropOpacity.setValue(0);
+      RNAnimated.timing(voteBackdropOpacity, {
+        toValue: 1,
+        duration: 425,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [voteModalVisible, voteBackdropOpacity]);
+
+  // Fermeture commune : fade out backdrop + slideOutUp card, puis hide.
+  const closeVoteModal = useCallback(() => {
+    RNAnimated.timing(voteBackdropOpacity, {
+      toValue: 0,
+      duration: 425,
+      useNativeDriver: true,
+    }).start();
+    if (animatableModalRef.current) {
+      animatableModalRef.current
+        .animate('slideOutUp', 425)
+        .then(() => setVoteModalVisible(false));
+    } else {
+      setVoteModalVisible(false);
+    }
+  }, [voteBackdropOpacity]);
 
   const openNutritionSheet = useCallback(() => {
     nutritionSheetRef.current?.snapToIndex(0);
@@ -111,13 +197,6 @@ export default function RecipeScreen({ route, navigation }) {
       scrollY.value = e.contentOffset.y;
     },
   });
-
-  // Auto-close popover after 5.5s
-  useEffect(() => {
-    if (!popover) return;
-    const t = setTimeout(() => setPopover(null), 5500);
-    return () => clearTimeout(t);
-  }, [popover]);
 
   // Vote — fire-and-forget API → updates Redux on success
   const handleFetchVote = useCallback(
@@ -140,38 +219,47 @@ export default function RecipeScreen({ route, navigation }) {
               votes: data.votes,
             })
           );
-          if (animatableModalRef.current) {
-            animatableModalRef.current
-              .animate('slideOutUp', 800)
-              .then(() => setVoteModalVisible(false));
-          } else {
-            setVoteModalVisible(false);
-          }
+          closeVoteModal();
         }
       } catch (err) {
         console.error('Vote failed', err);
       }
     },
-    [user.token, user.username, selectedRecipeId, dispatch]
+    [user.token, user.username, selectedRecipeId, dispatch, closeVoteModal]
   );
 
   useEffect(() => {
+    if (skipNextVoteFetch.current) {
+      skipNextVoteFetch.current = false;
+      return;
+    }
     if (starNote > 0 && user.token) {
       handleFetchVote(starNote);
     }
   }, [starNote, user.token, handleFetchVote]);
 
   const handleVote = () => {
-    if (user.token) setVoteModalVisible(true);
-    else setPopover('vote');
+    if (!requireAuth('vote')) return;
+    // Pré-remplit les étoiles avec le vote précédent de l'user pour cette
+    // recette (si existant). Le schéma stocke `{ user: ObjectId, note }`,
+    // donc on compare par ID (string) plutôt que par username. Le guard
+    // `skipNextVoteFetch` évite que le seed re-déclenche un POST inutile
+    // via le useEffect [starNote].
+    const myId = user?._id ? String(user._id) : null;
+    const previous = myId
+      ? recipe?.votes?.find((v) => String(v.user) === myId)
+      : null;
+    const previousNote = previous?.note ?? 0;
+    if (previousNote !== starNote) {
+      skipNextVoteFetch.current = true;
+      setStarNote(previousNote);
+    }
+    setVoteModalVisible(true);
   };
 
   // Favorite — Redux-source toggle
   const handleFavoriteToggle = useCallback(async () => {
-    if (!user.token) {
-      setPopover('auth');
-      return;
-    }
+    if (!requireAuth('favorite')) return;
     const action = isFavorite ? 'remove' : 'add';
     try {
       const response = await fetch(`${addressIp}/users/favorites/${action}`, {
@@ -189,17 +277,14 @@ export default function RecipeScreen({ route, navigation }) {
     } catch (err) {
       console.error('Favorite sync failed', err);
     }
-  }, [user.token, isFavorite, selectedRecipeId, recipe, dispatch]);
+  }, [requireAuth, user.token, isFavorite, selectedRecipeId, recipe, dispatch]);
 
   // Composer
   const openComposer = useCallback(() => {
-    if (!user.token) {
-      setPopover('auth');
-      return;
-    }
+    if (!requireAuth('comment')) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     bottomSheetRef.current?.snapToIndex(0);
-  }, [user.token]);
+  }, [requireAuth]);
 
   const closeComposer = useCallback(() => {
     bottomSheetRef.current?.close();
@@ -232,21 +317,97 @@ export default function RecipeScreen({ route, navigation }) {
     );
   }
 
-  // Hero image source — local require if mapped, else Cloudinary URL
-  const localHeroSource = recipe.picture && imageRecipe[`${recipe.picture}.jpg`];
-  const heroUri = `https://res.cloudinary.com/dnym6kt4p/image/upload/${recipe.picture}.jpg`;
+  // Hero image source — U-A16: resilient to imported recipes. Funnels through
+  // the shared resolver (imageUrl http > picture local/Cloudinary > placeholder)
+  // so a null/empty picture never yields a broken <Image>.
+  const heroSource = resolveRecipeImageSource(recipe);
 
-  // Servings scaling — derive from Redux current + recipe base
-  const effectiveServings = currentServings ?? recipe.servings ?? 1;
+  // Video affordance — null-safe. resolveVideoUrl returns null for
+  // missing/empty/non-http, so the button renders nothing in that case.
+  const videoUrl = resolveVideoUrl(recipe);
+
+  // Scaling local — basé sur `servings` (state local), pas Redux.
+  // Les ingrédients sont stockés à `recipe.servings` (default auteur).
   const servingsRatio =
     recipe.servings && recipe.servings > 0
-      ? effectiveServings / recipe.servings
+      ? servings / recipe.servings
       : 1;
-  const scaledIngredients = (recipe.ingredients || []).map((ing) => ({
-    ...ing,
-    scaledQuantity:
-      Math.round((ing.quantity || 0) * servingsRatio * 10) / 10,
-  }));
+  const scaledIngredients = (recipe.ingredients || []).map((ing) => {
+    const raw = (ing.quantity || 0) * servingsRatio;
+    // Passe defaultUnit pour que `9 tsp farine` → `45g` (pas `45ml`).
+    // Le defaultUnit de l'ingrédient dicte si c'est masse ou volume.
+    const defaultUnit = ing.ingredient?.defaultUnit;
+    const { value, unit } = formatQuantity(raw, ing.unit, defaultUnit);
+    return { ...ing, displayQuantity: value, displayUnit: unit };
+  });
+
+  // Group alternative-ingredient rows that share a non-null `altGroup`.
+  // Forward-compatible: when no row carries altGroup (current state of DB),
+  // the output is identical to scaledIngredients.
+  const groupedIngredients = groupIngredients(scaledIngredients, t('recipe.ingredients.or'));
+
+  // Shopping list recalculée 100% client-side à partir de :
+  //   - recipe.ingredients (populated avec ri.ingredient = Ingredient doc)
+  //   - pantry (Redux state.ingredient.value — ce que l'utilisateur possède)
+  //
+  // Bénéfice : réagit instantanément au stepper local sans re-fetch, et
+  // affiche correctement les items qui deviennent insuffisants quand le
+  // nombre de portions augmente (le backend les filtre à la base, donc le
+  // scaling proportionnel de missingIngredients n'aurait pas pu les
+  // ressusciter).
+  const shoppingList = useMemo(() => {
+    if (!recipe?.ingredients?.length || !recipe?.servings) return [];
+    const ratio = servings / recipe.servings;
+
+    return withoutBlockedMembers(recipe.ingredients)
+      .map((ri) => {
+        const ingDoc = ri.ingredient;
+        const ingId = ingDoc?._id || ingDoc;
+        if (!ingId) return null;
+        // NOTE : on n'exclut PAS les BASIC_INGREDIENTS (sucre/sel/farine/...)
+        // de la shopping list. Le backend les ignore pour le matchRatio
+        // (sinon presque tout serait flaggé manquant), mais l'utilisateur
+        // peut quand même avoir besoin d'en acheter.
+
+        const refW = ingDoc?.quantity || 1;
+        const baseUnit = ingDoc?.defaultUnit || 'g';
+        const requiredBase = convertToBaseUnit(ri.quantity, ri.unit, refW) * ratio;
+        if (requiredBase <= 0) return null;
+
+        // Possessed lookup par _id dans le pantry (data.* est le shape)
+        const owned = pantry.find((p) => {
+          const pid = p?.data?._id || p?._id;
+          return pid && String(pid) === String(ingId);
+        });
+        const ownedQty = Number(owned?.data?.g_per_serving) || 0;
+        const ownedUnit = owned?.data?.unit || owned?.data?.defaultUnit || baseUnit;
+        const possessedBase = owned
+          ? convertToBaseUnit(ownedQty, ownedUnit, refW)
+          : 0;
+
+        const missingBase = Math.max(0, requiredBase - possessedBase);
+        if (missingBase <= 0) return null;
+
+        const percentOwned = Math.min(
+          100,
+          Math.round((possessedBase / requiredBase) * 100)
+        );
+        const isUnitBased = ri.unit === 'unit';
+
+        return {
+          name: ri.name,
+          // Plancher à 1 : missingBase > 0 mais < 0.5 produirait "0g" avec
+          // Math.round (cas typique : scaling factor petit sur petite qté).
+          // isUnitBased utilise déjà Math.ceil → garanti ≥ 1.
+          quantityMissing: isUnitBased
+            ? Math.ceil(missingBase / refW)
+            : Math.max(1, Math.round(missingBase)),
+          unit: isUnitBased ? 'units' : baseUnit,
+          percentOwned,
+        };
+      })
+      .filter(Boolean);
+  }, [recipe, servings, pantry]);
 
   // Pinned iteration order (backend may not freeze object key order)
   const orderedNutrition = recipe.nutritionPerServing
@@ -257,21 +418,8 @@ export default function RecipeScreen({ route, navigation }) {
       )
     : null;
 
-  const onServingsIncrement = () => {
-    if (currentServings == null) {
-      dispatch(setServings(Math.min((recipe.servings || 1) + 1, 12)));
-    } else {
-      dispatch(incrementServings());
-    }
-  };
-
-  const onServingsDecrement = () => {
-    if (currentServings == null) {
-      dispatch(setServings(Math.max((recipe.servings || 1) - 1, 1)));
-    } else {
-      dispatch(decrementServings());
-    }
-  };
+  const onServingsIncrement = () => setServings((s) => Math.min(s + 1, 999));
+  const onServingsDecrement = () => setServings((s) => Math.max(s - 1, 1));
 
   // Star vote modal display
   const starsVotes = [];
@@ -306,42 +454,48 @@ export default function RecipeScreen({ route, navigation }) {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
-          <HeroImageParallax
-            scrollY={scrollY}
-            uri={heroUri}
-            localSource={localHeroSource}
-          />
+          <HeroImageParallax scrollY={scrollY} source={heroSource} />
 
           <View style={styles.contentCard}>
             {/* Meta */}
-            <Text style={styles.origin}>{recipe.origin}</Text>
+            <Text style={styles.origin}>
+              {(Array.isArray(recipe.origin) ? recipe.origin : recipe.origin ? [recipe.origin] : [])
+                .map((name) => `${flagForOriginName(name)} ${name}`)
+                .join(' · ')}
+            </Text>
             <Text style={styles.title}>{recipe.name}</Text>
             <View style={styles.metaRow}>
-              <View style={styles.metaPill}>
-                <FontAwesome
-                  name="clock-o"
-                  size={14}
-                  color={css.palette.primary800}
+              {recipe.preparationTime != null && (
+                <View style={styles.metaPill}>
+                  <FontAwesome
+                    name="clock-o"
+                    size={14}
+                    color={css.palette.primary800}
+                  />
+                  <Text style={styles.metaPillText}>
+                    {t('recipe.meta.minutes', { count: recipe.preparationTime })}
+                  </Text>
+                </View>
+              )}
+              {recipe.difficulty != null && (
+                <View style={styles.metaPill}>
+                  <FontAwesome
+                    name="signal"
+                    size={14}
+                    color={css.palette.primary800}
+                  />
+                  <Text style={styles.metaPillText}>
+                    {t('recipe.meta.difficulty', { value: recipe.difficulty })}
+                  </Text>
+                </View>
+              )}
+              {orderedNutrition?.calories != null && (
+                <NutritionPill
+                  caloriesPerServing={orderedNutrition.calories}
+                  onPress={openNutritionSheet}
                 />
-                <Text style={styles.metaPillText}>
-                  {recipe.preparationTime} min
-                </Text>
-              </View>
-              <View style={styles.metaPill}>
-                <FontAwesome
-                  name="signal"
-                  size={14}
-                  color={css.palette.primary800}
-                />
-                <Text style={styles.metaPillText}>
-                  Difficulty {recipe.difficulty}/5
-                </Text>
-              </View>
-              <NutritionPill
-                caloriesPerServing={orderedNutrition?.calories}
-                currentServings={effectiveServings}
-                onPress={openNutritionSheet}
-              />
+              )}
+              {recipe.isSeasonal && <SeasonalBadge />}
             </View>
 
             <ActionRow
@@ -353,42 +507,59 @@ export default function RecipeScreen({ route, navigation }) {
               nbVotes={nbVotes}
             />
 
-            <View style={styles.servingsRow}>
-              <Text style={styles.servingsLabel}>
-                {t('recipe.servings.label')}
-              </Text>
-              <ServingsStepper
-                value={effectiveServings}
-                onIncrement={onServingsIncrement}
-                onDecrement={onServingsDecrement}
-              />
-            </View>
+            {/* Video — renders nothing when the recipe carries no usable videoUrl */}
+            {videoUrl && (
+              <View style={styles.videoRow}>
+                <RecipeVideoButton videoUrl={videoUrl} />
+              </View>
+            )}
 
             {/* Expiry alert — surfaces ingredients about to expire */}
             <ExpiryAlert ingredients={recipe.expiringIngredients || []} />
 
-            {/* Description */}
-            <Animatable.View animation="fadeInUp" duration={500} style={styles.section}>
-              <Text style={styles.sectionTitle}>Description</Text>
-              <Text style={styles.body}>{recipe.description}</Text>
-            </Animatable.View>
+            {/* Description — imported recipes may have none; omit the card then */}
+            {!!recipe.description && (
+              <Animatable.View animation="fadeInUp" duration={500} style={styles.section}>
+                <Text style={styles.sectionTitle}>{t('recipe.description.title')}</Text>
+                <Text style={styles.body}>{recipe.description}</Text>
+              </Animatable.View>
+            )}
 
-            {/* Ingredients */}
+            {/* Ingredients — header inclut le stepper de servings :
+                ajuster les portions met à jour les quantités directement
+                dans la même card (feedback visuel immédiat). */}
             <Animatable.View animation="fadeInUp" duration={550} style={styles.section}>
-              <Text style={styles.sectionTitle}>Ingredients</Text>
-              {scaledIngredients.map((ing, i) => (
-                <Text key={`${ing.name}-${i}`} style={styles.body}>
-                  •  {ing.scaledQuantity}{ing.unit || 'g'} {ing.name}
+              <View style={styles.sectionHeaderRow}>
+                <Text style={styles.sectionTitleInline}>Ingredients</Text>
+                <ServingsStepper
+                  value={servings}
+                  max={999}
+                  onIncrement={onServingsIncrement}
+                  onDecrement={onServingsDecrement}
+                />
+              </View>
+              {seedSource === 'household' && (
+                <Text style={styles.householdBadge}>
+                  {t('recipe.servings.adjustedForHousehold', { count: servings })}
+                </Text>
+              )}
+              {groupedIngredients.map((ing, i) => (
+                <Text
+                  key={`${ing.displayName}-${i}`}
+                  style={styles.body}
+                  accessibilityLabel={`${ing.displayQuantity}${ing.displayUnit} ${ing.displayName}`}
+                >
+                  •  {ing.displayQuantity}{ing.displayUnit} {ing.displayName}
                 </Text>
               ))}
             </Animatable.View>
 
             {/* Shopping list — Amazon CTAs for missing ingredients */}
-            <ShoppingList items={recipe.missingIngredients || []} />
+            <ShoppingList items={shoppingList} />
 
             {/* Steps */}
             <Animatable.View animation="fadeInUp" duration={600} style={styles.section}>
-              <Text style={styles.sectionTitle}>Steps</Text>
+              <Text style={styles.sectionTitle}>{t('recipe.steps.title')}</Text>
               {recipe.steps?.map((text, i) => (
                 <Text key={`step-${i}`} style={styles.body}>
                   {i + 1}. {text}
@@ -418,25 +589,46 @@ export default function RecipeScreen({ route, navigation }) {
 
         <FloatingFAB onPress={openComposer} />
 
-        {/* VOTE STAR MODAL */}
-        <Modal visible={voteModalVisible} animationType="none" transparent>
-          <View style={styles.modal}>
-            <Animatable.View
-              ref={animatableModalRef}
-              animation="slideInDown"
-              duration={500}
-              style={styles.voteModalContainer}
-            >
-              <Text style={styles.voteModalTitle}>Rate this recipe</Text>
-              <View style={styles.starsRow}>{starsVotes}</View>
-            </Animatable.View>
-          </View>
+        {/* VOTE STAR MODAL — backdrop animée + tap-to-dismiss */}
+        <Modal
+          visible={voteModalVisible}
+          animationType="none"
+          transparent
+          statusBarTranslucent
+          navigationBarTranslucent
+          onRequestClose={closeVoteModal}
+        >
+          {/* Backdrop fade-in/out indépendant du slide de la card. */}
+          <RNAnimated.View
+            style={[
+              StyleSheet.absoluteFillObject,
+              styles.modalBackdrop,
+              { opacity: voteBackdropOpacity },
+            ]}
+            pointerEvents="none"
+          />
+          <Pressable
+            style={styles.modalCenter}
+            onPress={closeVoteModal}
+            accessibilityLabel={t('common.close')}
+          >
+            <Pressable onPress={(e) => e.stopPropagation()}>
+              <Animatable.View
+                ref={animatableModalRef}
+                animation="slideInDown"
+                duration={500}
+                style={styles.voteModalContainer}
+              >
+                <Text style={styles.voteModalTitle}>Rate this recipe</Text>
+                <View style={styles.starsRow}>{starsVotes}</View>
+              </Animatable.View>
+            </Pressable>
+          </Pressable>
         </Modal>
 
         <NutritionSheet
           ref={nutritionSheetRef}
           nutritionPerServing={orderedNutrition}
-          baseServings={recipe.servings}
         />
 
         <BottomSheet
@@ -492,6 +684,8 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
     gap: css.spacing.sm,
     marginTop: css.spacing.md,
   },
@@ -509,17 +703,27 @@ const styles = StyleSheet.create({
     fontSize: css.typography.captionSize,
     color: css.palette.primary800,
   },
-  servingsRow: {
+  videoRow: {
+    marginTop: css.spacing.md,
+  },
+  sectionHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: css.spacing.md,
-    marginTop: css.spacing.md,
+    marginBottom: css.spacing.sm,
+    gap: css.spacing.sm,
   },
-  servingsLabel: {
+  sectionTitleInline: {
+    fontFamily: css.typography.fontHeading,
+    fontSize: css.typography.h3Size,
+    color: css.palette.neutral900,
+  },
+  householdBadge: {
     fontFamily: css.typography.fontUI,
-    fontSize: css.typography.captionSize,
-    color: css.palette.neutral700,
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: css.palette.primary700,
+    marginBottom: css.spacing.sm,
   },
   section: {
     marginTop: css.spacing.lg,
@@ -541,10 +745,12 @@ const styles = StyleSheet.create({
     color: css.palette.neutral700,
     marginBottom: css.spacing.xs,
   },
-  modal: {
+  modalCenter: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modalBackdrop: {
     backgroundColor: css.palette.overlayDark,
   },
   voteModalContainer: {

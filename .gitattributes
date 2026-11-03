@@ -1,0 +1,13 @@
+# Fins de ligne LF partout, y compris sous Windows : hooks Node et scripts restent identiques.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.pdf binary
+*.ttf binary
+*.otf binary
+*.lottie binary
+*.jks binary
+*.keystore binary

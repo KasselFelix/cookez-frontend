@@ -73,6 +73,7 @@ import InventoryItemCard from '../components/inventory/InventoryItemCard';
 import InventorySearchBar from '../components/inventory/InventorySearchBar';
 import InventorySummaryRow from '../components/inventory/InventorySummaryRow';
 import { useTheme } from '../contexts/ThemeProvider';
+import useTabBarHeight from '../hooks/useTabBarHeight';
 import useT from '../i18n/useT';
 import { useResponsive } from '../styles/responsive';
 
@@ -197,7 +198,9 @@ function RecipeTile({ item, css, navigation }) {
               },
             ]}
           >
-            {(item?.votes.reduce((som, vote) => som + vote.note, 0)/item?.votes.length).toFixed(1) || 0}
+            {Array.isArray(item?.votes) && item.votes.length > 0
+              ? (item.votes.reduce((som, vote) => som + (vote?.note ?? 0), 0) / item.votes.length).toFixed(1)
+              : '0.0'}
           </Text>
         </View>
       </View>
@@ -282,6 +285,7 @@ function TopBarButton({ label, onPress, badge, children, css }) {
 export default function ProfileScreen({ navigation, route }) {
   const css = useTheme();
   const t = useT();
+  const tabBarHeight = useTabBarHeight();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
   const unread = useSelector((state) => state.notifications?.value?.unread || 0);
@@ -441,7 +445,9 @@ export default function ProfileScreen({ navigation, route }) {
       });
       const data = await res.json();
       if (data.result) {
-        dispatch(updateUserInStore(data.updatedUser || { image: newImage }));
+        // Backend now returns `{ result, updated }` with only the changed
+        // fields (post-normalisation), so we can dispatch it as-is.
+        if (data.updated) dispatch(updateUserInStore(data.updated));
       } else {
         Alert.alert(t('common.error'), data.error || t('common.networkError'));
       }
@@ -558,6 +564,7 @@ export default function ProfileScreen({ navigation, route }) {
             emptyLabel={t('profile.empty.recipes')}
             columns={gridColumns}
             css={css}
+            navigation={navigation}
           />
         );
       case 'favorites':
@@ -684,7 +691,7 @@ export default function ProfileScreen({ navigation, route }) {
     />
   );
 
-  const statsRow = <ProfileStatsRow stats={stats} style={css} />;
+  const statsRow = <ProfileStatsRow stats={stats} />;
 
   const tabBar = (
     <View
@@ -902,7 +909,7 @@ export default function ProfileScreen({ navigation, route }) {
               </View>
             )
           }
-          contentContainerStyle={{ paddingBottom: css.spacing.xxl }}
+          contentContainerStyle={{ paddingBottom: tabBarHeight + css.spacing.lg }}
           showsVerticalScrollIndicator={false}
           removeClippedSubviews
           windowSize={7}

@@ -3,7 +3,8 @@
     "name": "Cookez",
     "slug": "cookez",
     "version": "2.0.0",
-    "runtimeVersion": "2.0.0",
+    "privacy": "hidden",
+    "runtimeVersion": "2.1.0",
     "updates": {
       "url": "https://u.expo.dev/ffa99151-e290-4b35-a40f-aafbf548676b"
     },
@@ -50,7 +51,31 @@
       ],
       "expo-font",
       "expo-localization",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Cookez uses your location to suggest recipes that match your region.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Cookez uses your camera to scan ingredients and take recipe photos.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Cookez accesses your photos to set your profile picture and pick recipe images.",
+          "cameraPermission": "Cookez uses your camera to take recipe photos."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

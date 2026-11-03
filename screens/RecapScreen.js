@@ -48,7 +48,22 @@ export default function RecapScreen({ navigation }) {
   const dispatch = useDispatch();
   const ingredients = useSelector((state) => state.ingredient.value);
   const filters = useSelector((state) => state.recipeFilters.value);
+  const user = useSelector((state) => state.user.value);
   const [showPopover, setShowPopover] = useState(false);
+
+  // Initialise `currentServings` à `user.settings.householdComposition`
+  // pour les utilisateurs connectés. Le slice par défaut est à 1 (pour le
+  // mode guest), mais un user qui a saisi sa composition de foyer dans
+  // Settings attend que ce nombre soit pré-rempli à chaque nouvelle
+  // recherche. Le guard `currentServings === 1` évite d'écraser un
+  // override manuel (l'user a déjà touché la stepper).
+  useEffect(() => {
+    const hh = user?.settings?.householdComposition;
+    if (user?.token && hh > 0 && filters.currentServings === 1) {
+      dispatch(setServings(hh));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.token, user?.settings?.householdComposition]);
 
   // The slice now defaults currentServings to 1, so the stepper never
   // displays "-" or null. Increment/decrement just delegate to the

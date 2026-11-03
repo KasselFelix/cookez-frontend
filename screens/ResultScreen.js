@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { FontAwesome } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import MySmallButton from '../components/MySmallButton';
 import Recipe from '../components/Recipe';
 import OfflineScreen from '../components/result/OfflineScreen';
+import ErrorScreen from '../components/result/ErrorScreen';
 import StaleCacheBanner from '../components/result/StaleCacheBanner';
 import { useConnectivity } from '../hooks/useConnectivity';
 import { fetchRecipeResult } from '../modules/recipesApi';
@@ -42,14 +43,22 @@ export default function ResultScreen({ navigation }) {
 
   const [staleHit, setStaleHit] = useState(false);
   const [offlineNoCache, setOfflineNoCache] = useState(false);
-  // `loading` is kept for the retry path — flipping it back to true
-  // forces the effect to re-evaluate via dependency invalidation.
-  // eslint-disable-next-line no-unused-vars
+  const [serverError, setServerError] = useState(false);
+  // Bumped by handleRetry so a retry re-runs the effect even when filters and
+  // connectivity are unchanged (retryNonce is in the effect deps below).
+  const [retryNonce, setRetryNonce] = useState(0);
+  // `loading` gates the list rendering — without it the screen would
+  // flash the previous fetch's recipes (or the App.js boot fetch) for
+  // 200-500ms before the fresh dispatch lands. Flipping it back to true
+  // also forces the effect to re-evaluate via dependency invalidation
+  // on the retry path.
   const [loading, setLoading] = useState(true);
 
   const handleRetry = useCallback(() => {
     setOfflineNoCache(false);
+    setServerError(false);
     setLoading(true);
+    setRetryNonce((n) => n + 1); // re-trigger the effect (deps include retryNonce)
   }, []);
 
   // Stable string signal for the tags & origins arrays — depending on the
@@ -62,6 +71,17 @@ export default function ResultScreen({ navigation }) {
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
+    // 15s client timeout: a slow/hung backend must not strand the spinner.
+    // A timeout abort is classified as a SERVER error, not "offline" — the
+    // didTimeout flag lets the catch tell it apart from an unmount abort.
+    let didTimeout = false;
+    const timeoutId = setTimeout(() => { didTimeout = true; controller.abort(); }, 15000);
+    // Re-flag loading on every dep change so that any in-flight re-fetch
+    // (filter change, retry, reconnect) suppresses the stale list until
+    // the new response is dispatched. Idempotent on the first mount.
+    setLoading(true);
+    setOfflineNoCache(false);
+    setServerError(false);
 
     (async () => {
       const cacheInput = {
@@ -70,9 +90,18 @@ export default function ResultScreen({ navigation }) {
         origins: [...(filters.selectedOrigins || [])].sort(),
         tags: filters.selectedTags,
         servings: filters.currentServings,
+        allergy: user?.settings?.allergy,
       };
       const online = isConnected && isInternetReachable;
       let serverSucceeded = false;
+      let serverErrored = false; // reachable but failed
+
+      // Tag chaque recette avec le nb de servings utilisé pour la requête.
+      // RecipeScreen en a besoin pour scaler `missingIngredients` correctement
+      // quand le stepper local change (les missingIngredients sont calculées
+      // côté backend pour `manualServings`, pas pour `recipe.servings`).
+      const tagRecipes = (recipes, fetchedAtServings) =>
+        (recipes || []).map((r) => ({ ...r, _fetchedAtServings: fetchedAtServings }));
 
       // Step 1 — only attempt a network fetch when we're plausibly online.
       // The AbortController cancels the request if the screen unmounts
@@ -88,25 +117,30 @@ export default function ResultScreen({ navigation }) {
           });
           if (cancelled) return;
           if (data?.result) {
-            dispatch(setRecipes(data.recipes || []));
+            const fetchedAt = filters?.currentServings ?? 1;
+            dispatch(setRecipes(tagRecipes(data.recipes, fetchedAt)));
             if (data.amazonConfig) dispatch(setAmazonConfig(data.amazonConfig));
             await setCachedResult(cacheInput, data);
             setStaleHit(false);
             serverSucceeded = true;
           }
         } catch (err) {
-          if (err.name !== 'AbortError') {
-            console.warn('Result fetch failed:', err);
-          }
+          if (cancelled) return;
+          if (err.name === 'AbortError' && !didTimeout) return; // unmount — say nothing
+          // Surface the REAL error (lost today). A 5xx/4xx or a timeout while the
+          // device is online is a SERVER problem, not "you're offline".
+          console.warn('Result fetch failed:', err?.status ?? 'network', err?.message);
+          if (online && (err?.status || didTimeout)) serverErrored = true;
         }
       }
+      clearTimeout(timeoutId);
 
-      // Step 2 — fall back to cache when the server didn't succeed
-      // (offline, network error, or `data.result === false`).
-      if (!serverSucceeded && !cancelled) {
+      // Step 2 — cache fallback when not a server error (offline / data.result=false).
+      if (!serverSucceeded && !serverErrored && !cancelled) {
         const cached = await getCachedResult(cacheInput);
         if (cached) {
-          dispatch(setRecipes(cached.data?.recipes || []));
+          const fetchedAt = cached.data?.fetchedAtServings ?? filters?.currentServings ?? 1;
+          dispatch(setRecipes(tagRecipes(cached.data?.recipes, fetchedAt)));
           if (cached.data?.amazonConfig) {
             dispatch(setAmazonConfig(cached.data.amazonConfig));
           }
@@ -116,11 +150,28 @@ export default function ResultScreen({ navigation }) {
         }
       }
 
+      // Step 3 — server reachable but errored: prefer stale cache (with banner),
+      // else surface the ErrorScreen (NOT the offline lie).
+      if (serverErrored && !cancelled) {
+        const cached = await getCachedResult(cacheInput);
+        if (cached) {
+          const fetchedAt = cached.data?.fetchedAtServings ?? filters?.currentServings ?? 1;
+          dispatch(setRecipes(tagRecipes(cached.data?.recipes, fetchedAt)));
+          if (cached.data?.amazonConfig) {
+            dispatch(setAmazonConfig(cached.data.amazonConfig));
+          }
+          setStaleHit(true);
+        } else {
+          setServerError(true);
+        }
+      }
+
       if (!cancelled) setLoading(false);
     })();
 
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId);
       controller.abort();
     };
     // `filters` itself is intentionally NOT in the dep list — its
@@ -139,9 +190,11 @@ export default function ResultScreen({ navigation }) {
     user?._id,
     user?.settings?.allergy,
     dispatch,
+    retryNonce,
   ]);
 
   if (offlineNoCache) return <OfflineScreen onRetry={handleRetry} />;
+  if (serverError) return <ErrorScreen onRetry={handleRetry} />;
 
   return (
     <View style={[styles.container, { backgroundColor: css.palette.accent500 }]}>
@@ -158,9 +211,20 @@ export default function ResultScreen({ navigation }) {
       </View>
       {staleHit && <StaleCacheBanner />}
       <ScrollView contentContainerStyle={styles.scroll}>
-        {recipes.length > 0 ? (
+        {loading ? (
+          // While the fetch is in flight, suppress the recipes list entirely.
+          // Reading `recipes.length` here would leak stale data from the
+          // previous fetch (or App.js boot) for the duration of the request.
+          <View
+            style={styles.loader}
+            accessibilityRole="progressbar"
+            accessibilityLabel={t('result.title')}
+          >
+            <ActivityIndicator size="large" color={css.palette.surface} />
+          </View>
+        ) : recipes.length > 0 ? (
           recipes.map((r, i) => (
-            <Recipe key={r._id || i} {...r} navigation={navigation} />
+            <Recipe key={r._id || i} {...r} navigation={navigation} fromRecipeSearch />
           ))
         ) : (
           <Animatable.View
@@ -188,4 +252,5 @@ const styles = StyleSheet.create({
   headerSpacer: { width: 30 },
   scroll: { marginHorizontal: '7%' },
   empty: { alignItems: 'center', marginTop: '120%' },
+  loader: { alignItems: 'center', justifyContent: 'center', marginTop: '60%' },
 });

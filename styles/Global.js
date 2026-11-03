@@ -184,6 +184,7 @@ const radius = {
   md:  12,
   lg:  16,
   xl:  24,
+  camera:70, //camera preview on KickoffScreen
   pill:99,   // fully rounded buttons / tags
   card:20,   // recipe cards
 };
@@ -226,6 +227,17 @@ const shadow = {
     shadowOpacity: 0.10,
     shadowRadius: 12,
     elevation: 6,
+  },
+  // Heavy contrast shadow — for cards/slots that sit on PASTEL backgrounds
+  // (secondary500 mint, accent200 cream) where the teal-tinted `primary800`
+  // shadow blends into the background and looks flat. Uses `neutral900`
+  // (near-black) with bumped opacity + radius for clear depth.
+  heavy: {
+    shadowColor: palette.neutral900,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    elevation: 10,
   },
 };
 
@@ -291,6 +303,18 @@ const card = {
   tagPaddingV:  4,
   tagPaddingH:  10,
   tagFontSize:  typography.overlineSize,
+};
+
+// --- PILLS (filter chips, origin pills, tag chips, any rounded selectable)
+//
+// Semantic tokens for pill-style elements that toggle between neutral and
+// selected states. Theme-aware: light keeps the brand mint; dark/pastels
+// override to stay on-brand without dropping back to a generic surface.
+const pill = {
+  bgNeutral:    palette.secondary200, // #edf6f4 mint
+  bgSelected:   palette.primary800,   // #004643 deep teal
+  textNeutral:  palette.primary800,   // teal text on mint
+  textSelected: palette.white,        // white text on selected teal
 };
 
 // --- INPUTS (AddRecipeScreen, LoginScreen) ---
@@ -379,7 +403,7 @@ const animation = {
 
 const gradient = {
   // Dark overlay for hero images (text legibility on photography)
-  staffPicks: {
+  imageOverlay: {
     colors: [palette.transparent, rgba(palette.black, 0.72)],
     locations: [0.4, 1],
   },
@@ -475,6 +499,7 @@ const css = {
   // Component tokens
   button,
   card,
+  pill,
   input,
   tabBar,
   layout,

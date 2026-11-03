@@ -2,8 +2,10 @@ import React from "react";
 import { StyleSheet, TextInput, View, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import css from "../styles/Global";
+import useT from "../i18n/useT";
 
 export default function SearchIngredients ({clicked, searchInput, setSearchInput, setClicked, setDataListIngredient}) {
+  const t = useT();
   return (
     <View style={styles.container}>
       <View
@@ -19,7 +21,7 @@ export default function SearchIngredients ({clicked, searchInput, setSearchInput
         {/* Input field */}
         <TextInput
           style={styles.input}
-          placeholder="Search a recipe"
+          placeholder={t('kickoff.modal.searchPlaceholder')}
           placeholderTextColor="grey"
           value={searchInput}
           onChangeText={setSearchInput}
@@ -38,7 +40,7 @@ export default function SearchIngredients ({clicked, searchInput, setSearchInput
             }}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel="Clear search"
+            accessibilityLabel={t('kickoff.modal.clear')}
             style={{ padding: 1 }}
           >
             <Feather name="x-circle" size={20} color={css.palette.primary800} />

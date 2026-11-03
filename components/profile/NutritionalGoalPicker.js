@@ -49,7 +49,9 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
       });
       const data = await res.json();
       if (data.result) {
-        dispatch(updateUserInStore(data.updatedUser || { nutritionalGoal: goal }));
+        // Backend now returns `{ result, updated }` with only the changed
+        // fields (post-normalisation), so we can dispatch it as-is.
+        if (data.updated) dispatch(updateUserInStore(data.updated));
         onClose?.();
       } else {
         Alert.alert(t('common.error'), data.error || t('common.networkError'));
@@ -114,8 +116,10 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
               <TouchableOpacity
                 key={key}
                 onPress={() => {
-                  setSelected(key);
-                  save(key);
+                  // Tap on the active row clears the goal (toggle off).
+                  const next = isOn ? null : key;
+                  setSelected(next);
+                  save(next);
                 }}
                 disabled={isSaving}
                 accessibilityRole="radio"

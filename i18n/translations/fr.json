@@ -20,6 +20,29 @@
     "deleteTitle": "Supprimer le compte",
     "deleteMessage": "Bientôt disponible."
   },
+  "tabBar": {
+    "userDashboard": "Accueil",
+    "kickoff": "Scanner",
+    "addRecipe": "Ajouter une recette",
+    "comment": "Commentaires",
+    "profile": "Profil"
+  },
+  "auth": {
+    "gate": {
+      "title": "Créez un compte pour continuer",
+      "reason": {
+        "generic": "Inscrivez-vous pour profiter pleinement de Cookez.",
+        "vote": "Pour noter cette recette, créez votre compte. Ça prend moins d'une minute.",
+        "favorite": "Sauvegardez vos recettes préférées en créant un compte gratuit.",
+        "comment": "Partagez votre avis avec la communauté — créez un compte pour commenter.",
+        "comment_vote": "Aidez les meilleurs commentaires à émerger — inscrivez-vous pour voter."
+      },
+      "cta": {
+        "signup": "Créer un compte",
+        "cancel": "Plus tard"
+      }
+    }
+  },
   "profile": {
     "topBarShare": "Partager le profil",
     "topBarNotifications": "Notifications",
@@ -112,6 +135,13 @@
       "cooked": "Recettes cuisinées",
       "seasonalIngredients": "Ingrédients de saison"
     },
+    "statsCard": {
+      "recipes": "Recettes",
+      "followers": "Abonnés",
+      "following": "Abonnements",
+      "a11yLabel": "{{name}} — {{recipes}} recettes, {{followers}} abonnés, {{following}} abonnements",
+      "a11yHint": "Ouvre le profil complet"
+    },
     "subtitle": {
       "weight_loss": "Objectif : perte de poids",
       "muscle_gain": "Objectif : prise de muscle",
@@ -181,8 +211,26 @@
       "householdTitle": "Mon foyer",
       "householdLabel": "Nombre de personnes",
       "allergiesTitle": "Allergies",
-      "allergiesLabel": "Allergies (séparées par des virgules)",
-      "allergiesPlaceholder": "ex : arachides, crustacés"
+      "allergiesLabel": "Autres allergies (séparées par des virgules)",
+      "allergiesPlaceholder": "ex : kiwi, ananas",
+      "allergiesUnknownTitle": "Termes non reconnus",
+      "allergiesUnknownMessage": "Nous ne connaissons pas : {{terms}}. Les recettes qui citent ces mots seront masquées, mais un produit qui en contient sous un autre nom restera visible. Vérifiez toujours les ingrédients."
+    },
+    "allergens": {
+      "gluten": "Gluten",
+      "crustaceans": "Crustacés",
+      "eggs": "Œufs",
+      "fish": "Poisson",
+      "peanuts": "Arachides",
+      "soy": "Soja",
+      "dairy": "Lait",
+      "nuts": "Fruits à coque",
+      "celery": "Céleri",
+      "mustard": "Moutarde",
+      "sesame": "Sésame",
+      "sulphites": "Sulfites",
+      "lupin": "Lupin",
+      "molluscs": "Mollusques"
     },
     "nutritionalGoals": {
       "title": "Objectif nutritionnel",
@@ -224,7 +272,10 @@
       "deniedTitle": "Permission refusée",
       "deniedMessage": "Nous n'accéderons pas à ta localisation.",
       "errorTitle": "Erreur de localisation",
-      "errorMessage": "Impossible de récupérer ta localisation."
+      "errorMessage": "Impossible de récupérer ta localisation.",
+      "servicesDisabledTitle": "Services de localisation désactivés",
+      "servicesDisabledMessage": "Active les services de localisation dans les paramètres de ton appareil.",
+      "timeoutMessage": "Impossible de récupérer ta localisation à temps. Réessaie."
     },
     "preferredTags": {
       "title": "Tags que j'apprécie",
@@ -284,8 +335,31 @@
     },
     "next": "Suivant",
     "nextWithCount": "Suivant ({{count}})",
+    "addIngredient": "Ajouter un ingrédient",
     "removeIngredientA11y": "Retirer {{name}}",
-    "removePhotoA11y": "Retirer la photo"
+    "removePhotoA11y": "Retirer la photo",
+    "pantryHero": {
+      "kicker": "VOTRE GARDE-MANGER · {{count}} ARTICLES",
+      "title": "Tape pour cuisiner avec ce que tu as"
+    },
+    "selected": {
+      "label": "SÉLECTIONNÉS · {{count}}",
+      "add": "+ Ajouter",
+      "photoLabel": "📸 Photo {{index}}",
+      "removeA11y": "Retirer {{name}}",
+      "removePhotoA11y": "Retirer la photo {{index}}"
+    },
+    "slot": {
+      "placeholder": "Ingrédient",
+      "imageA11y": "image d'ingrédient"
+    },
+    "modal": {
+      "searchPlaceholder": "Rechercher un ingrédient",
+      "clear": "Effacer la recherche",
+      "waiting": "En attente de votre recherche 🧐 ...",
+      "notFound": "Aucun ingrédient trouvé, réessayez ! 👍",
+      "close": "Fermer"
+    }
   },
   "recap": {
     "ingredient": "Ingrédient",
@@ -305,10 +379,12 @@
     "servings": {
       "label": "Portions",
       "increment": "Augmenter les portions",
-      "decrement": "Diminuer les portions"
+      "decrement": "Diminuer les portions",
+      "adjustedForHousehold": "Ajusté pour votre foyer (×{{count}})"
     },
     "nutrition": {
       "title": "Nutrition",
+      "perServing": "Par portion",
       "kcal": "{{count}} kcal",
       "openSheet": "Voir les détails nutritionnels",
       "calories": "Calories",
@@ -347,7 +423,7 @@
       "savory": "Salé"
     },
     "expiry": {
-      "title": "⚠️ Cuisinez cette recette bientôt !",
+      "title": "⚠️ Ingrédients à utiliser rapidement",
       "body": "Votre {{items}} expire dans moins de 48h."
     },
     "shopping": {
@@ -357,6 +433,94 @@
         "label": "Acheter sur Amazon",
         "a11y": "Acheter {{name}} sur Amazon"
       }
+    },
+    "steps": {
+      "title": "Étapes"
+    },
+    "video": {
+      "watch": "Voir la vidéo",
+      "watchOnYoutube": "Voir sur YouTube",
+      "hint": "Ouvre la vidéo dans votre navigateur"
+    },
+    "meta": {
+      "difficulty": "Difficulté {{value}}/5",
+      "minutes": "{{count}} min",
+      "noInfo": "–"
+    },
+    "description": {
+      "title": "Description"
+    },
+    "ingredients": {
+      "or": "ou"
+    },
+    "comments": {
+      "title": "Commentaires",
+      "empty": {
+        "title": "Soyez le premier à commenter",
+        "hint": "Partagez vos astuces ou posez une question au chef."
+      }
+    }
+  },
+  "userDashboard": {
+    "greeting": {
+      "morning": "Bonjour",
+      "afternoon": "Bon après-midi",
+      "evening": "Bonsoir",
+      "subtitle": "Qu'est-ce qu'on cuisine aujourd'hui ?",
+      "fallbackUsername": "Chef"
+    },
+    "recentlyViewed": "Vues récemment",
+    "searchPlaceholder": "Rechercher une recette...",
+    "searchResults": "Résultats de recherche",
+    "filtersButton": {
+      "a11y": "Ouvrir les filtres"
+    },
+    "filtersModal": {
+      "title": "Filtres",
+      "sectionTags": "Tags",
+      "sectionOrigins": "Origines",
+      "clearAll": "Tout effacer",
+      "closeA11y": "Fermer les filtres",
+      "emptyOrigins": "Aucune origine disponible",
+      "tagA11y": "Tag {{name}} {{state}}",
+      "originA11y": "Origine {{name}} {{state}}",
+      "stateNeutral": "neutre",
+      "stateRequired": "requis",
+      "stateExcluded": "exclu"
+    },
+    "viewRecipeA11y": "Voir la recette : {{name}}",
+    "filterA11y": "Filtre : {{filter}}",
+    "filters": {
+      "all": "Tous",
+      "quick": "Rapide",
+      "vegan": "Vegan",
+      "dessert": "Dessert",
+      "trending": "Tendances"
+    },
+    "sectionTitles": {
+      "all": "Favoris de la communauté",
+      "quick": "Rapide & Facile",
+      "vegan": "Sélection Vegan",
+      "dessert": "Douceurs",
+      "trending": "Tendances du moment"
+    },
+    "meta": {
+      "minutesShort": "min",
+      "difficulty": "Difficulté {{value}}/5"
+    },
+    "emptyFilter": "Aucune recette ne correspond à ce filtre.",
+    "loading": "Chargement des recettes…",
+    "loadingA11y": "Chargement des recettes",
+    "error": {
+      "title": "Impossible de charger les recettes",
+      "subtitle": "Vérifie ta connexion et réessaie.",
+      "retryA11y": "Réessayer le chargement"
+    },
+    "empty": {
+      "title": "Aucune recette pour l'instant",
+      "subtitle": "Sois le premier à en ajouter une !",
+      "addCta": "Ajouter une recette",
+      "addCtaA11y": "Ajouter une recette"
     }
   },
   "result": {
@@ -375,6 +539,11 @@
     "offline": {
       "title": "Veuillez vous connecter à Internet",
       "body": "Nous avons besoin d'une connexion pour trouver des recettes correspondant à votre inventaire. Vos filtres sont sauvegardés.",
+      "retry": "Réessayer"
+    },
+    "error": {
+      "title": "Une erreur est survenue",
+      "body": "Impossible de joindre nos serveurs. Tes filtres sont sauvegardés — réessaie.",
       "retry": "Réessayer"
     },
     "staleCache": {

@@ -61,13 +61,25 @@ export default function InventoryGrid() {
       item.ingredient?.name || item.name || 'unknown';
     // Prefer the new Pexels-cached field; fall back to legacy `image`.
     const photo = item.ingredient?.photoUrl || item.ingredient?.image || null;
+    // Pantry items carry both the BDD reference unit (`ingredient.defaultUnit`)
+    // and the user's chosen unit at storage time (`item.unit`). Mirror both
+    // into the Redux payload so RecapScreen displays the right unit on initial
+    // render (e.g. "1L wine" instead of falling back to grams).
+    const defaultUnit = item.ingredient?.defaultUnit || 'g';
+    const unit = item.unit || defaultUnit;
 
     const payload = {
       data: {
         _id,
         display_name,
         g_per_serving: item.quantity,
+        defaultUnit,
+        unit,
         nutrition: item.ingredient?.nutrition,
+        // Propagate expiry date so the backend can compute the
+        // `expiringIngredients` array (anti-waste bonus) for recipes that
+        // use ingredients about to expire within 48h.
+        expiryDate: item.expiryDate || null,
       },
       photo,
     };
@@ -111,6 +123,8 @@ export default function InventoryGrid() {
                 borderColor: isSelected
                   ? css.palette.primary800
                   : 'transparent',
+                  // transform: isSelected ? [{ scale: 1.02 }] : [{ scale: 1 }],
+                  // ...(isSelected ? css.shadow.md : {}), 
               },
             ]}
           >
@@ -144,8 +158,8 @@ export default function InventoryGrid() {
               style={[
                 styles.name,
                 {
-                  color: isSelected ? 'white' : css.palette.neutral900,
-                  fontFamily: css.typography.fontUI,
+                  color: isSelected ? css.palette.white : css.palette.neutral900,
+                  fontFamily: css.typography.fontHeading,
                 },
               ]}
             >
@@ -156,7 +170,7 @@ export default function InventoryGrid() {
               style={[
                 styles.qty,
                 {
-                  color: isSelected ? 'white' : css.palette.neutral700,
+                  color: isSelected ? css.palette.white : css.palette.neutral500,
                   fontFamily: css.typography.fontBody,
                 },
               ]}
@@ -193,7 +207,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 8,
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 2.5,
   },
   img: {
     width: '100%',
@@ -202,12 +216,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   name: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
     textAlign: 'center',
   },
   qty: {
     fontSize: 11,
+    fontWeight: '400',
+    textAlign: 'center',
   },
   check: {
     position: 'absolute',

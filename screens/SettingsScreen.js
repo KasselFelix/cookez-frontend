@@ -32,6 +32,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
+  Ban,
   Bell,
   ChevronLeft,
   Flag,
@@ -43,6 +44,8 @@ import {
   LogOut,
   MapPin,
   Palette,
+  ThumbsDown,
+  ThumbsUp,
   Trash2,
   User as UserIcon,
   Users,
@@ -50,6 +53,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
+import { joinAllergies, splitAllergies } from '../modules/allergenOptions';
 import { patchUserSettings } from '../modules/recipesApi';
 import { clearCache as clearRecipeCache } from '../modules/recipeCache';
 import { setComments } from '../reducers/comment';
@@ -63,14 +67,16 @@ import { removeUserToStore, updateUserInStore } from '../reducers/user';
 import DietMultiSelect, {
   readDietRestrictions,
 } from '../components/profile/DietMultiSelect';
+import ExpandableSettingsRow from '../components/profile/ExpandableSettingsRow';
 import LanguagePickerSheet from '../components/profile/LanguagePickerSheet';
 import LocationToggle from '../components/profile/LocationToggle';
 import NutritionalGoalPicker from '../components/profile/NutritionalGoalPicker';
 import ProfileScreenContainer from '../components/profile/ProfileScreenContainer';
 import SettingsRow from '../components/profile/SettingsRow';
 import ThemePickerSheet from '../components/profile/ThemePickerSheet';
-import ExcludedIngredientsSection from '../components/settings/ExcludedIngredientsSection';
-import TagPreferencesSection from '../components/settings/TagPreferencesSection';
+import AllergenChips from '../components/settings/AllergenChips';
+import ExcludedIngredientsEditor from '../components/settings/ExcludedIngredientsEditor';
+import TagPreferencesEditor from '../components/settings/TagPreferencesEditor';
 import { useTheme, useThemeControls } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
 
@@ -95,6 +101,14 @@ export default function SettingsScreen({ navigation }) {
   const [languageSheetVisible, setLanguageSheetVisible] = useState(false);
   const [dietPickerVisible, setDietPickerVisible] = useState(false);
   const [goalPickerVisible, setGoalPickerVisible] = useState(false);
+
+  // Exclusive accordion for the 3 Plan 003 preference rows below the
+  // "Culinary profile" section. Null = all collapsed. Holding the state
+  // here (not in each row) keeps the "only one open at a time" rule
+  // trivial without cross-row coordination.
+  const [openSection, setOpenSection] = useState(null);
+  const toggleSection = (key) =>
+    setOpenSection((prev) => (prev === key ? null : key));
 
   // Debounced PATCH /users/settings — used by the three preference
   // editors (preferred tags, excluded tags, excluded ingredients). 500ms
@@ -150,8 +164,18 @@ export default function SettingsScreen({ navigation }) {
       });
       const data = await res.json();
       if (data.result) {
-        dispatch(updateUserInStore(data.updatedUser || overrides));
+        // Backend now returns `{ result, updated }` with only the changed
+        // fields (post-normalisation), so we can dispatch it as-is.
+        if (data.updated) dispatch(updateUserInStore(data.updated));
         closeModal();
+        if (modalKind === 'allergies' && data.unrecognizedAllergies?.length > 0) {
+          Alert.alert(
+            t('settings.modals.allergiesUnknownTitle'),
+            t('settings.modals.allergiesUnknownMessage', {
+              terms: data.unrecognizedAllergies.join(', '),
+            }),
+          );
+        }
       } else {
         Alert.alert(t('common.error'), data.error || t('common.networkError'));
       }
@@ -205,9 +229,11 @@ export default function SettingsScreen({ navigation }) {
       case 'household':
         setDraft({ householdComposition: String(user.settings?.householdComposition ?? 0) });
         break;
-      case 'allergies':
-        setDraft({ allergy: (user.settings?.allergy || []).join(', ') });
+      case 'allergies': {
+        const { keys, other } = splitAllergies(user.settings?.allergy);
+        setDraft({ allergyKeys: keys, allergy: other });
         break;
+      }
       default:
         return;
     }
@@ -234,13 +260,10 @@ export default function SettingsScreen({ navigation }) {
             householdComposition: Number(draft.householdComposition) || 0,
           },
         });
-      case 'allergies': {
-        const list = (draft.allergy || '')
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean);
-        return putUpdate({ settings: { allergy: list } });
-      }
+      case 'allergies':
+        return putUpdate({
+          settings: { allergy: joinAllergies(draft.allergyKeys, draft.allergy) },
+        });
       default:
         return undefined;
     }
@@ -369,22 +392,44 @@ export default function SettingsScreen({ navigation }) {
         onPress={() => openModal('household')}
       />
 
-      <View style={{ paddingHorizontal: css.spacing.md, paddingTop: css.spacing.sm }}>
-        <TagPreferencesSection
+      <ExpandableSettingsRow
+        icon={<ThumbsUp size={ICON_SIZE} color={iconColor} />}
+        label={t('settings.preferredTags.title')}
+        value={preferredTags.length}
+        expanded={openSection === 'preferred'}
+        onToggle={() => toggleSection('preferred')}
+      >
+        <TagPreferencesEditor
           variant="preferred"
           value={preferredTags}
           onChange={(v) => debouncedSave({ preferredTags: v })}
         />
-        <TagPreferencesSection
+      </ExpandableSettingsRow>
+      <ExpandableSettingsRow
+        icon={<ThumbsDown size={ICON_SIZE} color={iconColor} />}
+        label={t('settings.excludedTags.title')}
+        value={excludedTags.length}
+        expanded={openSection === 'excludedTags'}
+        onToggle={() => toggleSection('excludedTags')}
+      >
+        <TagPreferencesEditor
           variant="excluded"
           value={excludedTags}
           onChange={(v) => debouncedSave({ excludedTags: v })}
         />
-        <ExcludedIngredientsSection
+      </ExpandableSettingsRow>
+      <ExpandableSettingsRow
+        icon={<Ban size={ICON_SIZE} color={iconColor} />}
+        label={t('settings.excludedIngredients.title')}
+        value={excludedIngredients.length}
+        expanded={openSection === 'excludedIngredients'}
+        onToggle={() => toggleSection('excludedIngredients')}
+      >
+        <ExcludedIngredientsEditor
           value={excludedIngredients}
           onChange={(v) => debouncedSave({ excludedIngredients: v })}
         />
-      </View>
+      </ExpandableSettingsRow>
 
       <SectionHeader css={css}>{t('settings.sections.appPreferences')}</SectionHeader>
       <SettingsRow
@@ -570,6 +615,14 @@ function EditModal({ schemaKind, draft, setDraft, isSaving, onSave, onClose, css
             contentContainerStyle={[styles.modalScrollContent, { paddingBottom: css.spacing.sm }]}
             keyboardShouldPersistTaps="handled"
           >
+            {schemaKind === 'allergies' ? (
+              <View style={[styles.fieldWrap, { marginBottom: css.spacing.cardGap }]}>
+                <AllergenChips
+                  value={draft.allergyKeys}
+                  onChange={(allergyKeys) => setDraft((d) => ({ ...d, allergyKeys }))}
+                />
+              </View>
+            ) : null}
             {schema.fields.map(({ key, label, multiline, ...rest }) => (
               <View key={key} style={[styles.fieldWrap, { marginBottom: css.spacing.cardGap }]}>
                 <Text
@@ -659,7 +712,7 @@ function EditModal({ schemaKind, draft, setDraft, isSaving, onSave, onClose, css
               <Text
                 style={{
                   fontFamily: css.typography.fontUI,
-                  color: css.palette.white,
+                  color: css.text.inverse,
                   fontWeight: '600',
                 }}
               >

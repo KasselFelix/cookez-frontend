@@ -20,6 +20,29 @@
     "deleteTitle": "Delete account",
     "deleteMessage": "Coming soon."
   },
+  "tabBar": {
+    "userDashboard": "Home",
+    "kickoff": "Scan",
+    "addRecipe": "Add recipe",
+    "comment": "Comments",
+    "profile": "Profile"
+  },
+  "auth": {
+    "gate": {
+      "title": "Create an account to continue",
+      "reason": {
+        "generic": "Sign up to unlock the full Cookez experience.",
+        "vote": "To rate this recipe, you'll need an account. It only takes a minute.",
+        "favorite": "Save recipes to your favorites by creating a free account.",
+        "comment": "Share your thoughts with the community — create an account to comment.",
+        "comment_vote": "Help the best comments rise — sign up to upvote and downvote."
+      },
+      "cta": {
+        "signup": "Create account",
+        "cancel": "Not now"
+      }
+    }
+  },
   "profile": {
     "topBarShare": "Share profile",
     "topBarNotifications": "Notifications",
@@ -112,6 +135,13 @@
       "cooked": "Recipes cooked",
       "seasonalIngredients": "Seasonal ingredients"
     },
+    "statsCard": {
+      "recipes": "Recipes",
+      "followers": "Followers",
+      "following": "Following",
+      "a11yLabel": "{{name}} — {{recipes}} recipes, {{followers}} followers, {{following}} following",
+      "a11yHint": "Opens the full profile"
+    },
     "subtitle": {
       "weight_loss": "Goal: weight loss",
       "muscle_gain": "Goal: muscle gain",
@@ -181,8 +211,26 @@
       "householdTitle": "My household",
       "householdLabel": "Number of people",
       "allergiesTitle": "Allergies",
-      "allergiesLabel": "Allergies (comma-separated)",
-      "allergiesPlaceholder": "e.g. peanuts, shellfish"
+      "allergiesLabel": "Other allergies (comma-separated)",
+      "allergiesPlaceholder": "e.g. kiwi, pineapple",
+      "allergiesUnknownTitle": "Unrecognized terms",
+      "allergiesUnknownMessage": "We don't know: {{terms}}. Recipes that name these words will be hidden, but a product that contains them under another name stays visible. Always check the ingredients."
+    },
+    "allergens": {
+      "gluten": "Gluten",
+      "crustaceans": "Crustaceans",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "peanuts": "Peanuts",
+      "soy": "Soy",
+      "dairy": "Milk",
+      "nuts": "Tree nuts",
+      "celery": "Celery",
+      "mustard": "Mustard",
+      "sesame": "Sesame",
+      "sulphites": "Sulphites",
+      "lupin": "Lupin",
+      "molluscs": "Molluscs"
     },
     "nutritionalGoals": {
       "title": "Nutritional goal",
@@ -224,7 +272,10 @@
       "deniedTitle": "Permission denied",
       "deniedMessage": "We will not access your location.",
       "errorTitle": "Location error",
-      "errorMessage": "Could not retrieve your location."
+      "errorMessage": "Could not retrieve your location.",
+      "servicesDisabledTitle": "Location services off",
+      "servicesDisabledMessage": "Please enable location services in your device settings.",
+      "timeoutMessage": "Could not retrieve your location in time. Please try again."
     },
     "preferredTags": {
       "title": "Tags I like",
@@ -284,8 +335,31 @@
     },
     "next": "Next",
     "nextWithCount": "Next ({{count}})",
+    "addIngredient": "Add ingredient",
     "removeIngredientA11y": "Remove {{name}}",
-    "removePhotoA11y": "Remove photo"
+    "removePhotoA11y": "Remove photo",
+    "pantryHero": {
+      "kicker": "YOUR PANTRY · {{count}} ITEMS",
+      "title": "Tap to cook with what you have"
+    },
+    "selected": {
+      "label": "SELECTED · {{count}}",
+      "add": "+ Add",
+      "photoLabel": "📸 Photo {{index}}",
+      "removeA11y": "Remove {{name}}",
+      "removePhotoA11y": "Remove photo {{index}}"
+    },
+    "slot": {
+      "placeholder": "Ingredient",
+      "imageA11y": "ingredient image"
+    },
+    "modal": {
+      "searchPlaceholder": "Search an ingredient",
+      "clear": "Clear search",
+      "waiting": "Waiting for your search 🧐 ...",
+      "notFound": "No ingredients found, try again! 👍",
+      "close": "Close"
+    }
   },
   "recap": {
     "ingredient": "Ingredient",
@@ -305,10 +379,12 @@
     "servings": {
       "label": "Servings",
       "increment": "Increase servings",
-      "decrement": "Decrease servings"
+      "decrement": "Decrease servings",
+      "adjustedForHousehold": "Adjusted for your household (×{{count}})"
     },
     "nutrition": {
       "title": "Nutrition",
+      "perServing": "Per serving",
       "kcal": "{{count}} kcal",
       "openSheet": "Open nutrition details",
       "calories": "Calories",
@@ -347,7 +423,7 @@
       "savory": "Savory"
     },
     "expiry": {
-      "title": "⚠️ Cook this recipe soon!",
+      "title": "⚠️ Use these ingredients soon",
       "body": "Your {{items}} expires in less than 48h."
     },
     "shopping": {
@@ -357,6 +433,94 @@
         "label": "Buy on Amazon",
         "a11y": "Buy {{name}} on Amazon"
       }
+    },
+    "steps": {
+      "title": "Steps"
+    },
+    "video": {
+      "watch": "Watch video",
+      "watchOnYoutube": "Watch on YouTube",
+      "hint": "Opens the video in your browser"
+    },
+    "meta": {
+      "difficulty": "Difficulty {{value}}/5",
+      "minutes": "{{count}} min",
+      "noInfo": "–"
+    },
+    "description": {
+      "title": "Description"
+    },
+    "ingredients": {
+      "or": "or"
+    },
+    "comments": {
+      "title": "Comments",
+      "empty": {
+        "title": "Be the first to comment",
+        "hint": "Share your tips or ask the chef a question."
+      }
+    }
+  },
+  "userDashboard": {
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening",
+      "subtitle": "What are we cooking today?",
+      "fallbackUsername": "Chef"
+    },
+    "recentlyViewed": "Recently Viewed",
+    "searchPlaceholder": "Search recipes...",
+    "searchResults": "Search results",
+    "filtersButton": {
+      "a11y": "Open filters"
+    },
+    "filtersModal": {
+      "title": "Filters",
+      "sectionTags": "Tags",
+      "sectionOrigins": "Origins",
+      "clearAll": "Clear all",
+      "closeA11y": "Close filters",
+      "emptyOrigins": "No origins available",
+      "tagA11y": "Tag {{name}} {{state}}",
+      "originA11y": "Origin {{name}} {{state}}",
+      "stateNeutral": "neutral",
+      "stateRequired": "required",
+      "stateExcluded": "excluded"
+    },
+    "viewRecipeA11y": "View recipe: {{name}}",
+    "filterA11y": "Filter: {{filter}}",
+    "filters": {
+      "all": "All",
+      "quick": "Quick",
+      "vegan": "Vegan",
+      "dessert": "Dessert",
+      "trending": "Trending"
+    },
+    "sectionTitles": {
+      "all": "Community Favorites",
+      "quick": "Quick & Easy",
+      "vegan": "Vegan Picks",
+      "dessert": "Sweet Treats",
+      "trending": "Trending Now"
+    },
+    "meta": {
+      "minutesShort": "min",
+      "difficulty": "Difficulty {{value}}/5"
+    },
+    "emptyFilter": "No recipes match this filter.",
+    "loading": "Loading recipes…",
+    "loadingA11y": "Loading recipes",
+    "error": {
+      "title": "Couldn't load recipes",
+      "subtitle": "Check your connection and try again.",
+      "retryA11y": "Retry loading recipes"
+    },
+    "empty": {
+      "title": "No recipes yet",
+      "subtitle": "Be the first to add one!",
+      "addCta": "Add Recipe",
+      "addCtaA11y": "Add a recipe"
     }
   },
   "result": {
@@ -375,6 +539,11 @@
     "offline": {
       "title": "Please connect to the Internet",
       "body": "We need a connection to find recipes matching your inventory. Your filters are saved.",
+      "retry": "Try again"
+    },
+    "error": {
+      "title": "Something went wrong",
+      "body": "We couldn't reach the kitchen. Your filters are saved — try again.",
       "retry": "Try again"
     },
     "staleCache": {
