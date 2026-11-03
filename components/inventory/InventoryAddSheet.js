@@ -100,9 +100,12 @@ export default function InventoryAddSheet({ bottomSheetRef, initial, onSubmit })
       return undefined;
     }
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    // A slow answer to an older query must never replace the latest one.
+    let stale = false;
     debounceTimerRef.current = setTimeout(async () => {
       setSearching(true);
       const { ok, data } = await searchIngredients(token, query.trim());
+      if (stale) return;
       setSearching(false);
       if (ok && data && Array.isArray(data.ingredients)) {
         setResults(data.ingredients.slice(0, 6));
@@ -111,6 +114,7 @@ export default function InventoryAddSheet({ bottomSheetRef, initial, onSubmit })
       }
     }, SEARCH_DEBOUNCE_MS);
     return () => {
+      stale = true;
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
   }, [query, token, ingredient]);

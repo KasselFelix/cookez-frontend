@@ -32,8 +32,18 @@ export const pantrySlice = createSlice({
       const item = action.payload;
       if (!item?._id) return;
       const i = state.value.items.findIndex((x) => x._id === item._id);
-      if (i >= 0) state.value.items[i] = item;
-      else state.value.items.unshift(item);
+      if (i >= 0) {
+        state.value.items[i] = item;
+        return;
+      }
+      // Same order as GET /inventory: ingredient name, accents ignored
+      // (plan 013). The new item goes to its place, not to the top.
+      const name = item.ingredient?.name ?? '';
+      const at = state.value.items.findIndex(
+        (x) => (x.ingredient?.name ?? '').localeCompare(name, undefined, { sensitivity: 'base' }) > 0,
+      );
+      if (at < 0) state.value.items.push(item);
+      else state.value.items.splice(at, 0, item);
     },
 
     // Partial update — the screen sends `{ _id, patch }` rather than the
