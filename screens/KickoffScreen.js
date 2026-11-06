@@ -412,7 +412,7 @@ export default function KickoffScreen({navigation}) {
 	const bottomPadding = Math.max(insets.bottom, css.spacing.md) + css.spacing.lg;
 
   	return (
-		  <View style={[styles.container, { paddingBottom: bottomPadding }]} >
+		  <View testID="kickoff-screen" style={[styles.container, { paddingBottom: bottomPadding }]} >
 			<TouchableOpacity
 				onPress={() =>
 					user?.token
@@ -480,6 +480,7 @@ export default function KickoffScreen({navigation}) {
 								<View style={styles.validButton}>
 									<MyButton
 										dataFlow={()=> {handleCloseModal()}}
+										testID="kickoff-modal-close"
 										text={t('kickoff.modal.close')}
 										buttonType={buttonStyles.buttonFour}
 									/>
@@ -546,6 +547,7 @@ export default function KickoffScreen({navigation}) {
 				<View style={styles.buttonSearch}>
 					<MyButton
 						dataFlow={() => setModalVisible(true)}
+						testID="kickoff-add-ingredient"
 						icon={{ name: 'plus', size: 24 }}
 						accessibilityLabel={t('kickoff.addIngredient')}
 						buttonType={buttonStyles.buttonFour}
@@ -555,6 +557,7 @@ export default function KickoffScreen({navigation}) {
 				<View style={styles.buttonNext}>
 					<MyButton
 						dataFlow={()=>handleBtn()}
+						testID="kickoff-next"
 						text={nextText}
 						textColor={css.palette.white}
 						icon={{ name: 'angle-double-right', size: 24, position: 'right' }}

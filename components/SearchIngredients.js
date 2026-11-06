@@ -20,6 +20,7 @@ export default function SearchIngredients ({clicked, searchInput, setSearchInput
         />
         {/* Input field */}
         <TextInput
+          testID="kickoff-search-input"
           style={styles.input}
           placeholder={t('kickoff.modal.searchPlaceholder')}
           placeholderTextColor="grey"

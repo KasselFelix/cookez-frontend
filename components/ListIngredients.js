@@ -30,6 +30,7 @@ export default function ListIngredients ({ setClicked, data, onItemPress, onItem
 
     return (
       <TouchableOpacity
+        testID={`kickoff-ingredient-${name}`}
         activeOpacity={0.8}
         onPress={handlePress}
         style={isSelected ? styles.validated : styles.nonValidated}

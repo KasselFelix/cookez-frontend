@@ -443,7 +443,7 @@ export default function RecipeScreen({ route, navigation }) {
   }
 
   return (
-    <GestureHandlerRootView style={styles.root}>
+    <GestureHandlerRootView testID="recipe-screen" style={styles.root}>
       <View style={styles.container}>
         <Animated.ScrollView
           onScroll={scrollHandler}

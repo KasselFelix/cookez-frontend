@@ -62,6 +62,7 @@ export default function Recipe(props) {
       })]}
     >
       <TouchableOpacity
+        testID="recipe-card"
         style={[styles.recipeContainer, { backgroundColor: css.palette.surfaceCard }]}
         activeOpacity={0.9}
         accessibilityRole="button"
