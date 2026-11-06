@@ -459,6 +459,9 @@
         "title": "Soyez le premier à commenter",
         "hint": "Partagez vos astuces ou posez une question au chef."
       }
+    },
+    "image": {
+      "placeholder": "Pas encore de photo pour cette recette"
     }
   },
   "userDashboard": {

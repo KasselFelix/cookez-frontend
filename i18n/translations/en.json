@@ -459,6 +459,9 @@
         "title": "Be the first to comment",
         "hint": "Share your tips or ask the chef a question."
       }
+    },
+    "image": {
+      "placeholder": "No photo for this recipe yet"
     }
   },
   "userDashboard": {

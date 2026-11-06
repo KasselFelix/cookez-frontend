@@ -65,4 +65,14 @@ export function resolveRecipeImageSource(recipe) {
   return imageRecipe[PLACEHOLDER_IMAGE_KEY];
 }
 
+/**
+ * Whether a resolved source is the bundled placeholder, i.e. the recipe has no usable image.
+ * Screens then render `RecipeImagePlaceholder` instead of the placeholder file.
+ * @param {{ uri: string } | number} source
+ * @returns {boolean}
+ */
+export function isPlaceholderSource(source) {
+  return source === imageRecipe[PLACEHOLDER_IMAGE_KEY];
+}
+
 export default resolveRecipeImageSource;

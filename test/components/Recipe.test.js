@@ -5,7 +5,7 @@
 // crashing and never surface literal "null"/"undefined" text.
 
 import React from 'react';
-import { screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
 
 import { renderWithProviders } from '../helpers/renderWithProviders';
 import Recipe from '../../components/Recipe';
@@ -63,18 +63,17 @@ describe('Recipe card resilience', () => {
     expect(screen.getByText(/25/)).toBeTruthy();
   });
 
-  it('renders an image even when picture/imageUrl are null (placeholder fallback)', () => {
+  it('shows the themed placeholder when picture/imageUrl are null', () => {
     renderCard({ picture: null, imageUrl: null });
-    // The card image carries a stable testID so we can assert it mounted with
-    // a non-empty source (placeholder).
-    const img = screen.getByTestId('recipe-card-image');
-    const source = img.props.source;
-    // local require resolves to a number/object, never { uri: '' }
-    if (source && typeof source === 'object' && 'uri' in source) {
-      expect(source.uri).toBeTruthy();
-    } else {
-      expect(source).toBeDefined();
-    }
+    expect(screen.getByTestId('recipe-image-placeholder')).toBeTruthy();
+    expect(screen.queryByTestId('recipe-card-image')).toBeNull();
+  });
+
+  it('switches to the placeholder when the image fails to load', () => {
+    renderCard({ imageUrl: 'https://res.cloudinary.com/x/missing.jpg', picture: null });
+    fireEvent(screen.getByTestId('recipe-card-image'), 'error');
+    expect(screen.getByTestId('recipe-image-placeholder')).toBeTruthy();
+    expect(screen.queryByTestId('recipe-card-image')).toBeNull();
   });
 
   it('uses the http imageUrl directly when present', () => {
