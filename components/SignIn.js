@@ -60,6 +60,7 @@ export default function SignIn({navigation}) {
       <MyButton
         dataFlow={()=>setModalVisible(true)}
         text={"SIGN IN"}
+        testID="login-open"
         buttonType={buttonStyles.buttonOne}
       />
       <Modal visible={modalVisible} animationType="fade" transparent>
@@ -76,11 +77,12 @@ export default function SignIn({navigation}) {
           :
           <View style={styles.modalContainer}>
           <View style={styles.shadowView}>
-            <TextInput placeholder='username' placeholderTextColor={'grey'} style={styles.formStyle} value={username} onChangeText={(value)=> setUsername(value)}/>
-            <TextInput placeholder='password' placeholderTextColor={'grey'} textContentType='password' secureTextEntry={true} style={styles.formStyle} value={password} onChangeText={(value)=> setPassword(value)}/>
+            <TextInput testID="login-username" placeholder='username' placeholderTextColor={'grey'} style={styles.formStyle} value={username} onChangeText={(value)=> setUsername(value)}/>
+            <TextInput testID="login-password" placeholder='password' placeholderTextColor={'grey'} textContentType='password' secureTextEntry={true} style={styles.formStyle} value={password} onChangeText={(value)=> setPassword(value)}/>
             <MyButton
               dataFlow={handleSignin}
               text="Signin"
+              testID="login-submit"
               buttonType={buttonStyles.buttonThree}
             />
             <MyButton

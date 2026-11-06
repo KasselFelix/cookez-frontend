@@ -549,5 +549,21 @@
     "staleCache": {
       "message": "Affichage des résultats de votre dernière recherche. Connectez-vous pour actualiser."
     }
+  },
+  "devGallery": {
+    "title": "Galerie de dev",
+    "openNutritionSheet": "FICHE NUTRITION",
+    "openThemeSheet": "FICHE THÈME",
+    "sections": {
+      "tokens": "Tokens",
+      "buttons": "Boutons",
+      "chips": "Chips et badges",
+      "cards": "Cartes",
+      "fields": "Champs",
+      "states": "États vide, erreur et hors ligne",
+      "nutrition": "NutritionPill (Skia)",
+      "sheets": "Feuilles",
+      "sandbox": "Bac à sable"
+    }
   }
 }

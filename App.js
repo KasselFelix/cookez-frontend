@@ -1,5 +1,5 @@
 import { useCallback,useEffect } from 'react';
-import { View } from 'react-native';
+import { LogBox, View } from 'react-native';
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -53,7 +53,6 @@ import RecapScreen from "./screens/RecapScreen";
 import RecipeScreen from "./screens/RecipeScreen";
 import ResultScreen from "./screens/ResultScreen";
 import SettingsScreen from "./screens/SettingsScreen";
-import TestScreen from "./screens/TestScreen";
 import UserDashboardScreen from "./screens/UserDashboardScreen";
 
 // REDUCERS
@@ -69,8 +68,18 @@ import recipe from './reducers/recipe';
 import recipeFilters from "./reducers/recipeFilters";
 import user from './reducers/user';
 
+// Development-only modules: required under __DEV__ so release bundles drop them entirely.
+const DevThemeLink = __DEV__ ? require('./components/dev/DevThemeLink').default : null;
+const DevGalleryScreen = __DEV__ ? require('./screens/DevGalleryScreen').default : null;
+
 // Keep splash visible until fonts are ready
 SplashScreen.preventAutoHideAsync();
+
+// Maestro runs (EXPO_PUBLIC_E2E=1, set by /verify and the E2E CI): LogBox toasts cover the bottom
+// of the screen, tab bar included. Fatal errors still show their full-screen overlay.
+if (__DEV__ && process.env.EXPO_PUBLIC_E2E === '1') {
+  LogBox.ignoreAllLogs(true);
+}
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -168,6 +177,7 @@ const AppContent = ({ onLayout}) => {
   return (
     <View style={{ flex: 1 }} onLayout={onLayout}>
       <ThemeProvider>
+        {__DEV__ && <DevThemeLink />}
         <NavigationContainer>
           <AuthGateProvider>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -186,7 +196,7 @@ const AppContent = ({ onLayout}) => {
               <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
               <Stack.Screen name="Notifications" component={NotificationsScreen} />
               <Stack.Screen name="Message"       component={MessageScreen} />
-              {__DEV__ && <Stack.Screen name="Test" component={TestScreen} />}
+              {__DEV__ && <Stack.Screen name="DevGallery" component={DevGalleryScreen} />}
             </Stack.Navigator>
           </AuthGateProvider>
         </NavigationContainer>

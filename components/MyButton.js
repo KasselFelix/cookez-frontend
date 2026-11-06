@@ -21,6 +21,7 @@ export default function MyButton({
   icon,
   accessibilityLabel,
   textColor,
+  testID,
 }) {
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
@@ -55,6 +56,7 @@ export default function MyButton({
   return (
     <View style={buttonStyles.buttonContainer}>
       <TouchableOpacity
+        testID={testID}
         style={buttonType}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}

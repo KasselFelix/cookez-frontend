@@ -197,7 +197,7 @@ export default function ResultScreen({ navigation }) {
   if (serverError) return <ErrorScreen onRetry={handleRetry} />;
 
   return (
-    <View style={[styles.container, { backgroundColor: css.palette.accent500 }]}>
+    <View testID="result-screen" style={[styles.container, { backgroundColor: css.palette.accent500 }]}>
       <View style={styles.header}>
         <MySmallButton
           dataFlow={() => navigation.navigate('Recap')}
