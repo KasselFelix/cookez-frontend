@@ -18,12 +18,17 @@ UI_FLOWS="login kickoff result recipe profile gallery"
 mkdir -p "$RAW" "$OUT/captures" "$OUT/junit"
 adb install -r "$APK" || exit 1
 adb reverse tcp:8081 tcp:8081 || exit 1
+# A slow CI emulator often shows "Pixel Launcher isn't responding" over the app, which hides every
+# element from Maestro: no system error dialogs, and a moment for the boot work to settle.
+adb shell settings put global hide_error_dialogs 1
+sleep 30
 maestro --version
 
 failed=()
 run_flow() {
   local kind=$1 name=$2 dir="$RAW/$1-$2"
   echo "::group::$kind/$name"
+  adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS > /dev/null
   if ! maestro test --format junit --output "$OUT/junit/$kind-$name.xml" \
       --test-output-dir "$dir" --debug-output "$dir/debug" ".maestro/$kind/$name.yaml"; then
     failed+=("$kind/$name")
