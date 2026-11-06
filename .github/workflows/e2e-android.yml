@@ -35,6 +35,10 @@ jobs:
     services:
       mongo:
         image: mongo:8
+        # The runners' kernel (6.19+) makes mongod 8 refuse to start (TCMalloc and rseq,
+        # SERVER-121912): glibc keeps rseq, TCMalloc falls back to per-thread caches.
+        env:
+          GLIBC_TUNABLES: glibc.pthread.rseq=1
         ports:
           - 27017:27017
         options: >-
