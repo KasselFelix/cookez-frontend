@@ -62,11 +62,22 @@ export const ingredientSlice = createSlice({
                 target.data.unit = unit;
             }
         },
+        // Catalog photo resolved by hooks/useIngredientPhotos: Kickoff and Recap
+        // both read `photo` from here, so they show the same image.
+        setIngredientPhoto: (state, action) => {
+            const { display_name, photo } = action.payload;
+            const target = state.value.find(
+                (e) => e.data.display_name.toLowerCase() === display_name.toLowerCase()
+            );
+            if (target) {
+                target.photo = photo;
+            }
+        },
         clearIngredients: (state) => {
             state.value = [];
         },
     },
 });
 
-export const { addIngredient, removeIngredient, updateIngredientQuantity, updateIngredientUnit, clearIngredients } = ingredientSlice.actions;
+export const { addIngredient, removeIngredient, updateIngredientQuantity, updateIngredientUnit, setIngredientPhoto, clearIngredients } = ingredientSlice.actions;
 export default ingredientSlice.reducer;

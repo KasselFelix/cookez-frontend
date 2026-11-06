@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, Image, Modal, Animated, PanResponder, Dimensions } from 'react-native'
 import React, { useState,useEffect,useRef } from 'react'
 import { useDispatch } from 'react-redux';
-import { OPENAI_API_KEY, UNSPLASH_API_KEY, DEEPAI_API_KEY, PEXELS_API_KEY } from '../modules/apiKeys';
 import css from "../styles/Global";
 import { FontAwesome } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
@@ -33,7 +32,6 @@ export default function Recap( props ) {
     );
     const [modalVisible, setModalVisible] = useState(false);
     const [unitModalVisible, setUnitModalVisible] = useState(false);
-    const [imageUrl, setImageUrl] = useState(null);
 
     const dispatch = useDispatch()
 
@@ -140,96 +138,6 @@ export default function Recap( props ) {
         })
     ).current;
 
-    //Fonction pour appeler l'API de DALL·E
-    // const generateImageFromDalle = async (ingredientName) => {
-    //   try {
-    //       const response = await fetch("https://api.openai.com/v1/images/generations", {
-    //           method: "POST",
-    //           headers: {
-    //               "Content-Type": "application/json",
-    //               Authorization: `Bearer ${OPENAI_API_KEY}`,
-    //           },
-    //           body: JSON.stringify({
-    //               prompt: `Generate an image of ${ingredientName}`,
-    //               n: 1,
-    //               size: "1024x1024",
-    //           }),
-    //       });
-
-    //       const data = await response.json();
-    //       // console.log('API Response:', data);
-    //       if (data && data.data && data.data.length > 0) {
-    //           setImageUrl(data.data[0].url); // Met à jour l'état avec l'URL de l'image
-    //       } else {
-    //           console.error("No image found");
-    //       }
-    //   } catch (error) {
-    //       console.error("Error fetching image from DALL·E", error);
-    //   }
-    // }
-
-    //Fonction pour appeler l'API unsplash
-    // const generateImageFromUnsplash = async (ingredientName) => {
-    //   try {
-    //       const response = await fetch(`https://api.unsplash.com/search/photos?query=${ingredientName}&client_id=${UNSPLASH_API_KEY}`);
-    //       const data = await response.json();
-    //       if (data.results && data.results.length > 0) {
-    //           setImageUrl(data.results[0].urls.small);
-    //       } else {
-    //           console.error("No image found");
-    //       }
-    //   } catch (error) {
-    //       console.error("Error fetching image from Unsplash", error);
-    //   }
-    // };
-
-
-  //   const generateImageFromDeepAI = async (ingredientName) => {
-  //     try {
-  //         const response = await fetch("https://api.deepai.org/api/text2img", {
-  //             method: "POST",
-  //             headers: {
-  //                 "Content-Type": "application/json",
-  //                 "Api-Key": DEEPAI_API_KEY,
-  //             },
-  //             body: JSON.stringify({ text: `A picture of ${ingredientName}` }),
-  //         });
-  //         const data = await response.json();
-  //         if (data.output_url) {
-  //             setImageUrl(data.output_url);
-  //         } else {
-  //             console.error("No image found",data);
-  //         }
-  //     } catch (error) {
-  //         console.error("Error fetching image from DeepAI", error);
-  //     }
-  // };
-
-  const generateImageFromPexels = async (ingredientName) => {
-    try {
-        const response = await fetch(`https://api.pexels.com/v1/search?query=${ingredientName}&per_page=1`, {
-            headers: {
-                Authorization: PEXELS_API_KEY,
-            },
-        });
-        const data = await response.json();
-        if (data.photos && data.photos.length > 0) {
-            setImageUrl(data.photos[0].src.small);
-        } else {
-            console.error("No image found");
-        }
-    } catch (error) {
-        console.error("Error fetching image from Pexels", error);
-    }
-};
-
-    // Appel de l'API lors du montage du composant ou si l'ingredient change
-    useEffect(() => {
-      //generateImageFromDalle(props.data.display_name);
-      //generateImageFromUnsplash (props.data.display_name);
-      //generateImageFromDeepAI (props.data.display_name)
-      generateImageFromPexels(props.data.display_name);
-    }, [props.data.display_name]);
     
     return (
       <Animated.View
@@ -248,11 +156,11 @@ export default function Recap( props ) {
               </TouchableOpacity>
             </View>
             <View>
-               {/* Utilise l'image générée si elle existe */}
-               {imageUrl ? (
-                        <Image source={{ uri: imageUrl }} style={styles.image}  alt="picture of one recipe" accessibilityLabel="picture of one recipe"/>
+               {/* Same image as Kickoff: `photo` of the ingredient slice (plan 015) */}
+               {props.photo ? (
+                      <Image source={{ uri: props.photo }} style={styles.image} alt={props.data.display_name} accessibilityLabel={props.data.display_name} testID="recap-ingredient-photo"/>
                     ) : (
-                      <Image source={{ uri: props.photo }} style={styles.image} alt="picture of one recipe" accessibilityLabel="picture of one recipe"/>
+                      <View style={styles.image} />
                     )}
             </View>
           </View>

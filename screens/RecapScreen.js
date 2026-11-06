@@ -40,6 +40,7 @@ import TagsMultiSelect from '../components/recipeFilters/TagsMultiSelect';
 import buttonStyles from '../styles/Button';
 import { useTheme } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
+import useIngredientPhotos from '../hooks/useIngredientPhotos';
 
 export default function RecapScreen({ navigation }) {
   const css = useTheme();
@@ -47,6 +48,7 @@ export default function RecapScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const ingredients = useSelector((state) => state.ingredient.value);
+  useIngredientPhotos();
   const filters = useSelector((state) => state.recipeFilters.value);
   const user = useSelector((state) => state.user.value);
   const [showPopover, setShowPopover] = useState(false);

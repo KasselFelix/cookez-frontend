@@ -21,6 +21,7 @@ import buttonStyles from '../styles/Button';
 import css from "../styles/Global";
 import { useTheme } from "../contexts/ThemeProvider";
 import useT from "../i18n/useT";
+import useIngredientPhotos from "../hooks/useIngredientPhotos";
 import * as Animatable from 'react-native-animatable';
 
 const SEARCH_DEBOUNCE_MS = 250;
@@ -43,6 +44,7 @@ export default function KickoffScreen({navigation}) {
 	const [validatedIngredient, setValidatedIngredient] = useState([]);
 	
 	const ingredients = useSelector((state) => state.ingredient.value)
+	useIngredientPhotos();
 	// Plan 003 D.2 — gate the inventory grid behind (logged-in) && (pantry non-empty).
 	// `state.pantry.value.items` is the canonical array; `.value` itself is the
 	// envelope `{ items, loading, error }` from Plan 002's slice.
