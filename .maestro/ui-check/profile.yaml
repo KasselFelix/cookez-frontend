@@ -1,7 +1,7 @@
 # Profile screen of the test account, in the five themes (or THEME).
 appId: com.v2.cookez.dev
 ---
-- runFlow: ../common/launch.yaml
+- runFlow: ../common/relaunch.yaml
 - runFlow: ../common/login.yaml
 - tapOn:
     id: tabbar-Profile
