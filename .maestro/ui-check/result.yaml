@@ -1,7 +1,7 @@
 # Result screen after searching "egg", in the five themes (or THEME).
 appId: com.v2.cookez.dev
 ---
-- runFlow: ../common/launch.yaml
+- runFlow: ../common/relaunch.yaml
 - runFlow: ../common/search.yaml
 - waitForAnimationToEnd
 - runFlow:

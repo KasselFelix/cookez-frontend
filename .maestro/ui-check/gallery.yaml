@@ -1,7 +1,7 @@
 # Dev gallery (screens/DevGalleryScreen.js), in the five themes (or THEME).
 appId: com.v2.cookez.dev
 ---
-- runFlow: ../common/launch.yaml
+- runFlow: ../common/relaunch.yaml
 - tapOn:
     id: home-gallery
 - extendedWaitUntil:
