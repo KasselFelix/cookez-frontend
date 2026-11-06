@@ -29,9 +29,15 @@ run_flow() {
   local kind=$1 name=$2 dir="$RAW/$1-$2"
   echo "::group::$kind/$name"
   adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS > /dev/null
+  adb logcat -c
   if ! maestro test --format junit --output "$OUT/junit/$kind-$name.xml" \
       --test-output-dir "$dir" --debug-output "$dir/debug" ".maestro/$kind/$name.yaml"; then
     failed+=("$kind/$name")
+    # Native side of the failure (crash buffer, then fatal runtime errors), in the job log only.
+    echo "--- logcat crash buffer ($kind/$name)"
+    adb logcat -d -b crash | tail -n 80
+    echo "--- logcat fatal errors ($kind/$name)"
+    adb logcat -d '*:E' | grep -E 'AndroidRuntime|FATAL|cookez|ReactNative|libc' | tail -n 60
   fi
   # Captures (takeScreenshot) and failure screenshots; nothing else leaves the runner.
   mkdir -p "$OUT/captures/$kind-$name"
