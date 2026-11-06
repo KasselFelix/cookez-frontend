@@ -44,13 +44,15 @@ export default function HomeScreen({ navigation }) {
           />
         </View>
 
-        <View style={styles.buttons}>
-          <MyButton
-            dataFlow={() => navigation.navigate("Test")}
-            text={"TEST"}
-            buttonType={buttonStyles.buttonTwo}
-          />
-        </View>
+        {__DEV__ && (
+          <View style={styles.buttons}>
+            <MyButton
+              dataFlow={() => navigation.navigate("Test")}
+              text={"TEST"}
+              buttonType={buttonStyles.buttonTwo}
+            />
+          </View>
+        )}
       </View>
     </View>
   );
