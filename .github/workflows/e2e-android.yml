@@ -1,14 +1,23 @@
 name: E2E Android
 
-# Phase 5 : flows Maestro sur un émulateur Android, chaque nuit et sur main. Inactif tant que la
-# variable de dépôt E2E_ENABLED ne vaut pas true. Les flows doivent rester en lecture seule :
-# l'app de test parle à l'API désignée par E2E_API_URL.
+# Maestro flows on an Android emulator, against a throwaway backend: the private backend repo
+# (read-only deploy key) on a Mongo 8 service seeded with test/e2e/seed.js, and an invented
+# account. Nothing here reaches production: the app is the debug build Cookez Dev
+# (com.v2.cookez.dev), its JS comes from Metro with EXPO_PUBLIC_API_URL on the runner's backend.
+#
+# Night and main runs wait for the repo variable E2E_ENABLED=true; workflow_dispatch always runs.
+# No PR trigger: the deploy key must never be offered to code from a fork.
 on:
   schedule:
     - cron: '0 3 * * *'
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      backend_ref:
+        description: cookez-backend branch, tag or SHA to test against
+        default: main
+        type: string
 
 concurrency:
   group: e2e-${{ github.ref }}
@@ -19,56 +28,195 @@ permissions:
 
 jobs:
   e2e:
-    name: Build Android, émulateur, Maestro
-    if: vars.E2E_ENABLED == 'true'
+    name: Build Cookez Dev, emulator, Maestro
+    if: github.event_name == 'workflow_dispatch' || vars.E2E_ENABLED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
+    services:
+      mongo:
+        # Pinned like the actions; mongo:8 as of 2026-11-06.
+        image: mongo:8@sha256:e16e606f792ea89d2b4907b54e5e31eb86a7a23e27231dce3a982cc8f2d73cd2
+        # The runners' kernel (6.19+) makes mongod 8 refuse to start (TCMalloc and rseq,
+        # SERVER-121912): glibc keeps rseq, TCMalloc falls back to per-thread caches.
+        env:
+          GLIBC_TUNABLES: glibc.pthread.rseq=1
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s --health-timeout 5s --health-retries 20
     env:
-      EXPO_PUBLIC_API_URL: ${{ vars.E2E_API_URL }}
+      APP_VARIANT: development
+      E2E_DB: mongodb://127.0.0.1:27017/cookez_e2e
+      MAESTRO_VERSION: 2.12.1
+      MAESTRO_SHA256: 54dbb0716425626604973cbb374c585ca30272375d9ce15177a1152765ddd9d7
+      MAESTRO_CLI_NO_ANALYTICS: '1'
+      MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: 'true'
+      EXPO_NO_TELEMETRY: '1'
+      # Every emulator setting that shapes the AVD, so a change never restores a stale one.
+      AVD_KEY: avd-v2-35-google_apis-x86_64-pixel_6-3c-4096M-camera-emulated
     steps:
+      # Backend first: the deploy key is written and removed before any dependency install script
+      # runs in this job. Moved out of the workspace, so Metro never crawls it and no upload can
+      # pick it up.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: KasselFelix/cookez-backend
+          ref: ${{ inputs.backend_ref || 'main' }}
+          ssh-key: ${{ secrets.BACKEND_DEPLOY_KEY }}
+          path: backend
+          persist-credentials: false
+      - run: mv backend "$RUNNER_TEMP/backend"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22
+          node-version: 24
           cache: yarn
       - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
           java-version: 17
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
       - run: yarn install --frozen-lockfile
-      # android/ n'est pas versionné : prebuild le génère, puis Gradle construit l'APK de release
-      # (signé avec la clé de debug du modèle Expo, suffisante pour un émulateur).
+
+      - name: Backend dependencies (own yarn cache folder, never saved)
+        working-directory: ${{ runner.temp }}/backend
+        env:
+          YARN_CACHE_FOLDER: ${{ runner.temp }}/backend-yarn-cache
+        run: yarn install --frozen-lockfile --production=false
+      - name: Seed (8 catalog recipes, third-party media stripped)
+        working-directory: ${{ runner.temp }}/backend
+        run: node test/e2e/seed.js "$E2E_DB" --strip-media
+      - name: Start the backend on the seeded base
+        working-directory: ${{ runner.temp }}/backend
+        env:
+          PORT: '3000'
+          # A dummy value: the Cloudinary SDK only parses it at boot, the flows upload nothing.
+          CLOUDINARY_URL: cloudinary://000000000000000:e2e-dummy@e2e-dummy
+        run: |
+          CONNECTION_STRING="$E2E_DB" nohup node ./bin/www > "$RUNNER_TEMP/backend.log" 2>&1 &
+          for i in $(seq 60); do curl -fsS http://127.0.0.1:3000/health && exit 0; sleep 2; done
+          # Public job log: only the error lines of the private backend, cut short.
+          grep -E "Error|connected" "$RUNNER_TEMP/backend.log" | cut -c1-200 | head -n 10; exit 1
+      - name: Invented test account
+        run: |
+          password=$(openssl rand -hex 12)
+          echo "::add-mask::$password"
+          body=$(jq -n --arg p "$password" '{email:"e2e@cookez.invalid", firstname:"e2e", lastname:"runner",
+            username:"e2e_runner", age:30, password:$p, image:"default_M",
+            settings:{allergy:[], gender:null, householdComposition:0}}')
+          curl -fsS -H 'Content-Type: application/json' -d "$body" http://127.0.0.1:3000/users/signup | jq -e '.result == true' > /dev/null
+          { echo "MAESTRO_USERNAME=e2e_runner"; echo "MAESTRO_PASSWORD=$password"; } >> "$GITHUB_ENV"
+
+      # android/ is not versioned: prebuild generates it for the dev variant (APP_VARIANT above).
       - run: npx expo prebuild --platform android --no-install
-      - run: ./gradlew assembleRelease --no-daemon
+      - name: Debug build, x86_64 only
         working-directory: android
-      - name: Accélération KVM pour l'émulateur
+        run: ./gradlew assembleDebug -PreactNativeArchitectures=x86_64 --no-daemon
+      - name: Metro for the dev build
+        env:
+          EXPO_PUBLIC_API_URL: http://10.0.2.2:3000
+          EXPO_PUBLIC_E2E: '1'
+          EXPO_OFFLINE: '1'
+          CI: '1'
+        run: |
+          nohup npx expo start --localhost --port 8081 --dev-client > "$RUNNER_TEMP/metro.log" 2>&1 &
+          for i in $(seq 90); do curl -fsS http://127.0.0.1:8081/status | grep -q running && exit 0; sleep 2; done
+          tail -n 40 "$RUNNER_TEMP/metro.log"; exit 1
+      - name: Maestro CLI
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/maestro.zip" \
+            "https://github.com/mobile-dev-inc/maestro/releases/download/cli-$MAESTRO_VERSION/maestro.zip"
+          echo "$MAESTRO_SHA256  $RUNNER_TEMP/maestro.zip" | sha256sum -c -
+          unzip -q "$RUNNER_TEMP/maestro.zip" -d "$HOME"
+          echo "$HOME/maestro/bin" >> "$GITHUB_PATH"
+
+      - name: KVM for the emulator
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Installation de Maestro
-        run: |
-          curl -fsSL "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
-      - uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+      - name: AVD cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: avd-cache
         with:
-          api-level: 34
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: ${{ env.AVD_KEY }}
+      - name: AVD snapshot (cache miss only)
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 35
           target: google_apis
           arch: x86_64
+          # Room for the launcher: with the default 2 cores it stops responding under Maestro.
+          cores: 3
+          ram-size: 4096M
+          # Same screen as the local Cookez Phone AVD, a Pixel 8a (1080x2400, 420 dpi): the runner has
+          # no pixel_8a definition, and on the default 320x640 screen the keyboard covered the kickoff
+          # modal's close button.
+          profile: pixel_6
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated
+          disable-animations: false
+          script: echo "AVD snapshot created"
+      # Saved right after creation: the flows below install the app and change the disk.
+      - name: AVD cache save (cache miss only)
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: ${{ env.AVD_KEY }}
+      - name: Flows (e2e, then ui-check in five themes)
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          # Room for the launcher: with the default 2 cores it stops responding under Maestro.
+          cores: 3
+          ram-size: 4096M
+          # Same screen as the local Cookez Phone AVD, a Pixel 8a (1080x2400, 420 dpi): the runner has
+          # no pixel_8a definition, and on the default 320x640 screen the keyboard covered the kickoff
+          # modal's close button.
+          profile: pixel_6
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated
           disable-animations: true
-          script: |
-            adb install android/app/build/outputs/apk/release/app-release.apk
-            maestro --version
-            mkdir -p e2e-output
-            maestro test .maestro/e2e --format junit --output e2e-output/report.xml --debug-output e2e-output/debug
+          script: bash .github/scripts/e2e-run.sh
+
+      # The job log is public: Metro's log (app side) is shown, the private backend's is not. Only
+      # its failed requests, with long path segments (ids, tokens) masked.
+      - name: Metro log and backend errors (on failure)
+        if: failure()
+        run: |
+          tail -n 80 "$RUNNER_TEMP/metro.log" || true
+          echo "--- backend requests with a 4xx or 5xx status"
+          sed 's/\x1b\[[0-9;]*m//g' "$RUNNER_TEMP/backend.log" 2>/dev/null \
+            | awk '$1 ~ /^(GET|POST|PUT|PATCH|DELETE)$/ && $3 ~ /^[45][0-9][0-9]$/ { print $1, $2, $3 }' \
+            | sed -E 's#/[A-Za-z0-9_-]{16,}#/<id>#g' | tail -n 40 || true
+      # Runs even after a timeout or a cancel, before anything is published.
+      - name: No test password in the published files
+        if: always()
+        run: |
+          if [ -n "${MAESTRO_PASSWORD:-}" ] && [ -d e2e-android ] && grep -rqF -- "$MAESTRO_PASSWORD" e2e-android; then
+            rm -rf e2e-android
+            echo "::error::test password found in e2e-android, artifacts removed"
+            exit 1
+          fi
+      # Listed path by path: captures and JUnit only, no backend file, no Maestro log.
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: e2e-android
           path: |
-            e2e-output/
-            .maestro/**/*.png
-          if-no-files-found: ignore
+            e2e-android/captures/
+            e2e-android/junit/
+          if-no-files-found: warn
           retention-days: 14

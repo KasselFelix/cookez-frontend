@@ -1,0 +1,17 @@
+# ui-check flows except login: restarts Cookez Dev but keeps its data, so an open session survives
+# and no sign-in is repeated, then puts the light theme back in case a previous flow stopped
+# halfway. The state depends on the flows run before (order in .github/scripts/e2e-run.sh). The e2e
+# journeys and ui-check/login use launch.yaml (clean state) instead.
+appId: com.v2.cookez.dev
+---
+- launchApp:
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible:
+      id: home-connect
+    timeout: 90000
+- runFlow:
+    file: theme.yaml
+    env:
+      NAME: light
