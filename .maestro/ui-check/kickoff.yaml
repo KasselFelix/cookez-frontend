@@ -1,0 +1,15 @@
+# Kickoff screen (ingredient picking), in the five themes (or THEME).
+appId: com.v2.cookez.dev
+---
+- runFlow: ../common/launch.yaml
+- tapOn:
+    id: home-snap
+- extendedWaitUntil:
+    visible:
+      id: kickoff-add-ingredient
+    timeout: 20000
+- waitForAnimationToEnd
+- runFlow:
+    file: ../common/capture.yaml
+    env:
+      SCREEN: kickoff

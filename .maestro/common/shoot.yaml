@@ -1,0 +1,8 @@
+# One capture of the current screen in one theme: <SCREEN>-<NAME>.png in the takeScreenshot folder.
+appId: com.v2.cookez.dev
+---
+- runFlow:
+    file: theme.yaml
+    env:
+      NAME: ${NAME}
+- takeScreenshot: ${SCREEN}-${NAME}

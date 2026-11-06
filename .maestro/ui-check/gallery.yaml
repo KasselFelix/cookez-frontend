@@ -1,0 +1,15 @@
+# Dev gallery (screens/DevGalleryScreen.js), in the five themes (or THEME).
+appId: com.v2.cookez.dev
+---
+- runFlow: ../common/launch.yaml
+- tapOn:
+    id: home-gallery
+- extendedWaitUntil:
+    visible:
+      id: gallery-screen
+    timeout: 20000
+- waitForAnimationToEnd
+- runFlow:
+    file: ../common/capture.yaml
+    env:
+      SCREEN: gallery
