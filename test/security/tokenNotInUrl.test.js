@@ -16,8 +16,11 @@ const sourceFiles = (dir) => {
   });
 };
 
-// A template literal that starts with the API address and interpolates a token.
-const TOKEN_IN_URL = /`\$\{addressIp\}[^`]*\$\{[^}]*token[^}]*\}[^`]*`/i;
+// A template literal that starts with the API address and interpolates a token, or
+// a concatenation from the API address that adds a token on the same line.
+const TOKEN_IN_TEMPLATE = /`\$\{addressIp\}[^`]*\$\{[^}]*token[^}]*\}[^`]*`/i;
+const TOKEN_IN_CONCAT = /\baddressIp\s*\+[^;\n]*\btoken\b/i;
+const hasTokenInUrl = (source) => TOKEN_IN_TEMPLATE.test(source) || TOKEN_IN_CONCAT.test(source);
 
 describe('session token never in an API URL', () => {
   const files = [path.join(ROOT, 'App.js'), ...SOURCE_DIRS.flatMap((d) => sourceFiles(path.join(ROOT, d)))];
@@ -27,12 +30,14 @@ describe('session token never in an API URL', () => {
   });
 
   it('finds no URL built with a token', () => {
-    const offenders = files.filter((file) => TOKEN_IN_URL.test(fs.readFileSync(file, 'utf8')));
+    const offenders = files.filter((file) => hasTokenInUrl(fs.readFileSync(file, 'utf8')));
     expect(offenders.map((file) => path.relative(ROOT, file))).toEqual([]);
   });
 
   it('would catch the old /users/profile/:token call', () => {
-    expect(TOKEN_IN_URL.test('fetch(`${addressIp}/users/profile/${token}`)')).toBe(true);
-    expect(TOKEN_IN_URL.test('fetch(`${addressIp}/users/lastViewed/${user.token}`)')).toBe(true);
+    expect(hasTokenInUrl('fetch(`${addressIp}/users/profile/${token}`)')).toBe(true);
+    expect(hasTokenInUrl('fetch(`${addressIp}/users/lastViewed/${user.token}`)')).toBe(true);
+    expect(hasTokenInUrl("fetch(addressIp + '/users/badges/' + user.token)")).toBe(true);
+    expect(hasTokenInUrl('fetch(`${addressIp}/users/me`, { headers: { Authorization: `Bearer ${token}` } })')).toBe(false);
   });
 });
