@@ -3,7 +3,7 @@
 // Vague 2 + 3 additions on top of the Vague 1 refactor:
 //   - Bell button → Notifications stack screen, with an unread badge.
 //   - Share button → native Share API with the public profile URL.
-//   - Badges tab fetches /users/badges/:token (6 entries, only
+//   - Badges tab fetches /users/me/badges (6 entries, only
 //     `first_recipe` is real for now; others render dimmed).
 //   - ProfileImpactStats card under stats (placeholder + (beta) label).
 //   - All copy goes through `useT`; tokens come from `useTheme()` so
@@ -393,7 +393,9 @@ export default function ProfileScreen({ navigation, route }) {
     setBadgesLoading(true);
     (async () => {
       try {
-        const res = await fetch(`${addressIp}/users/badges/${user.token}`);
+        const res = await fetch(`${addressIp}/users/me/badges`, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
         const data = await res.json();
         if (!cancelled && data.result) {
           setBadges(data.badges || []);
@@ -923,7 +925,7 @@ export default function ProfileScreen({ navigation, route }) {
   );
 }
 
-// Fallback when /users/badges/:token is unreachable: render the same
+// Fallback when /users/me/badges is unreachable: render the same
 // 6 keys the backend exposes so the UX shape is stable.
 const DEFAULT_BADGES = [
   { key: 'first_recipe', label: 'First recipe', unlocked: false },

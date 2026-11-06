@@ -23,6 +23,7 @@ import { updateRecipeVote } from '../reducers/recipe';
 import { toggleFavorite } from '../reducers/user';
 // MODULES
 import addressIp from '../modules/addressIp';
+import { recordRecipeView } from '../modules/session';
 import css from '../styles/Global';
 import useT from '../i18n/useT';
 import { flagForOriginName } from '../modules/countries';
@@ -90,11 +91,7 @@ export default function RecipeScreen({ route, navigation }) {
 
   useEffect(() => {
     if (!user?.token || !recipe?._id) return;
-    fetch(`${addressIp}/users/lastViewed`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: user.token, recipeId: recipe._id }),
-    }).catch(() => {});
+    recordRecipeView(user.token, recipe._id);
   }, [user?.token, recipe?._id]);
 
   // Servings local au RecipeScreen — découplé de Redux pour ne PAS
