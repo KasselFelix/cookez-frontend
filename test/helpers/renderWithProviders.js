@@ -29,6 +29,7 @@ import locale from '../../reducers/locale';
 import notifications from '../../reducers/notifications';
 import follow from '../../reducers/follow';
 import pantry from '../../reducers/pantry';
+import scan from '../../reducers/scan';
 
 /**
  * The full reducer map — kept in one place so `makeStore` and any future
@@ -46,6 +47,7 @@ export const rootReducer = {
   notifications,
   follow,
   pantry,
+  scan,
 };
 
 /**

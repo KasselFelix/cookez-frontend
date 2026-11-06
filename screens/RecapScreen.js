@@ -24,6 +24,7 @@ import * as Animatable from 'react-native-animatable';
 import Popover from 'react-native-popover-view';
 
 import { clearIngredients } from '../reducers/ingredient';
+import { clearScan } from '../reducers/scan';
 import {
   setOrigins,
   setServings,
@@ -34,6 +35,7 @@ import {
 import MyButton from '../components/MyButton';
 import MySmallButton from '../components/MySmallButton';
 import Recap from '../components/Recap';
+import ScanSummary from '../components/recap/ScanSummary';
 import ServingsStepper from '../components/recipeFilters/ServingsStepper';
 import OriginPicker from '../components/recipeFilters/OriginPicker';
 import TagsMultiSelect from '../components/recipeFilters/TagsMultiSelect';
@@ -81,6 +83,7 @@ export default function RecapScreen({ navigation }) {
   const handleClearAll = () => {
     setShowPopover(false);
     dispatch(clearIngredients());
+    dispatch(clearScan());
   };
 
   // Inner-scroll "more below" indicator. Tracking three measurements:
@@ -253,6 +256,7 @@ export default function RecapScreen({ navigation }) {
       >
         {/* Step 1 — Ingredient gallery */}
         <SectionHeading css={css}>{t('recap.step1')}</SectionHeading>
+        <ScanSummary onSearch={() => navigation.goBack()} />
         {ingredients.length === 0 ? (
           <Animatable.View
             animation="slideInDown"

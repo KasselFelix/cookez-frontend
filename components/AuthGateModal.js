@@ -17,7 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
 
-const REASON_KEYS = new Set(['vote', 'favorite', 'comment', 'comment_vote', 'generic']);
+const REASON_KEYS = new Set(['vote', 'favorite', 'comment', 'comment_vote', 'scan', 'generic']);
 
 export default function AuthGateModal({ visible, reason = 'generic', onClose }) {
   const css = useTheme();

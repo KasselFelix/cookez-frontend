@@ -14,11 +14,9 @@ export const ingredientSlice = createSlice({
             // `_id`. Catching the omission at the dispatch site is far
             // cheaper than tracing a 400 from the algorithm later.
             //
-            // Stays warning-only in __DEV__ so we don't break production
-            // for users on legacy paths (e.g. Foodvisor vision results
-            // that haven't yet been reconciled with our ingredients
-            // collection). The warning is enough to surface the issue
-            // during local exercise.
+            // Stays warning-only in __DEV__ so a legacy path without an id
+            // never breaks production. Scanned ingredients carry their
+            // catalog id (POST /vision/analyze, plan 015).
             const payload = action.payload;
             if (__DEV__ && !payload?.data?._id) {
                 console.warn(
@@ -73,11 +71,21 @@ export const ingredientSlice = createSlice({
                 target.photo = photo;
             }
         },
+        // A scanned ingredient flagged "to confirm" (plan 015) that the user
+        // accepted on Kickoff or Recap.
+        setIngredientConfirmed: (state, action) => {
+            const target = state.value.find(
+                (e) => e.data.display_name.toLowerCase() === action.payload.display_name.toLowerCase()
+            );
+            if (target) {
+                target.data.toConfirm = false;
+            }
+        },
         clearIngredients: (state) => {
             state.value = [];
         },
     },
 });
 
-export const { addIngredient, removeIngredient, updateIngredientQuantity, updateIngredientUnit, setIngredientPhoto, clearIngredients } = ingredientSlice.actions;
+export const { addIngredient, removeIngredient, updateIngredientQuantity, updateIngredientUnit, setIngredientPhoto, setIngredientConfirmed, clearIngredients } = ingredientSlice.actions;
 export default ingredientSlice.reducer;

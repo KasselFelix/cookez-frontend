@@ -64,6 +64,7 @@ import ingredient from "./reducers/ingredient";
 import locale from './reducers/locale';
 import notifications from './reducers/notifications';
 import pantry from './reducers/pantry';
+import scan from './reducers/scan';
 import picture from "./reducers/picture";
 import recipe from './reducers/recipe';
 import recipeFilters from "./reducers/recipeFilters";
@@ -98,6 +99,7 @@ const store = configureStore({
     notifications,
     follow,
     pantry,
+    scan,
   },
 });
 
