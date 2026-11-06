@@ -186,7 +186,7 @@ const AppContent = ({ onLayout}) => {
               <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
               <Stack.Screen name="Notifications" component={NotificationsScreen} />
               <Stack.Screen name="Message"       component={MessageScreen} />
-              <Stack.Screen name="Test"          component={TestScreen} />
+              {__DEV__ && <Stack.Screen name="Test" component={TestScreen} />}
             </Stack.Navigator>
           </AuthGateProvider>
         </NavigationContainer>
