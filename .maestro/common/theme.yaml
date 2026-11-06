@@ -1,0 +1,7 @@
+# Switches the theme through the dev deep link (components/dev/DevThemeLink.js), staying on the
+# current screen. NAME: light | dark | pastelMint | pastelPeach | pastelLavender.
+appId: com.v2.cookez.dev
+---
+- openLink: cookez-dev://dev/theme?name=${NAME}
+- waitForAnimationToEnd:
+    timeout: 3000

@@ -1,0 +1,17 @@
+# Recipe screen of the first result, in the five themes (or THEME).
+appId: com.v2.cookez.dev
+---
+- runFlow: ../common/launch.yaml
+- runFlow: ../common/search.yaml
+- tapOn:
+    id: recipe-card
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: recipe-screen
+    timeout: 20000
+- waitForAnimationToEnd
+- runFlow:
+    file: ../common/capture.yaml
+    env:
+      SCREEN: recipe

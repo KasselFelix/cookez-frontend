@@ -1,0 +1,42 @@
+# From the home screen to the results: one ingredient ("egg") with a quantity, since a search
+# without quantity returns no recipe. Read-only.
+appId: com.v2.cookez.dev
+---
+- tapOn:
+    id: home-snap
+- extendedWaitUntil:
+    visible:
+      id: kickoff-add-ingredient
+    timeout: 20000
+- tapOn:
+    id: kickoff-add-ingredient
+- tapOn:
+    id: kickoff-search-input
+- inputText: egg
+- extendedWaitUntil:
+    visible:
+      id: kickoff-ingredient-.*
+    timeout: 20000
+- tapOn:
+    id: kickoff-ingredient-.*
+    index: 0
+- tapOn:
+    id: kickoff-modal-close
+- tapOn:
+    id: kickoff-next
+- extendedWaitUntil:
+    visible:
+      id: recap-quantity
+    timeout: 20000
+- tapOn:
+    id: recap-quantity
+- inputText: "200"
+# The numeric keyboard covers the submit button. It is open here, so this closes it and does
+# not leave the screen.
+- hideKeyboard
+- tapOn:
+    id: recap-submit
+- extendedWaitUntil:
+    visible:
+      id: recipe-card
+    timeout: 60000

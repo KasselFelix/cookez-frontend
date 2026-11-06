@@ -1,0 +1,25 @@
+# Signs in from the home screen. MAESTRO_USERNAME and MAESTRO_PASSWORD come from the environment
+# set by the driver (verify.mjs flow) or the CI,
+# never from this file; the labels keep the values out of Maestro's output.
+appId: com.v2.cookez.dev
+---
+- tapOn:
+    id: home-connect
+- tapOn:
+    id: login-open
+- tapOn:
+    id: login-username
+- inputText:
+    text: ${MAESTRO_USERNAME}
+    label: Type the test account username
+- tapOn:
+    id: login-password
+- inputText:
+    text: ${MAESTRO_PASSWORD}
+    label: Type the test account password
+- tapOn:
+    id: login-submit
+- extendedWaitUntil:
+    visible:
+      id: tabbar-Profile
+    timeout: 30000

@@ -1,0 +1,5 @@
+# Signs the test account in and reaches the dashboard. Read-only.
+appId: com.v2.cookez.dev
+---
+- runFlow: ../common/launch.yaml
+- runFlow: ../common/login.yaml
