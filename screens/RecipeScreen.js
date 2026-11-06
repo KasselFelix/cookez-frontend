@@ -90,10 +90,10 @@ export default function RecipeScreen({ route, navigation }) {
 
   useEffect(() => {
     if (!user?.token || !recipe?._id) return;
-    fetch(`${addressIp}/users/lastViewed`, {
+    fetch(`${addressIp}/users/me/last-viewed`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: user.token, recipeId: recipe._id }),
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+      body: JSON.stringify({ recipeId: recipe._id }),
     }).catch(() => {});
   }, [user?.token, recipe?._id]);
 
