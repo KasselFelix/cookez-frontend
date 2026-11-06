@@ -142,7 +142,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-35-google_apis-x86_64
+          key: avd-35-google_apis-x86_64-3c-4g
       - name: AVD snapshot (cache miss only)
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
@@ -150,6 +150,9 @@ jobs:
           api-level: 35
           target: google_apis
           arch: x86_64
+          # Room for the launcher: with the default 2 cores it stops responding under Maestro.
+          cores: 3
+          ram-size: 4096M
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
@@ -160,6 +163,9 @@ jobs:
           api-level: 35
           target: google_apis
           arch: x86_64
+          # Room for the launcher: with the default 2 cores it stops responding under Maestro.
+          cores: 3
+          ram-size: 4096M
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
