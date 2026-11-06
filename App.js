@@ -29,6 +29,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { Provider, useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import addressIp from './modules/addressIp';
+import { fetchSessionUser } from './modules/session';
 import { addUserToStore } from './reducers/user';
 import { setRecipes } from './reducers/recipe';
 import { setLocale } from './reducers/locale';
@@ -124,20 +125,12 @@ const AppContent = ({ onLayout}) => {
       const token = await AsyncStorage.getItem('userToken');
 
       if (token) {
-        try {
-          const response = await fetch(`${addressIp}/users/profile/${token}`);
-          const data = await response.json();
-
-          if (data.result) {
-            // Mettre à jour le store Redux avec TOUTES les données de l'utilisateur
-            dispatch(addUserToStore(data.user));
-            console.log('Auto-login réussi pour:', data.user.username);
-          } else {
-            // Si le token est expiré ou invalide côté serveur
-            await AsyncStorage.removeItem('userToken');
-          }
-        } catch (error) {
-          console.error('Erreur auto-login:', error);
+        const session = await fetchSessionUser(token);
+        if (session.status === 'ok') {
+          dispatch(addUserToStore(session.user));
+        } else if (session.status === 'invalid') {
+          // Unknown token only: a server failure must not sign the user out
+          await AsyncStorage.removeItem('userToken');
         }
       }
     };
