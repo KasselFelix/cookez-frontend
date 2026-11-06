@@ -1,6 +1,7 @@
-# Local runs (ui-check): restarts Cookez Dev but keeps its data, so an open session survives and
-# no sign-in is repeated. Puts the light theme back first, in case a previous flow stopped halfway.
-# CI and the e2e journeys use launch.yaml (clean state) instead.
+# ui-check flows except login: restarts Cookez Dev but keeps its data, so an open session survives
+# and no sign-in is repeated, then puts the light theme back in case a previous flow stopped
+# halfway. The state depends on the flows run before (order in .github/scripts/e2e-run.sh). The e2e
+# journeys and ui-check/login use launch.yaml (clean state) instead.
 appId: com.v2.cookez.dev
 ---
 - launchApp:
