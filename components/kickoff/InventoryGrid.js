@@ -25,6 +25,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
 import { addIngredient, removeIngredient } from '../../reducers/ingredient';
+import { loadableImage } from '../../modules/ingredientPhoto';
 
 export default function InventoryGrid() {
   const css = useTheme();
@@ -59,8 +60,8 @@ export default function InventoryGrid() {
     const _id = String(rawId);
     const display_name =
       item.ingredient?.name || item.name || 'unknown';
-    // Prefer the new Pexels-cached field; fall back to legacy `image`.
-    const photo = item.ingredient?.photoUrl || item.ingredient?.image || null;
+    // Catalog photo only when loadable; otherwise useIngredientPhotos fills it.
+    const photo = loadableImage(item.ingredient?.photoUrl) || loadableImage(item.ingredient?.image);
     // Pantry items carry both the BDD reference unit (`ingredient.defaultUnit`)
     // and the user's chosen unit at storage time (`item.unit`). Mirror both
     // into the Redux payload so RecapScreen displays the right unit on initial
@@ -100,7 +101,7 @@ export default function InventoryGrid() {
         const display_name =
           item.ingredient?.name || item.name || '—';
         const photoUrl =
-          item.ingredient?.photoUrl || item.ingredient?.image || null;
+          loadableImage(item.ingredient?.photoUrl) || loadableImage(item.ingredient?.image);
         // Reserve ~2% for gap; width is a string % to play well with flexWrap.
         const cellWidth = `${100 / cols - 2}%`;
 
