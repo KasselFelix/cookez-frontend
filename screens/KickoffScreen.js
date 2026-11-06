@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Animated, StyleSheet, TouchableOpacity, ScrollView, View, Image, Text, Modal, KeyboardAvoidingView, Platform } from "react-native";
+import { ActivityIndicator, Animated, StyleSheet, TouchableOpacity, ScrollView, View, Image, Text, Modal, KeyboardAvoidingView, Platform } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,7 +10,12 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useIsFocused, useFocusEffect } from "@react-navigation/native";
 
 import addressIp from "../modules/addressIp";
-import { FOODVISOR_API_KEY } from '../modules/apiKeys';
+import { scanPhoto } from "../modules/scanPhoto";
+import { pickPictureSize } from "../modules/pictureSize";
+import { clearSearchRequest, removeScanPhoto, removeUnmatched } from "../reducers/scan";
+import { useAuthGate } from "../contexts/AuthGateProvider";
+import UnmatchedChips from "../components/kickoff/UnmatchedChips";
+import ConfirmPill from "../components/kickoff/ConfirmPill";
 import ListIngredients from "../components/ListIngredients";
 import SearchIngredients from "../components/SearchIngredients";
 import MyButton from '../components/MyButton';
@@ -27,16 +32,19 @@ import * as Animatable from 'react-native-animatable';
 const SEARCH_DEBOUNCE_MS = 250;
 
 export default function KickoffScreen({navigation}) {
-  	const saveMoney=false;
-
-
 	//camera
   	const [hasPermission, setHasPermission] = useState(false);
 	const [type, setType] = useState('back'); // 'back' ou 'front'
 	const [flashMode, setFlashMode] = useState('off'); // 'off', 'on', 'auto', ou 'torch'
+	// About 1024 px on the long side (plan 015): the vision model shrinks a
+	// larger photo anyway. Undefined keeps the camera's default size.
+	const [pictureSize, setPictureSize] = useState(undefined);
 
-
-  	const [pictures, setPictures] = useState([]);
+	// Photos being analysed, shared with Recap (reducers/scan.js).
+	const scanPhotos = useSelector((state) => state.scan.value.photos);
+	const unmatched = useSelector((state) => state.scan.value.unmatched);
+	const pendingSearch = useSelector((state) => state.scan.value.pendingSearch);
+	const { requireAuth } = useAuthGate();
   	const [modalVisible, setModalVisible] = useState(false);
 	const [searchInput, setSearchInput] = useState('');
 	const [clicked, setClicked] = useState(false);
@@ -57,8 +65,7 @@ export default function KickoffScreen({navigation}) {
   	const dispatch = useDispatch();
   	const isFocused = useIsFocused();
 	const insets = useSafeAreaInsets();
-	const [imageUrl, setImageUrl] = useState(null);
-  	let cameraRef = useRef(null);
+  	const cameraRef = useRef(null);
 	const modalRef = useRef(null);
 	// Dim backdrop for the search modal — fades in/out independently from
 	// the Animatable slide-in/out so the visual feel matches the Tags &
@@ -163,6 +170,24 @@ export default function KickoffScreen({navigation}) {
     	}
 	}, [modalVisible, ingredients]); // Se déclenche à l'ouverture de la modal ou si Redux change
 
+	// Recap asks for a search of a name the analysis did not recognize.
+	useEffect(() => {
+		if (!isFocused || !pendingSearch) return;
+		openSearch(pendingSearch);
+		dispatch(clearSearchRequest());
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isFocused, pendingSearch]);
+
+	function openSearch(name = '') {
+		setSearchInput(name);
+		setModalVisible(true);
+	}
+
+	function searchUnmatched(name) {
+		dispatch(removeUnmatched(name));
+		openSearch(name);
+	}
+
 
 
 	
@@ -209,61 +234,34 @@ export default function KickoffScreen({navigation}) {
 	
 
 
+	// Next never waits: Recap shows the analyses still running.
 	function handleBtn () {
-		if(!saveMoney){
-			for (let imagePath of pictures){
-				const handleFetch = async (cpt=0)=>{
-					try{						
-						//Create FormData	
-						const formData = new FormData();
-						formData.append('image', {
-							uri: imagePath,
-							type: 'image/jpeg',
-							name: `image${cpt++}.jpg`,
-						});
-							const response= await fetch("https://vision.foodvisor.io/api/1.0/en/analysis", {
-										method: 'POST',
-										headers: {
-										'Authorization': `Api-Key ${FOODVISOR_API_KEY}`,
-										'Content-Type': 'multipart/form-data',
-										},
-										body: formData});
-							if (response.ok) {
-								const data = await response.json();
-								if(data){
-									if (data.items && data.items.length > 0 && data.items[0].food.length > 0) {
-										// console.log('NOW: ', data.items[0].food[0]);
-										dispatch(addIngredient({photo:imagePath, data:data.items[0].food[0].food_info}))
-									}
-								}else{
-									// console.log('no data')
-								}
-
-							  } else {
-								throw new Error(`HTTP status ${response.status}`);
-							  }						
-					}catch(error){
-						console.error('Something bad happened:', error);
-					}
-				}
-				handleFetch();	 
-			}
-		}
 		navigation.navigate('Recap')
 	};
 
-	const takePicture = async () => {
-		const photo = await cameraRef.takePictureAsync({ quality: 0.3 });
-		if (photo) {
-			setPictures([...pictures, photo.uri])
-		}else{
-			alert('Your photo was not taken well, Try to retake it pls 👏')
+	const handleCameraReady = async () => {
+		try {
+			const sizes = await cameraRef.current?.getAvailablePictureSizesAsync();
+			setPictureSize(pickPictureSize(sizes));
+		} catch {
+			setPictureSize(undefined);
 		}
-
 	};
 
-	
-	//CAMERA
+	// Each photo is analysed as soon as it is taken, in the background (plan 015).
+	const takePicture = async () => {
+		if (!requireAuth('scan')) return;
+		const photo = await cameraRef.current?.takePictureAsync({ quality: 0.7 });
+		if (photo?.uri) {
+			dispatch(scanPhoto({ uri: photo.uri, token: user.token }));
+		} else {
+			alert('Your photo was not taken well, Try to retake it pls 👏')
+		}
+	};
+
+	const scanStatusText = (status) => t(`kickoff.scan.${status === 'pending' ? 'analyzing' : status}`);
+
+		//CAMERA
 	if (!permission || !permission.granted || !isFocused) {
 		return (
 		  <View style={styles.container}>
@@ -275,16 +273,17 @@ export default function KickoffScreen({navigation}) {
 	}
 	
 
-	// Unified slot model — `camera` slots are URIs from the camera (no name yet,
-	// Foodvisor runs on Next), `search` slots come from Redux ingredients added
-	// via the Search modal (have photo + display_name immediately).
+	// Unified slot model — `camera` slots are photos still in the scan slice
+	// (being analysed, or failed), `search` slots are ingredients of the
+	// ingredient slice, from the search, the pantry or a finished analysis.
 	const slots = [
-		...pictures.map((uri) => ({ kind: 'camera', uri, key: `cam-${uri}` })),
+		...scanPhotos.map((photo, index) => ({ kind: 'camera', photo, index, uri: photo.uri, key: `cam-${photo.id}` })),
 		...ingredients.map((ing) => ({
 			kind: 'search',
 			ing,
 			uri: ing.photo,
 			name: ing?.data?.display_name,
+			toConfirm: Boolean(ing?.data?.toConfirm),
 			key: `ing-${ing?.data?._id || ing?.data?.display_name}`,
 		})),
 	];
@@ -294,6 +293,7 @@ export default function KickoffScreen({navigation}) {
 		const removeLabel = isSearch
 			? t('kickoff.removeIngredientA11y', { name: slot.name || '' })
 			: t('kickoff.removePhotoA11y');
+		const status = isSearch ? null : slot.photo.status;
 
 		return (
 			<View key={slot.key} style={styles.photoShadowWrap}>
@@ -304,7 +304,7 @@ export default function KickoffScreen({navigation}) {
 							if (isSearch) {
 								dispatch(removeIngredient(slot.ing));
 							} else {
-								setPictures(pictures.filter((e) => e !== slot.uri));
+								dispatch(removeScanPhoto(slot.photo.id));
 							}
 						}}
 						accessibilityRole="button"
@@ -317,8 +317,25 @@ export default function KickoffScreen({navigation}) {
 				<Image
 					source={{ uri: slot.uri }}
 					style={styles.photo}
-					accessibilityLabel={isSearch && slot.name ? slot.name : t('kickoff.slot.imageA11y')}
+					accessibilityLabel={
+						isSearch
+							? slot.name || t('kickoff.slot.imageA11y')
+							: t('kickoff.scan.photoA11y', { index: slot.index + 1, status: scanStatusText(status) })
+					}
 				/>
+				{!isSearch && (
+					<View style={[styles.scanBand, { backgroundColor: theme.palette.overlayDark }]} pointerEvents="none">
+						{status === 'pending' && <ActivityIndicator size="small" color={theme.palette.white} />}
+						<Text style={[styles.nameBandText, { color: theme.palette.white, fontFamily: theme.typography.fontUI }]} numberOfLines={2}>
+							{scanStatusText(status)}
+						</Text>
+					</View>
+				)}
+				{isSearch && slot.toConfirm && (
+					<View style={styles.confirmSlot}>
+						<ConfirmPill name={slot.name} />
+					</View>
+				)}
 				{isSearch && !!slot.name && (
 					<View style={styles.nameBand} pointerEvents="none">
 						<Text
@@ -399,7 +416,7 @@ export default function KickoffScreen({navigation}) {
 		}
 	}
 
-	const totalSlots = pictures.length + ingredients.length;
+	const totalSlots = scanPhotos.length + ingredients.length;
 	// Count-only label ("2") next to the chevron icon; empty when 0.
 	// The chevron itself ("»") communicates "next" universally, so the
 	// "Next"/"Suivant" word is dropped from the visible label.
@@ -493,7 +510,14 @@ export default function KickoffScreen({navigation}) {
 				</KeyboardAvoidingView>
        		</Modal>
 			<View style={[styles.cameraContainer, showGrid && styles.cameraContainerCompact]}>
-				<CameraView facing={type} flash={flashMode} ref={(ref) => (cameraRef = ref)} style={StyleSheet.absoluteFillObject} />
+				<CameraView
+					facing={type}
+					flash={flashMode}
+					ref={cameraRef}
+					pictureSize={pictureSize}
+					onCameraReady={handleCameraReady}
+					style={StyleSheet.absoluteFillObject}
+				/>
 				<View style={styles.buttonsCameraContainer}>
 					<TouchableOpacity onPress={() => setType(type === 'back' ? 'front' : 'back')} style={styles.buttonsCamera}>	
 						<FontAwesome name="rotate-right" size={25} color={css.palette.white} />
@@ -504,16 +528,27 @@ export default function KickoffScreen({navigation}) {
 					</TouchableOpacity>
 				</View>
 			</View>
-			
+			{/* Kickoff's background is not themed yet (styles/Global): the tip
+			    takes the matching fixed color, for 4.5:1 in every theme. */}
+			<Text style={[styles.scanTip, { color: css.palette.primary800, fontFamily: theme.typography.fontUI }]}>
+				{t('kickoff.scan.tip')}
+			</Text>
+			<UnmatchedChips
+				names={unmatched}
+				labelColor={css.palette.primary800}
+				onSearch={searchUnmatched}
+				onDismiss={(name) => dispatch(removeUnmatched(name))}
+			/>
 
 			{showGrid && (
 				<>
 					<SelectedChips
 						ingredients={ingredients}
-						pictures={pictures}
+						photos={scanPhotos}
+						statusText={scanStatusText}
 						onAdd={() => setModalVisible(true)}
 						onRemoveIngredient={(data) => onItemRemove(data)}
-						onRemovePhoto={(uri) => setPictures(pictures.filter((p) => p !== uri))}
+						onRemovePhoto={(id) => dispatch(removeScanPhoto(id))}
 					/>
 					<PantryHero count={pantryItems.length} />
 					<ScrollView
@@ -570,7 +605,12 @@ export default function KickoffScreen({navigation}) {
 			</View>
 
 			<View style={styles.snapContainer}>
-				<TouchableOpacity onPress={() => cameraRef && takePicture()}>
+				<TouchableOpacity
+					onPress={takePicture}
+					testID="kickoff-snap"
+					accessibilityRole="button"
+					accessibilityLabel={t('kickoff.scan.snapA11y')}
+				>
 					<FontAwesome name="circle-thin" size={95} color={css.palette.white} />
 				</TouchableOpacity>
 			</View>
@@ -676,6 +716,10 @@ const styles = StyleSheet.create({
 		borderRadius: css.radius.camera,
 		overflow: 'hidden',
 		height:'50%',
+		// The camera gives way when the scan tip and the unmatched names need
+		// room, so the photo slots never slide under the bottom buttons.
+		flexShrink: 1,
+		minHeight: 200,
 		width:'90%',
 		marginBottom:10,
 	},
@@ -813,6 +857,34 @@ const styles = StyleSheet.create({
 		textAlign: 'center',
 	},
 
+	// Analysis state of a photo slot: full-width band, spinner while pending.
+	scanBand: {
+		position: 'absolute',
+		left: 0,
+		right: 0,
+		bottom: 0,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'center',
+		gap: 6,
+		paddingVertical: 6,
+		paddingHorizontal: 6,
+		zIndex: 1,
+	},
+
+	confirmSlot: {
+		position: 'absolute',
+		top: 8,
+		left: 8,
+		zIndex: 2,
+	},
+
+	scanTip: {
+		fontSize: 12,
+		marginBottom: 4,
+		textAlign: 'center',
+	},
+
 	addPicturesContainer: {
 		flex: 0,
 		justifyContent: 'center',
@@ -847,6 +919,7 @@ const styles = StyleSheet.create({
 
 	containerButtonBottom: {
 		flex: 0,
+		marginTop: css.spacing.sm,
 		flexDirection: 'row',
 		justifyContent:'space-around',
 		width: '100%',

@@ -5,6 +5,7 @@ import css from "../styles/Global";
 import { FontAwesome } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { removeIngredient, updateIngredientQuantity, updateIngredientUnit } from '../reducers/ingredient';
+import ConfirmPill from './kickoff/ConfirmPill';
 
 // Units the backend's convertToBaseUnit knows. Mass + volume crossover is
 // allowed for g/ml-based ingredients under the kitchen-shorthand assumption
@@ -162,6 +163,11 @@ export default function Recap( props ) {
                     ) : (
                       <View style={styles.image} />
                     )}
+               {props.data.toConfirm && (
+                 <View style={styles.confirmOnPhoto}>
+                   <ConfirmPill name={props.data.display_name} />
+                 </View>
+               )}
             </View>
           </View>
           <View style={styles.ingredientNameContainter}>
@@ -282,6 +288,17 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
       },
       
+      // "To confirm" of a scanned ingredient (plan 015), over the photo's foot
+      // so the narrow name column keeps one line.
+      confirmOnPhoto: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 6,
+        alignItems: 'center',
+        zIndex: 1,
+      },
+
       deleteIcon: {
         zIndex:1,
         width: '95%',
