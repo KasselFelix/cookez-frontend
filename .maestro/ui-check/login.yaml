@@ -1,0 +1,15 @@
+# Login screen, in the five themes (or THEME).
+appId: com.v2.cookez.dev
+---
+- runFlow: ../common/launch.yaml
+- tapOn:
+    id: home-connect
+- extendedWaitUntil:
+    visible:
+      id: login-screen
+    timeout: 20000
+- waitForAnimationToEnd
+- runFlow:
+    file: ../common/capture.yaml
+    env:
+      SCREEN: login

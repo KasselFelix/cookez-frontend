@@ -1,0 +1,12 @@
+# Starts Cookez Dev from a clean state (logged out, light theme, permissions granted) and waits
+# for the home screen. The JS comes from Metro on localhost:8081 (adb reverse, set by /verify).
+appId: com.v2.cookez.dev
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible:
+      id: home-connect
+    timeout: 90000

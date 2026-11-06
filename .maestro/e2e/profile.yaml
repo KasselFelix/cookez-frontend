@@ -1,0 +1,11 @@
+# Signs in and opens the profile tab. Read-only.
+appId: com.v2.cookez.dev
+---
+- runFlow: ../common/launch.yaml
+- runFlow: ../common/login.yaml
+- tapOn:
+    id: tabbar-Profile
+- extendedWaitUntil:
+    visible:
+      id: profile-screen
+    timeout: 20000

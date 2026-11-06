@@ -262,6 +262,7 @@ export default function Recap( props ) {
           <View style={styles.infoGramsContainer}>
             <View style={styles.infoGrams}>
             <TextInput
+              testID="recap-quantity"
               keyboardType="numeric"
               maxLength={5}
               value={grammes}

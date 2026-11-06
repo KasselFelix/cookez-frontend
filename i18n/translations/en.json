@@ -549,5 +549,21 @@
     "staleCache": {
       "message": "Showing results from your last search. Connect to refresh."
     }
+  },
+  "devGallery": {
+    "title": "Dev gallery",
+    "openNutritionSheet": "NUTRITION SHEET",
+    "openThemeSheet": "THEME SHEET",
+    "sections": {
+      "tokens": "Tokens",
+      "buttons": "Buttons",
+      "chips": "Chips and badges",
+      "cards": "Cards",
+      "fields": "Fields",
+      "states": "Empty, error and offline states",
+      "nutrition": "NutritionPill (Skia)",
+      "sheets": "Sheets",
+      "sandbox": "Sandbox"
+    }
   }
 }

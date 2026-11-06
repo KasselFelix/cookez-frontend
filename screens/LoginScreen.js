@@ -8,7 +8,7 @@ import css from "../styles/Global";
 
 export default function LoginScreen({navigation}) {
    return (
-    <View style={styles.container}>
+    <View testID="login-screen" style={styles.container}>
       <View style={styles.header}>
         <MySmallButton
           dataFlow={() => navigation.goBack()}
