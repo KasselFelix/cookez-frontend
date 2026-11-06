@@ -102,6 +102,17 @@ describe('UserDashboardScreen search (plan 013)', () => {
     expect(shownRecipes()).toContain('Japchae');
   });
 
+  it('loads the recently viewed recipes with the token in the header, not the URL (plan 010)', async () => {
+    renderWithProviders(<UserDashboardScreen navigation={{ navigate: jest.fn() }} />, {
+      preloadedState: { user: { value: { token: 'session-token' } }, recipe: { value: LOADED } },
+    });
+    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    const call = global.fetch.mock.calls.find(([url]) => url.includes('/users/me/last-viewed'));
+    expect(call).toBeTruthy();
+    expect(call[0]).not.toContain('session-token');
+    expect(call[1].headers.Authorization).toBe('Bearer session-token');
+  });
+
   it('does not search with one letter', async () => {
     renderScreen();
     typeSearch('j');

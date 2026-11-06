@@ -159,7 +159,9 @@ export default function UserDashboardScreen({ navigation }) {
       return;
     }
     try {
-      const response = await fetch(`${addressIp}/users/lastViewed/${user.token}`);
+      const response = await fetch(`${addressIp}/users/me/last-viewed`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
       const data = await response.json();
       setRecentlyViewed(data?.result && Array.isArray(data.recipes) ? data.recipes : []);
     } catch {

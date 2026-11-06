@@ -229,7 +229,7 @@ jest.mock('react-native-popover-view', () => {
 
 // ---------------------------------------------------------------------------
 // GLOBAL fetch mock — the single most important guard. App.js calls
-// `fetch(addressIp + '/recipes/all')` and `/users/profile/:token` on boot.
+// `fetch(addressIp + '/recipes/all')` and `/users/me` on boot.
 // We replace global.fetch with a jest.fn that resolves an empty-but-valid
 // JSON envelope by default. Individual tests override it via the
 // `mockFetchResponse` helper (see test/mocks/api.js). A test that needs to

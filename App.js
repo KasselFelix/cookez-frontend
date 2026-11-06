@@ -125,15 +125,17 @@ const AppContent = ({ onLayout}) => {
 
       if (token) {
         try {
-          const response = await fetch(`${addressIp}/users/profile/${token}`);
+          const response = await fetch(`${addressIp}/users/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
           const data = await response.json();
 
           if (data.result) {
             // Mettre à jour le store Redux avec TOUTES les données de l'utilisateur
             dispatch(addUserToStore(data.user));
             console.log('Auto-login réussi pour:', data.user.username);
-          } else {
-            // Si le token est expiré ou invalide côté serveur
+          } else if (response.status === 401) {
+            // Unknown token only: a server failure (500) must not sign the user out
             await AsyncStorage.removeItem('userToken');
           }
         } catch (error) {
