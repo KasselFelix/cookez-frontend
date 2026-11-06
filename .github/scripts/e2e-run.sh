@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
-# Runs inside the emulator (e2e-android.yml): installs Cookez Dev, opens it on Metro, then runs the
-# e2e journeys and the ui-check captures (five themes each). Each flow gets its own output folder
-# and JUnit report; a failed flow does not stop the next ones, the script fails at the end.
+# Runs inside the emulator (e2e-android.yml): installs Cookez Dev and points localhost:8081 at
+# Metro (adb reverse; the flows' launchApp opens the app), then runs the e2e journeys and the
+# ui-check captures (five themes each). Each flow gets its own output folder and JUnit report; a
+# failed flow does not stop the next ones, the script fails at the end.
+#
+# Order matters: e2e flows and ui-check/login start from a clean state (common/launch.yaml), the
+# other ui-check flows keep the app's data (common/relaunch.yaml). ui-check/login runs first among
+# them, so they start logged out; profile signs in when needed and gallery runs after it.
 #
 # Only e2e-android/ is published: the PNG captures and the JUnit reports. Maestro's commands.json
 # and logs record typed text (the test password), so they stay in the runner and are never uploaded.
@@ -41,7 +46,7 @@ run_flow() {
   fi
   # Captures (takeScreenshot) and failure screenshots; nothing else leaves the runner.
   mkdir -p "$OUT/captures/$kind-$name"
-  find "$dir" -name '*.png' -exec cp {} "$OUT/captures/$kind-$name/" \;
+  find "$dir" -name '*.png' -exec cp --backup=numbered {} "$OUT/captures/$kind-$name/" \;
   echo "::endgroup::"
 }
 
@@ -56,6 +61,18 @@ if grep -rqF -- "$MAESTRO_PASSWORD" "$OUT"; then
 fi
 
 echo "foreground: $(adb shell dumpsys activity activities | grep -m1 -oE "$APP|com\.v2\.cookez[^ /]*")"
+
+# Proof that the app talked to this runner's backend (its first request is GET /recipes/all) and
+# that the backend lived through the flows. The log itself stays private.
+if ! grep -q 'GET /recipes/all' "$RUNNER_TEMP/backend.log"; then
+  echo "::error::the app never reached the runner's backend"
+  failed+=("backend: no request from the app")
+fi
+if ! curl -fsS --max-time 5 http://127.0.0.1:3000/health > /dev/null; then
+  echo "::error::the runner's backend no longer answers /health"
+  failed+=("backend: down")
+fi
+
 if [ ${#failed[@]} -gt 0 ]; then
   echo "::error::failed flows: ${failed[*]}"
   exit 1
