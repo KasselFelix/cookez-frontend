@@ -82,10 +82,13 @@ module.exports = {
   clearMocks: true,
   resetMocks: false, // keep our setup.js mock implementations installed
 
+  // `yarn test:coverage`: all application code, including files no test loads
+  // (they show up at 0 %), as an HTML report in coverage/ (git-ignored).
   collectCoverageFrom: [
-    'reducers/**/*.js',
-    'i18n/**/*.js',
-    'contexts/**/*.js',
+    'App.js',
+    '{components,contexts,hooks,i18n,modules,reducers,screens,styles}/**/*.js',
     '!**/node_modules/**',
   ],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['html', 'text-summary'],
 };

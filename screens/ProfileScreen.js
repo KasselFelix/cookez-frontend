@@ -855,6 +855,7 @@ export default function ProfileScreen({ navigation, route }) {
 
   return (
     <SafeAreaView
+      testID="profile-screen"
       style={[styles.flatContainer, { backgroundColor: css.palette.surface }]}
       edges={['top']}
     >

@@ -1,0 +1,12 @@
+# Searches "egg" with a quantity and opens the first recipe. Read-only.
+appId: com.v2.cookez.dev
+---
+- runFlow: ../common/launch.yaml
+- runFlow: ../common/search.yaml
+- tapOn:
+    id: recipe-card
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: recipe-screen
+    timeout: 20000

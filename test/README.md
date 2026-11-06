@@ -11,6 +11,7 @@ reference suites you copy from.
 ```bash
 npm test            # one-shot run
 npm run test:watch  # watch mode
+npm run test:coverage  # HTML report in coverage/index.html, all app code (untested files at 0 %)
 ```
 
 (Use `yarn test` if the repo standardises on Yarn — there is currently only an

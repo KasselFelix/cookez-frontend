@@ -380,6 +380,7 @@ export default function RecapScreen({ navigation }) {
       >
         <MyButton
           dataFlow={() => navigation.navigate('Result')}
+          testID="recap-submit"
           text={t('recap.goToResults')}
           buttonType={buttonStyles.buttonTwo}
         />
