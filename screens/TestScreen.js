@@ -19,7 +19,7 @@ export default function TestScreen() {
   return (
     <View
       testID="test-screen"
-      style={{ backgroundColor: css.palette.flowBackground, paddingVertical: css.spacing.md, gap: css.spacing.md }}
+      style={{ backgroundColor: css.flow.background, paddingVertical: css.spacing.md, gap: css.spacing.md }}
     >
       <View testID="sandbox-badges" style={[styles.row, { gap: css.spacing.sm, paddingHorizontal: css.spacing.md }]}>
         {PHOTOS.map((source, index) => (

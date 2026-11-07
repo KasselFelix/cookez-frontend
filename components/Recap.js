@@ -208,7 +208,7 @@ export default function Recap( props ) {
           </View>
           <View style={styles.infoBtn}>
             <TouchableOpacity activeOpacity={0.5} onPress={() => { setModalVisible(true) }} >
-                <Feather name="info" size={24} color={css.palette.primary900}/>
+                <Feather name="info" size={24} color={css.flow.cardIcon}/>
             </TouchableOpacity>
           </View>
           <Modal visible={modalVisible} animationtType="fade" transparent>
@@ -266,7 +266,7 @@ export default function Recap( props ) {
                         accessibilityRole="button"
                       >
                         <Text style={[styles.unitRowText, active && styles.unitRowTextActive]}>{u}</Text>
-                        {active && <FontAwesome name="check" size={16} color={css.pill.textSelected} />}
+                        {active && <FontAwesome name="check" size={16} color={css.flow.selectedText} />}
                       </TouchableOpacity>
                     );
                   })}
@@ -414,7 +414,7 @@ const makeStyles = (css) => StyleSheet.create({
       },
 
       unitRowActive: {
-        backgroundColor: css.pill.bgSelected,
+        backgroundColor: css.flow.selectedBg,
       },
 
       unitRowText: {
@@ -423,7 +423,7 @@ const makeStyles = (css) => StyleSheet.create({
       },
 
       unitRowTextActive: {
-        color: css.pill.textSelected,
+        color: css.flow.selectedText,
         fontWeight: '600',
       },
 

@@ -46,9 +46,9 @@ beforeEach(() => {
 });
 
 describe('KickoffScreen scan', () => {
-  it('shows the photo tip', async () => {
+  it('shows five empty slots, the 1 to 5 foods a photo is made for', async () => {
     renderKickoff(makeLoggedOutUserState());
-    expect(await screen.findByText('1 to 5 foods per photo, well lit')).toBeTruthy();
+    expect(await screen.findAllByText('Ingredient')).toHaveLength(5);
   });
 
   it('asks a guest to create an account instead of taking the photo', async () => {
