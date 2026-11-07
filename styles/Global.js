@@ -46,9 +46,6 @@ const palette = {
   surface:    "#faf7f2",   // warm cream — photography-friendly
   surfaceCard:"#ffffff",
   background: "#f2ede7",   // slightly deeper cream for screens
-  // Background of the ingredient flow (Kickoff, Recap): sage in light, its own
-  // tint in each theme.
-  flowBackground: "#abd1c6", // = secondary500
   overlay:    "rgba(0,70,67,0.55)",  // primary800 at 55% for modals/glassmorphism
   overlayLight: "rgba(255,255,255,0.4)",   // semi-transparent white (KickoffScreen borders/text)
   overlayDark:  "rgba(0,0,0,0.5)",         // semi-transparent black (key backgrounds)
@@ -320,6 +317,24 @@ const pill = {
   textSelected: palette.white,        // white text on selected teal
 };
 
+// --- INGREDIENT FLOW (KickoffScreen, RecapScreen) ---
+// The light theme keeps the historical sage look; every other theme takes
+// the background of the Home tab (surface) and its own inks.
+const flow = {
+  background:   palette.secondary500,        // sage
+  label:        palette.primary700,          // "SELECTED · N", "NOT RECOGNIZED · N"
+  chipText:     palette.primary800,          // dashed chips (unmatched names, + Add)
+  chipBorder:   palette.primary400,
+  placeholder:  "rgba(255,255,255,0.4)",     // empty photo slot: frame, icon, word
+  cardIcon:     palette.white,               // info icon on the amber Recap card
+  actionBg:     palette.primary800,          // + / » / Recipes / Recap header buttons
+  actionIcon:   palette.accent500,
+  actionText:   palette.white,               // count next to » on Kickoff
+  clearIcon:    palette.error,               // "clear all" cross in the Recap header
+  selectedBg:   palette.secondary500,        // active row of the Recap unit sheet
+  selectedText: palette.white,
+};
+
 // --- INPUTS (AddRecipeScreen, LoginScreen) ---
 const input = {
   bg:              palette.surface,
@@ -503,6 +518,7 @@ const css = {
   button,
   card,
   pill,
+  flow,
   input,
   tabBar,
   layout,

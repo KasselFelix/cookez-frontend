@@ -23,7 +23,6 @@ const palette = {
  
   // Surfaces — mint dominates (no pure white)
   background:  '#b8dcd0', // deep cool mint — the dominant tone
-  flowBackground: '#b8dcd0', // = background
   surface:     '#d9ece8', // medium mint — section backgrounds
   surfaceCard: '#f0f7f4', // soft mint-white — cards (still readable for photos)
   overlay:     'rgba(26,46,42,0.55)',
@@ -149,6 +148,24 @@ const elevation = {
   modal:    shadow.lg,
 };
  
+// Ingredient flow: background of the Home tab, theme inks, buttons in the
+// theme's darkest ink with its accent (7.5:1 or more).
+const flow = {
+  ...css.flow,
+  background:   palette.surface,
+  label:        palette.neutral700,
+  chipText:     palette.neutral900,
+  chipBorder:   palette.primary800,
+  placeholder:  'rgba(26,46,42,0.3)',                // neutral900 at 30%
+  cardIcon:     palette.primary900,
+  actionBg:     palette.neutral900,
+  actionIcon:   palette.accent500,
+  actionText:   palette.accent500,
+  clearIcon:    palette.error,               // 3.8:1 or more on actionBg
+  selectedBg:   palette.neutral900,
+  selectedText: palette.accent500,
+};
+
 const pastelMint = {
   ...css,
   key: 'pastelMint',
@@ -160,6 +177,7 @@ const pastelMint = {
   tabBar,
   button,
   pill,
+  flow,
   shadow,
   gradient,
   glassmorphism,

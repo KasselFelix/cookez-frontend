@@ -22,7 +22,6 @@ const palette = {
  
   // Surfaces — soft charcoals (never pure black)
   background:   '#161618',
-  flowBackground: '#002a29', // = primary900: the flow keeps its teal identity
   surface:      '#1c1c1e',
   surfaceCard:  '#2a2a2c',
   overlay:      'rgba(0,0,0,0.65)',
@@ -153,6 +152,23 @@ const elevation = {
   modal:    shadow.lg,
 };
  
+// Ingredient flow: anthracite like the Home tab, light inks, teal buttons.
+const flow = {
+  ...css.flow,
+  background:   palette.surface,             // #1c1c1e
+  label:        palette.neutral700,
+  chipText:     palette.neutral900,
+  chipBorder:   palette.primary800,
+  placeholder:  'rgba(255,255,255,0.3)',
+  cardIcon:     palette.primary900,
+  actionBg:     palette.primary800,          // #33b5af, 5.9:1 on the background
+  actionIcon:   palette.primary900,          // 6.2:1 on actionBg
+  actionText:   palette.primary900,
+  clearIcon:    palette.primary900,          // red would be 1.5:1 on teal
+  selectedBg:   palette.primary800,
+  selectedText: palette.primary900,
+};
+
 const dark = {
   ...css,
   key: 'dark',
@@ -164,6 +180,7 @@ const dark = {
   tabBar,
   button,
   pill,
+  flow,
   shadow,
   gradient,
   glassmorphism,

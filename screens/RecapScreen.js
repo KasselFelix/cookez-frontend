@@ -152,7 +152,7 @@ export default function RecapScreen({ navigation }) {
     <SafeAreaView
       style={[
         styles.container,
-        { backgroundColor: css.palette.flowBackground },
+        { backgroundColor: css.flow.background },
       ]}
     >
       <View style={styles.header}>
@@ -162,10 +162,10 @@ export default function RecapScreen({ navigation }) {
             <FontAwesome
               name="angle-double-left"
               size={30}
-              color={css.palette.white}
+              color={css.flow.actionText}
             />
           }
-          buttonType={buttonStyles.buttonSmall}
+          buttonType={[buttonStyles.buttonSmall, { backgroundColor: css.flow.actionBg }]}
         />
         <Text
           style={{
@@ -192,10 +192,10 @@ export default function RecapScreen({ navigation }) {
                   <FontAwesome
                     name="times"
                     size={25}
-                    color={css.palette.error}
+                    color={css.flow.clearIcon}
                   />
                 }
-                buttonType={buttonStyles.buttonSmall}
+                buttonType={[buttonStyles.buttonSmall, { backgroundColor: css.flow.actionBg }]}
               />
             </TouchableOpacity>
           }
@@ -379,7 +379,7 @@ export default function RecapScreen({ navigation }) {
         style={[
           styles.stickyCta,
           {
-            backgroundColor: css.palette.flowBackground,
+            backgroundColor: css.flow.background,
             paddingBottom: 12 + insets.bottom,
           },
         ]}
@@ -388,7 +388,8 @@ export default function RecapScreen({ navigation }) {
           dataFlow={() => navigation.navigate('Result')}
           testID="recap-submit"
           text={t('recap.goToResults')}
-          buttonType={buttonStyles.buttonTwo}
+          textColor={css.flow.actionIcon}
+          buttonType={[buttonStyles.buttonTwo, { backgroundColor: css.flow.actionBg }]}
         />
       </View>
     </SafeAreaView>

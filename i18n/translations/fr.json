@@ -362,7 +362,6 @@
       "close": "Fermer"
     },
     "scan": {
-      "tip": "1 à 5 aliments par photo, bien éclairés",
       "analyzing": "Analyse…",
       "empty": "Aucun aliment trouvé",
       "error": "Échec de l'analyse",

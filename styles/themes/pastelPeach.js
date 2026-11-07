@@ -26,7 +26,6 @@ const palette = {
  
   // Surfaces — peach dominates
   background:  '#fde3b0', // dominant warm peach
-  flowBackground: '#fde3b0', // = background
   surface:     '#fef0d2', // medium peach — section backgrounds
   surfaceCard: '#fef8e8', // soft peach-cream — cards (food-photo friendly)
   overlay:     'rgba(44,24,7,0.55)',
@@ -162,6 +161,24 @@ const elevation = {
   modal:    shadow.lg,
 };
  
+// Ingredient flow: background of the Home tab, theme inks, buttons in the
+// theme's darkest ink with its accent (7.5:1 or more).
+const flow = {
+  ...css.flow,
+  background:   palette.surface,
+  label:        palette.neutral700,
+  chipText:     palette.neutral900,
+  chipBorder:   palette.primary800,
+  placeholder:  'rgba(44,24,7,0.3)',                // neutral900 at 30%
+  cardIcon:     palette.primary900,
+  actionBg:     palette.neutral900,
+  actionIcon:   palette.accent500,
+  actionText:   palette.accent500,
+  clearIcon:    palette.error,               // 3.8:1 or more on actionBg
+  selectedBg:   palette.neutral900,
+  selectedText: palette.accent500,
+};
+
 const pastelPeach = {
   ...css,
   key: 'pastelPeach',
@@ -173,6 +190,7 @@ const pastelPeach = {
   tabBar,
   button,
   pill,
+  flow,
   shadow,
   gradient,
   glassmorphism,

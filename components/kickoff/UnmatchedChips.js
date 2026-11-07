@@ -27,7 +27,7 @@ export default function UnmatchedChips({ names = [], onSearch, onDismiss }) {
         style={[
           styles.label,
           {
-            color: css.palette.neutral700,
+            color: css.flow.label,
             fontFamily: css.typography.fontUI,
             fontSize: css.typography.overlineSize,
             marginBottom: css.spacing.xs,
@@ -40,7 +40,7 @@ export default function UnmatchedChips({ names = [], onSearch, onDismiss }) {
         {names.map((name) => (
           <View
             key={name}
-            style={[styles.chip, { borderColor: css.palette.primary800, borderRadius: css.radius.pill }]}
+            style={[styles.chip, { borderColor: css.flow.chipBorder, borderRadius: css.radius.pill }]}
           >
             <Pressable
               onPress={() => onSearch?.(name)}
@@ -50,12 +50,12 @@ export default function UnmatchedChips({ names = [], onSearch, onDismiss }) {
               hitSlop={{ top: 7, bottom: 7 }}
               style={[styles.searchArea, { paddingLeft: css.spacing.sm, gap: css.spacing.xs }]}
             >
-              <Search size={13} color={css.palette.neutral700} />
+              <Search size={13} color={css.flow.chipText} />
               <Text
                 numberOfLines={1}
                 style={[
                   styles.name,
-                  { color: css.palette.neutral900, fontFamily: css.typography.fontUI, fontSize: css.typography.captionSize + 1 },
+                  { color: css.flow.chipText, fontFamily: css.typography.fontUI, fontSize: css.typography.captionSize + 1 },
                 ]}
               >
                 {name}
@@ -68,7 +68,7 @@ export default function UnmatchedChips({ names = [], onSearch, onDismiss }) {
               hitSlop={{ top: 7, bottom: 7, left: 4, right: 9 }}
               style={styles.dismiss}
             >
-              <X size={14} color={css.palette.neutral700} />
+              <X size={14} color={css.flow.chipText} />
             </Pressable>
           </View>
         ))}

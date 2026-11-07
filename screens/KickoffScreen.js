@@ -332,12 +332,13 @@ export default function KickoffScreen({navigation}) {
 
 	const renderSlots = () => {
 		const rendered = slots.map(renderFilledSlot);
-		// Pad with empty placeholders so a minimum of 3 slot frames are visible.
-		for (let i = slots.length; i < 3; i++) {
+		// Pad with empty placeholders up to 5 frames: a photo holds 1 to 5
+		// foods, more remain possible.
+		for (let i = slots.length; i < 5; i++) {
 			rendered.push(
 				<View key={`ph-${i}`} style={styles.addPicturesContainer}>
-					<FontAwesome name="camera-retro" size={70} color={css.palette.neutral900} style={styles.placeholderInk} />
-					<Text style={[styles.text, styles.placeholderInk]}>{t('kickoff.slot.placeholder')}</Text>
+					<FontAwesome name="camera-retro" size={70} color={css.flow.placeholder} />
+					<Text style={styles.text}>{t('kickoff.slot.placeholder')}</Text>
 					{/* Dashed border via absolute overlay — Android rendering
 					    of borderStyle:'dashed' + borderRadius on the same
 					    View is unreliable (fabric/new arch quirks). Layering
@@ -503,9 +504,6 @@ export default function KickoffScreen({navigation}) {
 					</TouchableOpacity>
 				</View>
 			</View>
-			<Text style={[styles.scanTip, { color: css.palette.neutral700, fontFamily: css.typography.fontUI }]}>
-				{t('kickoff.scan.tip')}
-			</Text>
 			<UnmatchedChips
 				names={unmatched}
 				onSearch={searchUnmatched}
@@ -557,9 +555,9 @@ export default function KickoffScreen({navigation}) {
 					<MyButton
 						dataFlow={() => setModalVisible(true)}
 						testID="kickoff-add-ingredient"
-						icon={{ name: 'plus', size: 24 }}
+						icon={{ name: 'plus', size: 24, color: css.flow.actionIcon }}
 						accessibilityLabel={t('kickoff.addIngredient')}
-						buttonType={buttonStyles.buttonFour}
+						buttonType={[buttonStyles.buttonFour, { backgroundColor: css.flow.actionBg }]}
 					/>
 				</View>
 
@@ -568,10 +566,10 @@ export default function KickoffScreen({navigation}) {
 						dataFlow={()=>handleBtn()}
 						testID="kickoff-next"
 						text={nextText}
-						textColor={css.palette.white}
-						icon={{ name: 'angle-double-right', size: 24, position: 'right' }}
+						textColor={css.flow.actionText}
+						icon={{ name: 'angle-double-right', size: 24, position: 'right', color: css.flow.actionIcon }}
 						accessibilityLabel={nextA11y}
-        				buttonType={buttonStyles.buttonFour}
+        				buttonType={[buttonStyles.buttonFour, { backgroundColor: css.flow.actionBg }]}
 					/>
 				</View>
 			</View>
@@ -598,7 +596,7 @@ const makeStyles = (css) => StyleSheet.create({
 		alignItems:'center',
 		width: '100%',
 		height: '100%',
-		backgroundColor: css.palette.flowBackground,
+		backgroundColor: css.flow.background,
 		paddingTop: css.layout.paddingTop,
 	},
 
@@ -851,12 +849,6 @@ const makeStyles = (css) => StyleSheet.create({
 		zIndex: 2,
 	},
 
-	scanTip: {
-		fontSize: 12,
-		marginBottom: 4,
-		textAlign: 'center',
-	},
-
 	addPicturesContainer: {
 		flex: 0,
 		justifyContent: 'center',
@@ -881,18 +873,12 @@ const makeStyles = (css) => StyleSheet.create({
 		borderRadius: css.radius.lg,
 		borderWidth: 2,
 		borderStyle: 'dashed',
-		borderColor: css.palette.neutral900,
-		opacity: 0.3,
+		borderColor: css.flow.placeholder,
 		zIndex: 3,
 	},
 
 	text: {
-		color: css.palette.neutral900,
-		fontFamily: css.typography.fontUI,
-	},
-
-	placeholderInk: {
-		opacity: 0.3,
+		color: css.flow.placeholder,
 	},
 
 	containerButtonBottom: {
