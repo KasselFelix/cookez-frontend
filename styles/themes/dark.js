@@ -171,6 +171,16 @@ const flow = {
   confirmBg:    palette.surfaceCard,         // charcoal pill, amber ink (8:1)
   confirmBorder:palette.accent500,
   confirmText:  palette.accent500,
+  // Search modal: the page background, charcoal cards, picked rows teal with
+  // deep ink (6.1:1).
+  modalBg:          palette.surface,
+  modalField:       palette.surfaceCard,
+  modalInk:         palette.neutral900,
+  modalMuted:       palette.neutral700,
+  modalClear:       palette.neutral700,
+  modalSelectedBg:  palette.primary800,
+  modalSelectedInk: palette.primary900,
+  modalSelectedText:palette.primary900,
   selectedBg:   palette.primary800,
   selectedText: palette.primary900,
 };

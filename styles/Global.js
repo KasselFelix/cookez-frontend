@@ -336,6 +336,15 @@ const flow = {
   confirmBg:    palette.warningBg,           // "To confirm" pill over a photo
   confirmBorder:palette.warning,
   confirmText:  palette.black,
+  // Ingredient search modal of Kickoff (button "+").
+  modalBg:          palette.accent500,
+  modalField:       palette.white,           // search bar and result rows
+  modalInk:         palette.black,           // names, search icon, row rule
+  modalMuted:       palette.neutral500,      // placeholder
+  modalClear:       palette.primary800,      // clear-the-search icon
+  modalSelectedBg:  palette.secondary500,
+  modalSelectedInk: palette.white,           // check mark of a picked row
+  modalSelectedText:palette.black,           // name and rule of a picked row
   selectedBg:   palette.secondary500,        // active row of the Recap unit sheet
   selectedText: palette.white,
 };
