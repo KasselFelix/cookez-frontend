@@ -6,7 +6,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,6 +23,8 @@ import useT from "../i18n/useT";
 import addressIp from "../modules/addressIp";
 import { rankByPreparationTime, rankRecipes } from "../modules/recipeRanking";
 import { addRecipe, setRecipes } from "../reducers/recipe";
+import { resolveRecipeImageSource } from "../modules/recipeImage";
+import RecipeImage from "../components/recipe/RecipeImage";
 
 // Recently Viewed cards scale with the viewport so small devices (iPhone SE
 // ~375pt) don't get oversized images while wider devices keep good density.
@@ -541,10 +542,10 @@ export default function UserDashboardScreen({ navigation }) {
                   accessibilityRole="button"
                   accessibilityLabel={t('userDashboard.viewRecipeA11y', { name: item.name })}
                 >
-                  <Image
-                    source={{ uri: item.imageUrl }}
+                  <RecipeImage
+                    source={resolveRecipeImageSource(item)}
                     style={styles.staffCardImage}
-                    resizeMode="cover"
+                    iconSize={32}
                   />
                   <LinearGradient
                     colors={css.gradient.imageOverlay.colors}
@@ -803,10 +804,10 @@ export default function UserDashboardScreen({ navigation }) {
                 accessibilityRole="button"
                 accessibilityLabel={t('userDashboard.viewRecipeA11y', { name: item.name })}
               >
-                <Image
-                  source={{ uri: item.imageUrl }}
+                <RecipeImage
+                  source={resolveRecipeImageSource(item)}
                   style={styles.communityCardImage}
-                  resizeMode="cover"
+                  iconSize={22}
                 />
                 <View
                   style={[

@@ -5,8 +5,10 @@ import useT from "../i18n/useT";
 import MatchBadge from './result/MatchBadge';
 import SeasonalBadge from './result/SeasonalBadge';
 import { flagForOriginName } from '../modules/countries';
-import { resolveRecipeImageSource } from '../modules/recipeImage';
+import { useState } from 'react';
+import { isPlaceholderSource, resolveRecipeImageSource } from '../modules/recipeImage';
 import { openRecipe } from '../modules/recipeNavigation';
+import RecipeImagePlaceholder from './recipe/RecipeImagePlaceholder';
 
 const formatOrigin = (origin) => {
   const items = Array.isArray(origin) ? origin : origin ? [origin] : [];
@@ -51,6 +53,9 @@ export default function Recipe(props) {
   };
 
   const imageSource = resolveRecipeImageSource(props);
+  // No usable image, or a URL that fails to load: the themed placeholder, never a blank frame.
+  const [imageFailed, setImageFailed] = useState(false);
+  const showPlaceholder = imageFailed || isPlaceholderSource(imageSource);
   const originLabel = formatOrigin(props.origin);
   const hasDifficulty = props.difficulty != null;
   const hasPrepTime = props.preparationTime != null;
@@ -75,12 +80,17 @@ export default function Recipe(props) {
           {!!originLabel && <Text> {originLabel}</Text>}
         </View>
         <View style={styles.imageContainer}>
-          <Image
-            testID="recipe-card-image"
-            style={[styles.image, { backgroundColor: css.palette.secondary500 }]}
-            source={imageSource}
-            accessibilityLabel={props.name}
-          />
+          {showPlaceholder ? (
+            <RecipeImagePlaceholder style={styles.image} iconSize={36} />
+          ) : (
+            <Image
+              testID="recipe-card-image"
+              style={[styles.image, { backgroundColor: css.palette.secondary500 }]}
+              source={imageSource}
+              accessibilityLabel={props.name}
+              onError={() => setImageFailed(true)}
+            />
+          )}
           <View style={styles.voteContainer}>
             <View style={styles.vote}>{voteRecipe()}</View>
             <Text> votes: {props.votes?.length ?? 0}</Text>
