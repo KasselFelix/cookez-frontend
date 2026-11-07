@@ -345,6 +345,13 @@ const flow = {
   modalSelectedBg:  palette.secondary500,
   modalSelectedInk: palette.white,           // check mark of a picked row
   modalSelectedText:palette.black,           // name and rule of a picked row
+  // Recap filters: servings stepper and tags (+, picked chips, idle chips).
+  stepperBg:        palette.secondary500,
+  stepperInk:       palette.primary900,
+  tagBg:            palette.primary500,
+  tagInk:           palette.white,
+  tagIdleBg:        palette.secondary200,
+  tagIdleInk:       palette.primary900,
   selectedBg:   palette.secondary500,        // active row of the Recap unit sheet
   selectedText: palette.white,
 };

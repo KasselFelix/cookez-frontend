@@ -176,6 +176,13 @@ const flow = {
   modalSelectedBg:  palette.neutral900,
   modalSelectedInk: palette.accent500,
   modalSelectedText:palette.accent500,
+  // Recap filters like the action buttons; idle tags on the page color.
+  stepperBg:        palette.neutral900,
+  stepperInk:       palette.accent500,
+  tagBg:            palette.neutral900,
+  tagInk:           palette.accent500,
+  tagIdleBg:        palette.surface,
+  tagIdleInk:       palette.neutral900,
   selectedBg:   palette.neutral900,
   selectedText: palette.accent500,
 };
