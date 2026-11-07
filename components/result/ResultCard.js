@@ -3,7 +3,7 @@
 // leaf when the recipe is in season, and how much of it the user already owns.
 // Colors come from css.result (cream page in light, Home color elsewhere).
 
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 // Root import as in components/kickoff/UnmatchedChips (D17).
 import { ChefHat, Clock, Leaf, Star } from 'lucide-react-native';
@@ -11,27 +11,25 @@ import { ChefHat, Clock, Leaf, Star } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
 import { i18n } from '../../i18n';
-import { PLACEHOLDER_IMAGE_KEY, resolveRecipeImageSource } from '../../modules/recipeImage';
-import recipeImages from '../../modules/images';
+import { resolveRecipeImageSource } from '../../modules/recipeImage';
+import RecipeImage from '../recipe/RecipeImage';
 import { toResultCard } from '../../modules/resultCard';
 
 function useCard(recipe) {
   return toResultCard(recipe, i18n.locale);
 }
 
-// The recipe photo; without one, a quiet block with a chef hat instead of the
-// app logo cropped by `cover`.
+// The recipe photo, or the shared themed placeholder when it is missing or fails to load.
 function RecipePhoto({ recipe, style, iconSize }) {
-  const css = useTheme();
-  const source = resolveRecipeImageSource(recipe);
-  if (source === recipeImages[PLACEHOLDER_IMAGE_KEY]) {
-    return (
-      <View testID="recipe-card-image" style={[style, styles.center, { backgroundColor: css.result.meterTrack }]}>
-        <ChefHat size={iconSize} color={css.result.muted} />
-      </View>
-    );
-  }
-  return <Image testID="recipe-card-image" source={source} style={[style, { backgroundColor: css.result.meterTrack }]} resizeMode="cover" accessibilityLabel={recipe.name} />;
+  return (
+    <RecipeImage
+      testID="recipe-card-image"
+      source={resolveRecipeImageSource(recipe)}
+      style={style}
+      iconSize={iconSize}
+      accessibilityLabel={recipe.name}
+    />
+  );
 }
 
 // Round leaf badge of a seasonal recipe.
@@ -120,7 +118,7 @@ export function ResultHero({ recipe, onPress }) {
       style={({ pressed }) => [{ backgroundColor: css.result.card, borderRadius: css.radius.card, opacity: pressed ? 0.92 : 1 }, css.shadow.sm]}
     >
       <View style={[styles.hero, topRadius]}>
-        <RecipePhoto recipe={recipe} style={styles.fillImage} iconSize={56} />
+        <RecipePhoto recipe={recipe} style={styles.fillImage} iconSize={36} />
         <LinearGradient
           colors={css.gradient.imageOverlay.colors}
           locations={css.gradient.imageOverlay.locations}
@@ -168,7 +166,7 @@ export function ResultRow({ recipe, onPress }) {
         css.shadow.sm,
       ]}
     >
-      <RecipePhoto recipe={recipe} style={[styles.thumb, styles.clip, { borderRadius: css.radius.md }]} iconSize={30} />
+      <RecipePhoto recipe={recipe} style={[styles.thumb, styles.clip, { borderRadius: css.radius.md }]} iconSize={22} />
       <View style={[styles.flex, { gap: 6 }]}>
         <View style={[styles.row, { gap: css.spacing.xs }]}>
           <Text numberOfLines={1} style={[styles.flexShrink, { fontFamily: css.typography.fontHeading, fontSize: css.typography.h4Size, color: css.result.ink, fontWeight: '700' }]}>
