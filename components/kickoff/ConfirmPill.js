@@ -26,8 +26,8 @@ export default function ConfirmPill({ name, style }) {
       style={[
         styles.pill,
         {
-          backgroundColor: css.palette.warningBg,
-          borderColor: css.palette.warning,
+          backgroundColor: css.flow.confirmBg,
+          borderColor: css.flow.confirmBorder,
           borderRadius: css.radius.pill,
           paddingHorizontal: css.spacing.sm,
         },
@@ -36,9 +36,9 @@ export default function ConfirmPill({ name, style }) {
     >
       <Text
         numberOfLines={1}
-        // warningBg stays pale in every theme: the text stays dark.
+        // Colors per theme in css.flow (confirmBg, confirmBorder, confirmText).
         style={{
-          color: css.palette.black,
+          color: css.flow.confirmText,
           fontFamily: css.typography.fontUI,
           fontSize: css.typography.captionSize,
           fontWeight: '700',

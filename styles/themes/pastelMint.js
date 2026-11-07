@@ -162,6 +162,11 @@ const flow = {
   actionIcon:   palette.accent500,
   actionText:   palette.accent500,
   clearIcon:    palette.error,               // 3.8:1 or more on actionBg
+  shutterBg:    palette.neutral900,          // same ink as + and »
+  shutterRing:  palette.accent500,
+  confirmBg:    palette.surfaceCard,         // soft theme white, theme ink
+  confirmBorder:palette.primary800,
+  confirmText:  palette.neutral900,
   selectedBg:   palette.neutral900,
   selectedText: palette.accent500,
 };

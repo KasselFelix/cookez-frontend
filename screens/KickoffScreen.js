@@ -581,7 +581,7 @@ export default function KickoffScreen({navigation}) {
 					accessibilityRole="button"
 					accessibilityLabel={t('kickoff.scan.snapA11y')}
 				>
-					<FontAwesome name="circle-thin" size={95} color={css.palette.white} />
+					<FontAwesome name="circle-thin" size={95} color={css.flow.shutterRing} />
 				</TouchableOpacity>
 			</View>
 		</View>
@@ -904,7 +904,7 @@ const makeStyles = (css) => StyleSheet.create({
 		flex: 0,
 		alignItems: "center",
 		justifyContent: "flex-end",
-		backgroundColor: css.palette.primary800,
+		backgroundColor: css.flow.shutterBg,
 		width: 100,
 		borderRadius: css.radius.pill,
 		marginTop: 10,
