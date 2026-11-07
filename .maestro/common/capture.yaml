@@ -1,0 +1,40 @@
+# Captures the current screen in the five themes, or only in THEME when it is set, then puts the
+# light theme back. SCREEN names the files.
+appId: com.v2.cookez.dev
+env:
+  THEME: ${THEME || 'all'}
+---
+- runFlow:
+    when:
+      true: ${THEME == 'all' || THEME == 'light'}
+    file: shoot.yaml
+    env:
+      NAME: light
+- runFlow:
+    when:
+      true: ${THEME == 'all' || THEME == 'dark'}
+    file: shoot.yaml
+    env:
+      NAME: dark
+- runFlow:
+    when:
+      true: ${THEME == 'all' || THEME == 'pastelMint'}
+    file: shoot.yaml
+    env:
+      NAME: pastelMint
+- runFlow:
+    when:
+      true: ${THEME == 'all' || THEME == 'pastelPeach'}
+    file: shoot.yaml
+    env:
+      NAME: pastelPeach
+- runFlow:
+    when:
+      true: ${THEME == 'all' || THEME == 'pastelLavender'}
+    file: shoot.yaml
+    env:
+      NAME: pastelLavender
+- runFlow:
+    file: theme.yaml
+    env:
+      NAME: light

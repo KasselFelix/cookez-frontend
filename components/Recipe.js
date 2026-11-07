@@ -5,7 +5,10 @@ import useT from "../i18n/useT";
 import MatchBadge from './result/MatchBadge';
 import SeasonalBadge from './result/SeasonalBadge';
 import { flagForOriginName } from '../modules/countries';
-import { resolveRecipeImageSource } from '../modules/recipeImage';
+import { useState } from 'react';
+import { isPlaceholderSource, resolveRecipeImageSource } from '../modules/recipeImage';
+import { openRecipe } from '../modules/recipeNavigation';
+import RecipeImagePlaceholder from './recipe/RecipeImagePlaceholder';
 
 const formatOrigin = (origin) => {
   const items = Array.isArray(origin) ? origin : origin ? [origin] : [];
@@ -50,6 +53,9 @@ export default function Recipe(props) {
   };
 
   const imageSource = resolveRecipeImageSource(props);
+  // No usable image, or a URL that fails to load: the themed placeholder, never a blank frame.
+  const [imageFailed, setImageFailed] = useState(false);
+  const showPlaceholder = imageFailed || isPlaceholderSource(imageSource);
   const originLabel = formatOrigin(props.origin);
   const hasDifficulty = props.difficulty != null;
   const hasPrepTime = props.preparationTime != null;
@@ -62,42 +68,29 @@ export default function Recipe(props) {
       })]}
     >
       <TouchableOpacity
+        testID="recipe-card"
         style={[styles.recipeContainer, { backgroundColor: css.palette.surfaceCard }]}
         activeOpacity={0.9}
         accessibilityRole="button"
         accessibilityLabel={props.name}
-        onPress={() => {
-          props.navigation.navigate('Recipe', {
-            recipe: {
-              _id:             props._id,
-              name:            props.name,
-              description:     props.description,
-              ingredients:     props.ingredients,
-              steps:           props.steps,
-              votes:           props.votes,
-              origin:          props.origin,
-              picture:         props.picture,
-              imageUrl:        props.imageUrl,
-              videoUrl:        props.videoUrl,
-              date:            props.date,
-              preparationTime: props.preparationTime,
-              difficulty:      props.difficulty,
-            },
-            fromRecipeSearch: props.fromRecipeSearch === true,
-          });
-        }}
+        onPress={() => openRecipe(props.navigation, props, { fromRecipeSearch: props.fromRecipeSearch === true })}
       >
         <View style={styles.nameContainer}>
           <Text style={styles.name}>{props.name}</Text>
           {!!originLabel && <Text> {originLabel}</Text>}
         </View>
         <View style={styles.imageContainer}>
-          <Image
-            testID="recipe-card-image"
-            style={[styles.image, { backgroundColor: css.palette.secondary500 }]}
-            source={imageSource}
-            accessibilityLabel={props.name}
-          />
+          {showPlaceholder ? (
+            <RecipeImagePlaceholder style={styles.image} iconSize={36} />
+          ) : (
+            <Image
+              testID="recipe-card-image"
+              style={[styles.image, { backgroundColor: css.palette.secondary500 }]}
+              source={imageSource}
+              accessibilityLabel={props.name}
+              onError={() => setImageFailed(true)}
+            />
+          )}
           <View style={styles.voteContainer}>
             <View style={styles.vote}>{voteRecipe()}</View>
             <Text> votes: {props.votes?.length ?? 0}</Text>

@@ -1,0 +1,16 @@
+# Profile screen of the test account, in the five themes (or THEME).
+appId: com.v2.cookez.dev
+---
+- runFlow: ../common/relaunch.yaml
+- runFlow: ../common/login.yaml
+- tapOn:
+    id: tabbar-Profile
+- extendedWaitUntil:
+    visible:
+      id: profile-screen
+    timeout: 20000
+- waitForAnimationToEnd
+- runFlow:
+    file: ../common/capture.yaml
+    env:
+      SCREEN: profile

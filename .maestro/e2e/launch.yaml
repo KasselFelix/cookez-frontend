@@ -1,9 +1,5 @@
-# Flow minimal : l'app démarre et affiche son premier écran. Sert à vérifier la chaîne
-# émulateur → adb → Maestro (phase 5), en local comme en CI.
-appId: com.v2.cookez
+# Smoke test: Cookez Dev starts and shows its home screen.
+appId: com.v2.cookez.dev
 ---
-- launchApp:
-    clearState: true
-- waitForAnimationToEnd:
-    timeout: 15000
+- runFlow: ../common/launch.yaml
 - takeScreenshot: launch

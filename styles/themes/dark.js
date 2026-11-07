@@ -152,6 +152,57 @@ const elevation = {
   modal:    shadow.lg,
 };
  
+// Result screen: anthracite page like the Home tab, blue meter like the Home pills.
+const result = {
+  ...css.result,
+  background: palette.surface,
+  card:       palette.surfaceCard,
+  ink:        palette.neutral900,
+  muted:      palette.neutral700,
+  meterFill:  pill.textNeutral,
+  meterTrack: palette.surface,
+};
+
+// Ingredient flow: anthracite like the Home tab, light inks, grey buttons.
+const flow = {
+  ...css.flow,
+  background:   palette.surface,             // #1c1c1e
+  label:        palette.neutral700,
+  chipText:     palette.neutral900,
+  chipBorder:   palette.primary800,
+  placeholder:  'rgba(255,255,255,0.3)',
+  cardIcon:     palette.primary900,
+  // Buttons like the Home pills: grey with blue ink (4.3:1).
+  actionBg:     pill.bgNeutral,              // #2a2a2c
+  actionIcon:   pill.textNeutral,            // #009e97
+  actionText:   pill.textNeutral,
+  clearIcon:    palette.error,               // 4.2:1 on actionBg
+  shutterBg:    pill.bgNeutral,
+  shutterRing:  pill.textNeutral,
+  confirmBg:    palette.surfaceCard,         // charcoal pill, amber ink (8:1)
+  confirmBorder:palette.accent500,
+  confirmText:  palette.accent500,
+  // Search modal: the page background, charcoal cards, picked rows teal with
+  // deep ink (6.1:1).
+  modalBg:          palette.surface,
+  modalField:       palette.surfaceCard,
+  modalInk:         palette.neutral900,
+  modalMuted:       palette.neutral700,
+  modalClear:       palette.neutral700,
+  modalSelectedBg:  palette.primary800,
+  modalSelectedInk: palette.primary900,
+  modalSelectedText:palette.primary900,
+  // Recap filters like the action buttons; idle tags on the page color.
+  stepperBg:        pill.bgNeutral,
+  stepperInk:       pill.textNeutral,
+  tagBg:            pill.bgNeutral,
+  tagInk:           pill.textNeutral,
+  tagIdleBg:        palette.surface,
+  tagIdleInk:       palette.neutral900,
+  selectedBg:   palette.primary800,
+  selectedText: palette.primary900,
+};
+
 const dark = {
   ...css,
   key: 'dark',
@@ -163,6 +214,8 @@ const dark = {
   tabBar,
   button,
   pill,
+  flow,
+  result,
   shadow,
   gradient,
   glassmorphism,

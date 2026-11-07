@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
-import * as Animatable from 'react-native-animatable';
-import { FontAwesome } from '@expo/vector-icons';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+// Root import as in components/kickoff/UnmatchedChips (D17).
+import { ChevronLeft } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import MySmallButton from '../components/MySmallButton';
-import Recipe from '../components/Recipe';
+import { ResultHero, ResultRow } from '../components/result/ResultCard';
 import OfflineScreen from '../components/result/OfflineScreen';
 import ErrorScreen from '../components/result/ErrorScreen';
 import StaleCacheBanner from '../components/result/StaleCacheBanner';
@@ -13,7 +13,7 @@ import { fetchRecipeResult } from '../modules/recipesApi';
 import { getCachedResult, setCachedResult } from '../modules/recipeCache';
 import { setRecipes } from '../reducers/recipe';
 import { setAmazonConfig } from '../reducers/appConfig';
-import buttonStyles from '../styles/Button';
+import { openRecipe } from '../modules/recipeNavigation';
 import { useTheme } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
 
@@ -34,6 +34,7 @@ import useT from '../i18n/useT';
 export default function ResultScreen({ navigation }) {
   const css = useTheme();
   const t = useT();
+  const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const user = useSelector((s) => s.user.value);
   const filters = useSelector((s) => s.recipeFilters.value);
@@ -196,61 +197,73 @@ export default function ResultScreen({ navigation }) {
   if (offlineNoCache) return <OfflineScreen onRetry={handleRetry} />;
   if (serverError) return <ErrorScreen onRetry={handleRetry} />;
 
+  const open = (recipe) => openRecipe(navigation, recipe, { fromRecipeSearch: true });
+  const [best, ...others] = loading ? [] : recipes;
+
+  // Hierarchy: the best match as a large photo, then compact rows; time,
+  // difficulty and rating come after the name and the owned share.
   return (
-    <View style={[styles.container, { backgroundColor: css.palette.accent500 }]}>
-      <View style={styles.header}>
-        <MySmallButton
-          dataFlow={() => navigation.navigate('Recap')}
-          text={<FontAwesome name="angle-double-left" size={30} color="white" />}
-          buttonType={buttonStyles.buttonSmall}
-        />
-        <Text style={[styles.titlePage, { fontSize: css.typography.h5Size }]}>
-          {t('result.title')}
-        </Text>
-        <View style={styles.headerSpacer} />
+    <View testID="result-screen" style={[styles.container, { backgroundColor: css.result.background, paddingTop: insets.top + css.spacing.md }]}>
+      <View style={[styles.header, { gap: css.spacing.md, paddingHorizontal: css.spacing.md, paddingBottom: css.spacing.md }]}>
+        <Pressable
+          testID="result-back"
+          onPress={() => navigation.navigate('Recap')}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          style={({ pressed }) => [
+            styles.back,
+            { backgroundColor: css.flow.actionBg, borderRadius: css.radius.pill, opacity: pressed ? 0.8 : 1 },
+            css.shadow.sm,
+          ]}
+        >
+          <ChevronLeft size={22} strokeWidth={2.5} color={css.flow.actionIcon} />
+        </Pressable>
+        <View style={styles.flex}>
+          <Text accessibilityRole="header" style={{ fontFamily: css.typography.fontDisplay, fontSize: css.typography.h2Size, color: css.result.ink, fontWeight: '700' }}>
+            {t('result.title')}
+          </Text>
+          {!loading && recipes.length > 0 && (
+            <Text style={{ fontFamily: css.typography.fontBody, fontSize: css.typography.bodySmSize, color: css.result.muted }}>
+              {t('result.subtitle', { count: recipes.length })}
+            </Text>
+          )}
+        </View>
       </View>
       {staleHit && <StaleCacheBanner />}
-      <ScrollView contentContainerStyle={styles.scroll}>
-        {loading ? (
-          // While the fetch is in flight, suppress the recipes list entirely.
-          // Reading `recipes.length` here would leak stale data from the
-          // previous fetch (or App.js boot) for the duration of the request.
-          <View
-            style={styles.loader}
-            accessibilityRole="progressbar"
-            accessibilityLabel={t('result.title')}
-          >
-            <ActivityIndicator size="large" color={css.palette.surface} />
-          </View>
-        ) : recipes.length > 0 ? (
-          recipes.map((r, i) => (
-            <Recipe key={r._id || i} {...r} navigation={navigation} fromRecipeSearch />
-          ))
-        ) : (
-          <Animatable.View
-            animation="slideInDown"
-            duration={700}
-            style={styles.empty}
-          >
-            <Text>{t('result.empty.line1')}</Text>
-            <Text>{t('result.empty.line2')}</Text>
-          </Animatable.View>
-        )}
-      </ScrollView>
+      {loading ? (
+        // While the fetch is in flight, suppress the recipes list entirely.
+        // Reading `recipes.length` here would leak stale data from the
+        // previous fetch (or App.js boot) for the duration of the request.
+        <View style={styles.center} accessibilityRole="progressbar" accessibilityLabel={t('result.title')}>
+          <ActivityIndicator size="large" color={css.result.meterFill} />
+        </View>
+      ) : recipes.length > 0 ? (
+        <FlatList
+          data={others}
+          keyExtractor={(r, i) => r._id || String(i)}
+          ListHeaderComponent={<ResultHero recipe={best} onPress={() => open(best)} />}
+          renderItem={({ item }) => <ResultRow recipe={item} onPress={() => open(item)} />}
+          contentContainerStyle={{ paddingHorizontal: css.spacing.md, paddingBottom: insets.bottom + css.spacing.xl, gap: css.spacing.sm }}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <View style={[styles.center, { paddingHorizontal: css.spacing.xl, gap: css.spacing.xs }]}>
+          <Text style={{ fontFamily: css.typography.fontHeading, fontSize: css.typography.h4Size, color: css.result.ink, textAlign: 'center' }}>
+            {t('result.empty.line1')}
+          </Text>
+          <Text style={{ fontFamily: css.typography.fontBody, fontSize: css.typography.bodySize, color: css.result.muted, textAlign: 'center' }}>
+            {t('result.empty.line2')}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', paddingTop: '15%' },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '90%',
-  },
-  titlePage: {},
-  headerSpacer: { width: 30 },
-  scroll: { marginHorizontal: '7%' },
-  empty: { alignItems: 'center', marginTop: '120%' },
-  loader: { alignItems: 'center', justifyContent: 'center', marginTop: '60%' },
+  container: { flex: 1 },
+  flex: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center' },
+  back: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

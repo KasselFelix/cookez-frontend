@@ -1,5 +1,5 @@
 import { useCallback,useEffect } from 'react';
-import { View } from 'react-native';
+import { LogBox, View } from 'react-native';
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -29,6 +29,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { Provider, useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import addressIp from './modules/addressIp';
+import { fetchSessionUser } from './modules/session';
 import { addUserToStore } from './reducers/user';
 import { setRecipes } from './reducers/recipe';
 import { setLocale } from './reducers/locale';
@@ -53,7 +54,6 @@ import RecapScreen from "./screens/RecapScreen";
 import RecipeScreen from "./screens/RecipeScreen";
 import ResultScreen from "./screens/ResultScreen";
 import SettingsScreen from "./screens/SettingsScreen";
-import TestScreen from "./screens/TestScreen";
 import UserDashboardScreen from "./screens/UserDashboardScreen";
 
 // REDUCERS
@@ -64,13 +64,24 @@ import ingredient from "./reducers/ingredient";
 import locale from './reducers/locale';
 import notifications from './reducers/notifications';
 import pantry from './reducers/pantry';
+import scan from './reducers/scan';
 import picture from "./reducers/picture";
 import recipe from './reducers/recipe';
 import recipeFilters from "./reducers/recipeFilters";
 import user from './reducers/user';
 
+// Development-only modules: required under __DEV__ so release bundles drop them entirely.
+const DevThemeLink = __DEV__ ? require('./components/dev/DevThemeLink').default : null;
+const DevGalleryScreen = __DEV__ ? require('./screens/DevGalleryScreen').default : null;
+
 // Keep splash visible until fonts are ready
 SplashScreen.preventAutoHideAsync();
+
+// Maestro runs (EXPO_PUBLIC_E2E=1, set by /verify and the E2E CI): LogBox toasts cover the bottom
+// of the screen, tab bar included. Fatal errors still show their full-screen overlay.
+if (__DEV__ && process.env.EXPO_PUBLIC_E2E === '1') {
+  LogBox.ignoreAllLogs(true);
+}
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -88,6 +99,7 @@ const store = configureStore({
     notifications,
     follow,
     pantry,
+    scan,
   },
 });
 
@@ -115,20 +127,12 @@ const AppContent = ({ onLayout}) => {
       const token = await AsyncStorage.getItem('userToken');
 
       if (token) {
-        try {
-          const response = await fetch(`${addressIp}/users/profile/${token}`);
-          const data = await response.json();
-
-          if (data.result) {
-            // Mettre à jour le store Redux avec TOUTES les données de l'utilisateur
-            dispatch(addUserToStore(data.user));
-            console.log('Auto-login réussi pour:', data.user.username);
-          } else {
-            // Si le token est expiré ou invalide côté serveur
-            await AsyncStorage.removeItem('userToken');
-          }
-        } catch (error) {
-          console.error('Erreur auto-login:', error);
+        const session = await fetchSessionUser(token);
+        if (session.status === 'ok') {
+          dispatch(addUserToStore(session.user));
+        } else if (session.status === 'invalid') {
+          // Unknown token only: a server failure must not sign the user out
+          await AsyncStorage.removeItem('userToken');
         }
       }
     };
@@ -168,6 +172,7 @@ const AppContent = ({ onLayout}) => {
   return (
     <View style={{ flex: 1 }} onLayout={onLayout}>
       <ThemeProvider>
+        {__DEV__ && <DevThemeLink />}
         <NavigationContainer>
           <AuthGateProvider>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -186,7 +191,7 @@ const AppContent = ({ onLayout}) => {
               <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
               <Stack.Screen name="Notifications" component={NotificationsScreen} />
               <Stack.Screen name="Message"       component={MessageScreen} />
-              <Stack.Screen name="Test"          component={TestScreen} />
+              {__DEV__ && <Stack.Screen name="DevGallery" component={DevGalleryScreen} />}
             </Stack.Navigator>
           </AuthGateProvider>
         </NavigationContainer>

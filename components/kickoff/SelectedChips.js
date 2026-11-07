@@ -2,10 +2,11 @@
 //
 // Aggrège deux sources :
 //   - `ingredients` (Redux `state.ingredient.value`) : ingrédients nommés
-//     issus du tap pantry, search modal, ou analyse Foodvisor déjà résolue.
-//   - `pictures` (state local KickoffScreen) : URIs caméra non encore
-//     analysées, rendues comme chips génériques "📸 Photo N" — l'analyse
-//     Foodvisor se fait au tap Next (handleBtn).
+//     issus du tap pantry, de la recherche ou d'une analyse de photo terminée ;
+//     un ingrédient « à confirmer » porte la puce ConfirmPill.
+//   - `photos` (Redux `state.scan.value.photos`) : photos en cours d'analyse
+//     ou en échec, rendues comme chips "📸 Photo N · état" — l'analyse part
+//     dès la prise (plan 015).
 //
 // Chaque chip a un × pour retirer son item ; un chip "+ Add" en fin de
 // scroll ouvre la modal search (même cible que le FAB en bas).
@@ -19,10 +20,12 @@ import { FontAwesome } from '@expo/vector-icons';
 
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
+import ConfirmPill from './ConfirmPill';
 
 export default function SelectedChips({
   ingredients = [],
-  pictures = [],
+  photos = [],
+  statusText = () => '',
   onAdd,
   onRemoveIngredient,
   onRemovePhoto,
@@ -30,7 +33,7 @@ export default function SelectedChips({
   const css = useTheme();
   const t = useT();
 
-  const totalCount = ingredients.length + pictures.length;
+  const totalCount = ingredients.length + photos.length;
 
   return (
     <View style={styles.container}>
@@ -38,7 +41,7 @@ export default function SelectedChips({
         style={[
           styles.label,
           {
-            color: css.palette.primary700,
+            color: css.flow.label,
             fontFamily: css.typography.fontUI,
           },
         ]}
@@ -79,6 +82,7 @@ export default function SelectedChips({
               >
                 {name}
               </Text>
+              {ing?.data?.toConfirm && <ConfirmPill name={name} style={styles.confirm} />}
               <Pressable
                 onPress={() => onRemoveIngredient?.({ name, id: ing?.data?._id })}
                 accessibilityRole="button"
@@ -96,9 +100,9 @@ export default function SelectedChips({
           );
         })}
 
-        {pictures.map((uri, index) => (
+        {photos.map((photo, index) => (
           <View
-            key={`pic-${uri}`}
+            key={`pic-${photo.id}`}
             style={[
               styles.chip,
               styles.chipFilled,
@@ -119,10 +123,10 @@ export default function SelectedChips({
               ]}
               numberOfLines={1}
             >
-              {t('kickoff.selected.photoLabel', { index: index + 1 })}
+              {`${t('kickoff.selected.photoLabel', { index: index + 1 })} · ${statusText(photo.status)}`}
             </Text>
             <Pressable
-              onPress={() => onRemovePhoto?.(uri)}
+              onPress={() => onRemovePhoto?.(photo.id)}
               accessibilityRole="button"
               accessibilityLabel={t('kickoff.selected.removePhotoA11y', { index: index + 1 })}
               hitSlop={6}
@@ -145,7 +149,7 @@ export default function SelectedChips({
             styles.chip,
             styles.chipAdd,
             {
-              borderColor: css.palette.primary400,
+              borderColor: css.flow.chipBorder,
               borderRadius: css.radius.pill,
             },
           ]}
@@ -154,7 +158,7 @@ export default function SelectedChips({
             style={[
               styles.chipText,
               {
-                color: css.palette.primary800,
+                color: css.flow.chipText,
                 fontFamily: css.typography.fontUI,
               },
             ]}
@@ -210,6 +214,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     maxWidth: 140,
+  },
+  confirm: {
+    marginLeft: 6,
   },
   closeBtn: {
     marginLeft: 6,

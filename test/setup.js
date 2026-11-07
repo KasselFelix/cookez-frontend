@@ -113,6 +113,10 @@ jest.mock('@shopify/react-native-skia', () => {
       Rect: Noop,
       Circle: Noop,
       Skia: { Path: { Make: () => ({}) } },
+      // Value constructors, called at module scope (NutritionPill): plain objects, not components.
+      rect: (x, y, width, height) => ({ x, y, width, height }),
+      rrect: (r, rx, ry) => ({ rect: r, rx, ry }),
+      vec: (x = 0, y = x) => ({ x, y }),
       useFont: () => null,
       useImage: () => null,
       Shader: Noop,
@@ -125,6 +129,25 @@ jest.mock('@shopify/react-native-skia', () => {
     },
   );
 });
+
+// ---------------------------------------------------------------------------
+// @gorhom/bottom-sheet — official mock: its real module calls Reanimated APIs
+// the Reanimated mock does not provide. Sheets render their children inline.
+// The mock is CommonJS without __esModule: flag it so `import BottomSheet` gets
+// its `default` export instead of the whole module object.
+// ---------------------------------------------------------------------------
+jest.mock('@gorhom/bottom-sheet', () => ({
+  __esModule: true,
+  ...require('@gorhom/bottom-sheet/mock'),
+}));
+
+// ---------------------------------------------------------------------------
+// react-native-safe-area-context — official mock: zero insets on a 320×640
+// frame, so useSafeAreaInsets works without a SafeAreaProvider (App.js has one).
+// ---------------------------------------------------------------------------
+jest.mock('react-native-safe-area-context', () =>
+  require('react-native-safe-area-context/jest/mock').default,
+);
 
 // ---------------------------------------------------------------------------
 // AsyncStorage — official in-memory mock. ThemeProvider + i18n read/write it
@@ -206,7 +229,7 @@ jest.mock('react-native-popover-view', () => {
 
 // ---------------------------------------------------------------------------
 // GLOBAL fetch mock — the single most important guard. App.js calls
-// `fetch(addressIp + '/recipes/all')` and `/users/profile/:token` on boot.
+// `fetch(addressIp + '/recipes/all')` and `/users/me` on boot.
 // We replace global.fetch with a jest.fn that resolves an empty-but-valid
 // JSON envelope by default. Individual tests override it via the
 // `mockFetchResponse` helper (see test/mocks/api.js). A test that needs to

@@ -32,6 +32,7 @@ export default function HomeScreen({ navigation }) {
           <MyButton
             dataFlow={() => navigation.navigate("Kickoff")}
             text={"SNAP 📸"}
+            testID="home-snap"
             buttonType={buttonStyles.buttonTwo}
           />
         </View>
@@ -40,17 +41,21 @@ export default function HomeScreen({ navigation }) {
           <MyButton
             dataFlow={() => user.token ? navigation.navigate("TabNavigator", { screen: "UserDashboard" }) : navigation.navigate("Login")}
             text={"CONNECT"}
+            testID="home-connect"
             buttonType={buttonStyles.buttonOne}
           />
         </View>
 
-        <View style={styles.buttons}>
-          <MyButton
-            dataFlow={() => navigation.navigate("Test")}
-            text={"TEST"}
-            buttonType={buttonStyles.buttonTwo}
-          />
-        </View>
+        {__DEV__ && (
+          <View style={styles.buttons}>
+            <MyButton
+              dataFlow={() => navigation.navigate("DevGallery")}
+              text={"TEST"}
+              testID="home-gallery"
+              buttonType={buttonStyles.buttonTwo}
+            />
+          </View>
+        )}
       </View>
     </View>
   );

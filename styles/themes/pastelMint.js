@@ -148,6 +148,56 @@ const elevation = {
   modal:    shadow.lg,
 };
  
+// Result screen: the Home tab color, meter in the theme's darkest ink.
+const result = {
+  ...css.result,
+  background: palette.surface,
+  card:       palette.surfaceCard,
+  ink:        palette.neutral900,
+  muted:      palette.neutral700,
+  meterFill:  palette.neutral900,
+  meterTrack: palette.surface,
+};
+
+// Ingredient flow: background of the Home tab, theme inks, buttons in the
+// theme's darkest ink with its accent (7.5:1 or more).
+const flow = {
+  ...css.flow,
+  background:   palette.surface,
+  label:        palette.neutral700,
+  chipText:     palette.neutral900,
+  chipBorder:   palette.primary800,
+  placeholder:  'rgba(26,46,42,0.3)',                // neutral900 at 30%
+  cardIcon:     palette.primary900,
+  actionBg:     palette.neutral900,
+  actionIcon:   palette.accent500,
+  actionText:   palette.accent500,
+  clearIcon:    palette.error,               // 3.8:1 or more on actionBg
+  shutterBg:    palette.neutral900,          // same ink as + and »
+  shutterRing:  palette.accent500,
+  confirmBg:    palette.surfaceCard,         // soft theme white, theme ink
+  confirmBorder:palette.primary800,
+  confirmText:  palette.neutral900,
+  // Search modal: the page background, theme cards, picked rows like the buttons.
+  modalBg:          palette.surface,
+  modalField:       palette.surfaceCard,
+  modalInk:         palette.neutral900,
+  modalMuted:       palette.neutral700,
+  modalClear:       palette.neutral700,
+  modalSelectedBg:  palette.neutral900,
+  modalSelectedInk: palette.accent500,
+  modalSelectedText:palette.accent500,
+  // Recap filters like the action buttons; idle tags on the page color.
+  stepperBg:        palette.neutral900,
+  stepperInk:       palette.accent500,
+  tagBg:            palette.neutral900,
+  tagInk:           palette.accent500,
+  tagIdleBg:        palette.surface,
+  tagIdleInk:       palette.neutral900,
+  selectedBg:   palette.neutral900,
+  selectedText: palette.accent500,
+};
+
 const pastelMint = {
   ...css,
   key: 'pastelMint',
@@ -159,6 +209,8 @@ const pastelMint = {
   tabBar,
   button,
   pill,
+  flow,
+  result,
   shadow,
   gradient,
   glassmorphism,

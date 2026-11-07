@@ -173,6 +173,7 @@ export default function FloatingTabBar({ state, descriptors, navigation }) {
             return (
               <Pressable
                 key={route.key}
+                testID={`tabbar-${route.name}`}
                 onPress={onPress}
                 style={styles.slot}
                 accessibilityRole="button"

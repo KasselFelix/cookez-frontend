@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, screen } from '@testing-library/react-native';
+import { fireEvent, screen, within } from '@testing-library/react-native';
 import { renderWithProviders } from '../helpers/renderWithProviders';
 
 // Mock the three external collaborators so we drive each terminal state.
@@ -83,8 +83,9 @@ describe('ResultScreen error states (Plan 006 B2)', () => {
       .mockRejectedValueOnce(new ApiError('boom', { status: 500 }))
       .mockResolvedValueOnce({ result: true, recipes: [{ _id: 'r9', name: 'Recovered Dish' }] });
     renderScreen();
-    const retry = await screen.findByRole('button'); // ErrorScreen retry CTA
-    expect(screen.getByTestId('result-error-screen')).toBeTruthy();
+    // The retry CTA of ErrorScreen (the result list also has a back button).
+    const errorScreen = await screen.findByTestId('result-error-screen');
+    const retry = within(errorScreen).getByRole('button');
     fireEvent.press(retry);
     expect(await screen.findByText('Recovered Dish')).toBeTruthy();
     expect(screen.queryByTestId('result-error-screen')).toBeNull();

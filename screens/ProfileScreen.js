@@ -3,7 +3,7 @@
 // Vague 2 + 3 additions on top of the Vague 1 refactor:
 //   - Bell button → Notifications stack screen, with an unread badge.
 //   - Share button → native Share API with the public profile URL.
-//   - Badges tab fetches /users/badges/:token (6 entries, only
+//   - Badges tab fetches /users/me/badges (6 entries, only
 //     `first_recipe` is real for now; others render dimmed).
 //   - ProfileImpactStats card under stats (placeholder + (beta) label).
 //   - All copy goes through `useT`; tokens come from `useTheme()` so
@@ -47,6 +47,8 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
 import { availableImages } from '../modules/avatars';
+import { resolveRecipeImageSource } from '../modules/recipeImage';
+import RecipeImage from '../components/recipe/RecipeImage';
 import {
   addPantryItem,
   getPantry,
@@ -88,10 +90,7 @@ const TAB_ICONS = {
 // ---- Recipe tile -----------------------------------------------------------
 
 function RecipeTile({ item, css, navigation }) {
-  const imageSource =
-    typeof item?.picture === 'string'
-    ? { uri: `https://res.cloudinary.com/dnym6kt4p/image/upload/${item.picture}.jpg?_a=BAMAGSWO0` }
-    : null;
+  const imageSource = resolveRecipeImageSource(item);
 
 
   // Shadow has to live on the outer wrapper because the TouchableOpacity
@@ -135,21 +134,12 @@ function RecipeTile({ item, css, navigation }) {
         });
       }}
     >
-      {imageSource ? (
-        <Image
-          source={imageSource}
-          style={[styles.tileImage, { backgroundColor: css.palette.neutral200 }]}
-          resizeMode="cover"
-          accessibilityIgnoresInvertColors
-          accessibilityLabel={item?.name || 'Recipe image'}
-        />
-      ) : (
-        <View
-          style={[styles.tileImagePlaceholder, { backgroundColor: css.palette.neutral200 }]}
-          accessibilityRole="image"
-          accessibilityLabel="Recipe placeholder"
-        />
-      )}
+      <RecipeImage
+        source={imageSource}
+        style={styles.tileImage}
+        iconSize={20}
+        accessibilityLabel={item?.name}
+      />
       <View style={[styles.tileBody, { padding: css.spacing.sm }]}>
         <Text
           style={[
@@ -393,7 +383,9 @@ export default function ProfileScreen({ navigation, route }) {
     setBadgesLoading(true);
     (async () => {
       try {
-        const res = await fetch(`${addressIp}/users/badges/${user.token}`);
+        const res = await fetch(`${addressIp}/users/me/badges`, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
         const data = await res.json();
         if (!cancelled && data.result) {
           setBadges(data.badges || []);
@@ -855,6 +847,7 @@ export default function ProfileScreen({ navigation, route }) {
 
   return (
     <SafeAreaView
+      testID="profile-screen"
       style={[styles.flatContainer, { backgroundColor: css.palette.surface }]}
       edges={['top']}
     >
@@ -922,7 +915,7 @@ export default function ProfileScreen({ navigation, route }) {
   );
 }
 
-// Fallback when /users/badges/:token is unreachable: render the same
+// Fallback when /users/me/badges is unreachable: render the same
 // 6 keys the backend exposes so the UX shape is stable.
 const DEFAULT_BADGES = [
   { key: 'first_recipe', label: 'First recipe', unlocked: false },
@@ -1016,10 +1009,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   tileImage: {
-    width: '100%',
-    height: 90,
-  },
-  tileImagePlaceholder: {
     width: '100%',
     height: 90,
   },
