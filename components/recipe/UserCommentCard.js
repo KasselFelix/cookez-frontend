@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
-import { Image } from 'expo-image';
+import RecipeImage from './RecipeImage';
 import imageRecipe from '../../modules/images';
 import css from '../../styles/Global';
 
@@ -104,23 +104,7 @@ function UserCommentCard({ comment, onPress, onEdit, onDelete }) {
         accessibilityLabel={`Open recipe ${recipe.name || 'unknown'}`}
       >
         <View style={styles.thumbWrap}>
-          {source ? (
-            <Image
-              source={source}
-              style={styles.thumb}
-              contentFit="cover"
-              transition={200}
-              accessibilityIgnoresInvertColors
-            />
-          ) : (
-            <View style={[styles.thumb, styles.thumbFallback]}>
-              <FontAwesome
-                name="cutlery"
-                size={20}
-                color={css.palette.neutral500}
-              />
-            </View>
-          )}
+          <RecipeImage source={source} style={styles.thumb} iconSize={16} />
         </View>
 
         <View style={styles.body}>
@@ -187,10 +171,6 @@ const styles = StyleSheet.create({
   thumb: {
     width: '100%',
     height: '100%',
-  },
-  thumbFallback: {
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   body: {
     flex: 1,
