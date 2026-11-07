@@ -369,7 +369,7 @@
       "quota": "Limite du jour atteinte",
       "toConfirm": "À confirmer",
       "confirmA11y": "Confirmer {{name}}",
-      "unmatchedLabel": "NON RECONNUS · TOUCHE POUR CHERCHER",
+      "unmatchedLabel": "NON RECONNUS · {{count}}",
       "searchA11y": "Chercher {{name}}",
       "dismissA11y": "Ignorer {{name}}",
       "photoA11y": "Photo {{index}} : {{status}}",

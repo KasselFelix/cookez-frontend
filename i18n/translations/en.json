@@ -369,7 +369,7 @@
       "quota": "Daily scan limit reached",
       "toConfirm": "To confirm",
       "confirmA11y": "Confirm {{name}}",
-      "unmatchedLabel": "NOT RECOGNIZED · TAP TO SEARCH",
+      "unmatchedLabel": "NOT RECOGNIZED · {{count}}",
       "searchA11y": "Search for {{name}}",
       "dismissA11y": "Dismiss {{name}}",
       "photoA11y": "Photo {{index}}: {{status}}",

@@ -26,6 +26,7 @@ const palette = {
  
   // Surfaces — peach dominates
   background:  '#fde3b0', // dominant warm peach
+  flowBackground: '#fde3b0', // = background
   surface:     '#fef0d2', // medium peach — section backgrounds
   surfaceCard: '#fef8e8', // soft peach-cream — cards (food-photo friendly)
   overlay:     'rgba(44,24,7,0.55)',

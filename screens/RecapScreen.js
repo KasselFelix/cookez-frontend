@@ -152,7 +152,7 @@ export default function RecapScreen({ navigation }) {
     <SafeAreaView
       style={[
         styles.container,
-        { backgroundColor: css.palette.secondary500 },
+        { backgroundColor: css.palette.flowBackground },
       ]}
     >
       <View style={styles.header}>
@@ -379,7 +379,7 @@ export default function RecapScreen({ navigation }) {
         style={[
           styles.stickyCta,
           {
-            backgroundColor: css.palette.secondary500,
+            backgroundColor: css.palette.flowBackground,
             paddingBottom: 12 + insets.bottom,
           },
         ]}

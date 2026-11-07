@@ -24,6 +24,7 @@ const palette = {
  
   // Surfaces — dusty lavender dominates
   background:  '#c7b8e8', // dominant dusty lavender
+  flowBackground: '#c7b8e8', // = background
   surface:     '#dccff0', // medium lavender — section backgrounds
   surfaceCard: '#f0eaf7', // soft lavender-white — cards
   overlay:     'rgba(44,30,62,0.55)',

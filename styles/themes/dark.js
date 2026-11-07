@@ -22,6 +22,7 @@ const palette = {
  
   // Surfaces — soft charcoals (never pure black)
   background:   '#161618',
+  flowBackground: '#002a29', // = primary900: the flow keeps its teal identity
   surface:      '#1c1c1e',
   surfaceCard:  '#2a2a2c',
   overlay:      'rgba(0,0,0,0.65)',

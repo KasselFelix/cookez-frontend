@@ -41,7 +41,7 @@ export default function SelectedChips({
         style={[
           styles.label,
           {
-            color: css.palette.primary700,
+            color: css.palette.neutral700,
             fontFamily: css.typography.fontUI,
           },
         ]}
@@ -149,7 +149,7 @@ export default function SelectedChips({
             styles.chip,
             styles.chipAdd,
             {
-              borderColor: css.palette.primary400,
+              borderColor: css.palette.primary800,
               borderRadius: css.radius.pill,
             },
           ]}
