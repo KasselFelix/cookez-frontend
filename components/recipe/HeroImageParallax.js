@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -8,6 +8,8 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import css from '../../styles/Global';
+import { isPlaceholderSource } from '../../modules/recipeImage';
+import RecipeImagePlaceholder from './RecipeImagePlaceholder';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export const HERO_HEIGHT = 360;
@@ -44,24 +46,35 @@ export default function HeroImageParallax({ scrollY, source, uri, localSource })
 
   // Prefer the resolved `source`; fall back to the legacy uri/localSource API.
   const imageSource = source ?? (localSource || { uri });
+  // No usable image, or a URL that fails to load: the themed placeholder, never a blank hero.
+  const [imageFailed, setImageFailed] = useState(false);
+  const showPlaceholder = imageFailed || isPlaceholderSource(imageSource);
 
   return (
     <View style={styles.container} accessibilityRole="image" accessible>
       <Animated.View style={[styles.imageWrapper, animatedImageStyle]}>
-        <Image
-          source={imageSource}
-          style={styles.image}
-          contentFit="cover"
-          transition={200}
-          accessibilityIgnoresInvertColors
-        />
+        {showPlaceholder ? (
+          <RecipeImagePlaceholder style={styles.image} iconSize={56} />
+        ) : (
+          <Image
+            source={imageSource}
+            style={styles.image}
+            contentFit="cover"
+            transition={200}
+            accessibilityIgnoresInvertColors
+            onError={() => setImageFailed(true)}
+          />
+        )}
       </Animated.View>
-      <LinearGradient
-        colors={css.gradient.imageOverlay.colors}
-        locations={css.gradient.imageOverlay.locations}
-        style={styles.gradient}
-        pointerEvents="none"
-      />
+      {/* The overlay keeps text legible over a photo; on the flat placeholder it only muddies it. */}
+      {!showPlaceholder && (
+        <LinearGradient
+          colors={css.gradient.imageOverlay.colors}
+          locations={css.gradient.imageOverlay.locations}
+          style={styles.gradient}
+          pointerEvents="none"
+        />
+      )}
     </View>
   );
 }
