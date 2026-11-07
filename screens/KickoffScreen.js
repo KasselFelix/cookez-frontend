@@ -3,7 +3,7 @@ import { ActivityIndicator, Animated, StyleSheet, TouchableOpacity, ScrollView, 
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-import { addIngredient, removeIngredient, updateIngredientQuantity, updateIngredientUnit } from "../reducers/ingredient";
+import { addIngredient, removeIngredient, syncIngredientsWithPantry } from "../reducers/ingredient";
 import { setPantry, setLoading as setPantryLoading, setError as setPantryError } from "../reducers/pantry";
 import { getPantry } from "../modules/pantryApi";
 import { FontAwesome } from "@expo/vector-icons";
@@ -126,33 +126,12 @@ export default function KickoffScreen({navigation}) {
 	// initialise avec l'ancienne valeur. On re-sync au focus de Kickoff.
 	// Le sync s'arrête à Kickoff : ça ne pollue PAS les overrides manuels
 	// que l'user pourrait faire sur RecapScreen (le focus n'y déclenche
-	// rien).
+	// rien). Un ingrédient dont le pantry item a été supprimé repart de la
+	// quantité de référence du catalogue (reducers/ingredient.js).
 	useFocusEffect(
 		useCallback(() => {
-			ingredients.forEach((ing) => {
-				const id = ing?.data?._id;
-				if (!id) return;
-				const pantryItem = pantryItems.find((p) => {
-					const pid = p?.ingredient?._id || p?.ingredient;
-					return pid && String(pid) === String(id);
-				});
-				if (!pantryItem) return;
-				if (ing.data.g_per_serving !== pantryItem.quantity) {
-					dispatch(updateIngredientQuantity({
-						display_name: ing.data.display_name,
-						quantity: pantryItem.quantity,
-					}));
-				}
-				const freshUnit = pantryItem.unit || pantryItem.ingredient?.defaultUnit;
-				if (freshUnit && ing.data.unit !== freshUnit) {
-					dispatch(updateIngredientUnit({
-						display_name: ing.data.display_name,
-						unit: freshUnit,
-					}));
-				}
-			});
-			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [pantryItems])
+			dispatch(syncIngredientsWithPantry(pantryItems));
+		}, [dispatch, pantryItems])
 	);
 
 	// synchronise la sélection
@@ -389,9 +368,9 @@ export default function KickoffScreen({navigation}) {
 			const pid = p?.ingredient?._id || p?.ingredient;
 			return pid && String(pid) === String(data.id);
 		});
-		const initialQty = pantryMatch?.quantity ?? data.g_per_serving;
+		const initialQty = pantryMatch ? pantryMatch.quantity : data.g_per_serving;
 		const initialUnit = pantryMatch?.unit || baseUnit;
-		dispatch(addIngredient({photo: data.photo, data: {_id: data.id, display_name: data.name, g_per_serving: initialQty, defaultUnit: baseUnit, unit: initialUnit, nutrition: data.nutrition }}))
+		dispatch(addIngredient({photo: data.photo, data: {_id: data.id, display_name: data.name, g_per_serving: initialQty, defaultUnit: baseUnit, unit: initialUnit, referenceQuantity: data.g_per_serving, fromPantry: Boolean(pantryMatch), nutrition: data.nutrition }}))
 	}
 
 	function onItemRemove(data) {

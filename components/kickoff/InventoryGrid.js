@@ -76,6 +76,9 @@ export default function InventoryGrid() {
         g_per_serving: item.quantity,
         defaultUnit,
         unit,
+        // Picked from the pantry: no catalog quantity here, so a deleted
+        // pantry item leaves the quantity empty for the user to fill.
+        fromPantry: true,
         nutrition: item.ingredient?.nutrition,
         // Propagate expiry date so the backend can compute the
         // `expiringIngredients` array (anti-waste bonus) for recipes that

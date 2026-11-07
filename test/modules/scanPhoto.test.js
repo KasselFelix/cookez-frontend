@@ -37,6 +37,8 @@ describe('toIngredientEntry', () => {
         g_per_serving: 120,
         defaultUnit: 'unit',
         unit: 'unit',
+        referenceQuantity: 120,
+        fromPantry: false,
         nutrition: { calories_100g: 18 },
         toConfirm: false,
       },
@@ -48,7 +50,12 @@ describe('toIngredientEntry', () => {
 
   it('takes the quantity and unit of the pantry when the user has the ingredient', () => {
     const pantry = [{ ingredient: { _id: TOMATO._id }, quantity: 3, unit: 'unit' }];
-    expect(toIngredientEntry({ ...TOMATO, defaultUnit: 'g' }, pantry).data).toMatchObject({ g_per_serving: 3, unit: 'unit' });
+    expect(toIngredientEntry({ ...TOMATO, defaultUnit: 'g' }, pantry).data).toMatchObject({
+      g_per_serving: 3,
+      unit: 'unit',
+      referenceQuantity: 120,
+      fromPantry: true,
+    });
   });
 });
 

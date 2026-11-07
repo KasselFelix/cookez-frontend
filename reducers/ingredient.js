@@ -81,11 +81,39 @@ export const ingredientSlice = createSlice({
                 target.data.toConfirm = false;
             }
         },
+        // Keeps the picked ingredients in line with the pantry (Kickoff, on
+        // focus). An ingredient the user owns starts from the owned quantity
+        // and unit (`fromPantry`); once its pantry item is gone, it goes back
+        // to the catalog reference (`referenceQuantity`, default unit), so a
+        // deleted pantry item never leaves its old quantity behind.
+        // payload: state.pantry.value.items
+        syncIngredientsWithPantry: (state, action) => {
+            const pantryItems = action.payload || [];
+            for (const entry of state.value) {
+                const id = entry?.data?._id;
+                if (!id) continue;
+                const pantryItem = pantryItems.find((p) => {
+                    const pid = p?.ingredient?._id || p?.ingredient;
+                    return pid && String(pid) === String(id);
+                });
+                if (pantryItem) {
+                    if (!entry.data.fromPantry) entry.data.referenceQuantity ??= entry.data.g_per_serving;
+                    entry.data.g_per_serving = pantryItem.quantity;
+                    const unit = pantryItem.unit || pantryItem.ingredient?.defaultUnit;
+                    if (unit) entry.data.unit = unit;
+                    entry.data.fromPantry = true;
+                } else if (entry.data.fromPantry) {
+                    entry.data.g_per_serving = entry.data.referenceQuantity;
+                    entry.data.unit = entry.data.defaultUnit || 'g';
+                    entry.data.fromPantry = false;
+                }
+            }
+        },
         clearIngredients: (state) => {
             state.value = [];
         },
     },
 });
 
-export const { addIngredient, removeIngredient, updateIngredientQuantity, updateIngredientUnit, setIngredientPhoto, setIngredientConfirmed, clearIngredients } = ingredientSlice.actions;
+export const { addIngredient, removeIngredient, updateIngredientQuantity, updateIngredientUnit, setIngredientPhoto, setIngredientConfirmed, syncIngredientsWithPantry, clearIngredients } = ingredientSlice.actions;
 export default ingredientSlice.reducer;
