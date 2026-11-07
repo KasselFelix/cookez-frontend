@@ -358,6 +358,7 @@ export default function RecapScreen({ navigation }) {
             value={filters.currentServings}
             onIncrement={handleIncrement}
             onDecrement={handleDecrement}
+            colors={{ bg: css.flow.stepperBg, ink: css.flow.stepperInk }}
           />
         </View>
 
@@ -367,6 +368,7 @@ export default function RecapScreen({ navigation }) {
           <TagsMultiSelect
             value={filters.selectedTags}
             onToggle={(tag) => dispatch(toggleTag(tag))}
+            colors={{ bg: css.flow.tagBg, ink: css.flow.tagInk, idleBg: css.flow.tagIdleBg, idleInk: css.flow.tagIdleInk }}
           />
         </View>
       </ScrollView>
