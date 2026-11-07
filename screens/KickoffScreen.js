@@ -231,7 +231,12 @@ export default function KickoffScreen({navigation}) {
 	// Each photo is analysed as soon as it is taken, in the background (plan 015).
 	const takePicture = async () => {
 		if (!requireAuth('scan')) return;
-		const photo = await cameraRef.current?.takePictureAsync({ quality: 0.7 });
+		let photo = null;
+		try {
+			photo = await cameraRef.current?.takePictureAsync({ quality: 0.7 });
+		} catch {
+			// Camera busy, unmounted or permission revoked: same message as a failed shot.
+		}
 		if (photo?.uri) {
 			dispatch(scanPhoto({ uri: photo.uri, token: user.token }));
 		} else {

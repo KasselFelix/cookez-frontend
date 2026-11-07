@@ -366,6 +366,7 @@
       "empty": "No food found",
       "error": "Analysis failed",
       "quota": "Daily scan limit reached",
+      "signedOut": "Sign in again",
       "toConfirm": "To confirm",
       "confirmA11y": "Confirm {{name}}",
       "unmatchedLabel": "NOT RECOGNIZED · {{count}}",
