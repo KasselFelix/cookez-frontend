@@ -572,6 +572,20 @@
     },
     "staleCache": {
       "message": "Showing results from your last search. Connect to refresh."
+    },
+    "subtitle": {
+      "one": "{{count}} recipe found",
+      "other": "{{count}} recipes found"
+    },
+    "card": {
+      "missing": {
+        "one": "{{count}} to buy",
+        "other": "{{count}} to buy"
+      },
+      "allOwned": "Everything at hand",
+      "bestMatch": "Best match",
+      "difficulty": "{{value}}/5",
+      "rating": "{{value}} ({{count}})"
     }
   },
   "devGallery": {

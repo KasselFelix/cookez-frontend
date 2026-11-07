@@ -572,6 +572,20 @@
     },
     "staleCache": {
       "message": "Affichage des résultats de votre dernière recherche. Connectez-vous pour actualiser."
+    },
+    "subtitle": {
+      "one": "{{count}} recette trouvée",
+      "other": "{{count}} recettes trouvées"
+    },
+    "card": {
+      "missing": {
+        "one": "{{count}} à acheter",
+        "other": "{{count}} à acheter"
+      },
+      "allOwned": "Tout est là",
+      "bestMatch": "Meilleur choix",
+      "difficulty": "{{value}}/5",
+      "rating": "{{value}} ({{count}})"
     }
   },
   "devGallery": {
