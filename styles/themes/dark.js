@@ -165,6 +165,11 @@ const flow = {
   actionIcon:   palette.primary900,          // 6.2:1 on actionBg
   actionText:   palette.primary900,
   clearIcon:    palette.primary900,          // red would be 1.5:1 on teal
+  shutterBg:    palette.primary800,          // same teal as + and »
+  shutterRing:  palette.primary900,
+  confirmBg:    palette.surfaceCard,         // charcoal pill, amber ink (8:1)
+  confirmBorder:palette.accent500,
+  confirmText:  palette.accent500,
   selectedBg:   palette.primary800,
   selectedText: palette.primary900,
 };

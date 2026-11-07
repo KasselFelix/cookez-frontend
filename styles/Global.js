@@ -331,6 +331,11 @@ const flow = {
   actionIcon:   palette.accent500,
   actionText:   palette.white,               // count next to » on Kickoff
   clearIcon:    palette.error,               // "clear all" cross in the Recap header
+  shutterBg:    palette.primary800,          // Kickoff shutter, same family as the actions
+  shutterRing:  palette.white,
+  confirmBg:    palette.warningBg,           // "To confirm" pill over a photo
+  confirmBorder:palette.warning,
+  confirmText:  palette.black,
   selectedBg:   palette.secondary500,        // active row of the Recap unit sheet
   selectedText: palette.white,
 };
