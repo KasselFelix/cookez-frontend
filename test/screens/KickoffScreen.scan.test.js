@@ -31,12 +31,12 @@ jest.mock('expo-camera', () => {
 
 const navigation = { navigate: jest.fn() };
 
-const renderKickoff = (user) =>
+const renderKickoff = (user, state = {}) =>
   renderWithProviders(
     <AuthGateProvider>
       <KickoffScreen navigation={navigation} />
     </AuthGateProvider>,
-    { preloadedState: { user } }
+    { preloadedState: { user, ...state } }
   );
 
 const pendingFetch = () => new Promise(() => {});
@@ -73,5 +73,31 @@ describe('KickoffScreen scan', () => {
     expect(call).toBeDefined();
     expect(call[1].headers).toEqual({ Authorization: `Bearer ${user.value.token}` });
     expect(await screen.findByText('Analysing…')).toBeTruthy();
+  });
+
+  it('opens the search pre-filled with a name the analysis did not recognize', async () => {
+    renderKickoff(makeUserState(), { scan: { value: { photos: [], unmatched: ['yuzu kosho'], pendingSearch: null } } });
+    fireEvent.press(await screen.findByLabelText('Search for yuzu kosho'));
+    expect((await screen.findByTestId('kickoff-search-input')).props.value).toBe('yuzu kosho');
+    expect(screen.queryByLabelText('Search for yuzu kosho')).toBeNull();
+  });
+
+  it('opens the search asked by Recap for an unknown name', async () => {
+    renderKickoff(makeUserState(), { scan: { value: { photos: [], unmatched: [], pendingSearch: 'yuzu kosho' } } });
+    expect((await screen.findByTestId('kickoff-search-input')).props.value).toBe('yuzu kosho');
+  });
+
+  it('keeps the screen usable when the camera fails to take the photo', async () => {
+    const savedAlert = global.alert;
+    const alert = jest.fn();
+    global.alert = alert;
+    mockCamera.takePictureAsync.mockRejectedValueOnce(new Error('Camera is not running'));
+    renderKickoff(makeUserState());
+    await act(async () => {
+      fireEvent.press(await screen.findByTestId('kickoff-snap'));
+    });
+    await waitFor(() => expect(alert).toHaveBeenCalled());
+    expect(global.fetch.mock.calls.some(([url]) => String(url).includes('/vision/'))).toBe(false);
+    global.alert = savedAlert;
   });
 });

@@ -21,7 +21,7 @@ export default function ScanSummary({ onSearch }) {
   const { photos, unmatched } = useSelector((state) => state.scan.value);
 
   const pending = photos.filter((photo) => photo.status === 'pending').length;
-  const failed = photos.filter((photo) => photo.status === 'error' || photo.status === 'quota').length;
+  const failed = photos.filter((photo) => photo.status === 'error' || photo.status === 'quota' || photo.status === 'signedOut').length;
   if (pending === 0 && failed === 0 && unmatched.length === 0) return null;
 
   const lineStyle = {

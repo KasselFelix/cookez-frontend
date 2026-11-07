@@ -6,7 +6,8 @@ import { createSlice } from '@reduxjs/toolkit';
 //     'pending' — sent to POST /vision/analyze, no answer yet;
 //     'empty'   — analysed, no food found;
 //     'error'   — network, server or provider failure;
-//     'quota'   — the daily limit is reached.
+//     'quota'   — the daily limit is reached;
+//     'signedOut' — the session expired (401): the user must sign in again.
 //   A photo whose analysis found ingredients leaves the list: its ingredients
 //   are in the ingredient slice, its unknown names in `unmatched`.
 //   unmatched: names the catalog does not know, each a search to open.

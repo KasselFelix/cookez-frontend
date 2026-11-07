@@ -57,7 +57,9 @@ export const scanPhoto =
     if (!state.scan.value.photos.some((photo) => photo.id === id)) return;
 
     if (result.status !== 'ok') {
-      dispatch(setScanPhotoStatus({ id, status: result.status === 'quota' ? 'quota' : 'error' }));
+      // An expired session asks the user to sign in again, not to retry.
+      const status = result.status === 'quota' ? 'quota' : result.status === 'unauthorized' ? 'signedOut' : 'error';
+      dispatch(setScanPhotoStatus({ id, status }));
       return;
     }
     const pantryItems = state.pantry?.value?.items || [];

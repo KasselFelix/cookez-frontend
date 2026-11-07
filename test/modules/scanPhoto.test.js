@@ -98,7 +98,7 @@ describe('scanPhoto', () => {
   it.each([
     ['quota', 'quota'],
     ['error', 'error'],
-    ['unauthorized', 'error'],
+    ['unauthorized', 'signedOut'],
   ])('keeps the photo with status %s → %s', async (status, expected) => {
     const store = makeStore();
     await store.dispatch(scanPhoto({ uri: 'file:///3.jpg', token: 't' }, { analyze: async () => ({ status }) }));
