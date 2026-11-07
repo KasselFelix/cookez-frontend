@@ -317,6 +317,60 @@ const pill = {
   textSelected: palette.white,        // white text on selected teal
 };
 
+// --- RESULT SCREEN ---
+// Cream page in light; the other themes take the Home tab color (surface).
+const result = {
+  background: palette.background,          // #f2ede7 cream
+  card:       palette.surfaceCard,
+  ink:        palette.neutral900,
+  muted:      palette.neutral700,
+  meterFill:  palette.primary500,          // owned share of a recipe
+  meterTrack: palette.secondary200,
+  ribbonBg:   palette.accent500,           // "Best match" on the hero photo
+  ribbonInk:  palette.primary900,
+  seasonBg:   palette.successBg,           // seasonal leaf badge (14:1)
+  seasonInk:  palette.primary900,
+};
+
+// --- INGREDIENT FLOW (KickoffScreen, RecapScreen) ---
+// The light theme keeps the historical sage look; every other theme takes
+// the background of the Home tab (surface) and its own inks.
+const flow = {
+  background:   palette.secondary500,        // sage
+  label:        palette.primary700,          // "SELECTED · N", "NOT RECOGNIZED · N"
+  chipText:     palette.primary800,          // dashed chips (unmatched names, + Add)
+  chipBorder:   palette.primary400,
+  placeholder:  "rgba(255,255,255,0.4)",     // empty photo slot: frame, icon, word
+  cardIcon:     palette.white,               // info icon on the amber Recap card
+  actionBg:     palette.primary800,          // + / » / Recipes / Recap header buttons
+  actionIcon:   palette.accent500,
+  actionText:   palette.white,               // count next to » on Kickoff
+  clearIcon:    palette.error,               // "clear all" cross in the Recap header
+  shutterBg:    palette.primary800,          // Kickoff shutter, same family as the actions
+  shutterRing:  palette.white,
+  confirmBg:    palette.warningBg,           // "To confirm" pill over a photo
+  confirmBorder:palette.warning,
+  confirmText:  palette.black,
+  // Ingredient search modal of Kickoff (button "+").
+  modalBg:          palette.accent500,
+  modalField:       palette.white,           // search bar and result rows
+  modalInk:         palette.black,           // names, search icon, row rule
+  modalMuted:       palette.neutral500,      // placeholder
+  modalClear:       palette.primary800,      // clear-the-search icon
+  modalSelectedBg:  palette.secondary500,
+  modalSelectedInk: palette.white,           // check mark of a picked row
+  modalSelectedText:palette.black,           // name and rule of a picked row
+  // Recap filters: servings stepper and tags (+, picked chips, idle chips).
+  stepperBg:        palette.secondary500,
+  stepperInk:       palette.primary900,
+  tagBg:            palette.primary500,
+  tagInk:           palette.white,
+  tagIdleBg:        palette.secondary200,
+  tagIdleInk:       palette.primary900,
+  selectedBg:   palette.secondary500,        // active row of the Recap unit sheet
+  selectedText: palette.white,
+};
+
 // --- INPUTS (AddRecipeScreen, LoginScreen) ---
 const input = {
   bg:              palette.surface,
@@ -500,6 +554,8 @@ const css = {
   button,
   card,
   pill,
+  flow,
+  result,
   input,
   tabBar,
   layout,

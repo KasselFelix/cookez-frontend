@@ -7,6 +7,7 @@ import SeasonalBadge from './result/SeasonalBadge';
 import { flagForOriginName } from '../modules/countries';
 import { useState } from 'react';
 import { isPlaceholderSource, resolveRecipeImageSource } from '../modules/recipeImage';
+import { openRecipe } from '../modules/recipeNavigation';
 import RecipeImagePlaceholder from './recipe/RecipeImagePlaceholder';
 
 const formatOrigin = (origin) => {
@@ -72,26 +73,7 @@ export default function Recipe(props) {
         activeOpacity={0.9}
         accessibilityRole="button"
         accessibilityLabel={props.name}
-        onPress={() => {
-          props.navigation.navigate('Recipe', {
-            recipe: {
-              _id:             props._id,
-              name:            props.name,
-              description:     props.description,
-              ingredients:     props.ingredients,
-              steps:           props.steps,
-              votes:           props.votes,
-              origin:          props.origin,
-              picture:         props.picture,
-              imageUrl:        props.imageUrl,
-              videoUrl:        props.videoUrl,
-              date:            props.date,
-              preparationTime: props.preparationTime,
-              difficulty:      props.difficulty,
-            },
-            fromRecipeSearch: props.fromRecipeSearch === true,
-          });
-        }}
+        onPress={() => openRecipe(props.navigation, props, { fromRecipeSearch: props.fromRecipeSearch === true })}
       >
         <View style={styles.nameContainer}>
           <Text style={styles.name}>{props.name}</Text>

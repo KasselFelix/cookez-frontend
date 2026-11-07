@@ -24,6 +24,7 @@ import * as Animatable from 'react-native-animatable';
 import Popover from 'react-native-popover-view';
 
 import { clearIngredients } from '../reducers/ingredient';
+import { clearScan } from '../reducers/scan';
 import {
   setOrigins,
   setServings,
@@ -34,12 +35,14 @@ import {
 import MyButton from '../components/MyButton';
 import MySmallButton from '../components/MySmallButton';
 import Recap from '../components/Recap';
+import ScanSummary from '../components/recap/ScanSummary';
 import ServingsStepper from '../components/recipeFilters/ServingsStepper';
 import OriginPicker from '../components/recipeFilters/OriginPicker';
 import TagsMultiSelect from '../components/recipeFilters/TagsMultiSelect';
 import buttonStyles from '../styles/Button';
 import { useTheme } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
+import useIngredientPhotos from '../hooks/useIngredientPhotos';
 
 export default function RecapScreen({ navigation }) {
   const css = useTheme();
@@ -47,6 +50,7 @@ export default function RecapScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const ingredients = useSelector((state) => state.ingredient.value);
+  useIngredientPhotos();
   const filters = useSelector((state) => state.recipeFilters.value);
   const user = useSelector((state) => state.user.value);
   const [showPopover, setShowPopover] = useState(false);
@@ -79,6 +83,7 @@ export default function RecapScreen({ navigation }) {
   const handleClearAll = () => {
     setShowPopover(false);
     dispatch(clearIngredients());
+    dispatch(clearScan());
   };
 
   // Inner-scroll "more below" indicator. Tracking three measurements:
@@ -147,7 +152,7 @@ export default function RecapScreen({ navigation }) {
     <SafeAreaView
       style={[
         styles.container,
-        { backgroundColor: css.palette.secondary500 },
+        { backgroundColor: css.flow.background },
       ]}
     >
       <View style={styles.header}>
@@ -157,10 +162,10 @@ export default function RecapScreen({ navigation }) {
             <FontAwesome
               name="angle-double-left"
               size={30}
-              color={css.palette.white}
+              color={css.flow.actionText}
             />
           }
-          buttonType={buttonStyles.buttonSmall}
+          buttonType={[buttonStyles.buttonSmall, { backgroundColor: css.flow.actionBg }]}
         />
         <Text
           style={{
@@ -187,10 +192,10 @@ export default function RecapScreen({ navigation }) {
                   <FontAwesome
                     name="times"
                     size={25}
-                    color={css.palette.error}
+                    color={css.flow.clearIcon}
                   />
                 }
-                buttonType={buttonStyles.buttonSmall}
+                buttonType={[buttonStyles.buttonSmall, { backgroundColor: css.flow.actionBg }]}
               />
             </TouchableOpacity>
           }
@@ -251,6 +256,7 @@ export default function RecapScreen({ navigation }) {
       >
         {/* Step 1 — Ingredient gallery */}
         <SectionHeading css={css}>{t('recap.step1')}</SectionHeading>
+        <ScanSummary onSearch={() => navigation.goBack()} />
         {ingredients.length === 0 ? (
           <Animatable.View
             animation="slideInDown"
@@ -352,6 +358,7 @@ export default function RecapScreen({ navigation }) {
             value={filters.currentServings}
             onIncrement={handleIncrement}
             onDecrement={handleDecrement}
+            colors={{ bg: css.flow.stepperBg, ink: css.flow.stepperInk }}
           />
         </View>
 
@@ -361,6 +368,7 @@ export default function RecapScreen({ navigation }) {
           <TagsMultiSelect
             value={filters.selectedTags}
             onToggle={(tag) => dispatch(toggleTag(tag))}
+            colors={{ bg: css.flow.tagBg, ink: css.flow.tagInk, idleBg: css.flow.tagIdleBg, idleInk: css.flow.tagIdleInk }}
           />
         </View>
       </ScrollView>
@@ -373,7 +381,7 @@ export default function RecapScreen({ navigation }) {
         style={[
           styles.stickyCta,
           {
-            backgroundColor: css.palette.secondary500,
+            backgroundColor: css.flow.background,
             paddingBottom: 12 + insets.bottom,
           },
         ]}
@@ -382,7 +390,8 @@ export default function RecapScreen({ navigation }) {
           dataFlow={() => navigation.navigate('Result')}
           testID="recap-submit"
           text={t('recap.goToResults')}
-          buttonType={buttonStyles.buttonTwo}
+          textColor={css.flow.actionIcon}
+          buttonType={[buttonStyles.buttonTwo, { backgroundColor: css.flow.actionBg }]}
         />
       </View>
     </SafeAreaView>

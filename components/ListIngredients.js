@@ -1,12 +1,14 @@
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput} from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from "@expo/vector-icons";
-import css from '../styles/Global';
+import { useTheme } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
 
 // the filter
 export default function ListIngredients ({ setClicked, data, onItemPress, onItemRemove, validatedIngredient,setValidatedIngredient}) {
   const t = useT();
+  const css = useTheme();
+  const styles = makeStyles(css);
 
   const Item = ({ name, itemData }) => {
     // On vérifie si l'ingrédient est déjà dans la liste des validés
@@ -35,13 +37,13 @@ export default function ListIngredients ({ setClicked, data, onItemPress, onItem
         onPress={handlePress}
         style={isSelected ? styles.validated : styles.nonValidated}
       >
-        <View style={styles.item}>
-          <Text style={styles.name}>{name}</Text>
+        <View style={[styles.item, isSelected && { borderBottomColor: css.flow.modalSelectedText }]}>
+          <Text style={[styles.name, isSelected && { color: css.flow.modalSelectedText }]}>{name}</Text>
           {/* On change l'icône ou la couleur si c'est sélectionné */}
           <FontAwesome 
               name={isSelected ? 'check' : ''} 
               size={22} 
-              color={isSelected ? 'white' :'' }
+              color={isSelected ? css.flow.modalSelectedInk : ''}
           />
         </View>
       </TouchableOpacity>
@@ -78,7 +80,8 @@ export default function ListIngredients ({ setClicked, data, onItemPress, onItem
   );
 };
 
-const styles = StyleSheet.create({
+// Built from the active theme (useTheme) in the component.
+const makeStyles = (css) => StyleSheet.create({
 listContainer: {
   margin: 10,
   height: "65%",
@@ -88,13 +91,13 @@ listContainer: {
 },
 
 nonValidated: {
-  backgroundColor: "white",
+  backgroundColor: css.flow.modalField,
   borderRadius: 50,
   marginBottom: 10,
 },
 
 validated: {
-  backgroundColor: css.palette.secondary500,
+  backgroundColor: css.flow.modalSelectedBg,
   borderRadius: 50,
   marginBottom: 10,
 },
@@ -106,7 +109,7 @@ item: {
   alignItems: 'center',
   margin: 30,
   borderBottomWidth: 2,
-  borderBottomColor: 'black',
+  borderBottomColor: css.flow.modalInk,
   width: '80%'
 },
 
@@ -115,11 +118,13 @@ name: {
   fontWeight: "bold",
   marginBottom: 5,
   fontStyle: "italic",
+  color: css.flow.modalInk,
 },
 
 text: {
   alignSelf: 'center',
   textAlignVertical: 'center',
   height: '80%',
+  color: css.flow.modalInk,
 }
 });

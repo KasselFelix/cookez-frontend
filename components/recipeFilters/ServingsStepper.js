@@ -24,8 +24,12 @@ export default function ServingsStepper({
   max = 12,
   onIncrement,
   onDecrement,
+  colors,
 }) {
   const css = useTheme();
+  // `colors` ({ bg, ink }) lets a screen give the buttons its own palette (Recap: css.flow).
+  const btnBg = colors?.bg ?? css.palette.secondary500;
+  const btnInk = colors?.ink ?? css.palette.primary900;
   const t = useT();
 
   const display = value ?? '—';
@@ -60,12 +64,12 @@ export default function ServingsStepper({
         style={({ pressed }) => [
           styles.btn,
           {
-            backgroundColor: css.palette.secondary500,
+            backgroundColor: btnBg,
             opacity: decrementDisabled ? 0.4 : pressed ? 0.7 : 1,
           },
         ]}
       >
-        <FontAwesome name="minus" size={16} color={css.palette.primary900} />
+        <FontAwesome name="minus" size={16} color={btnInk} />
       </Pressable>
 
       <Text
@@ -96,12 +100,12 @@ export default function ServingsStepper({
         style={({ pressed }) => [
           styles.btn,
           {
-            backgroundColor: css.palette.secondary500,
+            backgroundColor: btnBg,
             opacity: incrementDisabled ? 0.4 : pressed ? 0.7 : 1,
           },
         ]}
       >
-        <FontAwesome name="plus" size={16} color={css.palette.primary900} />
+        <FontAwesome name="plus" size={16} color={btnInk} />
       </Pressable>
     </View>
   );

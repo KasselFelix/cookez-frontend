@@ -63,6 +63,7 @@ import { clearRecipes } from '../reducers/recipe';
 import { clearFollow } from '../reducers/follow';
 import { clearNotifications } from '../reducers/notifications';
 import { clearPantry } from '../reducers/pantry';
+import { clearScan } from '../reducers/scan';
 import { removeUserToStore, updateUserInStore } from '../reducers/user';
 import DietMultiSelect, {
   readDietRestrictions,
@@ -206,6 +207,7 @@ export default function SettingsScreen({ navigation }) {
       dispatch(clearFollow());
       dispatch(clearNotifications());
       dispatch(clearPantry());
+      dispatch(clearScan());
       navigation.navigate('Home');
     } catch {
       Alert.alert(t('common.error'), 'Could not complete logout.');

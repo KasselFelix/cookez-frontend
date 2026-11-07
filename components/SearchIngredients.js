@@ -1,11 +1,13 @@
 import React from "react";
 import { StyleSheet, TextInput, View, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import css from "../styles/Global";
+import { useTheme } from "../contexts/ThemeProvider";
 import useT from "../i18n/useT";
 
 export default function SearchIngredients ({clicked, searchInput, setSearchInput, setClicked, setDataListIngredient}) {
   const t = useT();
+  const css = useTheme();
+  const styles = makeStyles(css);
   return (
     <View style={styles.container}>
       <View
@@ -15,7 +17,7 @@ export default function SearchIngredients ({clicked, searchInput, setSearchInput
         <Feather
           name="search"
           size={20}
-          color="black"
+          color={css.flow.modalInk}
           style={{ marginLeft: 1 }}
         />
         {/* Input field */}
@@ -23,7 +25,7 @@ export default function SearchIngredients ({clicked, searchInput, setSearchInput
           testID="kickoff-search-input"
           style={styles.input}
           placeholder={t('kickoff.modal.searchPlaceholder')}
-          placeholderTextColor="grey"
+          placeholderTextColor={css.flow.modalMuted}
           value={searchInput}
           onChangeText={setSearchInput}
           onFocus={() => {
@@ -44,7 +46,7 @@ export default function SearchIngredients ({clicked, searchInput, setSearchInput
             accessibilityLabel={t('kickoff.modal.clear')}
             style={{ padding: 1 }}
           >
-            <Feather name="x-circle" size={20} color={css.palette.primary800} />
+            <Feather name="x-circle" size={20} color={css.flow.modalClear} />
           </TouchableOpacity>
         )}
       </View>
@@ -53,7 +55,8 @@ export default function SearchIngredients ({clicked, searchInput, setSearchInput
 };
 
 // styles
-const styles = StyleSheet.create({
+// Built from the active theme (useTheme) in the component.
+const makeStyles = (css) => StyleSheet.create({
   container: {
     margin: 15,
     alignItems: "center",
@@ -67,7 +70,7 @@ const styles = StyleSheet.create({
     padding: 10,
     flexDirection: "row",
     width: "95%",
-    backgroundColor: "white",
+    backgroundColor: css.flow.modalField,
     borderRadius: 15,
     alignItems: "center",
   },
@@ -76,7 +79,7 @@ const styles = StyleSheet.create({
     padding: 10,
     flexDirection: "row",
     width: "95%",
-    backgroundColor: "white",
+    backgroundColor: css.flow.modalField,
     borderRadius: 15,
     alignItems: "center",
   },
@@ -85,6 +88,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 20,
     marginLeft: 10,
+    color: css.flow.modalInk,
   },
 
 });

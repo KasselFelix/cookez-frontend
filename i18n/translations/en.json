@@ -35,7 +35,8 @@
         "vote": "To rate this recipe, you'll need an account. It only takes a minute.",
         "favorite": "Save recipes to your favorites by creating a free account.",
         "comment": "Share your thoughts with the community — create an account to comment.",
-        "comment_vote": "Help the best comments rise — sign up to upvote and downvote."
+        "comment_vote": "Help the best comments rise — sign up to upvote and downvote.",
+        "scan": "Create a free account to recognise ingredients from your photos."
       },
       "cta": {
         "signup": "Create account",
@@ -359,6 +360,20 @@
       "waiting": "Waiting for your search 🧐 ...",
       "notFound": "No ingredients found, try again! 👍",
       "close": "Close"
+    },
+    "scan": {
+      "analyzing": "Analysing…",
+      "empty": "No food found",
+      "error": "Analysis failed",
+      "quota": "Daily scan limit reached",
+      "signedOut": "Sign in again",
+      "toConfirm": "To confirm",
+      "confirmA11y": "Confirm {{name}}",
+      "unmatchedLabel": "NOT RECOGNIZED · {{count}}",
+      "searchA11y": "Search for {{name}}",
+      "dismissA11y": "Dismiss {{name}}",
+      "photoA11y": "Photo {{index}}: {{status}}",
+      "snapA11y": "Take a photo"
     }
   },
   "recap": {
@@ -373,7 +388,17 @@
     "confirmClear": "Sure about removing them all ?!",
     "noIngredients": "No ingredients to remove again 😊",
     "emptyHint1": "Go back to add your ingredients by 📸 or 🔎",
-    "emptyHint2": "Your future recipes await you 🥘 !"
+    "emptyHint2": "Your future recipes await you 🥘 !",
+    "scan": {
+      "pending": {
+        "one": "{{count}} photo being analysed…",
+        "other": "{{count}} photos being analysed…"
+      },
+      "failed": {
+        "one": "{{count}} photo could not be analysed",
+        "other": "{{count}} photos could not be analysed"
+      }
+    }
   },
   "recipe": {
     "servings": {
@@ -551,6 +576,20 @@
     },
     "staleCache": {
       "message": "Showing results from your last search. Connect to refresh."
+    },
+    "subtitle": {
+      "one": "{{count}} recipe found",
+      "other": "{{count}} recipes found"
+    },
+    "card": {
+      "missing": {
+        "one": "{{count}} to buy",
+        "other": "{{count}} to buy"
+      },
+      "allOwned": "Everything at hand",
+      "bestMatch": "Best match",
+      "difficulty": "{{value}}/5",
+      "rating": "{{value}} ({{count}})"
     }
   },
   "devGallery": {

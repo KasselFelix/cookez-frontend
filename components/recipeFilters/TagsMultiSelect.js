@@ -33,8 +33,17 @@ export default function TagsMultiSelect({
   value = [],
   onToggle,
   available = TAG_VOCABULARY,
+  colors,
 }) {
   const css = useTheme();
+  // `colors` ({ bg, ink, idleBg, idleInk }) lets a screen give the + button and the
+  // chips its own palette (Recap: css.flow).
+  const tone = {
+    bg: colors?.bg ?? css.palette.primary500,
+    ink: colors?.ink ?? css.palette.white,
+    idleBg: colors?.idleBg ?? css.palette.secondary200,
+    idleInk: colors?.idleInk ?? css.palette.primary900,
+  };
   const t = useT();
   // `open` drives intent (user wants the sheet visible or not). `rendered`
   // keeps the Modal mounted while the closing animation plays — without it
@@ -116,6 +125,7 @@ export default function TagsMultiSelect({
                 active
                 onPress={() => onToggle?.(tag)}
                 css={css}
+                tone={tone}
               />
             ))
           )}
@@ -129,12 +139,12 @@ export default function TagsMultiSelect({
           style={({ pressed }) => [
             styles.addBtn,
             {
-              backgroundColor: css.palette.primary500,
+              backgroundColor: tone.bg,
               opacity: pressed ? 0.7 : 1,
             },
           ]}
         >
-          <FontAwesome name="plus" size={14} color={css.palette.white} />
+          <FontAwesome name="plus" size={14} color={tone.ink} />
         </Pressable>
       </View>
 
@@ -211,6 +221,7 @@ export default function TagsMultiSelect({
                     active={selected.has(tag)}
                     onPress={() => onToggle?.(tag)}
                     css={css}
+                    tone={tone}
                   />
                 ))}
               </View>
@@ -222,7 +233,7 @@ export default function TagsMultiSelect({
   );
 }
 
-function Chip({ label, active, onPress, css }) {
+function Chip({ label, active, onPress, css, tone }) {
   return (
     <Pressable
       onPress={onPress}
@@ -233,16 +244,14 @@ function Chip({ label, active, onPress, css }) {
       style={({ pressed }) => [
         styles.chip,
         {
-          backgroundColor: active
-            ? css.palette.primary500
-            : css.palette.secondary200,
+          backgroundColor: active ? tone.bg : tone.idleBg,
           opacity: pressed ? 0.7 : 1,
         },
       ]}
     >
       <Text
         style={{
-          color: active ? css.palette.white : css.palette.primary900,
+          color: active ? tone.ink : tone.idleInk,
           fontFamily: css.typography.fontUI,
           fontSize: css.typography.bodySmSize,
         }}

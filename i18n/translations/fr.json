@@ -35,7 +35,8 @@
         "vote": "Pour noter cette recette, créez votre compte. Ça prend moins d'une minute.",
         "favorite": "Sauvegardez vos recettes préférées en créant un compte gratuit.",
         "comment": "Partagez votre avis avec la communauté — créez un compte pour commenter.",
-        "comment_vote": "Aidez les meilleurs commentaires à émerger — inscrivez-vous pour voter."
+        "comment_vote": "Aidez les meilleurs commentaires à émerger — inscrivez-vous pour voter.",
+        "scan": "Créez un compte gratuit pour reconnaître les ingrédients de vos photos."
       },
       "cta": {
         "signup": "Créer un compte",
@@ -359,6 +360,20 @@
       "waiting": "En attente de votre recherche 🧐 ...",
       "notFound": "Aucun ingrédient trouvé, réessayez ! 👍",
       "close": "Fermer"
+    },
+    "scan": {
+      "analyzing": "Analyse…",
+      "empty": "Aucun aliment trouvé",
+      "error": "Échec de l'analyse",
+      "quota": "Limite du jour atteinte",
+      "signedOut": "Reconnecte-toi",
+      "toConfirm": "À confirmer",
+      "confirmA11y": "Confirmer {{name}}",
+      "unmatchedLabel": "NON RECONNUS · {{count}}",
+      "searchA11y": "Chercher {{name}}",
+      "dismissA11y": "Ignorer {{name}}",
+      "photoA11y": "Photo {{index}} : {{status}}",
+      "snapA11y": "Prendre une photo"
     }
   },
   "recap": {
@@ -373,7 +388,17 @@
     "confirmClear": "Voulez-vous vraiment tout supprimer ?",
     "noIngredients": "Plus d'ingrédients à supprimer 😊",
     "emptyHint1": "Revenez en arrière pour ajouter vos ingrédients via 📸 ou 🔎",
-    "emptyHint2": "Vos prochaines recettes vous attendent 🥘 !"
+    "emptyHint2": "Vos prochaines recettes vous attendent 🥘 !",
+    "scan": {
+      "pending": {
+        "one": "{{count}} photo en cours d’analyse…",
+        "other": "{{count}} photos en cours d’analyse…"
+      },
+      "failed": {
+        "one": "{{count}} photo n'a pas pu être analysée",
+        "other": "{{count}} photos n'ont pas pu être analysées"
+      }
+    }
   },
   "recipe": {
     "servings": {
@@ -551,6 +576,20 @@
     },
     "staleCache": {
       "message": "Affichage des résultats de votre dernière recherche. Connectez-vous pour actualiser."
+    },
+    "subtitle": {
+      "one": "{{count}} recette trouvée",
+      "other": "{{count}} recettes trouvées"
+    },
+    "card": {
+      "missing": {
+        "one": "{{count}} à acheter",
+        "other": "{{count}} à acheter"
+      },
+      "allOwned": "Tout est là",
+      "bestMatch": "Meilleur choix",
+      "difficulty": "{{value}}/5",
+      "rating": "{{value}} ({{count}})"
     }
   },
   "devGallery": {
