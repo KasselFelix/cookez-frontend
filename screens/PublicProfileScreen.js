@@ -18,7 +18,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   StyleSheet,
   Text,
   TextInput,
@@ -50,6 +49,7 @@ import ProfileStatsRow from '../components/profile/ProfileStatsRow';
 import { useTheme } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
 import { useResponsive } from '../styles/responsive';
+import RecipeImage from '../components/recipe/RecipeImage';
 
 const TAGS = ['Pasta', 'Quick', 'Veggie', '+ tag'];
 const PAGE_LIMIT = 20;
@@ -130,27 +130,12 @@ function RecipeGridItem({ item, css }) {
       : null;
   return (
     <View style={[styles.gridItem, { marginHorizontal: css.spacing.xs }]}>
-      {imageSource ? (
-        <Image
-          source={imageSource}
-          style={[
-            styles.gridItemImage,
-            { borderRadius: css.radius.sm, backgroundColor: css.palette.neutral200 },
-          ]}
-          resizeMode="cover"
-          accessibilityIgnoresInvertColors
-          accessibilityLabel={item?.title || 'Recipe image'}
-        />
-      ) : (
-        <View
-          style={[
-            styles.gridItemPlaceholder,
-            { borderRadius: css.radius.sm, backgroundColor: css.palette.neutral200 },
-          ]}
-          accessibilityRole="image"
-          accessibilityLabel={item?.title || 'Recipe placeholder'}
-        />
-      )}
+      <RecipeImage
+        source={imageSource}
+        style={[styles.gridItemImage, { borderRadius: css.radius.sm }]}
+        iconSize={22}
+        accessibilityLabel={item?.title}
+      />
     </View>
   );
 }
@@ -699,10 +684,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   gridItemImage: {
-    width: '100%',
-    height: 104,
-  },
-  gridItemPlaceholder: {
     width: '100%',
     height: 104,
   },

@@ -47,6 +47,8 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
 import { availableImages } from '../modules/avatars';
+import { resolveRecipeImageSource } from '../modules/recipeImage';
+import RecipeImage from '../components/recipe/RecipeImage';
 import {
   addPantryItem,
   getPantry,
@@ -88,10 +90,7 @@ const TAB_ICONS = {
 // ---- Recipe tile -----------------------------------------------------------
 
 function RecipeTile({ item, css, navigation }) {
-  const imageSource =
-    typeof item?.picture === 'string'
-    ? { uri: `https://res.cloudinary.com/dnym6kt4p/image/upload/${item.picture}.jpg?_a=BAMAGSWO0` }
-    : null;
+  const imageSource = resolveRecipeImageSource(item);
 
 
   // Shadow has to live on the outer wrapper because the TouchableOpacity
@@ -135,21 +134,12 @@ function RecipeTile({ item, css, navigation }) {
         });
       }}
     >
-      {imageSource ? (
-        <Image
-          source={imageSource}
-          style={[styles.tileImage, { backgroundColor: css.palette.neutral200 }]}
-          resizeMode="cover"
-          accessibilityIgnoresInvertColors
-          accessibilityLabel={item?.name || 'Recipe image'}
-        />
-      ) : (
-        <View
-          style={[styles.tileImagePlaceholder, { backgroundColor: css.palette.neutral200 }]}
-          accessibilityRole="image"
-          accessibilityLabel="Recipe placeholder"
-        />
-      )}
+      <RecipeImage
+        source={imageSource}
+        style={styles.tileImage}
+        iconSize={20}
+        accessibilityLabel={item?.name}
+      />
       <View style={[styles.tileBody, { padding: css.spacing.sm }]}>
         <Text
           style={[
@@ -1019,10 +1009,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   tileImage: {
-    width: '100%',
-    height: 90,
-  },
-  tileImagePlaceholder: {
     width: '100%',
     height: 90,
   },

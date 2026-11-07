@@ -10,6 +10,7 @@
 
 import imageRecipe from '../../modules/images';
 import {
+  isPlaceholderSource,
   resolveRecipeImageSource,
   PLACEHOLDER_IMAGE_KEY,
 } from '../../modules/recipeImage';
@@ -96,5 +97,11 @@ describe('resolveRecipeImageSource', () => {
 
   it('exposes a placeholder key that exists in the image map', () => {
     expect(imageRecipe[PLACEHOLDER_IMAGE_KEY]).toBeDefined();
+  });
+
+  it('tells the placeholder apart from a real image', () => {
+    expect(isPlaceholderSource(resolveRecipeImageSource({ picture: null, imageUrl: null }))).toBe(true);
+    expect(isPlaceholderSource(resolveRecipeImageSource({ imageUrl: 'https://images.pexels.com/p/1.jpg' }))).toBe(false);
+    expect(isPlaceholderSource(resolveRecipeImageSource({ picture: 'abc123' }))).toBe(false);
   });
 });
