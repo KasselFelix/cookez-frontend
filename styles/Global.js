@@ -46,6 +46,9 @@ const palette = {
   surface:    "#faf7f2",   // warm cream — photography-friendly
   surfaceCard:"#ffffff",
   background: "#f2ede7",   // slightly deeper cream for screens
+  // Background of the ingredient flow (Kickoff, Recap): sage in light, its own
+  // tint in each theme.
+  flowBackground: "#abd1c6", // = secondary500
   overlay:    "rgba(0,70,67,0.55)",  // primary800 at 55% for modals/glassmorphism
   overlayLight: "rgba(255,255,255,0.4)",   // semi-transparent white (KickoffScreen borders/text)
   overlayDark:  "rgba(0,0,0,0.5)",         // semi-transparent black (key backgrounds)

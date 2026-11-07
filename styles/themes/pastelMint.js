@@ -23,6 +23,7 @@ const palette = {
  
   // Surfaces — mint dominates (no pure white)
   background:  '#b8dcd0', // deep cool mint — the dominant tone
+  flowBackground: '#b8dcd0', // = background
   surface:     '#d9ece8', // medium mint — section backgrounds
   surfaceCard: '#f0f7f4', // soft mint-white — cards (still readable for photos)
   overlay:     'rgba(26,46,42,0.55)',

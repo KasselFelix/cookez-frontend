@@ -16,6 +16,7 @@ import { clearSearchRequest, removeScanPhoto, removeUnmatched } from "../reducer
 import { useAuthGate } from "../contexts/AuthGateProvider";
 import UnmatchedChips from "../components/kickoff/UnmatchedChips";
 import ConfirmPill from "../components/kickoff/ConfirmPill";
+import RemoveBadge from "../components/kickoff/RemoveBadge";
 import ListIngredients from "../components/ListIngredients";
 import SearchIngredients from "../components/SearchIngredients";
 import MyButton from '../components/MyButton';
@@ -23,7 +24,6 @@ import InventoryGrid from "../components/kickoff/InventoryGrid";
 import PantryHero from "../components/kickoff/PantryHero";
 import SelectedChips from "../components/kickoff/SelectedChips";
 import buttonStyles from '../styles/Button';
-import css from "../styles/Global";
 import { useTheme } from "../contexts/ThemeProvider";
 import useT from "../i18n/useT";
 import useIngredientPhotos from "../hooks/useIngredientPhotos";
@@ -59,7 +59,8 @@ export default function KickoffScreen({navigation}) {
 	const user = useSelector((state) => state.user.value);
 	const pantryItems = useSelector((state) => state.pantry?.value?.items || []);
 	const showGrid = !!user?.token && pantryItems.length > 0;
-	const theme = useTheme();
+	const css = useTheme();
+	const styles = makeStyles(css);
 	const t = useT();
 
   	const dispatch = useDispatch();
@@ -277,22 +278,17 @@ export default function KickoffScreen({navigation}) {
 		return (
 			<View key={slot.key} style={styles.photoShadowWrap}>
 			<View style={styles.photoContainer}>
-				<View style={styles.deleteIcon}>
-					<TouchableOpacity
-						onPress={() => {
-							if (isSearch) {
-								dispatch(removeIngredient(slot.ing));
-							} else {
-								dispatch(removeScanPhoto(slot.photo.id));
-							}
-						}}
-						accessibilityRole="button"
-						accessibilityLabel={removeLabel}
-						hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
-					>
-						<FontAwesome name="times" size={20} color={css.palette.error} />
-					</TouchableOpacity>
-				</View>
+				<RemoveBadge
+					onPress={() => {
+						if (isSearch) {
+							dispatch(removeIngredient(slot.ing));
+						} else {
+							dispatch(removeScanPhoto(slot.photo.id));
+						}
+					}}
+					accessibilityLabel={removeLabel}
+					style={styles.deleteIcon}
+				/>
 				<Image
 					source={{ uri: slot.uri }}
 					style={styles.photo}
@@ -303,9 +299,9 @@ export default function KickoffScreen({navigation}) {
 					}
 				/>
 				{!isSearch && (
-					<View style={[styles.scanBand, { backgroundColor: theme.palette.overlayDark }]} pointerEvents="none">
-						{status === 'pending' && <ActivityIndicator size="small" color={theme.palette.white} />}
-						<Text style={[styles.nameBandText, { color: theme.palette.white, fontFamily: theme.typography.fontUI }]} numberOfLines={2}>
+					<View style={[styles.scanBand, { backgroundColor: css.palette.overlayDark }]} pointerEvents="none">
+						{status === 'pending' && <ActivityIndicator size="small" color={css.palette.white} />}
+						<Text style={[styles.nameBandText, { color: css.palette.white, fontFamily: css.typography.fontUI }]} numberOfLines={2}>
 							{scanStatusText(status)}
 						</Text>
 					</View>
@@ -318,7 +314,7 @@ export default function KickoffScreen({navigation}) {
 				{isSearch && !!slot.name && (
 					<View style={styles.nameBand} pointerEvents="none">
 						<Text
-							style={[styles.nameBandText, { color: theme.palette.white }]}
+							style={[styles.nameBandText, { color: css.palette.white }]}
 							numberOfLines={1}
 						>
 							{slot.name}
@@ -340,8 +336,8 @@ export default function KickoffScreen({navigation}) {
 		for (let i = slots.length; i < 3; i++) {
 			rendered.push(
 				<View key={`ph-${i}`} style={styles.addPicturesContainer}>
-					<FontAwesome name="camera-retro" size={70} color="rgba(255,255,255, 0.4)" />
-					<Text style={styles.text}>{t('kickoff.slot.placeholder')}</Text>
+					<FontAwesome name="camera-retro" size={70} color={css.palette.neutral900} style={styles.placeholderInk} />
+					<Text style={[styles.text, styles.placeholderInk]}>{t('kickoff.slot.placeholder')}</Text>
 					{/* Dashed border via absolute overlay — Android rendering
 					    of borderStyle:'dashed' + borderRadius on the same
 					    View is unreliable (fabric/new arch quirks). Layering
@@ -507,14 +503,11 @@ export default function KickoffScreen({navigation}) {
 					</TouchableOpacity>
 				</View>
 			</View>
-			{/* Kickoff's background is not themed yet (styles/Global): the tip
-			    takes the matching fixed color, for 4.5:1 in every theme. */}
-			<Text style={[styles.scanTip, { color: css.palette.primary800, fontFamily: theme.typography.fontUI }]}>
+			<Text style={[styles.scanTip, { color: css.palette.neutral700, fontFamily: css.typography.fontUI }]}>
 				{t('kickoff.scan.tip')}
 			</Text>
 			<UnmatchedChips
 				names={unmatched}
-				labelColor={css.palette.primary800}
 				onSearch={searchUnmatched}
 				onDismiss={(name) => dispatch(removeUnmatched(name))}
 			/>
@@ -597,14 +590,15 @@ export default function KickoffScreen({navigation}) {
    )
 }
 
-const styles = StyleSheet.create({
+// Built from the active theme (useTheme) in the component.
+const makeStyles = (css) => StyleSheet.create({
 	container:{
 		flex: 1,
 		alignContent: 'center',
 		alignItems:'center',
 		width: '100%',
 		height: '100%',
-		backgroundColor:css.palette.secondary500,
+		backgroundColor: css.palette.flowBackground,
 		paddingTop: css.layout.paddingTop,
 	},
 
@@ -806,12 +800,11 @@ const styles = StyleSheet.create({
 	},
 
 	deleteIcon: {
-        width: '95%',
-        alignItems: 'flex-end',
-        position: 'absolute',
-        zIndex: 2,
-        paddingTop: '3%',
-      },
+		position: 'absolute',
+		top: css.spacing.sm,
+		right: css.spacing.sm,
+		zIndex: 4,
+	},
 
 	// La photo remplit le conteneur ; le borderRadius du parent + overflow
 	// hidden suffisent à clipper les coins. Pas besoin de borderRadius ici.
@@ -888,12 +881,18 @@ const styles = StyleSheet.create({
 		borderRadius: css.radius.lg,
 		borderWidth: 2,
 		borderStyle: 'dashed',
-		borderColor: 'rgba(255,255,255, 0.4)',
+		borderColor: css.palette.neutral900,
+		opacity: 0.3,
 		zIndex: 3,
 	},
 
 	text: {
-		color: 'rgba(255,255,255, 0.4)',
+		color: css.palette.neutral900,
+		fontFamily: css.typography.fontUI,
+	},
+
+	placeholderInk: {
+		opacity: 0.3,
 	},
 
 	containerButtonBottom: {

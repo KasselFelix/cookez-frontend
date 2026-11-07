@@ -36,8 +36,9 @@ export default function ConfirmPill({ name, style }) {
     >
       <Text
         numberOfLines={1}
+        // warningBg stays pale in every theme: the text stays dark.
         style={{
-          color: css.palette.neutral900,
+          color: css.palette.black,
           fontFamily: css.typography.fontUI,
           fontSize: css.typography.captionSize,
           fontWeight: '700',

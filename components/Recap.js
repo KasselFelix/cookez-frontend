@@ -1,11 +1,13 @@
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, Image, Modal, Animated, PanResponder, Dimensions } from 'react-native'
 import React, { useState,useEffect,useRef } from 'react'
 import { useDispatch } from 'react-redux';
-import css from "../styles/Global";
+import { useTheme } from "../contexts/ThemeProvider";
+import useT from "../i18n/useT";
 import { FontAwesome } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { removeIngredient, updateIngredientQuantity, updateIngredientUnit } from '../reducers/ingredient';
 import ConfirmPill from './kickoff/ConfirmPill';
+import RemoveBadge from './kickoff/RemoveBadge';
 
 // Units the backend's convertToBaseUnit knows. Mass + volume crossover is
 // allowed for g/ml-based ingredients under the kitchen-shorthand assumption
@@ -35,6 +37,9 @@ export default function Recap( props ) {
     const [unitModalVisible, setUnitModalVisible] = useState(false);
 
     const dispatch = useDispatch()
+    const css = useTheme();
+    const t = useT();
+    const styles = makeStyles(css);
 
     const baseUnit = props.data.defaultUnit || 'g';
     const unitOptions = UNIT_OPTIONS_BY_BASE[baseUnit] || ['g'];
@@ -151,11 +156,11 @@ export default function Recap( props ) {
                 }
             ]}>
           <View style={styles.photoContainer}>
-            <View style={styles.deleteIcon}>
-              <TouchableOpacity onPress={() => dispatch(removeIngredient(props))} style={styles.cross}>
-                <FontAwesome name='times' size={20} color={css.palette.error}  />
-              </TouchableOpacity>
-            </View>
+            <RemoveBadge
+              onPress={() => dispatch(removeIngredient(props))}
+              accessibilityLabel={t('kickoff.selected.removeA11y', { name: props.data.display_name })}
+              style={styles.deleteIcon}
+            />
             <View>
                {/* Same image as Kickoff: `photo` of the ingredient slice (plan 015) */}
                {props.photo ? (
@@ -194,7 +199,7 @@ export default function Recap( props ) {
                 style={styles.unitTrigger}
               >
                 <Text style={styles.qtyUnit}>{currentUnit}</Text>
-                <FontAwesome name="caret-down" size={12} color="black" style={{ marginLeft: 2 }} />
+                <FontAwesome name="caret-down" size={12} color={css.palette.black} style={{ marginLeft: 2 }} />
               </TouchableOpacity>
             ) : (
               <Text style={styles.qtyUnit}>{currentUnit}</Text>
@@ -203,7 +208,7 @@ export default function Recap( props ) {
           </View>
           <View style={styles.infoBtn}>
             <TouchableOpacity activeOpacity={0.5} onPress={() => { setModalVisible(true) }} >
-                <Feather name="info" size={24} color='white'/>
+                <Feather name="info" size={24} color={css.palette.primary900}/>
             </TouchableOpacity>
           </View>
           <Modal visible={modalVisible} animationtType="fade" transparent>
@@ -216,29 +221,29 @@ export default function Recap( props ) {
                         </TouchableOpacity>
                       </View>
                       <View style={styles.aLineContainer}>
-                        <Text>● </Text>
+                        <Text style={styles.modalText}>● </Text>
                         <Text style={styles.text}> Calories:</Text>
-                        <Text>{props.data.nutrition?.calories_100g ?? 0}</Text>
+                        <Text style={styles.modalText}>{props.data.nutrition?.calories_100g ?? 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
-                        <Text>● </Text>
+                        <Text style={styles.modalText}>● </Text>
                         <Text style={styles.text}> Sugars:</Text>
-                        <Text>{props.data.nutrition?.sugars_100g != null ? Number.parseFloat(props.data.nutrition.sugars_100g).toFixed(2) : 0}</Text>
+                        <Text style={styles.modalText}>{props.data.nutrition?.sugars_100g != null ? Number.parseFloat(props.data.nutrition.sugars_100g).toFixed(2) : 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
-                        <Text>● </Text>
+                        <Text style={styles.modalText}>● </Text>
                         <Text style={styles.text}> Proteins:</Text>
-                        <Text>{props.data.nutrition?.proteins_100g != null ? Number.parseFloat(props.data.nutrition.proteins_100g).toFixed(2) : 0}</Text>
+                        <Text style={styles.modalText}>{props.data.nutrition?.proteins_100g != null ? Number.parseFloat(props.data.nutrition.proteins_100g).toFixed(2) : 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
-                        <Text>● </Text>
+                        <Text style={styles.modalText}>● </Text>
                         <Text style={styles.text}> Fat:</Text>
-                        <Text>{props.data.nutrition?.fat_100g != null ? Number.parseFloat(props.data.nutrition.fat_100g).toFixed(2) : 0}</Text>
+                        <Text style={styles.modalText}>{props.data.nutrition?.fat_100g != null ? Number.parseFloat(props.data.nutrition.fat_100g).toFixed(2) : 0}</Text>
                       </View>
                       <View style={styles.aLineContainer}>
-                        <Text>● </Text>
+                        <Text style={styles.modalText}>● </Text>
                         <Text style={styles.text}> Fibers:</Text>
-                        <Text>{props.data.nutrition?.fibers_100g != null ? Number.parseFloat(props.data.nutrition.fibers_100g).toFixed(2) : 0}</Text>
+                        <Text style={styles.modalText}>{props.data.nutrition?.fibers_100g != null ? Number.parseFloat(props.data.nutrition.fibers_100g).toFixed(2) : 0}</Text>
                       </View>
                 </View>
               </View>
@@ -261,7 +266,7 @@ export default function Recap( props ) {
                         accessibilityRole="button"
                       >
                         <Text style={[styles.unitRowText, active && styles.unitRowTextActive]}>{u}</Text>
-                        {active && <FontAwesome name="check" size={16} color={css.palette.white} />}
+                        {active && <FontAwesome name="check" size={16} color={css.pill.textSelected} />}
                       </TouchableOpacity>
                     );
                   })}
@@ -272,7 +277,9 @@ export default function Recap( props ) {
     )
 }
 
-const styles = StyleSheet.create({
+// Built from the active theme (useTheme) in the component. The ingredient card
+// is a fixed pair, accent500 with black text, readable in every theme.
+const makeStyles = (css) => StyleSheet.create({
     ingredientContainer: {
         marginVertical: 5,
         alignItems: 'center',
@@ -300,22 +307,10 @@ const styles = StyleSheet.create({
       },
 
       deleteIcon: {
-        zIndex:1,
-        width: '95%',
-        alignItems: 'flex-end',
         position: 'absolute',
-        paddingTop: '2%',
-        paddingRight: '6%',
-        marginTop:'3%'
-      },
-
-      cross: {
-        backgroundColor:css.palette.accent500,
-        borderRadius:5,
-        //height:'100%',
-        width:'25%',
-        alignItems: 'center',
-        //justifyContent:'center'
+        top: css.spacing.xs,
+        right: css.spacing.xs,
+        zIndex: 2,
       },
     
       image: {
@@ -339,6 +334,7 @@ const styles = StyleSheet.create({
 
       ingredientName: {
         fontWeight: 'bold',
+        color: css.palette.black,
       },
 
       infoGramsContainer: {
@@ -347,7 +343,7 @@ const styles = StyleSheet.create({
         //backgroundColor: 'red',
         width: 80,
         height: 30,
-        backgroundColor: 'white',
+        backgroundColor: css.palette.white,
         borderRadius: 80,
         paddingRight: 5,
       },
@@ -358,13 +354,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderBottomWidth: 2,
         borderStyle: 'dashed',
-        borderColor: 'black',
+        borderColor: css.palette.black,
         width: 60,
         marginBottom: 3,
       },
 
       qtyInput: {
-        color: 'black',
+        color: css.palette.black,
         fontSize: 14,
         paddingVertical: 0,
         minWidth: 32,
@@ -372,7 +368,7 @@ const styles = StyleSheet.create({
       },
 
       qtyUnit: {
-        color: 'black',
+        color: css.palette.black,
         fontSize: 14,
         marginLeft: 2,
       },
@@ -391,16 +387,12 @@ const styles = StyleSheet.create({
       },
 
       unitSheet: {
-        backgroundColor: 'white',
-        borderRadius: 16,
+        backgroundColor: css.palette.surfaceCard,
+        borderRadius: css.radius.lg,
         paddingVertical: 12,
         paddingHorizontal: 16,
         width: 240,
-        elevation: 6,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
+        ...css.shadow.md,
       },
 
       unitSheetTitle: {
@@ -408,7 +400,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         marginBottom: 8,
         textAlign: 'center',
-        color: 'black',
+        color: css.palette.neutral900,
       },
 
       unitRow: {
@@ -422,16 +414,16 @@ const styles = StyleSheet.create({
       },
 
       unitRowActive: {
-        backgroundColor: css.palette.secondary500,
+        backgroundColor: css.pill.bgSelected,
       },
 
       unitRowText: {
         fontSize: 15,
-        color: 'black',
+        color: css.palette.neutral900,
       },
 
       unitRowTextActive: {
-        color: 'white',
+        color: css.pill.textSelected,
         fontWeight: '600',
       },
 
@@ -449,18 +441,11 @@ const styles = StyleSheet.create({
       modalContainer: {
         alignItems: 'center',
         justifyContent:'space-around',
-        backgroundColor: 'white',
-        borderRadius: 20,
+        backgroundColor: css.palette.surfaceCard,
+        borderRadius: css.radius.card,
         height: 310,
         width:350,
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
+        ...css.shadow.md,
       },
 
       deleteIconModal: {
@@ -483,11 +468,17 @@ const styles = StyleSheet.create({
         marginLeft:'28%',
         fontSize: 20,
         fontWeight: 'bold',
+        color: css.palette.neutral900,
       },
 
       text: {
         fontSize: 18,
         marginRight: 45,
         width: 120,
+        color: css.palette.neutral900,
+      },
+
+      modalText: {
+        color: css.palette.neutral900,
       },
 })
