@@ -152,7 +152,7 @@ const elevation = {
   modal:    shadow.lg,
 };
  
-// Ingredient flow: anthracite like the Home tab, light inks, teal buttons.
+// Ingredient flow: anthracite like the Home tab, light inks, grey buttons.
 const flow = {
   ...css.flow,
   background:   palette.surface,             // #1c1c1e
@@ -161,12 +161,13 @@ const flow = {
   chipBorder:   palette.primary800,
   placeholder:  'rgba(255,255,255,0.3)',
   cardIcon:     palette.primary900,
-  actionBg:     palette.primary800,          // #33b5af, 5.9:1 on the background
-  actionIcon:   palette.primary900,          // 6.2:1 on actionBg
-  actionText:   palette.primary900,
-  clearIcon:    palette.primary900,          // red would be 1.5:1 on teal
-  shutterBg:    palette.primary800,          // same teal as + and »
-  shutterRing:  palette.primary900,
+  // Buttons like the Home pills: grey with blue ink (4.3:1).
+  actionBg:     pill.bgNeutral,              // #2a2a2c
+  actionIcon:   pill.textNeutral,            // #009e97
+  actionText:   pill.textNeutral,
+  clearIcon:    palette.error,               // 4.2:1 on actionBg
+  shutterBg:    pill.bgNeutral,
+  shutterRing:  pill.textNeutral,
   confirmBg:    palette.surfaceCard,         // charcoal pill, amber ink (8:1)
   confirmBorder:palette.accent500,
   confirmText:  palette.accent500,
