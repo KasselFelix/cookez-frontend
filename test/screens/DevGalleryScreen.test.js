@@ -27,6 +27,6 @@ describe('DevGalleryScreen', () => {
     }
     expect(screen.getByText('Shakshuka')).toBeTruthy();
     expect(screen.getByText('Tomato')).toBeTruthy();
-    expect(screen.getByText('Test Screen')).toBeTruthy();
+    expect(screen.getByTestId('test-screen')).toBeTruthy();
   });
 });

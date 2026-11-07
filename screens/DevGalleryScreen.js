@@ -134,6 +134,13 @@ export default function DevGalleryScreen() {
           {t('devGallery.title')}
         </Text>
 
+        {/* The sandbox comes first: it is what is being iterated on. */}
+        <Section id="sandbox" title={t('devGallery.sections.sandbox')}>
+          <View style={[styles.sandboxBox, { borderColor: css.palette.neutral300, borderRadius: css.radius.md }]}>
+            <TestScreen />
+          </View>
+        </Section>
+
         <Section id="tokens" title={t('devGallery.sections.tokens')}>
           <View style={[styles.wrap, { gap: css.spacing.sm }]}>
             {colors.map(([name, value]) => <Swatch key={name} name={name} color={value} />)}
@@ -216,11 +223,6 @@ export default function DevGalleryScreen() {
           />
         </Section>
 
-        <Section id="sandbox" title={t('devGallery.sections.sandbox')}>
-          <View style={[styles.stateBox, { borderColor: css.palette.neutral300, borderRadius: css.radius.md }]}>
-            <TestScreen />
-          </View>
-        </Section>
       </ScrollView>
 
       <NutritionSheet ref={nutritionSheetRef} nutritionPerServing={SAMPLE_NUTRITION} />
@@ -239,4 +241,5 @@ const styles = StyleSheet.create({
   swatchColor: { width: 48, height: 48, borderWidth: StyleSheet.hairlineWidth },
   radiusBox: { width: 56, height: 56 },
   stateBox: { height: 320, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth },
+  sandboxBox: { overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth },
 });

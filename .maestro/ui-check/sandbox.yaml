@@ -1,0 +1,15 @@
+# Sandbox of the dev gallery (screens/TestScreen.js, shown first), in the five themes (or THEME).
+appId: com.v2.cookez.dev
+---
+- runFlow: ../common/relaunch.yaml
+- tapOn:
+    id: home-gallery
+- extendedWaitUntil:
+    visible:
+      id: sandbox-badges
+    timeout: 20000
+- waitForAnimationToEnd
+- runFlow:
+    file: ../common/capture.yaml
+    env:
+      SCREEN: sandbox
