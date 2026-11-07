@@ -180,6 +180,15 @@ const flow = {
   confirmBg:    palette.surfaceCard,         // soft theme white, theme ink
   confirmBorder:palette.primary800,
   confirmText:  palette.neutral900,
+  // Search modal: the page background, theme cards, picked rows like the buttons.
+  modalBg:          palette.surface,
+  modalField:       palette.surfaceCard,
+  modalInk:         palette.neutral900,
+  modalMuted:       palette.neutral700,
+  modalClear:       palette.neutral700,
+  modalSelectedBg:  palette.neutral900,
+  modalSelectedInk: palette.accent500,
+  modalSelectedText:palette.accent500,
   selectedBg:   palette.neutral900,
   selectedText: palette.accent500,
 };

@@ -477,7 +477,8 @@ export default function KickoffScreen({navigation}) {
 										dataFlow={()=> {handleCloseModal()}}
 										testID="kickoff-modal-close"
 										text={t('kickoff.modal.close')}
-										buttonType={buttonStyles.buttonFour}
+										textColor={css.flow.actionIcon}
+										buttonType={[buttonStyles.buttonFour, { backgroundColor: css.flow.actionBg }]}
 									/>
 								</View>
 							</View>
@@ -557,7 +558,7 @@ export default function KickoffScreen({navigation}) {
 						testID="kickoff-add-ingredient"
 						icon={{ name: 'plus', size: 24, color: css.flow.actionIcon }}
 						accessibilityLabel={t('kickoff.addIngredient')}
-						buttonType={[buttonStyles.buttonFour, { backgroundColor: css.flow.actionBg }]}
+						buttonType={[buttonStyles.buttonFour, styles.actionShadow, { backgroundColor: css.flow.actionBg }]}
 					/>
 				</View>
 
@@ -569,7 +570,7 @@ export default function KickoffScreen({navigation}) {
 						textColor={css.flow.actionText}
 						icon={{ name: 'angle-double-right', size: 24, position: 'right', color: css.flow.actionIcon }}
 						accessibilityLabel={nextA11y}
-        				buttonType={[buttonStyles.buttonFour, { backgroundColor: css.flow.actionBg }]}
+        				buttonType={[buttonStyles.buttonFour, styles.actionShadow, { backgroundColor: css.flow.actionBg }]}
 					/>
 				</View>
 			</View>
@@ -633,7 +634,7 @@ const makeStyles = (css) => StyleSheet.create({
 		flex: 0,
 		justifyContent: 'center',
 		alignItems: 'center',
-		backgroundColor: css.palette.accent500,
+		backgroundColor: css.flow.modalBg,
 		borderRadius: css.radius.card,
 		height: 310,
 		width:350,
@@ -900,11 +901,18 @@ const makeStyles = (css) => StyleSheet.create({
 		paddingLeft: 10,
 	},
 
+	// A little relief under the shutter, + and » (Android elevation; the
+	// buttons clip their own iOS shadow with overflow hidden).
+	actionShadow: {
+		...css.shadow.md,
+	},
+
 	snapContainer: {
 		flex: 0,
 		alignItems: "center",
 		justifyContent: "flex-end",
 		backgroundColor: css.flow.shutterBg,
+		...css.shadow.md,
 		width: 100,
 		borderRadius: css.radius.pill,
 		marginTop: 10,
