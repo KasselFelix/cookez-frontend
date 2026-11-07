@@ -317,6 +317,21 @@ const pill = {
   textSelected: palette.white,        // white text on selected teal
 };
 
+// --- RESULT SCREEN ---
+// Cream page in light; the other themes take the Home tab color (surface).
+const result = {
+  background: palette.background,          // #f2ede7 cream
+  card:       palette.surfaceCard,
+  ink:        palette.neutral900,
+  muted:      palette.neutral700,
+  meterFill:  palette.primary500,          // owned share of a recipe
+  meterTrack: palette.secondary200,
+  ribbonBg:   palette.accent500,           // "Best match" on the hero photo
+  ribbonInk:  palette.primary900,
+  seasonBg:   palette.successBg,           // seasonal leaf badge (14:1)
+  seasonInk:  palette.primary900,
+};
+
 // --- INGREDIENT FLOW (KickoffScreen, RecapScreen) ---
 // The light theme keeps the historical sage look; every other theme takes
 // the background of the Home tab (surface) and its own inks.
@@ -540,6 +555,7 @@ const css = {
   card,
   pill,
   flow,
+  result,
   input,
   tabBar,
   layout,

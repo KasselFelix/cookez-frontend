@@ -148,6 +148,17 @@ const elevation = {
   modal:    shadow.lg,
 };
  
+// Result screen: the Home tab color, meter in the theme's darkest ink.
+const result = {
+  ...css.result,
+  background: palette.surface,
+  card:       palette.surfaceCard,
+  ink:        palette.neutral900,
+  muted:      palette.neutral700,
+  meterFill:  palette.neutral900,
+  meterTrack: palette.surface,
+};
+
 // Ingredient flow: background of the Home tab, theme inks, buttons in the
 // theme's darkest ink with its accent (7.5:1 or more).
 const flow = {
@@ -199,6 +210,7 @@ const pastelMint = {
   button,
   pill,
   flow,
+  result,
   shadow,
   gradient,
   glassmorphism,

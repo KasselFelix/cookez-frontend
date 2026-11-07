@@ -152,6 +152,17 @@ const elevation = {
   modal:    shadow.lg,
 };
  
+// Result screen: anthracite page like the Home tab, blue meter like the Home pills.
+const result = {
+  ...css.result,
+  background: palette.surface,
+  card:       palette.surfaceCard,
+  ink:        palette.neutral900,
+  muted:      palette.neutral700,
+  meterFill:  pill.textNeutral,
+  meterTrack: palette.surface,
+};
+
 // Ingredient flow: anthracite like the Home tab, light inks, grey buttons.
 const flow = {
   ...css.flow,
@@ -204,6 +215,7 @@ const dark = {
   button,
   pill,
   flow,
+  result,
   shadow,
   gradient,
   glassmorphism,
