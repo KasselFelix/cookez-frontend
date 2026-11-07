@@ -26,9 +26,12 @@ export function toIngredientEntry(found, pantryItems = []) {
     data: {
       _id: found._id,
       display_name: found.name,
-      g_per_serving: pantryItem?.quantity ?? found.quantity,
+      g_per_serving: pantryItem ? pantryItem.quantity : found.quantity,
       defaultUnit: baseUnit,
       unit: pantryItem?.unit || baseUnit,
+      // The catalog quantity to go back to if the pantry item goes away.
+      referenceQuantity: found.quantity,
+      fromPantry: Boolean(pantryItem),
       nutrition: found.nutrition,
       toConfirm: Boolean(found.confirm) || found.confidence === 'low',
     },
