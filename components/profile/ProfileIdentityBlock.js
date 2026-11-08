@@ -7,6 +7,8 @@ import { useResponsive } from '../../styles/responsive';
 import { getAvatarSource } from '../../modules/avatars';
 import PillChip from './PillChip';
 import { useTheme } from '../../contexts/ThemeProvider';
+import useT from '../../i18n/useT';
+import { readDietRestrictions } from './DietMultiSelect';
 
 /**
  * ProfileIdentityBlock
@@ -39,6 +41,7 @@ export default function ProfileIdentityBlock({
   showChips = true,
 }) {
   const css = useTheme();
+  const t = useT();
   const { isTablet } = useResponsive();
   const avatarSize = isTablet ? 96 : 72;
   const avatarSource = useMemo(() => getAvatarSource(user?.image), [user?.image]);
@@ -49,7 +52,16 @@ export default function ProfileIdentityBlock({
     'Chef';
 
   const householdValue = user?.settings?.householdComposition || 0;
-  const diet = user?.settings?.diet;
+  // Reads `dietRestrictions[]` (written by DietMultiSelect) and falls back
+  // to the legacy `settings.diet` string.
+  const diets = readDietRestrictions(user);
+  const dietLabel =
+    diets.length === 0
+      ? t('profile.identity.noDiet')
+      : t('profile.identity.dietSummary', {
+          first: t(`settings.diets.${diets[0]}`, { defaultValue: diets[0] }),
+          more: diets.length > 1 ? ` +${diets.length - 1}` : '',
+        });
   const allergyCount = user?.settings?.allergy?.length || 0;
   const cuisineSpecialty = user?.cuisineSpecialty;
 
@@ -130,7 +142,7 @@ export default function ProfileIdentityBlock({
         accessibilityRole="list"
       >
         <PillChip icon={<Leaf size={12} color={css.palette.neutral900} />}>
-          {diet || 'No diet'}
+          {dietLabel}
         </PillChip>
         <View style={styles.chipSpacer} />
         <PillChip>{allergyLabel}</PillChip>

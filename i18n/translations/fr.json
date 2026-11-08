@@ -156,6 +156,10 @@
       "top_chef": "Top chef",
       "fifty_recipes": "50 recettes",
       "rated": "Bien noté"
+    },
+    "identity": {
+      "noDiet": "Aucun régime",
+      "dietSummary": "{{first}}{{more}}"
     }
   },
   "settings": {
