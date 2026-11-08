@@ -1,6 +1,7 @@
 import { FontAwesome } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated as RNAnimated,
   Modal,
   Pressable,
@@ -19,12 +20,13 @@ import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { updateRecipeVote } from '../reducers/recipe';
+import { setRecipeDetail, updateRecipeVote } from '../reducers/recipe';
 import { toggleFavorite } from '../reducers/user';
 // MODULES
 import addressIp from '../modules/addressIp';
 import { jsonAuthHeaders } from '../modules/authHeaders';
 import { recordRecipeView } from '../modules/session';
+import { fetchRecipeDetail, isRecipeComplete } from '../modules/recipeDetail';
 import css from '../styles/Global';
 import useT from '../i18n/useT';
 import { flagForOriginName } from '../modules/countries';
@@ -94,6 +96,33 @@ export default function RecipeScreen({ route, navigation }) {
     if (!user?.token || !recipe?._id) return;
     recordRecipeView(user.token, recipe._id);
   }, [user?.token, recipe?._id]);
+
+  // Opened from the Dashboard, the profile or CommentScreen, the recipe lacks
+  // its populated ingredients (kcal pill, units, shopping list) or comments:
+  // load the full recipe once and merge it into the slice. A recipe from
+  // ResultScreen is already complete and keeps its search-only fields.
+  const needsDetail = Boolean(selectedRecipeId) && !isRecipeComplete(recipe);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(needsDetail);
+  useEffect(() => {
+    if (!needsDetail) return undefined;
+    const controller = new AbortController();
+    setIsLoadingDetail(true);
+    fetchRecipeDetail(selectedRecipeId, { signal: controller.signal })
+      .then((detail) => {
+        if (detail && !controller.signal.aborted) dispatch(setRecipeDetail(detail));
+      })
+      .catch((error) => {
+        if (error?.name !== 'AbortError') {
+          console.error('RecipeScreen.fetchRecipeDetail:', error?.message);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoadingDetail(false);
+      });
+    return () => controller.abort();
+    // Once per opened recipe: a failed load is not retried in a loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRecipeId]);
 
   // Servings local au RecipeScreen — découplé de Redux pour ne PAS
   // déclencher de re-fetch côté ResultScreen (qui a currentServings dans
@@ -307,7 +336,11 @@ export default function RecipeScreen({ route, navigation }) {
   if (!recipe?.name) {
     return (
       <View style={styles.fallback}>
-        <Text style={styles.fallbackText}>Recipe not found.</Text>
+        {isLoadingDetail ? (
+          <ActivityIndicator size="large" color={css.palette.primary800} />
+        ) : (
+          <Text style={styles.fallbackText}>{t('recipe.notFound')}</Text>
+        )}
       </View>
     );
   }

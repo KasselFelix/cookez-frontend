@@ -491,7 +491,8 @@
     },
     "image": {
       "placeholder": "Pas encore de photo pour cette recette"
-    }
+    },
+    "notFound": "Recette introuvable."
   },
   "userDashboard": {
     "greeting": {

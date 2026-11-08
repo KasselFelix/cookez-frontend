@@ -491,7 +491,8 @@
     },
     "image": {
       "placeholder": "No photo for this recipe yet"
-    }
+    },
+    "notFound": "Recipe not found."
   },
   "userDashboard": {
     "greeting": {

@@ -33,7 +33,7 @@ const AUTH_ROUTES = [
 ];
 
 const PUBLIC_ROUTES = [
-  /\/recipes\/(all|search|origins)\b/,
+  /\/recipes\/(all|search|origins|detail)\b/,
   /\/ingredients\//,
   /\/users\/(public|recipes)\//,
   /\/users\/(signin|signup)\b/,
