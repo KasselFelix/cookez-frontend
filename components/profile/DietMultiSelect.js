@@ -21,6 +21,7 @@ import { Check, X } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../../modules/addressIp';
+import { jsonAuthHeaders } from '../../modules/authHeaders';
 import { updateUserInStore } from '../../reducers/user';
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
@@ -75,11 +76,8 @@ export default function DietMultiSelect({ visible, onClose }) {
     try {
       const res = await fetch(`${addressIp}/users/profile`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token: user.token,
-          dietRestrictions: selected,
-        }),
+        headers: jsonAuthHeaders(user.token),
+        body: JSON.stringify({ dietRestrictions: selected }),
       });
       const data = await res.json();
       if (data.result) {

@@ -11,6 +11,7 @@ import { ActivityIndicator, Alert, StyleSheet, Switch, View } from 'react-native
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../../modules/addressIp';
+import { jsonAuthHeaders } from '../../modules/authHeaders';
 import { updateUserInStore } from '../../reducers/user';
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
@@ -40,8 +41,8 @@ export default function LocationToggle() {
     try {
       const res = await fetch(`${addressIp}/users/profile`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: user.token, location: payload }),
+        headers: jsonAuthHeaders(user.token),
+        body: JSON.stringify({ location: payload }),
       });
       const data = await res.json();
       if (data.result) {

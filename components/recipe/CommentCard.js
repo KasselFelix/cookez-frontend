@@ -10,6 +10,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import addressIp from '../../modules/addressIp';
+import { jsonAuthHeaders } from '../../modules/authHeaders';
 import { updateCommentVotes } from '../../reducers/recipe';
 import { useAuthGate } from '../../contexts/AuthGateProvider';
 import css from '../../styles/Global';
@@ -94,7 +95,7 @@ export default function CommentCard({
     try {
       const res = await fetch(`${addressIp}/comments/upvote`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: jsonAuthHeaders(user.token),
         body: JSON.stringify({ username: user.username, _id }),
       });
       const data = await res.json();
@@ -111,7 +112,7 @@ export default function CommentCard({
     try {
       const res = await fetch(`${addressIp}/comments/downvote`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: jsonAuthHeaders(user.token),
         body: JSON.stringify({ username: user.username, _id }),
       });
       const data = await res.json();

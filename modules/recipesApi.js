@@ -1,4 +1,5 @@
 import addressIp from './addressIp';
+import { jsonAuthHeaders } from './authHeaders';
 
 // Typed error so callers can tell a reachable-but-errored server (has .status)
 // apart from a true network failure (fetch reject / AbortError → .status
@@ -38,7 +39,6 @@ export async function fetchRecipeResult({
   signal,
 }) {
   const payload = {
-    token: token || undefined,
     ingredients: (ingredients || []).map((i) => ({
       _id: i.data?._id || i._id,
       name: i.data?.display_name || i.name,
@@ -68,7 +68,8 @@ export async function fetchRecipeResult({
 
   const res = await fetch(`${addressIp}/recipes/result`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    // Signed in: the header lets the server personalise; guest: no header.
+    headers: jsonAuthHeaders(token),
     body: JSON.stringify(payload),
     signal,
   });
@@ -96,10 +97,7 @@ export async function fetchOrigins({ signal } = {}) {
 export async function patchUserSettings({ token, partial }) {
   const res = await fetch(`${addressIp}/users/settings`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    headers: jsonAuthHeaders(token),
     body: JSON.stringify(partial),
   });
   return res.json();

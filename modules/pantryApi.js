@@ -1,4 +1,5 @@
 import addressIp from './addressIp';
+import { jsonAuthHeaders } from './authHeaders';
 
 // Why a thin wrapper instead of calling fetch from screens?
 //   1. The backend uses a dual error channel: HTTP status codes for auth /
@@ -9,11 +10,6 @@ import addressIp from './addressIp';
 //      …). Wrapping every call in try/catch here means the UI never sees
 //      a thrown promise and can rely on `const { ok, data, error } = ...`
 //      without writing its own try/catch around every dispatch.
-
-const buildHeaders = (token) => ({
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${token}`,
-});
 
 // Some error paths (502 from Vercel cold-start, network errors that still
 // return a response shell) don't carry a JSON body. Swallow the parse
@@ -44,7 +40,7 @@ const handle = async (res) => {
 export const getPantry = async (token) => {
   try {
     const res = await fetch(`${addressIp}/inventory`, {
-      headers: buildHeaders(token),
+      headers: jsonAuthHeaders(token),
     });
     return handle(res);
   } catch (e) {
@@ -58,7 +54,7 @@ export const addPantryItem = async (token, body) => {
   try {
     const res = await fetch(`${addressIp}/inventory`, {
       method: 'POST',
-      headers: buildHeaders(token),
+      headers: jsonAuthHeaders(token),
       body: JSON.stringify(body),
     });
     return handle(res);
@@ -73,7 +69,7 @@ export const updatePantryItem = async (token, itemId, body) => {
   try {
     const res = await fetch(`${addressIp}/inventory/${itemId}`, {
       method: 'PATCH',
-      headers: buildHeaders(token),
+      headers: jsonAuthHeaders(token),
       body: JSON.stringify(body),
     });
     return handle(res);
@@ -87,7 +83,7 @@ export const removePantryItem = async (token, itemId) => {
   try {
     const res = await fetch(`${addressIp}/inventory/${itemId}`, {
       method: 'DELETE',
-      headers: buildHeaders(token),
+      headers: jsonAuthHeaders(token),
     });
     return handle(res);
   } catch (e) {
@@ -103,7 +99,7 @@ export const searchIngredients = async (token, query) => {
     const q = encodeURIComponent(query || '');
     const res = await fetch(
       `${addressIp}/ingredients/search?q=${q}&limit=20`,
-      { headers: buildHeaders(token) },
+      { headers: jsonAuthHeaders(token) },
     );
     return handle(res);
   } catch (e) {
