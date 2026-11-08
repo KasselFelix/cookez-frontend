@@ -233,7 +233,8 @@ export default function KickoffScreen({navigation}) {
 		if (!requireAuth('scan')) return;
 		let photo = null;
 		try {
-			photo = await cameraRef.current?.takePictureAsync({ quality: 0.7 });
+			// exif: false, the app never reads it; the backend strips the file metadata (B15).
+			photo = await cameraRef.current?.takePictureAsync({ quality: 0.7, exif: false });
 		} catch {
 			// Camera busy, unmounted or permission revoked: same message as a failed shot.
 		}
