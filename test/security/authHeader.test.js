@@ -40,15 +40,17 @@ const PUBLIC_ROUTES = [
   /\/comments\/\$\{user\.username\}/, // GET /comments/:username
 ];
 
-// Comments mention fetch() in prose; `//` after a colon is a URL, kept.
-const stripComments = (source) => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:\\])\/\/.*$/gm, '$1');
+// Comments mention fetch() in prose. A line comment starts a line or follows
+// a space: `//` in a URL ('http://') or a string ('//') is kept.
+const stripComments = (source) => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\s)\/\/.*$/gm, '$1');
 
-/** Text from `open` (index of a `(`) to its matching `)`, both included. */
+/** Text from `open` (index of a `(` or a `{`) to its matching closer, both included. */
 const balanced = (source, open) => {
+  const [opener, closer] = source[open] === '{' ? ['{', '}'] : ['(', ')'];
   let depth = 0;
   for (let i = open; i < source.length; i += 1) {
-    if (source[i] === '(') depth += 1;
-    else if (source[i] === ')') {
+    if (source[i] === opener) depth += 1;
+    else if (source[i] === closer) {
       depth -= 1;
       if (depth === 0) return source.slice(open, i + 1);
     }
@@ -76,12 +78,26 @@ const fetchCalls = (source) => {
   return calls;
 };
 
-/** Arguments of every JSON.stringify(...) of a source. */
+/**
+ * Arguments of every JSON.stringify(...) of a source. JSON.stringify(payload)
+ * also yields the object literal of the last `const payload = { … }` before it.
+ */
 const stringifyArgs = (source) =>
-  [...source.matchAll(/JSON\.stringify\s*\(/g)].map((m) => balanced(source, m.index + m[0].length - 1));
+  [...source.matchAll(/JSON\.stringify\s*\(/g)].map((m) => {
+    const open = m.index + m[0].length - 1;
+    const arg = balanced(source, open);
+    const ident = /^\(\s*([A-Za-z_$][\w$]*)\s*[,)]/.exec(arg);
+    if (!ident) return arg;
+    const defs = [...source.slice(0, open).matchAll(new RegExp(`\\b(?:const|let)\\s+${ident[1]}\\s*=\\s*\\{`, 'g'))];
+    if (!defs.length) return arg;
+    const last = defs[defs.length - 1];
+    return `${arg} ${balanced(source, last.index + last[0].length - 1)}`;
+  });
 
 const USES_HELPER = /\b(jsonAuthHeaders|authHeaders)\s*\(/;
-const TOKEN_KEY = /(^|[{,\s])token\s*[:,}]/;
+// token, authToken, "token"…: any key that names a token, bare or quoted;
+// or a whole user object spread into the body.
+const TOKEN_KEY = /(^|[{,\s])["']?\w*token["']?\s*[:,}]|\.\.\.\s*\w*user\b/i;
 
 describe('session token in the Authorization header only', () => {
   const files = [path.join(ROOT, 'App.js'), ...SOURCE_DIRS.flatMap((d) => sourceFiles(path.join(ROOT, d)))];
@@ -110,6 +126,14 @@ describe('session token in the Authorization header only', () => {
     expect(offenders.map(label)).toEqual([]);
   });
 
+  it('keeps the multipart uploads free of a JSON Content-Type', () => {
+    // jsonAuthHeaders would override the boundary fetch sets for a FormData body.
+    const multipart = calls.filter(({ target }) => /\/(upload|vision)\//.test(target));
+    expect(multipart.length).toBeGreaterThanOrEqual(2);
+    const offenders = multipart.filter(({ text }) => /jsonAuthHeaders\s*\(|Content-Type/i.test(text) || !/\bauthHeaders\s*\(/.test(text));
+    expect(offenders.map(label)).toEqual([]);
+  });
+
   it('puts no token in a request body', () => {
     const inFetch = calls.filter(({ text }) => /\bbody\s*:[^\n]*\btoken\b/i.test(text));
     const inJson = sources.filter(({ source }) => stringifyArgs(source).some((arg) => TOKEN_KEY.test(arg)));
@@ -128,7 +152,14 @@ describe('session token in the Authorization header only', () => {
     expect(USES_HELPER.test(legacy.text)).toBe(false);
     expect(TOKEN_KEY.test(stringifyArgs(legacy.text)[0])).toBe(true);
     expect(TOKEN_KEY.test('({ ids, token })')).toBe(true);
+    expect(TOKEN_KEY.test('({ sessionToken: t, ids })')).toBe(true);
+    expect(TOKEN_KEY.test('({ "token": user.token })')).toBe(true);
+    expect(TOKEN_KEY.test('({ ...currentUser, ids })')).toBe(true);
     expect(TOKEN_KEY.test('({ message, recipe: recipeId })')).toBe(false);
+    // The pre-PR 3 /recipes/result: the token sat in a payload stringified later.
+    const [payload] = stringifyArgs('const payload = {\n  token: token || undefined,\n  origins: [],\n};\nfetch(u, { body: JSON.stringify(payload) });');
+    expect(TOKEN_KEY.test(payload)).toBe(true);
+    expect(stripComments("fetch('//x', a); // note")).toBe("fetch('//x', a); ");
 
     const [viaVariable] = fetchCalls('const url = `${addressIp}/notifications?limit=1`;\nfetch(url, { headers: authHeaders(token) })');
     expect(viaVariable.target).toContain('/notifications');
