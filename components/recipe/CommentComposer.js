@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { BottomSheetView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import addressIp from '../../modules/addressIp';
+import { jsonAuthHeaders } from '../../modules/authHeaders';
 import { addCommentToRecipe } from '../../reducers/recipe';
 import css from '../../styles/Global';
 
@@ -45,9 +46,8 @@ export default function CommentComposer({ recipeId, onClose }) {
     try {
       const response = await fetch(`${addressIp}/comments/add`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: jsonAuthHeaders(user.token),
         body: JSON.stringify({
-          token: user.token,
           message: trimmed,
           recipe: recipeId,
         }),

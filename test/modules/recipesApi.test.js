@@ -22,3 +22,20 @@ describe('fetchRecipeResult error handling (Plan 006 B1)', () => {
     await expect(fetchRecipeResult(args)).resolves.toEqual(body);
   });
 });
+
+describe('fetchRecipeResult session token (plan 016, PR 3)', () => {
+  it('sends the token in the Authorization header, never in the body', async () => {
+    global.fetch = jest.fn().mockResolvedValue(ok({ result: true, recipes: [] }));
+    await fetchRecipeResult({ ...args, token: 'session-token' });
+    const [, init] = global.fetch.mock.calls[0];
+    expect(init.headers).toEqual({ 'Content-Type': 'application/json', Authorization: 'Bearer session-token' });
+    expect(JSON.parse(init.body)).not.toHaveProperty('token');
+  });
+
+  it('sends no Authorization header for a guest', async () => {
+    global.fetch = jest.fn().mockResolvedValue(ok({ result: true, recipes: [] }));
+    await fetchRecipeResult(args);
+    const [, init] = global.fetch.mock.calls[0];
+    expect(init.headers).toEqual({ 'Content-Type': 'application/json' });
+  });
+});

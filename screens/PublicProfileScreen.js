@@ -37,6 +37,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
+import { authHeaders } from '../modules/authHeaders';
 import {
   commitFollow,
   setFollowOptimistic,
@@ -229,8 +230,7 @@ export default function PublicProfileScreen({ navigation, route }) {
       const path = next ? 'follow' : 'unfollow';
       const res = await fetch(`${addressIp}/users/${path}/${username}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: currentUser.token }),
+        headers: authHeaders(currentUser.token),
       });
       const data = await res.json();
       const ok = !!data.result;

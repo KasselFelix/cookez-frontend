@@ -5,7 +5,8 @@
 //        Authorization: Bearer <token>
 //        → { result, notifications: [...], unread }
 //   PATCH /notifications/read
-//        body { token, ids: [string] | 'all' }
+//        Authorization: Bearer <token>
+//        body { ids: [string] | 'all' }
 //        → { result, unread }
 //
 // Behavior:
@@ -33,6 +34,7 @@ import { CheckCheck, ChevronLeft, ImageOff, Trash2 } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
+import { authHeaders, jsonAuthHeaders } from '../modules/authHeaders';
 import { getAvatarSource } from '../modules/avatars';
 import { navigateToProfile } from '../modules/profileNavigation';
 import {
@@ -71,7 +73,7 @@ export default function NotificationsScreen({ navigation }) {
 
       try {
         const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${user.token}` },
+          headers: authHeaders(user.token),
         });
         const data = await res.json();
         if (!data.result) {
@@ -137,8 +139,8 @@ export default function NotificationsScreen({ navigation }) {
     try {
       const res = await fetch(`${addressIp}/notifications/read`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: user.token, ids: payload }),
+        headers: jsonAuthHeaders(user.token),
+        body: JSON.stringify({ ids: payload }),
       });
       const data = await res.json();
       if (data.result && typeof data.unread === 'number') {
@@ -163,7 +165,7 @@ export default function NotificationsScreen({ navigation }) {
     try {
       const res = await fetch(`${addressIp}/notifications/${notif._id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${user.token}` },
+        headers: authHeaders(user.token),
       });
       const data = await res.json();
       if (data?.result && typeof data.unread === 'number') {

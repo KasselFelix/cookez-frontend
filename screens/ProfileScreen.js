@@ -46,6 +46,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
+import { authHeaders, jsonAuthHeaders } from '../modules/authHeaders';
 import { availableImages } from '../modules/avatars';
 import { resolveRecipeImageSource } from '../modules/recipeImage';
 import RecipeImage from '../components/recipe/RecipeImage';
@@ -298,7 +299,7 @@ export default function ProfileScreen({ navigation, route }) {
       (async () => {
         try {
           const res = await fetch(`${addressIp}/notifications?limit=1`, {
-            headers: { Authorization: `Bearer ${user.token}` },
+            headers: authHeaders(user.token),
           });
           const data = await res.json();
           if (!cancelled && data?.result && typeof data.unread === 'number') {
@@ -384,7 +385,7 @@ export default function ProfileScreen({ navigation, route }) {
     (async () => {
       try {
         const res = await fetch(`${addressIp}/users/me/badges`, {
-          headers: { Authorization: `Bearer ${user.token}` },
+          headers: authHeaders(user.token),
         });
         const data = await res.json();
         if (!cancelled && data.result) {
@@ -432,8 +433,8 @@ export default function ProfileScreen({ navigation, route }) {
     try {
       const res = await fetch(`${addressIp}/users/profile`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: user.token, image: newImage }),
+        headers: jsonAuthHeaders(user.token),
+        body: JSON.stringify({ image: newImage }),
       });
       const data = await res.json();
       if (data.result) {
