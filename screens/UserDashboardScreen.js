@@ -21,6 +21,7 @@ import { useTheme } from "../contexts/ThemeProvider";
 import useTabBarHeight from "../hooks/useTabBarHeight";
 import useT from "../i18n/useT";
 import addressIp from "../modules/addressIp";
+import { authHeaders } from "../modules/authHeaders";
 import { rankByPreparationTime, rankRecipes } from "../modules/recipeRanking";
 import { addRecipe, setRecipes } from "../reducers/recipe";
 import { resolveRecipeImageSource } from "../modules/recipeImage";
@@ -161,7 +162,7 @@ export default function UserDashboardScreen({ navigation }) {
     }
     try {
       const response = await fetch(`${addressIp}/users/me/last-viewed`, {
-        headers: { Authorization: `Bearer ${user.token}` },
+        headers: authHeaders(user.token),
       });
       const data = await response.json();
       setRecentlyViewed(data?.result && Array.isArray(data.recipes) ? data.recipes : []);

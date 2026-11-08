@@ -1,4 +1,5 @@
 import addressIp from './addressIp';
+import { authHeaders, jsonAuthHeaders } from './authHeaders';
 
 /**
  * Restores the session of a stored token through GET /users/me, token in the
@@ -13,7 +14,7 @@ import addressIp from './addressIp';
 export async function fetchSessionUser(token) {
   try {
     const response = await fetch(`${addressIp}/users/me`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: authHeaders(token),
     });
     if (response.status === 401) return { status: 'invalid' };
     const data = await response.json();
@@ -36,7 +37,7 @@ export async function recordRecipeView(token, recipeId) {
   try {
     await fetch(`${addressIp}/users/me/last-viewed`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: jsonAuthHeaders(token),
       body: JSON.stringify({ recipeId }),
     });
   } catch {

@@ -23,6 +23,7 @@ import { updateRecipeVote } from '../reducers/recipe';
 import { toggleFavorite } from '../reducers/user';
 // MODULES
 import addressIp from '../modules/addressIp';
+import { jsonAuthHeaders } from '../modules/authHeaders';
 import { recordRecipeView } from '../modules/session';
 import css from '../styles/Global';
 import useT from '../i18n/useT';
@@ -204,7 +205,7 @@ export default function RecipeScreen({ route, navigation }) {
           `${addressIp}/recipes/vote/${selectedRecipeId}`,
           {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: jsonAuthHeaders(user.token),
             body: JSON.stringify({ username: user.username, note }),
           }
         );
@@ -261,10 +262,7 @@ export default function RecipeScreen({ route, navigation }) {
     try {
       const response = await fetch(`${addressIp}/users/favorites/${action}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
-        },
+        headers: jsonAuthHeaders(user.token),
         body: JSON.stringify({ recipeId: selectedRecipeId }),
       });
       const data = await response.json();

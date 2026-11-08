@@ -1,4 +1,5 @@
 import addressIp from './addressIp';
+import { authHeaders } from './authHeaders';
 
 // Longest wait the app accepts before its single retry of a busy answer.
 const MAX_RETRY_WAIT_S = 30;
@@ -30,7 +31,7 @@ export async function analyzePhoto(uri, token) {
     // No Content-Type: fetch sets the multipart boundary itself.
     const response = await fetch(`${addressIp}/vision/analyze`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: authHeaders(token),
       body,
     });
     if (response.status === 401) return { status: 'unauthorized' };

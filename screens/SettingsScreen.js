@@ -53,6 +53,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
+import { jsonAuthHeaders } from '../modules/authHeaders';
 import { joinAllergies, splitAllergies } from '../modules/allergenOptions';
 import { patchUserSettings } from '../modules/recipesApi';
 import { clearCache as clearRecipeCache } from '../modules/recipeCache';
@@ -153,15 +154,14 @@ export default function SettingsScreen({ navigation }) {
     setDraft({});
   };
 
-  // Use the new partial-update endpoint. The legacy alias /users/update
-  // still exists for backwards-compat; new code targets /users/profile.
+  // PUT /users/profile: partial update, token in the Authorization header.
   const putUpdate = async (overrides) => {
     setIsSaving(true);
     try {
       const res = await fetch(`${addressIp}/users/profile`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: user.token, ...overrides }),
+        headers: jsonAuthHeaders(user.token),
+        body: JSON.stringify(overrides),
       });
       const data = await res.json();
       if (data.result) {

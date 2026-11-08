@@ -19,6 +19,7 @@ import MySmallButton from "../components/MySmallButton";
 import { FontAwesome } from "@expo/vector-icons";
 import RNPickerSelect from 'react-native-picker-select';
 import addressIp from "../modules/addressIp";
+import { authHeaders, jsonAuthHeaders } from "../modules/authHeaders";
 import { useDispatch, useSelector } from "react-redux";
 import IngredientsList from "../components/IngredientsList";
 import StepsList from "../components/StepsList";
@@ -89,6 +90,8 @@ export default function AddRecipeScreen({navigation}) {
             // Envoi de l'image
             const uploadResponse = await fetch(`${addressIp}/upload/${recipeName.trim()}_${date}`, {
                 method: 'POST',
+                // No Content-Type: fetch sets the multipart boundary itself.
+                headers: authHeaders(user.token),
                 body: formData,
             });
 
@@ -103,7 +106,7 @@ export default function AddRecipeScreen({navigation}) {
                 // Envoi des informations de la recette
                 const recipeResponse = await fetch(`${addressIp}/recipes/add`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: jsonAuthHeaders(user.token),
                     body: JSON.stringify({
                         username: user.username,
                         name: recipeName,

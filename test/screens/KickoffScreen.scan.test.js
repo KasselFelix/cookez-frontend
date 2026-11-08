@@ -68,7 +68,8 @@ describe('KickoffScreen scan', () => {
       fireEvent.press(screen.getByTestId('kickoff-snap'));
     });
 
-    expect(mockCamera.takePictureAsync).toHaveBeenCalledWith({ quality: 0.7 });
+    // B15: no EXIF object asked from the camera; the backend strips the file itself.
+    expect(mockCamera.takePictureAsync).toHaveBeenCalledWith({ quality: 0.7, exif: false });
     const call = global.fetch.mock.calls.find(([url]) => String(url).endsWith('/vision/analyze'));
     expect(call).toBeDefined();
     expect(call[1].headers).toEqual({ Authorization: `Bearer ${user.value.token}` });
