@@ -100,6 +100,8 @@ export default function DietMultiSelect({ visible, onClose }) {
       visible={visible}
       transparent
       animationType="fade"
+      statusBarTranslucent
+      navigationBarTranslucent
       onRequestClose={onClose}
     >
       <Pressable
@@ -176,13 +178,13 @@ export default function DietMultiSelect({ visible, onClose }) {
                     style={[
                       styles.checkbox,
                       {
-                        borderColor: isOn ? css.palette.neutral900 : css.palette.neutral300,
-                        backgroundColor: isOn ? css.palette.neutral900 : 'transparent',
+                        borderColor: isOn ? css.button.primaryBg : css.palette.neutral300,
+                        backgroundColor: isOn ? css.button.primaryBg : 'transparent',
                         borderRadius: css.radius.xs,
                       },
                     ]}
                   >
-                    {isOn ? <Check size={14} color={css.palette.white} /> : null}
+                    {isOn ? <Check size={14} color={css.button.primaryText} /> : null}
                   </View>
                   <Text
                     style={{
@@ -231,7 +233,7 @@ export default function DietMultiSelect({ visible, onClose }) {
               style={[
                 styles.btn,
                 {
-                  backgroundColor: css.palette.neutral900,
+                  backgroundColor: css.button.primaryBg,
                   borderRadius: css.radius.pill,
                   marginLeft: css.spacing.sm,
                   opacity: isSaving ? 0.6 : 1,
@@ -241,12 +243,12 @@ export default function DietMultiSelect({ visible, onClose }) {
               accessibilityLabel={t('common.save')}
             >
               {isSaving ? (
-                <ActivityIndicator size="small" color={css.palette.white} />
+                <ActivityIndicator size="small" color={css.button.primaryText} />
               ) : (
                 <Text
                   style={{
                     fontFamily: css.typography.fontUI,
-                    color: css.palette.white,
+                    color: css.button.primaryText,
                     fontWeight: '600',
                   }}
                 >

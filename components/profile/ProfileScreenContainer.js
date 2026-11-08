@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '../../contexts/ThemeProvider';
 import { useResponsive } from '../../styles/responsive';
-import css from '../../styles/Global'
 
 /**
  * ProfileScreenContainer
@@ -45,7 +44,10 @@ export default function ProfileScreenContainer({
 
   if (!scroll) {
     return (
-      <SafeAreaView style={styles.container} edges={safeAreaEdges}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: css.palette.surfaceCard }]}
+        edges={safeAreaEdges}
+      >
         {header}
         <View style={[styles.staticContent, innerWidthStyle, contentStyle]}>
           {children}
@@ -59,7 +61,11 @@ export default function ProfileScreenContainer({
       {header}
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[styles.scrollContent, scrollContentStyle]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: css.spacing.xxxl },
+          scrollContentStyle,
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.scrollInner, innerWidthStyle, contentStyle]}>
@@ -79,7 +85,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: css.spacing.xxxl,
   },
   scrollInner: {
     flexGrow: 1,
