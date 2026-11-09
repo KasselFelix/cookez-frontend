@@ -92,7 +92,7 @@ export default function ProfileIdentityBlock({
     <View style={[styles.avatarWrap, avatarStyle]}>
       <Image
         source={avatarSource}
-        style={[styles.avatar, avatarStyle]}
+        style={[styles.avatar, avatarStyle, { backgroundColor: css.palette.neutral200 }]}
         accessibilityIgnoresInvertColors
       />
       {editable ? (
@@ -151,7 +151,7 @@ export default function ProfileIdentityBlock({
 
   if (centered) {
     return (
-      <View style={styles.containerCentered}>
+      <View style={[styles.containerCentered, { backgroundColor: css.palette.surfaceCard }]}>
         {AvatarTouchable}
         <View style={styles.centeredText}>
           {NameAndSubtitle}
@@ -181,15 +181,12 @@ const styles = StyleSheet.create({
   },
   containerCentered: {
     alignItems: 'center',
-    backgroundColor: css.palette.surfaceCard,
     padding: css.spacing.md,
   },
   avatarWrap: {
     position: 'relative',
   },
-  avatar: {
-    backgroundColor: css.palette.neutral200,
-  },
+  avatar: {},
   avatarBadge: {
     position: 'absolute',
     bottom: 0,
