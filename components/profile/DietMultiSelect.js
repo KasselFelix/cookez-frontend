@@ -77,7 +77,10 @@ export default function DietMultiSelect({ visible, onClose }) {
       const res = await fetch(`${addressIp}/users/profile`, {
         method: 'PUT',
         headers: jsonAuthHeaders(user.token),
-        body: JSON.stringify({ dietRestrictions: selected }),
+        // Clears the legacy single `settings.diet` too: readDietRestrictions
+        // falls back to it when the array is empty, so an emptied list would
+        // otherwise come back as the old diet.
+        body: JSON.stringify({ dietRestrictions: selected, diet: '' }),
       });
       const data = await res.json();
       if (data.result) {

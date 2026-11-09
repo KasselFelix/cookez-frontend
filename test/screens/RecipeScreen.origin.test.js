@@ -100,4 +100,20 @@ describe('RecipeScreen by screen of origin', () => {
     await waitFor(() => expect(screen.getByText('Tasty bowl')).toBeTruthy());
     expect(detailCalls()).toHaveLength(0);
   });
+
+  it('when the detail fails: keeps the partial recipe without crashing', async () => {
+    mockFetchJsonAlways({ result: false, error: 'Recipe not found' });
+    renderRecipe({ navRecipe: listRecipe, stored: [listRecipe] });
+
+    await waitFor(() => expect(detailCalls()).toHaveLength(1));
+    expect((await screen.findAllByText('Rice bowl')).length).toBeGreaterThan(0);
+    expect(screen.queryByText('130 kcal')).toBeNull();
+  });
+
+  it('when the detail fails for a recipe without a name: shows "Recipe not found."', async () => {
+    mockFetchJsonAlways({ result: false, error: 'Recipe not found' });
+    renderRecipe({ navRecipe: { _id: 'gone' }, stored: [] });
+
+    expect(await screen.findByText('Recipe not found.')).toBeTruthy();
+  });
 });
