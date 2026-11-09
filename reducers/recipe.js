@@ -34,6 +34,19 @@ export const recipeSlice = createSlice({
                 return true;
             });
         },
+        // Full recipe from GET /recipes/detail/:id (plan 017): merged over the
+        // copy already in the slice, or added when the screen that opened it
+        // never stored it (profile tiles, CommentScreen).
+        setRecipeDetail: (state, action) => {
+            const detail = action.payload;
+            if (!detail?._id) return;
+            const index = state.value.findIndex((r) => r._id === detail._id);
+            if (index === -1) {
+                state.value.push(detail);
+            } else {
+                state.value[index] = { ...state.value[index], ...detail };
+            }
+        },
         removeRecipe: (state, action) => {
             state.value = state.value.filter((e) => e._id !== action.payload._id);
         },
@@ -140,6 +153,7 @@ export const recipeSlice = createSlice({
 export const {
     addRecipe,
     setRecipes,
+    setRecipeDetail,
     removeRecipe,
     clearRecipes,
     updateRecipeVote,

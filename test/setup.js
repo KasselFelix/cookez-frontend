@@ -40,6 +40,10 @@ jest.mock('react-native-reanimated', () => {
     // eslint-disable-next-line global-require
     const Reanimated = require('react-native-reanimated/mock');
     if (Reanimated.default) Reanimated.default.call = () => {};
+    // The bundled mock lacks the scroll handler RecipeScreen uses.
+    if (!Reanimated.useAnimatedScrollHandler) {
+      Reanimated.useAnimatedScrollHandler = () => () => {};
+    }
     return Reanimated;
   } catch (e) {
     // Fallback: minimal inert mock covering the APIs the app uses.
@@ -60,6 +64,7 @@ jest.mock('react-native-reanimated', () => {
       useAnimatedStyle: (fn) => (typeof fn === 'function' ? fn() : {}),
       useDerivedValue: (fn) => ({ value: typeof fn === 'function' ? fn() : undefined }),
       useAnimatedRef: () => ({ current: null }),
+      useAnimatedScrollHandler: () => () => {},
       withTiming: (v) => v,
       withSpring: (v) => v,
       withDelay: (_, v) => v,
