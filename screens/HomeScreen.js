@@ -4,6 +4,7 @@ import MyButton from "../components/MyButton";
 import buttonStyles from "../styles/Button";
 import css from "../styles/Global";
 import { useSelector } from "react-redux";
+import { enterApp } from "../modules/sessionNavigation";
 
 
 
@@ -30,7 +31,7 @@ export default function HomeScreen({ navigation }) {
 
         <View style={styles.buttons}>
           <MyButton
-            dataFlow={() => navigation.navigate("Kickoff")}
+            dataFlow={() => user.token ? enterApp(navigation, "Kickoff") : navigation.navigate("Kickoff")}
             text={"SNAP 📸"}
             testID="home-snap"
             buttonType={buttonStyles.buttonTwo}
@@ -39,7 +40,7 @@ export default function HomeScreen({ navigation }) {
 
         <View style={styles.buttons}>
           <MyButton
-            dataFlow={() => user.token ? navigation.navigate("TabNavigator", { screen: "UserDashboard" }) : navigation.navigate("Login")}
+            dataFlow={() => user.token ? enterApp(navigation) : navigation.navigate("Login")}
             text={"CONNECT"}
             testID="home-connect"
             buttonType={buttonStyles.buttonOne}

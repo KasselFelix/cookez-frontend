@@ -24,6 +24,7 @@ import { setRecipeDetail, updateRecipeVote } from '../reducers/recipe';
 import { toggleFavorite } from '../reducers/user';
 // MODULES
 import addressIp from '../modules/addressIp';
+import { enterApp, exitToHome } from '../modules/sessionNavigation';
 import { jsonAuthHeaders } from '../modules/authHeaders';
 import { recordRecipeView } from '../modules/session';
 import { fetchRecipeDetail, isRecipeComplete } from '../modules/recipeDetail';
@@ -608,9 +609,8 @@ export default function RecipeScreen({ route, navigation }) {
           onBack={() => navigation.goBack()}
           onHome={
             user.token
-              ? () =>
-                  navigation.navigate('TabNavigator', { screen: 'UserDashboard' })
-              : () => navigation.navigate('Home')
+              ? () => enterApp(navigation)
+              : () => exitToHome(navigation)
           }
         />
 
