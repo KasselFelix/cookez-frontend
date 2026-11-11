@@ -1,58 +1,101 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSelector, createSlice } from "@reduxjs/toolkit";
 
+// One table of every recipe the app knows (`value`, looked up by _id by
+// RecipeScreen, the comments and Favorites), plus the order of the two lists
+// that show them: the Dashboard catalog (GET /recipes/all) and the last
+// ResultScreen search (POST /recipes/result). Each list writes its own ids, so
+// a search never empties or replaces the Dashboard (plan 017, point 1) and a
+// recipe opened from the profile never joins the results (point 26).
 const initialState = {
     value: [],
+    catalogIds: [],
+    resultIds: [],
 };
+
+const isObject = (value) => typeof value === 'object' && value !== null;
+
+// /recipes/all and /recipes/search send ingredient rows with bare ids;
+// /recipes/result and /recipes/detail populate them. A thinner copy must not
+// undo a richer one already in the table.
+const hasPopulatedIngredients = (recipe) =>
+    Array.isArray(recipe?.ingredients) &&
+    recipe.ingredients.length > 0 &&
+    recipe.ingredients.every((row) => isObject(row?.ingredient));
+
+// Comments are the single source of truth for RecipeScreen: a copy that
+// carries bare comment ids (or none) must not replace the objects in the table.
+const hasCommentObjects = (recipe) =>
+    Array.isArray(recipe?.comments) && recipe.comments.every(isObject);
+
+function mergeRecipe(existing, incoming) {
+    const merged = { ...existing, ...incoming };
+    if (hasPopulatedIngredients(existing) && !hasPopulatedIngredients(incoming)) {
+        merged.ingredients = existing.ingredients;
+    }
+    if (hasCommentObjects(existing) && !hasCommentObjects(incoming)) {
+        merged.comments = existing.comments;
+    }
+    return merged;
+}
+
+// Merges each recipe into the table by _id and returns the ids in the given
+// order, duplicates dropped. A recipe without _id cannot be listed.
+function upsertRecipes(state, recipes) {
+    const indexById = new Map(state.value.map((r, i) => [String(r?._id), i]));
+    const ids = [];
+    const seen = new Set();
+    for (const recipe of Array.isArray(recipes) ? recipes : []) {
+        if (!recipe?._id) continue;
+        const id = String(recipe._id);
+        if (seen.has(id)) continue;
+        seen.add(id);
+        ids.push(id);
+        const index = indexById.get(id);
+        if (index === undefined) {
+            indexById.set(id, state.value.length);
+            state.value.push(recipe);
+        } else {
+            state.value[index] = mergeRecipe(state.value[index], recipe);
+        }
+    }
+    return ids;
+}
 
 export const recipeSlice = createSlice({
     name: 'recipe',
     initialState,
     reducers: {
+        // Stores a recipe without listing it (a Dashboard search hit about to
+        // be opened, so RecipeScreen finds its votes and comments). A recipe
+        // already in the table is left alone: the card that was tapped may
+        // hold an older or thinner copy than the table.
         addRecipe: (state, action) => {
-            // Skip if a recipe with this _id is already in the slice — prevents
-            // duplicate-key React errors when the same payload is dispatched twice
-            // (e.g. fast double-tap on Add Recipe).
             const incoming = action.payload;
-            if (!incoming?._id) {
-                state.value.push(incoming);
-                return;
-            }
-            const exists = state.value.some((r) => r._id === incoming._id);
-            if (!exists) state.value.push(incoming);
+            if (!incoming?._id) return;
+            const id = String(incoming._id);
+            if (!state.value.some((r) => String(r?._id) === id)) state.value.push(incoming);
         },
-        setRecipes: (state, action) => {
-            // Defensive dedup on hydration — guarantees no two recipes with the
-            // same _id even if the server payload contains duplicates from a
-            // join or aggregation quirk.
-            const incoming = Array.isArray(action.payload) ? action.payload : [];
-            const seen = new Set();
-            state.value = incoming.filter((r) => {
-                if (!r?._id) return true;
-                const id = String(r._id);
-                if (seen.has(id)) return false;
-                seen.add(id);
-                return true;
-            });
+        // GET /recipes/all: the Dashboard catalog (App.js boot, Dashboard mount).
+        setCatalogRecipes: (state, action) => {
+            state.catalogIds = upsertRecipes(state, action.payload);
+        },
+        // POST /recipes/result, or its offline cache: the ResultScreen list.
+        setResultRecipes: (state, action) => {
+            state.resultIds = upsertRecipes(state, action.payload);
         },
         // Full recipe from GET /recipes/detail/:id (plan 017): merged over the
-        // copy already in the slice, or added when the screen that opened it
-        // never stored it (profile tiles, CommentScreen).
+        // copy already in the table, or stored when the screen that opened it
+        // never did (profile tiles, CommentScreen). Listed nowhere.
         setRecipeDetail: (state, action) => {
-            const detail = action.payload;
-            if (!detail?._id) return;
-            const index = state.value.findIndex((r) => r._id === detail._id);
-            if (index === -1) {
-                state.value.push(detail);
-            } else {
-                state.value[index] = { ...state.value[index], ...detail };
-            }
+            upsertRecipes(state, [action.payload]);
         },
         removeRecipe: (state, action) => {
-            state.value = state.value.filter((e) => e._id !== action.payload._id);
+            const id = String(action.payload?._id);
+            state.value = state.value.filter((e) => String(e._id) !== id);
+            state.catalogIds = state.catalogIds.filter((e) => e !== id);
+            state.resultIds = state.resultIds.filter((e) => e !== id);
         },
-        clearRecipes: (state) => {
-            state.value = [];
-        },
+        clearRecipes: () => initialState,
         // updateRecipeVote: (state, action) => {
         //     const recipe = state.value.find((r) => r._id === action.payload._id);
         //     if (recipe) {
@@ -152,7 +195,8 @@ export const recipeSlice = createSlice({
 
 export const {
     addRecipe,
-    setRecipes,
+    setCatalogRecipes,
+    setResultRecipes,
     setRecipeDetail,
     removeRecipe,
     clearRecipes,
@@ -162,4 +206,23 @@ export const {
     deleteComment,
     updateCommentMessage,
 } = recipeSlice.actions;
+
+// Each list resolved against the table. Memoized: the same arrays come back
+// until the table or the list changes, so screens do not re-render for nothing.
+const selectTable = (state) => state.recipe.value;
+const pickByIds = (table, ids) => {
+    const byId = new Map(table.map((r) => [String(r?._id), r]));
+    return (ids ?? []).map((id) => byId.get(id)).filter(Boolean);
+};
+
+export const selectCatalogRecipes = createSelector(
+    [selectTable, (state) => state.recipe.catalogIds],
+    pickByIds
+);
+
+export const selectResultRecipes = createSelector(
+    [selectTable, (state) => state.recipe.resultIds],
+    pickByIds
+);
+
 export default recipeSlice.reducer;

@@ -11,7 +11,7 @@ import StaleCacheBanner from '../components/result/StaleCacheBanner';
 import { useConnectivity } from '../hooks/useConnectivity';
 import { fetchRecipeResult } from '../modules/recipesApi';
 import { getCachedResult, setCachedResult } from '../modules/recipeCache';
-import { setRecipes } from '../reducers/recipe';
+import { selectResultRecipes, setResultRecipes } from '../reducers/recipe';
 import { setAmazonConfig } from '../reducers/appConfig';
 import { openRecipe } from '../modules/recipeNavigation';
 import { useTheme } from '../contexts/ThemeProvider';
@@ -39,7 +39,7 @@ export default function ResultScreen({ navigation }) {
   const user = useSelector((s) => s.user.value);
   const filters = useSelector((s) => s.recipeFilters.value);
   const ingredients = useSelector((s) => s.ingredient.value);
-  const recipes = useSelector((s) => s.recipe.value);
+  const recipes = useSelector(selectResultRecipes);
   const { isConnected, isInternetReachable } = useConnectivity();
 
   const [staleHit, setStaleHit] = useState(false);
@@ -119,7 +119,7 @@ export default function ResultScreen({ navigation }) {
           if (cancelled) return;
           if (data?.result) {
             const fetchedAt = filters?.currentServings ?? 1;
-            dispatch(setRecipes(tagRecipes(data.recipes, fetchedAt)));
+            dispatch(setResultRecipes(tagRecipes(data.recipes, fetchedAt)));
             if (data.amazonConfig) dispatch(setAmazonConfig(data.amazonConfig));
             await setCachedResult(cacheInput, data);
             setStaleHit(false);
@@ -141,7 +141,7 @@ export default function ResultScreen({ navigation }) {
         const cached = await getCachedResult(cacheInput);
         if (cached) {
           const fetchedAt = cached.data?.fetchedAtServings ?? filters?.currentServings ?? 1;
-          dispatch(setRecipes(tagRecipes(cached.data?.recipes, fetchedAt)));
+          dispatch(setResultRecipes(tagRecipes(cached.data?.recipes, fetchedAt)));
           if (cached.data?.amazonConfig) {
             dispatch(setAmazonConfig(cached.data.amazonConfig));
           }
@@ -157,7 +157,7 @@ export default function ResultScreen({ navigation }) {
         const cached = await getCachedResult(cacheInput);
         if (cached) {
           const fetchedAt = cached.data?.fetchedAtServings ?? filters?.currentServings ?? 1;
-          dispatch(setRecipes(tagRecipes(cached.data?.recipes, fetchedAt)));
+          dispatch(setResultRecipes(tagRecipes(cached.data?.recipes, fetchedAt)));
           if (cached.data?.amazonConfig) {
             dispatch(setAmazonConfig(cached.data.amazonConfig));
           }

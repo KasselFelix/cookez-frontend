@@ -24,6 +24,7 @@ import { setRecipeDetail, updateRecipeVote } from '../reducers/recipe';
 import { toggleFavorite } from '../reducers/user';
 // MODULES
 import addressIp from '../modules/addressIp';
+import { enterApp, exitToHome } from '../modules/sessionNavigation';
 import { jsonAuthHeaders } from '../modules/authHeaders';
 import { recordRecipeView } from '../modules/session';
 import { fetchRecipeDetail, isRecipeComplete } from '../modules/recipeDetail';
@@ -126,9 +127,8 @@ export default function RecipeScreen({ route, navigation }) {
 
   // Servings local au RecipeScreen — découplé de Redux pour ne PAS
   // déclencher de re-fetch côté ResultScreen (qui a currentServings dans
-  // ses deps et remplacerait state.recipe.value en arrière-plan → la
-  // recette courante disparaîtrait du store et tomberait sur navRecipe
-  // sans les champs Plan 003). Cap à 999 (UX, pas de perf).
+  // ses deps et relancerait la recherche en arrière-plan, avec les champs
+  // Plan 003 recalculés pour d'autres portions). Cap à 999 (UX, pas de perf).
   //
   // Cascade de seed :
   //   1. fromRecipeSearch=true (entrée depuis ResultScreen) → `currentServings`
@@ -609,9 +609,8 @@ export default function RecipeScreen({ route, navigation }) {
           onBack={() => navigation.goBack()}
           onHome={
             user.token
-              ? () =>
-                  navigation.navigate('TabNavigator', { screen: 'UserDashboard' })
-              : () => navigation.navigate('Home')
+              ? () => enterApp(navigation)
+              : () => exitToHome(navigation)
           }
         />
 

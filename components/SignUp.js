@@ -4,6 +4,7 @@ import { Modal, ScrollView, StyleSheet, Text, TextInput, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import addressIp from '../modules/addressIp';
+import { enterApp } from '../modules/sessionNavigation';
 import { addUserToStore } from '../reducers/user';
 import buttonStyles from '../styles/Button';
 import css from '../styles/Global';
@@ -63,7 +64,7 @@ export default function SignUp({navigation}) {
   const handleAnimationFinish =() => {
     setSubmitted(false)
     setModalVisible(false)
-    navigation.navigate("TabNavigator", { screen: "UserDashboard" })
+    enterApp(navigation)
   };
 
   return (

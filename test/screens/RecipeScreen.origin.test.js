@@ -7,6 +7,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react-native';
 
 import { renderWithProviders } from '../helpers/renderWithProviders';
+import { makeRecipeState } from '../factories/recipe';
 import { mockFetchJsonAlways } from '../mocks/api';
 import RecipeScreen from '../../screens/RecipeScreen';
 
@@ -61,7 +62,7 @@ function renderRecipe({ navRecipe, stored }) {
       withNavigation: false,
       preloadedState: {
         locale: { value: { lang: 'en' } },
-        recipe: { value: stored },
+        recipe: makeRecipeState(stored),
       },
     },
   );

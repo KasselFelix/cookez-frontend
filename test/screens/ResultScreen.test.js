@@ -1,6 +1,7 @@
 import React from 'react';
 import { fireEvent, screen, within } from '@testing-library/react-native';
 import { renderWithProviders } from '../helpers/renderWithProviders';
+import { makeRecipeState } from '../factories/recipe';
 
 // Mock the three external collaborators so we drive each terminal state.
 jest.mock('../../modules/recipesApi', () => {
@@ -25,7 +26,7 @@ const preloadedState = {
   user: { value: {} },
   ingredient: { value: [{ data: { _id: 'ing1', display_name: 'apple', g_per_serving: 100, unit: 'g' } }] },
   recipeFilters: { value: { selectedTags: [], selectedOrigins: [], currentServings: 1 } },
-  recipe: { value: [] },
+  recipe: makeRecipeState(),
 };
 const nav = { navigate: jest.fn() };
 const renderScreen = () =>

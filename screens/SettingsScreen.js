@@ -57,6 +57,7 @@ import { jsonAuthHeaders } from '../modules/authHeaders';
 import { joinAllergies, splitAllergies } from '../modules/allergenOptions';
 import { patchUserSettings } from '../modules/recipesApi';
 import { clearCache as clearRecipeCache } from '../modules/recipeCache';
+import { exitToHome } from '../modules/sessionNavigation';
 import { setComments } from '../reducers/comment';
 import { clearIngredients } from '../reducers/ingredient';
 import { clearPicture } from '../reducers/picture';
@@ -208,7 +209,7 @@ export default function SettingsScreen({ navigation }) {
       dispatch(clearNotifications());
       dispatch(clearPantry());
       dispatch(clearScan());
-      navigation.navigate('Home');
+      exitToHome(navigation);
     } catch {
       Alert.alert(t('common.error'), 'Could not complete logout.');
     }

@@ -1,0 +1,14 @@
+# Dashboard of the test account, in the five themes (or THEME).
+appId: com.v2.cookez.dev
+---
+- runFlow: ../common/relaunch.yaml
+- runFlow: ../common/login.yaml
+- extendedWaitUntil:
+    visible:
+      id: dashboard-screen
+    timeout: 20000
+- waitForAnimationToEnd
+- runFlow:
+    file: ../common/capture.yaml
+    env:
+      SCREEN: dashboard
