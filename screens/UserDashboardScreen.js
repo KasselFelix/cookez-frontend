@@ -101,7 +101,7 @@ export default function UserDashboardScreen({ navigation }) {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: css.palette.surface }]}>
+    <View testID="dashboard-screen" style={[styles.container, { backgroundColor: css.palette.surface }]}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: tabBarHeight + css.spacing.lg }}

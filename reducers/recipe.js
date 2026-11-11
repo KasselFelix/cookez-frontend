@@ -22,10 +22,18 @@ const hasPopulatedIngredients = (recipe) =>
     recipe.ingredients.length > 0 &&
     recipe.ingredients.every((row) => isObject(row?.ingredient));
 
+// Comments are the single source of truth for RecipeScreen: a copy that
+// carries bare comment ids (or none) must not replace the objects in the table.
+const hasCommentObjects = (recipe) =>
+    Array.isArray(recipe?.comments) && recipe.comments.every(isObject);
+
 function mergeRecipe(existing, incoming) {
     const merged = { ...existing, ...incoming };
     if (hasPopulatedIngredients(existing) && !hasPopulatedIngredients(incoming)) {
         merged.ingredients = existing.ingredients;
+    }
+    if (hasCommentObjects(existing) && !hasCommentObjects(incoming)) {
+        merged.comments = existing.comments;
     }
     return merged;
 }
@@ -58,9 +66,14 @@ export const recipeSlice = createSlice({
     initialState,
     reducers: {
         // Stores a recipe without listing it (a Dashboard search hit about to
-        // be opened, so RecipeScreen finds its votes and comments).
+        // be opened, so RecipeScreen finds its votes and comments). A recipe
+        // already in the table is left alone: the card that was tapped may
+        // hold an older or thinner copy than the table.
         addRecipe: (state, action) => {
-            upsertRecipes(state, [action.payload]);
+            const incoming = action.payload;
+            if (!incoming?._id) return;
+            const id = String(incoming._id);
+            if (!state.value.some((r) => String(r?._id) === id)) state.value.push(incoming);
         },
         // GET /recipes/all: the Dashboard catalog (App.js boot, Dashboard mount).
         setCatalogRecipes: (state, action) => {

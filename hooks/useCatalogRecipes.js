@@ -38,8 +38,9 @@ export default function useCatalogRecipes() {
       if (data?.result && Array.isArray(data.recipes)) {
         dispatch(setCatalogRecipes(data.recipes));
       } else if (response.ok && data?.result === false) {
-        // 200 with result false: the database has no recipe at all.
-        dispatch(setCatalogRecipes([]));
+        // 200 with result false: the database has no recipe. Nothing is
+        // dispatched, so a catalog already loaded stays; with none, the
+        // screen shows its empty state (not loading, no error).
       } else {
         setLoadError(true);
       }

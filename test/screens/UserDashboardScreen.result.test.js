@@ -5,7 +5,7 @@
 // catalog whatever the search returns, and shows the empty state only when
 // the database has no recipe.
 import React from 'react';
-import { act, screen } from '@testing-library/react-native';
+import { act, screen, waitFor } from '@testing-library/react-native';
 import { renderWithProviders } from '../helpers/renderWithProviders';
 import { makeRecipeState } from '../factories/recipe';
 import { setResultRecipes } from '../../reducers/recipe';
@@ -65,6 +65,14 @@ describe('UserDashboardScreen and ResultScreen (plan 017, point 1)', () => {
     allAnswer = () => json({ result: false, error: 'No recipe found' });
     renderScreen(makeRecipeState());
     expect(await screen.findByText('No recipes yet')).toBeTruthy();
+  });
+
+  it('keeps a loaded catalog when a reload answers that there is no recipe', async () => {
+    allAnswer = () => json({ result: false, error: 'No recipe found' });
+    renderScreen(makeRecipeState(CATALOG));
+    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+    expect(await screen.findByLabelText('View recipe: Golompke')).toBeTruthy();
+    expect(screen.queryByText('No recipes yet')).toBeNull();
   });
 
   it('shows the error state, not the empty one, when the catalog fails to load', async () => {

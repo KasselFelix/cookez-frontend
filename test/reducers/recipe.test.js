@@ -73,6 +73,19 @@ describe('recipe slice', () => {
     expect(state.value.find((r) => r._id === 'c1').ingredients).toEqual(populated);
   });
 
+  it('a copy with bare comment ids keeps the comment objects', () => {
+    const comments = [{ _id: 'k1', message: 'Great' }];
+    let state = reducer(initial, setCatalogRecipes([{ _id: 'c1', name: 'Golompke', comments }]));
+    state = reducer(state, setResultRecipes([{ _id: 'c1', name: 'Golompke', comments: ['k1'] }]));
+    expect(state.value.find((r) => r._id === 'c1').comments).toEqual(comments);
+  });
+
+  it('addRecipe leaves a recipe already in the table untouched', () => {
+    let state = reducer(initial, setCatalogRecipes([{ _id: 'c1', name: 'Golompke', votes: [{ note: 5 }] }]));
+    state = reducer(state, addRecipe({ _id: 'c1', name: 'Golompke', votes: [] }));
+    expect(state.value).toEqual([{ _id: 'c1', name: 'Golompke', votes: [{ note: 5 }] }]);
+  });
+
   it('a vote updates the recipe in both lists at once', () => {
     let state = reducer(initial, setCatalogRecipes(catalog));
     state = reducer(state, setResultRecipes([{ _id: 'c1', name: 'Golompke' }]));
