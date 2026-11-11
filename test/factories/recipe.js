@@ -1,7 +1,7 @@
 // Recipe fixture factory — a minimal but realistic recipe document matching
 // the backend `GET /recipes/all` / `/recipes/boot` shape (comments populated).
-// Use it directly as a fixture or pass through `setRecipes([...])` to seed the
-// `recipe` slice.
+// Use it directly as a fixture, or seed the `recipe` slice with
+// `makeRecipeState` below.
 
 let seq = 0;
 
@@ -48,3 +48,20 @@ export function makeRecipes(n = 3) {
 }
 
 export default makeRecipe;
+
+/**
+ * Preloaded `recipe` slice: the table of known recipes plus the Dashboard
+ * catalog and ResultScreen lists (ids). Without `catalog`, every recipe of
+ * the table is in the catalog.
+ *
+ * @param {object[]} table
+ * @param {{ catalog?: object[], results?: object[] }} [lists]
+ * @returns {{ value: object[], catalogIds: string[], resultIds: string[] }}
+ */
+export function makeRecipeState(table = [], { catalog = table, results = [] } = {}) {
+  return {
+    value: table,
+    catalogIds: catalog.map((r) => String(r._id)),
+    resultIds: results.map((r) => String(r._id)),
+  };
+}

@@ -126,9 +126,8 @@ export default function RecipeScreen({ route, navigation }) {
 
   // Servings local au RecipeScreen — découplé de Redux pour ne PAS
   // déclencher de re-fetch côté ResultScreen (qui a currentServings dans
-  // ses deps et remplacerait state.recipe.value en arrière-plan → la
-  // recette courante disparaîtrait du store et tomberait sur navRecipe
-  // sans les champs Plan 003). Cap à 999 (UX, pas de perf).
+  // ses deps et relancerait la recherche en arrière-plan, avec les champs
+  // Plan 003 recalculés pour d'autres portions). Cap à 999 (UX, pas de perf).
   //
   // Cascade de seed :
   //   1. fromRecipeSearch=true (entrée depuis ResultScreen) → `currentServings`
