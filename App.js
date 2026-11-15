@@ -143,11 +143,8 @@ const AppContent = ({ onLayout}) => {
         const response = await fetch(`${addressIp}/recipes/all`);
         const data = await response.json();
         if (data.result) {
-          console.log('Recettes chargées:', data.recipes.length);
           dispatch(setCatalogRecipes(data.recipes)); // Dashboard catalog
-        }else{
-          console.log('chargement recettes échoué:', data.error);
-        } 
+        }
       } catch (error) {
         console.error('Erreur chargement recettes:', error);
       }

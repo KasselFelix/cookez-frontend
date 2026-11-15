@@ -27,8 +27,6 @@ export default function PickImage(props) {
             quality: 1,
             });
 
-            console.log(result);
-
             if (!result.canceled) {
                 dispatch(setPicture(result.assets[0].uri))
             }

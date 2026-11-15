@@ -25,10 +25,7 @@ export default function TakePhoto(props) {
             quality: 1,
             });
 
-            console.log(result);
-
             if (!result.canceled) {
-                console.log('START')
                 dispatch(setPicture(result.assets[0].uri))
             }
         }else{
