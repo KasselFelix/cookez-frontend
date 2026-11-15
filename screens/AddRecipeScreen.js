@@ -79,16 +79,17 @@ export default function AddRecipeScreen({navigation}) {
         if (!picture) {
             alert('You should take or select a picture before 😊');
         }else if (user?.token) {
-            const date = Date.now();
+            const pictureName = `${recipeName.trim()}_${Date.now()}`;
             const formData = new FormData();
             formData.append('photoFromFront', {
                 uri: picture,
-                name: `${recipeName.trim()}_${date}.jpg`,
+                name: `${pictureName}.jpg`,
                 type: 'image/jpeg',
             });
 
-            // Envoi de l'image
-            const uploadResponse = await fetch(`${addressIp}/upload/${recipeName.trim()}_${date}`, {
+            // Envoi de l'image. A `?`, `#` or `/` in the recipe name would cut the
+            // path: the name is encoded, and the server cleans it into its id.
+            const uploadResponse = await fetch(`${addressIp}/upload/${encodeURIComponent(pictureName)}`, {
                 method: 'POST',
                 // No Content-Type: fetch sets the multipart boundary itself.
                 headers: authHeaders(user.token),
@@ -103,25 +104,23 @@ export default function AddRecipeScreen({navigation}) {
             //console.log('Upload response data:', uploadData);
 
             if (uploadData.result) {
-                // Envoi des informations de la recette
+                // Envoi des informations de la recette. The server sets the
+                // author, the date, the votes and the comments; `picture` is the
+                // id it gave the uploaded photo.
                 const recipeResponse = await fetch(`${addressIp}/recipes/add`, {
                     method: "POST",
                     headers: jsonAuthHeaders(user.token),
                     body: JSON.stringify({
-                        username: user.username,
                         name: recipeName,
-                        date: date,
                         origin: null,
                         ingredients: ingredientsList,
                         difficulty: recipeDifficulty,
-                        votes: [],
-                        picture: `${recipeName}_${date}`,
+                        picture: uploadData.picture,
                         preparationTime: recipePreptime,
                         cookingTime: recipeCooktime,
                         description: recipeDescription,
                         servings: recipeServings,
                         steps: stepsArray,
-                        comments: [],
                     }),
                 });
 

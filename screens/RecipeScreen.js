@@ -235,7 +235,7 @@ export default function RecipeScreen({ route, navigation }) {
           {
             method: 'POST',
             headers: jsonAuthHeaders(user.token),
-            body: JSON.stringify({ username: user.username, note }),
+            body: JSON.stringify({ note }),
           }
         );
         const data = await response.json();
@@ -252,7 +252,7 @@ export default function RecipeScreen({ route, navigation }) {
         console.error('Vote failed', err);
       }
     },
-    [user.token, user.username, selectedRecipeId, dispatch, closeVoteModal]
+    [user.token, selectedRecipeId, dispatch, closeVoteModal]
   );
 
   useEffect(() => {
