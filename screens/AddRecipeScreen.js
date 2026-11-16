@@ -370,7 +370,7 @@ export default function AddRecipeScreen({navigation}) {
               </View>
                 <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                   {picture ?
-                    <View style={{ width:'100%',height:'100%', alignItems: 'center'}}>
+                    <View style={{ width:'100%', alignItems: 'center'}}>
                     <View style={styles.deleteIcon}>
                       <TouchableOpacity onPress={() => dispatch(clearPicture())} style={styles.cross}>
                         <FontAwesome name='times' size={20} color={css.palette.error}  />
