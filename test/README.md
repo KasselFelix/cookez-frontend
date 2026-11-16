@@ -120,9 +120,11 @@ mockFetchError(); // next fetch rejects → exercise the error path
 Helpers: `mockFetchJson`, `mockFetchJsonAlways`, `mockFetchSequence`,
 `mockFetchError`, `makeResponse`.
 
-Because `addressIp` reads `process.env.EXPO_PUBLIC_API_URL` and falls back to
-the Vercel URL, **no test should ever construct a real request** — the fetch
-mock intercepts every call regardless of the base URL.
+`addressIp` reads `process.env.EXPO_PUBLIC_API_URL` and throws without it:
+there is no fallback to the Vercel URL. `test/setupEnv.js` (Jest
+`setupFiles`, run before any module loads) sets it to `https://api.invalid`,
+a non-routable URL. **No test should ever construct a real request** — the
+fetch mock intercepts every call regardless of the base URL.
 
 ## The AsyncStorage mock
 

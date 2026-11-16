@@ -62,6 +62,7 @@ import { setComments } from '../reducers/comment';
 import { clearIngredients } from '../reducers/ingredient';
 import { clearPicture } from '../reducers/picture';
 import { clearRecipes } from '../reducers/recipe';
+import { resetFilters } from '../reducers/recipeFilters';
 import { clearFollow } from '../reducers/follow';
 import { clearNotifications } from '../reducers/notifications';
 import { clearPantry } from '../reducers/pantry';
@@ -209,6 +210,7 @@ export default function SettingsScreen({ navigation }) {
       dispatch(clearNotifications());
       dispatch(clearPantry());
       dispatch(clearScan());
+      dispatch(resetFilters());
       exitToHome(navigation);
     } catch {
       Alert.alert(t('common.error'), 'Could not complete logout.');

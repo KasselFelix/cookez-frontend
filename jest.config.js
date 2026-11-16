@@ -20,6 +20,10 @@
 module.exports = {
   preset: 'jest-expo',
 
+  // Runs before any module of a test file loads: the API URL that
+  // modules/addressIp.js requires (see test/setupEnv.js).
+  setupFiles: ['<rootDir>/test/setupEnv.js'],
+
   // Runs after the test framework is installed in each test file. This is
   // where every reusable native mock is wired (see test/setup.js).
   setupFilesAfterEnv: ['<rootDir>/test/setup.js'],

@@ -60,4 +60,28 @@ describe('isYouTubeUrl', () => {
     expect(isYouTubeUrl('')).toBe(false);
     expect(isYouTubeUrl(undefined)).toBe(false);
   });
+
+  // Plan 019, step 3.4 (audit 2.4): the exact host decides, not a substring.
+  it('detects every YouTube host, whatever the case', () => {
+    expect(isYouTubeUrl('https://youtube.com/watch?v=abc')).toBe(true);
+    expect(isYouTubeUrl('https://music.youtube.com/watch?v=abc')).toBe(true);
+    expect(isYouTubeUrl('HTTPS://WWW.YOUTUBE.COM/watch?v=abc')).toBe(true);
+  });
+
+  it('is false for a host that only contains a YouTube name', () => {
+    expect(isYouTubeUrl('https://youtube.com.evil.com/watch?v=abc')).toBe(false);
+    expect(isYouTubeUrl('https://x.com/?a=.youtube.com')).toBe(false);
+    expect(isYouTubeUrl('https://youtu.be.evil.com/abc')).toBe(false);
+    expect(isYouTubeUrl('https://evil.com/youtu.be/abc')).toBe(false);
+    expect(isYouTubeUrl('https://notyoutube.com/watch?v=abc')).toBe(false);
+    expect(isYouTubeUrl('https://youtube.com@evil.com/')).toBe(false);
+    // React Native's own URL parses this host as youtube.com; Expo replaces it
+    // with whatwg-url at startup. Fails if the app falls back to RN's URL.
+    expect(isYouTubeUrl('https://evil.com/@youtube.com')).toBe(false);
+  });
+
+  it('is false for an invalid URL', () => {
+    expect(isYouTubeUrl('youtube.com/watch?v=abc')).toBe(false);
+    expect(isYouTubeUrl('not a url')).toBe(false);
+  });
 });

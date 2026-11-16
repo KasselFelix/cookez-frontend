@@ -32,7 +32,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import addressIp from '../modules/addressIp';
-import { jsonAuthHeaders } from '../modules/authHeaders';
+import { authHeaders, jsonAuthHeaders } from '../modules/authHeaders';
 import css from '../styles/Global';
 import useTabBarHeight from '../hooks/useTabBarHeight';
 import UserCommentCard from '../components/recipe/UserCommentCard';
@@ -178,7 +178,7 @@ export default function CommentScreen({ navigation }) {
         {
           method: 'PUT',
           headers: jsonAuthHeaders(user.token),
-          body: JSON.stringify({ username: user.username, message: trimmed }),
+          body: JSON.stringify({ message: trimmed }),
         }
       );
       const data = await res.json();
@@ -212,7 +212,7 @@ export default function CommentScreen({ navigation }) {
     } finally {
       setSavingEdit(false);
     }
-  }, [editing, editDraft, user?.username, user?.token, dispatch, handleCancelEdit]);
+  }, [editing, editDraft, user?.token, dispatch, handleCancelEdit]);
 
   const performDelete = useCallback(
     async (comment) => {
@@ -222,8 +222,7 @@ export default function CommentScreen({ navigation }) {
           `${addressIp}/comments/delete/${comment._id}`,
           {
             method: 'DELETE',
-            headers: jsonAuthHeaders(user.token),
-            body: JSON.stringify({ username: user.username }),
+            headers: authHeaders(user.token),
           }
         );
         const data = await res.json();
@@ -254,7 +253,7 @@ export default function CommentScreen({ navigation }) {
         Alert.alert('Network error', 'Could not delete the comment.');
       }
     },
-    [user?.username, user?.token, dispatch]
+    [user?.token, dispatch]
   );
 
   const handleRequestDelete = useCallback(

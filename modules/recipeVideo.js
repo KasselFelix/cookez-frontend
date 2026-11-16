@@ -25,17 +25,33 @@ export function resolveVideoUrl(recipe) {
   return url;
 }
 
+// Exact hosts: a substring test let `youtube.com.evil.com` or
+// `x.com/?a=.youtube.com` pass for YouTube (audit 2.4).
+const YOUTUBE_HOSTS = new Set([
+  'youtube.com',
+  'www.youtube.com',
+  'm.youtube.com',
+  'music.youtube.com',
+  'youtu.be',
+]);
+
 /**
- * Whether a URL points at YouTube (youtube.com or youtu.be, any subdomain).
+ * Whether a URL points at YouTube, by its exact host (see YOUTUBE_HOSTS).
  * Used purely to label the affordance — both kinds open in the OS browser.
+ * `hostname` stops at the userinfo, the port and the path; it is lowercased
+ * here, since not every URL implementation the app runs under does it.
  *
  * @param {string|null|undefined} url
- * @returns {boolean}
+ * @returns {boolean} false for an invalid or relative URL too
  */
 export function isYouTubeUrl(url) {
   const u = clean(url);
   if (!u) return false;
-  return /(?:^|\/\/|\.)(?:youtube\.com|youtu\.be)\b/i.test(u);
+  try {
+    return YOUTUBE_HOSTS.has(new URL(u).hostname.toLowerCase());
+  } catch {
+    return false;
+  }
 }
 
 export default resolveVideoUrl;

@@ -612,5 +612,13 @@
       "sheets": "Feuilles",
       "sandbox": "Bac à sable"
     }
+  },
+  "addRecipe": {
+    "takePhotoA11y": "Prendre la recette en photo",
+    "pickImageA11y": "Choisir une photo dans la galerie",
+    "nameFirst": "Remplis d'abord les champs au-dessus ✍️",
+    "galleryPermission": "Cookez a besoin d'accéder à tes photos pour en ajouter une.",
+    "cameraPermission": "Cookez a besoin d'accéder à l'appareil photo pour prendre une photo.",
+    "photoError": "Impossible d'ouvrir la photo. Réessaie."
   }
 }

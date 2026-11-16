@@ -27,8 +27,8 @@ i18n.defaultLocale = 'en';
 
 /**
  * Best-effort detection of the device language as a 2-letter code.
- * expo-localization exposes a `getLocales()` array (>= v17) and a
- * `locale` string fallback on older versions.
+ * expo-localization (>= v17) exposes a `getLocales()` array only; the old
+ * `locale` string is gone, so English is the fallback.
  */
 export function detectSystemLocale() {
   try {
@@ -39,8 +39,7 @@ export function detectSystemLocale() {
   } catch {
     // fall through
   }
-  const raw = Localization.locale || 'en';
-  return String(raw).split(/[-_]/)[0];
+  return 'en';
 }
 
 /**
