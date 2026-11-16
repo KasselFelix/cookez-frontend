@@ -5,6 +5,7 @@
 // - /recipes/add takes `picture` from the upload response, and its body holds
 //   no username, date, votes or comments: the server sets them.
 import React from 'react';
+import { Platform, StyleSheet } from 'react-native';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 import { renderWithProviders } from '../helpers/renderWithProviders';
@@ -67,6 +68,73 @@ describe('AddRecipeScreen publish', () => {
     // The first render of this screen passes 5 s when the whole suite runs in
     // parallel; alone, it takes well under that.
   }, 15000);
+});
+
+// Plan 017, step 28: servings, difficulty and unit could not be chosen on an
+// iPhone (react-native-picker-select), so no ingredient could be added. They
+// are now OptionPicker fields: a button that opens a list in a modal.
+describe('AddRecipeScreen pickers', () => {
+  const originalAlert = global.alert;
+  beforeEach(() => { global.alert = jest.fn(); });
+  afterEach(() => { global.alert = originalAlert; });
+
+  const pick = (field, option) => {
+    fireEvent.press(screen.getByRole('button', { name: field }));
+    fireEvent.press(screen.getByRole('button', { name: option }));
+  };
+
+  it('fills servings, difficulty and unit, then adds an ingredient and publishes them', async () => {
+    mockFetchSequence([
+      { result: true, url: 'https://res.cloudinary.com/x.jpg', id: STORED_ID, picture: STORED_ID },
+      { result: true },
+    ]);
+    renderWithProviders(<AddRecipeScreen navigation={nav} />, {
+      withNavigation: false,
+      preloadedState: { user: makeUserState(), picture: { value: 'file:///photo.jpg' } },
+    });
+
+    fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
+    pick('Servings', '4');
+    pick('Difficulty', '2');
+    expect(screen.getByRole('button', { name: 'Servings' })).toHaveAccessibilityValue({ text: '4' });
+    expect(screen.getByRole('button', { name: 'Difficulty' })).toHaveAccessibilityValue({ text: '2' });
+
+    fireEvent.changeText(screen.getByPlaceholderText('Qty'), '200');
+    pick('Unit', 'g');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingredient*'), 'flour');
+    fireEvent.press(screen.getByText('Add ingredient'));
+    expect(screen.getByText('ingredients added: 1')).toBeTruthy();
+
+    fireEvent(screen.getByRole('button', { name: 'Add Recipe' }), 'pressOut');
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
+    const body = JSON.parse(global.fetch.mock.calls[1][1].body);
+    expect(body.servings).toBe(4);
+    expect(body.difficulty).toBe(2);
+    expect(body.ingredients).toEqual([
+      expect.objectContaining({ name: 'flour', quantity: 200, unit: 'g  ' }),
+    ]);
+  }, 15000);
+});
+
+// Plan 017, step 29: in iOS "padding" mode, KeyboardAvoidingView replaces its
+// paddingBottom with the keyboard height, 0 when closed. The space for the
+// floating tab bar was set there, so on an iPhone the card ran under the bar
+// and hid "Add Recipe". The space now sits on the card.
+describe('AddRecipeScreen above the floating tab bar', () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it('keeps the tab bar space on iOS', () => {
+    jest.replaceProperty(Platform, 'OS', 'ios');
+    renderWithProviders(<AddRecipeScreen navigation={nav} />, {
+      withNavigation: false,
+      preloadedState: { user: makeUserState(), picture: { value: null } },
+    });
+
+    // Zero insets under Jest: 60 (bar) + 8 (min bottom inset) + 12 + 16.
+    const tabBarHeight = 96;
+    const card = StyleSheet.flatten(screen.getByTestId('addRecipe-card').props.style);
+    expect(card.marginBottom).toBe(tabBarHeight);
+  });
 });
 
 // Plan 019, step 3.7: since Unicons left, both photo buttons rendered an empty
