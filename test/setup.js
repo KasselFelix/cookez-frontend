@@ -171,7 +171,6 @@ jest.mock('expo-localization', () => ({
     { languageCode: 'en', languageTag: 'en-US', regionCode: 'US', textDirection: 'ltr' },
   ],
   getCalendars: () => [{ calendar: 'gregory', timeZone: 'UTC' }],
-  locale: 'en-US',
 }));
 
 // ---------------------------------------------------------------------------
@@ -200,7 +199,9 @@ jest.mock('@react-native-community/netinfo', () => ({
 // ---------------------------------------------------------------------------
 jest.mock('lottie-react-native', () => {
   const React = require('react');
-  return (props) => React.createElement('lottie-noop', props, props && props.children);
+  const LottieView = (props) => React.createElement('lottie-noop', props, props && props.children);
+  LottieView.displayName = 'LottieView';
+  return LottieView;
 });
 jest.mock('@lottiefiles/dotlottie-react', () => {
   const React = require('react');

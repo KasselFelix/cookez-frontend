@@ -86,7 +86,6 @@ const styles = StyleSheet.create({
   },
 
   featuresContainer: {
-    alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
     backgroundColor: css.palette.neutral100,
