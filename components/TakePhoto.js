@@ -41,9 +41,20 @@ export default function TakePhoto({ name }) {
       onPress={takePhoto}
       accessibilityRole="button"
       accessibilityLabel={t('addRecipe.takePhotoA11y')}
-      style={({ pressed }) => [styles.button, { padding: css.spacing.sm, opacity: pressed ? 0.6 : 1 }]}
+      style={({ pressed }) => [
+        styles.button,
+        {
+          // AddRecipeScreen keeps the fixed colours of styles/Global: a chip in
+          // the theme's primary-button colours keeps the icon visible on its
+          // card in every theme.
+          backgroundColor: css.button.primaryBg,
+          borderRadius: css.radius.pill,
+          padding: css.spacing.md,
+          opacity: pressed ? 0.6 : 1,
+        },
+      ]}
     >
-      <Camera size={48} color={css.palette.primary800} />
+      <Camera size={32} color={css.button.primaryText} />
     </Pressable>
   );
 }
