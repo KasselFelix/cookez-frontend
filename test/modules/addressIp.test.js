@@ -29,7 +29,7 @@ describe('modules/addressIp', () => {
     expect(load('../../modules/addressIp').default).toBe('http://10.0.2.2:3000');
   });
 
-  it.each([[undefined], ['']])('throws an explicit error without the variable (%p)', (value) => {
+  it.each([[undefined], [''], ['   ']])('throws an explicit error without the variable (%p)', (value) => {
     setApiUrl(value);
     expect(() => load('../../modules/addressIp')).toThrow(/EXPO_PUBLIC_API_URL/);
   });
@@ -42,7 +42,7 @@ describe('modules/addressIp', () => {
 describe('metro.config.js', () => {
   jest.mock('expo/metro-config', () => ({ getDefaultConfig: () => ({ resolver: {} }) }));
 
-  it.each([[undefined], ['']])('refuses to start without the variable (%p)', (value) => {
+  it.each([[undefined], [''], ['   ']])('refuses to start without the variable (%p)', (value) => {
     const printed = jest.spyOn(console, 'error').mockImplementation(() => {});
     setApiUrl(value);
     expect(() => load('../../metro.config')).toThrow(/EXPO_PUBLIC_API_URL/);

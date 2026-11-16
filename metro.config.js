@@ -6,7 +6,8 @@
 // Expo CLI loads .env before this file runs.
 const { getDefaultConfig } = require('expo/metro-config');
 
-if (!process.env.EXPO_PUBLIC_API_URL) {
+// A value made of spaces counts as missing.
+if (!process.env.EXPO_PUBLIC_API_URL?.trim()) {
   const message =
     'EXPO_PUBLIC_API_URL is not set: Metro refuses to bundle an app without its API URL. ' +
     'Set it in .env, in the environment, or in the eas.json build profile.';

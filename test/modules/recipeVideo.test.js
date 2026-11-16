@@ -75,6 +75,9 @@ describe('isYouTubeUrl', () => {
     expect(isYouTubeUrl('https://evil.com/youtu.be/abc')).toBe(false);
     expect(isYouTubeUrl('https://notyoutube.com/watch?v=abc')).toBe(false);
     expect(isYouTubeUrl('https://youtube.com@evil.com/')).toBe(false);
+    // React Native's own URL parses this host as youtube.com; Expo replaces it
+    // with whatwg-url at startup. Fails if the app falls back to RN's URL.
+    expect(isYouTubeUrl('https://evil.com/@youtube.com')).toBe(false);
   });
 
   it('is false for an invalid URL', () => {
