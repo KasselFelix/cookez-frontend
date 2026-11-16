@@ -332,48 +332,6 @@ export default function RecipeScreen({ route, navigation }) {
     setTimeout(() => setRefreshing(false), 800);
   }, []);
 
-  // Guard: prevent rendering with no data
-  if (!recipe?.name) {
-    return (
-      <View style={styles.fallback}>
-        {isLoadingDetail ? (
-          <ActivityIndicator size="large" color={css.palette.primary800} />
-        ) : (
-          <Text style={styles.fallbackText}>{t('recipe.notFound')}</Text>
-        )}
-      </View>
-    );
-  }
-
-  // Hero image source — U-A16: resilient to imported recipes. Funnels through
-  // the shared resolver (imageUrl http > picture local/Cloudinary > placeholder)
-  // so a null/empty picture never yields a broken <Image>.
-  const heroSource = resolveRecipeImageSource(recipe);
-
-  // Video affordance — null-safe. resolveVideoUrl returns null for
-  // missing/empty/non-http, so the button renders nothing in that case.
-  const videoUrl = resolveVideoUrl(recipe);
-
-  // Scaling local — basé sur `servings` (state local), pas Redux.
-  // Les ingrédients sont stockés à `recipe.servings` (default auteur).
-  const servingsRatio =
-    recipe.servings && recipe.servings > 0
-      ? servings / recipe.servings
-      : 1;
-  const scaledIngredients = (recipe.ingredients || []).map((ing) => {
-    const raw = (ing.quantity || 0) * servingsRatio;
-    // Passe defaultUnit pour que `9 tsp farine` → `45g` (pas `45ml`).
-    // Le defaultUnit de l'ingrédient dicte si c'est masse ou volume.
-    const defaultUnit = ing.ingredient?.defaultUnit;
-    const { value, unit } = formatQuantity(raw, ing.unit, defaultUnit);
-    return { ...ing, displayQuantity: value, displayUnit: unit };
-  });
-
-  // Group alternative-ingredient rows that share a non-null `altGroup`.
-  // Forward-compatible: when no row carries altGroup (current state of DB),
-  // the output is identical to scaledIngredients.
-  const groupedIngredients = groupIngredients(scaledIngredients, t('recipe.ingredients.or'));
-
   // Shopping list recalculée 100% client-side à partir de :
   //   - recipe.ingredients (populated avec ri.ingredient = Ingredient doc)
   //   - pantry (Redux state.ingredient.value — ce que l'utilisateur possède)
@@ -436,6 +394,48 @@ export default function RecipeScreen({ route, navigation }) {
       })
       .filter(Boolean);
   }, [recipe, servings, pantry]);
+
+  // Guard: prevent rendering with no data
+  if (!recipe?.name) {
+    return (
+      <View style={styles.fallback}>
+        {isLoadingDetail ? (
+          <ActivityIndicator size="large" color={css.palette.primary800} />
+        ) : (
+          <Text style={styles.fallbackText}>{t('recipe.notFound')}</Text>
+        )}
+      </View>
+    );
+  }
+
+  // Hero image source — U-A16: resilient to imported recipes. Funnels through
+  // the shared resolver (imageUrl http > picture local/Cloudinary > placeholder)
+  // so a null/empty picture never yields a broken <Image>.
+  const heroSource = resolveRecipeImageSource(recipe);
+
+  // Video affordance — null-safe. resolveVideoUrl returns null for
+  // missing/empty/non-http, so the button renders nothing in that case.
+  const videoUrl = resolveVideoUrl(recipe);
+
+  // Scaling local — basé sur `servings` (state local), pas Redux.
+  // Les ingrédients sont stockés à `recipe.servings` (default auteur).
+  const servingsRatio =
+    recipe.servings && recipe.servings > 0
+      ? servings / recipe.servings
+      : 1;
+  const scaledIngredients = (recipe.ingredients || []).map((ing) => {
+    const raw = (ing.quantity || 0) * servingsRatio;
+    // Passe defaultUnit pour que `9 tsp farine` → `45g` (pas `45ml`).
+    // Le defaultUnit de l'ingrédient dicte si c'est masse ou volume.
+    const defaultUnit = ing.ingredient?.defaultUnit;
+    const { value, unit } = formatQuantity(raw, ing.unit, defaultUnit);
+    return { ...ing, displayQuantity: value, displayUnit: unit };
+  });
+
+  // Group alternative-ingredient rows that share a non-null `altGroup`.
+  // Forward-compatible: when no row carries altGroup (current state of DB),
+  // the output is identical to scaledIngredients.
+  const groupedIngredients = groupIngredients(scaledIngredients, t('recipe.ingredients.or'));
 
   // Pinned iteration order (backend may not freeze object key order)
   const orderedNutrition = recipe.nutritionPerServing

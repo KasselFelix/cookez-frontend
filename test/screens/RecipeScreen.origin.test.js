@@ -111,6 +111,18 @@ describe('RecipeScreen by screen of origin', () => {
     expect(screen.queryByText('130 kcal')).toBeNull();
   });
 
+  // Plan 019, step 3.6: the shopping-list useMemo sat after the early return
+  // of a recipe without a name. The first render (spinner) called one hook
+  // fewer than the one with the loaded recipe, and React threw.
+  it('opened without its name: renders the spinner, then the loaded recipe', async () => {
+    mockFetchJsonAlways({ result: true, recipe: fullRecipe });
+    renderRecipe({ navRecipe: { _id: 'r1' }, stored: [] });
+
+    expect(await screen.findByText('130 kcal')).toBeTruthy();
+    expect((await screen.findAllByText('Rice bowl')).length).toBeGreaterThan(0);
+    expect(detailCalls()).toHaveLength(1);
+  });
+
   it('when the detail fails for a recipe without a name: shows "Recipe not found."', async () => {
     mockFetchJsonAlways({ result: false, error: 'Recipe not found' });
     renderRecipe({ navRecipe: { _id: 'gone' }, stored: [] });
