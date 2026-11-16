@@ -265,8 +265,8 @@ beforeEach(() => {
   }
 });
 
-// Silence the noisy boot-time console.* the app emits (addressIp banner,
-// auto-login logs) so the test output stays readable. Comment this block out
+// Silence the noisy boot-time console.* the app emits (ThemeProvider and
+// i18n warnings) so the test output stays readable. Comment this block out
 // when debugging a suite.
 const origWarn = console.warn;
 console.warn = (...args) => {
