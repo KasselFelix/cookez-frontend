@@ -4,6 +4,7 @@
 import React from 'react';
 import { act, fireEvent, screen } from '@testing-library/react-native';
 import { renderWithProviders } from '../helpers/renderWithProviders';
+import { makeRecipeState } from '../factories/recipe';
 
 // The harness has no SafeAreaProvider; the tab bar height is irrelevant here.
 jest.mock('../../hooks/useTabBarHeight', () => ({ __esModule: true, default: () => 0 }));
@@ -54,7 +55,7 @@ afterEach(() => {
 
 const renderScreen = () =>
   renderWithProviders(<UserDashboardScreen navigation={{ navigate: jest.fn() }} />, {
-    preloadedState: { user: { value: {} }, recipe: { value: LOADED } },
+    preloadedState: { user: { value: {} }, recipe: makeRecipeState(LOADED) },
   });
 
 const typeSearch = (text) => fireEvent.changeText(screen.getByLabelText('Search recipes...'), text);
@@ -104,7 +105,7 @@ describe('UserDashboardScreen search (plan 013)', () => {
 
   it('loads the recently viewed recipes with the token in the header, not the URL (plan 010)', async () => {
     renderWithProviders(<UserDashboardScreen navigation={{ navigate: jest.fn() }} />, {
-      preloadedState: { user: { value: { token: 'session-token' } }, recipe: { value: LOADED } },
+      preloadedState: { user: { value: { token: 'session-token' } }, recipe: makeRecipeState(LOADED) },
     });
     await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
     const call = global.fetch.mock.calls.find(([url]) => url.includes('/users/me/last-viewed'));

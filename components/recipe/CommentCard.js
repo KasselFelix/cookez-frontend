@@ -96,7 +96,7 @@ export default function CommentCard({
       const res = await fetch(`${addressIp}/comments/upvote`, {
         method: 'POST',
         headers: jsonAuthHeaders(user.token),
-        body: JSON.stringify({ username: user.username, _id }),
+        body: JSON.stringify({ _id }),
       });
       const data = await res.json();
       if (data.result === true) syncVoteToRedux(data);
@@ -113,7 +113,7 @@ export default function CommentCard({
       const res = await fetch(`${addressIp}/comments/downvote`, {
         method: 'POST',
         headers: jsonAuthHeaders(user.token),
-        body: JSON.stringify({ username: user.username, _id }),
+        body: JSON.stringify({ _id }),
       });
       const data = await res.json();
       if (data.result === true) syncVoteToRedux(data);

@@ -33,7 +33,9 @@ export default function InventorySearchBar({ value, onChange, onAddPress }) {
         style={[
           styles.inputWrap,
           {
-            backgroundColor: css.palette.secondary200,
+            backgroundColor: css.input.bg,
+            borderColor: css.input.borderColor,
+            borderWidth: 1,
             borderRadius: css.radius.pill,
             paddingHorizontal: css.spacing.md,
           },
@@ -44,7 +46,7 @@ export default function InventorySearchBar({ value, onChange, onAddPress }) {
           value={value}
           onChangeText={onChange}
           placeholder={t('profile.inventory.search.placeholder')}
-          placeholderTextColor={css.palette.neutral500}
+          placeholderTextColor={css.input.placeholderColor}
           accessibilityLabel={t('profile.inventory.search.a11y_label')}
           returnKeyType="search"
           autoCorrect={false}
@@ -53,7 +55,8 @@ export default function InventorySearchBar({ value, onChange, onAddPress }) {
             styles.input,
             {
               fontFamily: css.typography.fontBody,
-              color: css.palette.neutral900,
+              fontSize: css.typography.bodySmSize,
+              color: css.input.textColor,
               marginLeft: css.spacing.sm,
             },
           ]}
@@ -67,13 +70,13 @@ export default function InventorySearchBar({ value, onChange, onAddPress }) {
         style={({ pressed }) => [
           styles.iconBtn,
           {
-            backgroundColor: css.palette.accent500,
+            backgroundColor: css.button.primaryBg,
             borderRadius: css.radius.pill,
             opacity: pressed ? 0.8 : 1,
           },
         ]}
       >
-        <Plus size={22} color={css.palette.white} />
+        <Plus size={22} color={css.button.primaryText} />
       </Pressable>
     </View>
   );
@@ -93,7 +96,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 44,
-    fontSize: 14,
     padding: 0,
   },
   iconBtn: {

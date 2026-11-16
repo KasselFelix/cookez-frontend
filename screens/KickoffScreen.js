@@ -12,6 +12,7 @@ import { useIsFocused, useFocusEffect } from "@react-navigation/native";
 import addressIp from "../modules/addressIp";
 import { scanPhoto } from "../modules/scanPhoto";
 import { pickPictureSize } from "../modules/pictureSize";
+import { enterApp, exitToHome } from "../modules/sessionNavigation";
 import { clearSearchRequest, removeScanPhoto, removeUnmatched } from "../reducers/scan";
 import { useAuthGate } from "../contexts/AuthGateProvider";
 import UnmatchedChips from "../components/kickoff/UnmatchedChips";
@@ -417,8 +418,8 @@ export default function KickoffScreen({navigation}) {
 			<TouchableOpacity
 				onPress={() =>
 					user?.token
-						? navigation.navigate('TabNavigator', { screen: 'UserDashboard' })
-						: navigation.navigate('Home')
+						? enterApp(navigation)
+						: exitToHome(navigation)
 				}
 				accessibilityRole="button"
 				accessibilityLabel={t('common.home')}

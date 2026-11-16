@@ -24,7 +24,7 @@ export default function InventoryEmptyState({ onAdd }) {
       accessibilityLabel={t('profile.inventory.empty.title')}
     >
       <BadgeCircle
-        icon={<Package size={32} color={css.palette.accent500} />}
+        icon={<Package size={32} color={css.button.primaryBg} />}
         label=""
         size={72}
       />
@@ -42,7 +42,7 @@ export default function InventoryEmptyState({ onAdd }) {
       <Text
         style={{
           fontFamily: css.typography.fontBody,
-          fontSize: 14,
+          fontSize: css.typography.bodySmSize,
           // No neutral600 token — neutral500 is the muted body tone.
           color: css.palette.neutral500,
           textAlign: 'center',
@@ -59,7 +59,7 @@ export default function InventoryEmptyState({ onAdd }) {
         style={({ pressed }) => [
           styles.cta,
           {
-            backgroundColor: css.palette.accent500,
+            backgroundColor: css.button.primaryBg,
             borderRadius: css.radius.pill,
             paddingVertical: css.spacing.sm,
             paddingHorizontal: css.spacing.lg,
@@ -70,8 +70,8 @@ export default function InventoryEmptyState({ onAdd }) {
         <Text
           style={{
             fontFamily: css.typography.fontHeading,
-            fontSize: 15,
-            color: css.palette.white,
+            fontSize: css.typography.bodySize,
+            color: css.button.primaryText,
             fontWeight: '600',
           }}
         >

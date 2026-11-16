@@ -17,6 +17,11 @@ jobs:
     name: Lint, tests, expo-doctor, export Android
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    # The app requires its API URL: Metro refuses to start without it, and
+    # modules/addressIp.js throws (plan 019, audit 2.9). A non-routable URL:
+    # this job never calls an API, and its bundle is never published.
+    env:
+      EXPO_PUBLIC_API_URL: https://api.invalid
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

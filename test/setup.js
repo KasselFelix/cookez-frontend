@@ -40,6 +40,10 @@ jest.mock('react-native-reanimated', () => {
     // eslint-disable-next-line global-require
     const Reanimated = require('react-native-reanimated/mock');
     if (Reanimated.default) Reanimated.default.call = () => {};
+    // The bundled mock lacks the scroll handler RecipeScreen uses.
+    if (!Reanimated.useAnimatedScrollHandler) {
+      Reanimated.useAnimatedScrollHandler = () => () => {};
+    }
     return Reanimated;
   } catch (e) {
     // Fallback: minimal inert mock covering the APIs the app uses.
@@ -60,6 +64,7 @@ jest.mock('react-native-reanimated', () => {
       useAnimatedStyle: (fn) => (typeof fn === 'function' ? fn() : {}),
       useDerivedValue: (fn) => ({ value: typeof fn === 'function' ? fn() : undefined }),
       useAnimatedRef: () => ({ current: null }),
+      useAnimatedScrollHandler: () => () => {},
       withTiming: (v) => v,
       withSpring: (v) => v,
       withDelay: (_, v) => v,
@@ -166,7 +171,6 @@ jest.mock('expo-localization', () => ({
     { languageCode: 'en', languageTag: 'en-US', regionCode: 'US', textDirection: 'ltr' },
   ],
   getCalendars: () => [{ calendar: 'gregory', timeZone: 'UTC' }],
-  locale: 'en-US',
 }));
 
 // ---------------------------------------------------------------------------
@@ -195,7 +199,9 @@ jest.mock('@react-native-community/netinfo', () => ({
 // ---------------------------------------------------------------------------
 jest.mock('lottie-react-native', () => {
   const React = require('react');
-  return (props) => React.createElement('lottie-noop', props, props && props.children);
+  const LottieView = (props) => React.createElement('lottie-noop', props, props && props.children);
+  LottieView.displayName = 'LottieView';
+  return LottieView;
 });
 jest.mock('@lottiefiles/dotlottie-react', () => {
   const React = require('react');
@@ -260,8 +266,8 @@ beforeEach(() => {
   }
 });
 
-// Silence the noisy boot-time console.* the app emits (addressIp banner,
-// auto-login logs) so the test output stays readable. Comment this block out
+// Silence the noisy boot-time console.* the app emits (ThemeProvider and
+// i18n warnings) so the test output stays readable. Comment this block out
 // when debugging a suite.
 const origWarn = console.warn;
 console.warn = (...args) => {

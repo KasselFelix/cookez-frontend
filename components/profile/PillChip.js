@@ -1,6 +1,5 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import css from '../../styles/Global';
 import { useTheme } from '../../contexts/ThemeProvider';
 
 export default function PillChip({ children, active = false, icon, onPress, style }) {
@@ -8,7 +7,12 @@ export default function PillChip({ children, active = false, icon, onPress, styl
   const isString = typeof children === 'string';
   const containerStyle = [
     styles.container,
-    active ? styles.active : [styles.inactive, {backgroundColor: css.palette.surfaceCard}] ,
+    {
+      borderRadius: css.radius.pill,
+      // Theme tokens: the active chip takes the primary button colors.
+      backgroundColor: active ? css.button.primaryBg : css.palette.surfaceCard,
+      borderColor: active ? css.button.primaryBg : css.palette.neutral300,
+    },
     style,
   ];
 
@@ -17,7 +21,14 @@ export default function PillChip({ children, active = false, icon, onPress, styl
       {icon ? <View style={styles.iconWrap}>{icon}</View> : null}
       {isString ? (
         <Text
-          style={[styles.text, active ? {color: css.palette.white} : {color: css.palette.neutral900}]}
+          style={[
+            styles.text,
+            {
+              fontFamily: css.typography.fontUI,
+              fontSize: css.typography.overlineSize,
+              color: active ? css.button.primaryText : css.palette.neutral900,
+            },
+          ]}
           numberOfLines={1}
         >
           {children}
@@ -47,19 +58,10 @@ export default function PillChip({ children, active = false, icon, onPress, styl
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: css.radius.pill,
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderWidth: 1,
     alignSelf: 'flex-start',
-  },
-  inactive: {
-    borderColor: css.palette.neutral300,
-    backgroundColor: css.palette.surfaceCard,
-  },
-  active: {
-    backgroundColor: css.palette.neutral900,
-    borderColor: css.palette.neutral900,
   },
   inner: {
     flexDirection: 'row',
@@ -69,8 +71,6 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   text: {
-    fontFamily: css.typography.fontUI,
-    fontSize: 11,
     fontWeight: '500',
   },
 });

@@ -182,6 +182,10 @@ export default function RecapScreen({ navigation }) {
         <Popover
           placement="floating"
           backgroundStyle={styles.popoverBackground}
+          popoverStyle={{
+            backgroundColor: css.palette.surfaceCard,
+            borderRadius: css.radius.card,
+          }}
           isVisible={showPopover}
           onRequestClose={() => setShowPopover(false)}
           from={
@@ -220,7 +224,7 @@ export default function RecapScreen({ navigation }) {
                   accessibilityLabel={t('common.cancel')}
                   style={[
                     styles.popoverBtn,
-                    { backgroundColor: css.palette.secondary500 },
+                    { backgroundColor: css.flow.stepperBg },
                   ]}
                 >
                   <FontAwesome
@@ -234,7 +238,7 @@ export default function RecapScreen({ navigation }) {
                   accessibilityLabel={t('common.yes')}
                   style={[
                     styles.popoverBtn,
-                    { backgroundColor: css.palette.secondary500 },
+                    { backgroundColor: css.flow.stepperBg },
                   ]}
                 >
                   <FontAwesome

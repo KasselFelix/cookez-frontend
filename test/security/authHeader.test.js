@@ -33,7 +33,7 @@ const AUTH_ROUTES = [
 ];
 
 const PUBLIC_ROUTES = [
-  /\/recipes\/(all|search|origins)\b/,
+  /\/recipes\/(all|search|origins|detail)\b/,
   /\/ingredients\//,
   /\/users\/(public|recipes)\//,
   /\/users\/(signin|signup)\b/,
@@ -98,6 +98,8 @@ const USES_HELPER = /\b(jsonAuthHeaders|authHeaders)\s*\(/;
 // token, authToken, "token"…: any key that names a token, bare or quoted;
 // or a whole user object spread into the body.
 const TOKEN_KEY = /(^|[{,\s])["']?\w*token["']?\s*[:,}]|\.\.\.\s*\w*user\b/i;
+// A `username` key, bare or quoted; `${user.username}` in a URL does not match.
+const USERNAME_KEY = /(^|[{,\s])["']?username["']?\s*[:,}]/;
 
 describe('session token in the Authorization header only', () => {
   const files = [path.join(ROOT, 'App.js'), ...SOURCE_DIRS.flatMap((d) => sourceFiles(path.join(ROOT, d)))];
@@ -138,6 +140,22 @@ describe('session token in the Authorization header only', () => {
     const inFetch = calls.filter(({ text }) => /\bbody\s*:[^\n]*\btoken\b/i.test(text));
     const inJson = sources.filter(({ source }) => stringifyArgs(source).some((arg) => TOKEN_KEY.test(arg)));
     expect([...inFetch.map(label), ...inJson.map(({ file }) => file)]).toEqual([]);
+  });
+
+  it('sends no username in the body of an authenticated call', () => {
+    // Plan 019, step 3.1 (audit 2.15): the backend reads the author from the
+    // token. A username in the body is ignored today and misleads a reader.
+    const writes = calls.filter(({ target }) => AUTH_ROUTES.some((r) => r.test(target)));
+    const offenders = writes.filter(({ text }) => stringifyArgs(text).some((arg) => USERNAME_KEY.test(arg)));
+    expect(offenders.map(label)).toEqual([]);
+  });
+
+  it('would catch a username key in a body, not a username in a URL', () => {
+    const inBody = (text) => stringifyArgs(text).some((arg) => USERNAME_KEY.test(arg));
+    expect(inBody('fetch(u, { body: JSON.stringify({ username: user.username, note }) })')).toBe(true);
+    expect(inBody('fetch(u, { body: JSON.stringify({\n  username,\n  _id }) })')).toBe(true);
+    expect(inBody('fetch(`${addressIp}/users/${path}/${username}`, { headers: authHeaders(t) })')).toBe(false);
+    expect(inBody('fetch(u, { body: JSON.stringify({ note }) })')).toBe(false);
   });
 
   it('writes the Bearer scheme in the helper only', () => {

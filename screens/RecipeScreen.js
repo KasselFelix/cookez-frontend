@@ -1,6 +1,7 @@
 import { FontAwesome } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated as RNAnimated,
   Modal,
   Pressable,
@@ -19,12 +20,14 @@ import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { updateRecipeVote } from '../reducers/recipe';
+import { setRecipeDetail, updateRecipeVote } from '../reducers/recipe';
 import { toggleFavorite } from '../reducers/user';
 // MODULES
 import addressIp from '../modules/addressIp';
+import { enterApp, exitToHome } from '../modules/sessionNavigation';
 import { jsonAuthHeaders } from '../modules/authHeaders';
 import { recordRecipeView } from '../modules/session';
+import { fetchRecipeDetail, isRecipeComplete } from '../modules/recipeDetail';
 import css from '../styles/Global';
 import useT from '../i18n/useT';
 import { flagForOriginName } from '../modules/countries';
@@ -95,11 +98,37 @@ export default function RecipeScreen({ route, navigation }) {
     recordRecipeView(user.token, recipe._id);
   }, [user?.token, recipe?._id]);
 
+  // Opened from the Dashboard, the profile or CommentScreen, the recipe lacks
+  // its populated ingredients (kcal pill, units, shopping list) or comments:
+  // load the full recipe once and merge it into the slice. A recipe from
+  // ResultScreen is already complete and keeps its search-only fields.
+  const needsDetail = Boolean(selectedRecipeId) && !isRecipeComplete(recipe);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(needsDetail);
+  useEffect(() => {
+    if (!needsDetail) return undefined;
+    const controller = new AbortController();
+    setIsLoadingDetail(true);
+    fetchRecipeDetail(selectedRecipeId, { signal: controller.signal })
+      .then((detail) => {
+        if (detail && !controller.signal.aborted) dispatch(setRecipeDetail(detail));
+      })
+      .catch((error) => {
+        if (error?.name !== 'AbortError') {
+          console.error('RecipeScreen.fetchRecipeDetail:', error?.message);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoadingDetail(false);
+      });
+    return () => controller.abort();
+    // Once per opened recipe: a failed load is not retried in a loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRecipeId]);
+
   // Servings local au RecipeScreen — découplé de Redux pour ne PAS
   // déclencher de re-fetch côté ResultScreen (qui a currentServings dans
-  // ses deps et remplacerait state.recipe.value en arrière-plan → la
-  // recette courante disparaîtrait du store et tomberait sur navRecipe
-  // sans les champs Plan 003). Cap à 999 (UX, pas de perf).
+  // ses deps et relancerait la recherche en arrière-plan, avec les champs
+  // Plan 003 recalculés pour d'autres portions). Cap à 999 (UX, pas de perf).
   //
   // Cascade de seed :
   //   1. fromRecipeSearch=true (entrée depuis ResultScreen) → `currentServings`
@@ -206,7 +235,7 @@ export default function RecipeScreen({ route, navigation }) {
           {
             method: 'POST',
             headers: jsonAuthHeaders(user.token),
-            body: JSON.stringify({ username: user.username, note }),
+            body: JSON.stringify({ note }),
           }
         );
         const data = await response.json();
@@ -223,7 +252,7 @@ export default function RecipeScreen({ route, navigation }) {
         console.error('Vote failed', err);
       }
     },
-    [user.token, user.username, selectedRecipeId, dispatch, closeVoteModal]
+    [user.token, selectedRecipeId, dispatch, closeVoteModal]
   );
 
   useEffect(() => {
@@ -303,44 +332,6 @@ export default function RecipeScreen({ route, navigation }) {
     setTimeout(() => setRefreshing(false), 800);
   }, []);
 
-  // Guard: prevent rendering with no data
-  if (!recipe?.name) {
-    return (
-      <View style={styles.fallback}>
-        <Text style={styles.fallbackText}>Recipe not found.</Text>
-      </View>
-    );
-  }
-
-  // Hero image source — U-A16: resilient to imported recipes. Funnels through
-  // the shared resolver (imageUrl http > picture local/Cloudinary > placeholder)
-  // so a null/empty picture never yields a broken <Image>.
-  const heroSource = resolveRecipeImageSource(recipe);
-
-  // Video affordance — null-safe. resolveVideoUrl returns null for
-  // missing/empty/non-http, so the button renders nothing in that case.
-  const videoUrl = resolveVideoUrl(recipe);
-
-  // Scaling local — basé sur `servings` (state local), pas Redux.
-  // Les ingrédients sont stockés à `recipe.servings` (default auteur).
-  const servingsRatio =
-    recipe.servings && recipe.servings > 0
-      ? servings / recipe.servings
-      : 1;
-  const scaledIngredients = (recipe.ingredients || []).map((ing) => {
-    const raw = (ing.quantity || 0) * servingsRatio;
-    // Passe defaultUnit pour que `9 tsp farine` → `45g` (pas `45ml`).
-    // Le defaultUnit de l'ingrédient dicte si c'est masse ou volume.
-    const defaultUnit = ing.ingredient?.defaultUnit;
-    const { value, unit } = formatQuantity(raw, ing.unit, defaultUnit);
-    return { ...ing, displayQuantity: value, displayUnit: unit };
-  });
-
-  // Group alternative-ingredient rows that share a non-null `altGroup`.
-  // Forward-compatible: when no row carries altGroup (current state of DB),
-  // the output is identical to scaledIngredients.
-  const groupedIngredients = groupIngredients(scaledIngredients, t('recipe.ingredients.or'));
-
   // Shopping list recalculée 100% client-side à partir de :
   //   - recipe.ingredients (populated avec ri.ingredient = Ingredient doc)
   //   - pantry (Redux state.ingredient.value — ce que l'utilisateur possède)
@@ -403,6 +394,48 @@ export default function RecipeScreen({ route, navigation }) {
       })
       .filter(Boolean);
   }, [recipe, servings, pantry]);
+
+  // Guard: prevent rendering with no data
+  if (!recipe?.name) {
+    return (
+      <View style={styles.fallback}>
+        {isLoadingDetail ? (
+          <ActivityIndicator size="large" color={css.palette.primary800} />
+        ) : (
+          <Text style={styles.fallbackText}>{t('recipe.notFound')}</Text>
+        )}
+      </View>
+    );
+  }
+
+  // Hero image source — U-A16: resilient to imported recipes. Funnels through
+  // the shared resolver (imageUrl http > picture local/Cloudinary > placeholder)
+  // so a null/empty picture never yields a broken <Image>.
+  const heroSource = resolveRecipeImageSource(recipe);
+
+  // Video affordance — null-safe. resolveVideoUrl returns null for
+  // missing/empty/non-http, so the button renders nothing in that case.
+  const videoUrl = resolveVideoUrl(recipe);
+
+  // Scaling local — basé sur `servings` (state local), pas Redux.
+  // Les ingrédients sont stockés à `recipe.servings` (default auteur).
+  const servingsRatio =
+    recipe.servings && recipe.servings > 0
+      ? servings / recipe.servings
+      : 1;
+  const scaledIngredients = (recipe.ingredients || []).map((ing) => {
+    const raw = (ing.quantity || 0) * servingsRatio;
+    // Passe defaultUnit pour que `9 tsp farine` → `45g` (pas `45ml`).
+    // Le defaultUnit de l'ingrédient dicte si c'est masse ou volume.
+    const defaultUnit = ing.ingredient?.defaultUnit;
+    const { value, unit } = formatQuantity(raw, ing.unit, defaultUnit);
+    return { ...ing, displayQuantity: value, displayUnit: unit };
+  });
+
+  // Group alternative-ingredient rows that share a non-null `altGroup`.
+  // Forward-compatible: when no row carries altGroup (current state of DB),
+  // the output is identical to scaledIngredients.
+  const groupedIngredients = groupIngredients(scaledIngredients, t('recipe.ingredients.or'));
 
   // Pinned iteration order (backend may not freeze object key order)
   const orderedNutrition = recipe.nutritionPerServing
@@ -576,9 +609,8 @@ export default function RecipeScreen({ route, navigation }) {
           onBack={() => navigation.goBack()}
           onHome={
             user.token
-              ? () =>
-                  navigation.navigate('TabNavigator', { screen: 'UserDashboard' })
-              : () => navigation.navigate('Home')
+              ? () => enterApp(navigation)
+              : () => exitToHome(navigation)
           }
         />
 

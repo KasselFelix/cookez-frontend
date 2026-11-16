@@ -6,6 +6,7 @@
 // (yarn add -D eslint-plugin-react-native eslint-plugin-i18next).
 const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
+const globals = require('globals');
 
 function optional(name) {
   try {
@@ -65,7 +66,15 @@ const cookezRules = {
 module.exports = defineConfig([
   expoConfig,
   {
-    ignores: ['dist/*'],
+    // Generated or native output: `yarn lint` reads the whole repository
+    // (`expo lint .`), and coverage/ holds JavaScript of its own.
+    ignores: ['android/', 'ios/', 'coverage/', 'dist*/', '.expo/'],
+  },
+  {
+    // Jest globals (describe, it, expect, jest…) for the test files and their
+    // helpers, so the lint hook and `yarn lint` see the same errors.
+    files: ['test/**/*.js', '**/__tests__/**/*.js', '**/*.test.js'],
+    languageOptions: { globals: { ...globals.jest } },
   },
   cookezRules,
 ]);

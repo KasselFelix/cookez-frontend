@@ -475,8 +475,10 @@ export default function OriginPicker({ value, onChange }) {
                         style={[
                           styles.row,
                           {
+                            // Same picked-row colors as the Kickoff search
+                            // modal, so the sheet follows every theme.
                             backgroundColor: isSelected
-                              ? css.palette.secondary300
+                              ? css.flow.modalSelectedBg
                               : 'transparent',
                             borderRadius: css.radius.sm,
                           },
@@ -486,7 +488,9 @@ export default function OriginPicker({ value, onChange }) {
                         <Text
                           style={{
                             flex: 1,
-                            color: css.palette.neutral900,
+                            color: isSelected
+                              ? css.flow.modalSelectedText
+                              : css.palette.neutral900,
                             fontFamily: css.typography.fontUI,
                             fontSize: css.typography.bodySize,
                           }}
@@ -497,7 +501,7 @@ export default function OriginPicker({ value, onChange }) {
                           <FontAwesome
                             name="check"
                             size={16}
-                            color={css.palette.primary800}
+                            color={css.flow.modalSelectedText}
                           />
                         )}
                       </TouchableOpacity>

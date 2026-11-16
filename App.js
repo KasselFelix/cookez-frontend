@@ -31,7 +31,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import addressIp from './modules/addressIp';
 import { fetchSessionUser } from './modules/session';
 import { addUserToStore } from './reducers/user';
-import { setRecipes } from './reducers/recipe';
+import { setCatalogRecipes } from './reducers/recipe';
 import { setLocale } from './reducers/locale';
 import { setupI18n } from './i18n';
 import ThemeProvider from './contexts/ThemeProvider';
@@ -143,11 +143,8 @@ const AppContent = ({ onLayout}) => {
         const response = await fetch(`${addressIp}/recipes/all`);
         const data = await response.json();
         if (data.result) {
-          console.log('Recettes chargées:', data.recipes.length);
-          dispatch(setRecipes(data.recipes)); // On remplit le store recipe
-        }else{
-          console.log('chargement recettes échoué:', data.error);
-        } 
+          dispatch(setCatalogRecipes(data.recipes)); // Dashboard catalog
+        }
       } catch (error) {
         console.error('Erreur chargement recettes:', error);
       }

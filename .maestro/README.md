@@ -9,7 +9,7 @@ Tous les flows pilotent **Cookez Dev** (`appId: com.v2.cookez.dev`), le build de
   - `search` : « egg » avec une quantité, jusqu'aux résultats.
   - `theme` : lien profond de dev `cookez-dev://dev/theme?name=<thème>`.
   - `capture` et `shoot` : une capture par thème.
-- `ui-check/<écran>.yaml` : va jusqu'à un écran, le capture dans les cinq thèmes ou seulement dans `THEME` (`-e THEME=dark`), puis remet le thème clair. Écrans : `login`, `kickoff`, `result`, `recipe`, `profile`, `gallery`.
+- `ui-check/<écran>.yaml` : va jusqu'à un écran, le capture dans les cinq thèmes ou seulement dans `THEME` (`-e THEME=dark`), puis remet le thème clair. Écrans : `login`, `kickoff`, `result`, `recipe`, `profile`, `dashboard`, `gallery`.
 - `e2e/` : un flow par parcours utilisateur (`launch`, `login`, `search`, `profile`), rejoués par la CI E2E. Ils restent en lecture seule : pas de publication, de vote ni de suppression.
 - `reference/` : captures de référence validées, comparées par l'agent `ui-verifier`.
 

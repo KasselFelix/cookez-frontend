@@ -156,6 +156,10 @@
       "top_chef": "Top chef",
       "fifty_recipes": "50 recipes",
       "rated": "Top rated"
+    },
+    "identity": {
+      "noDiet": "No diet",
+      "dietSummary": "{{first}}{{more}}"
     }
   },
   "settings": {
@@ -487,7 +491,8 @@
     },
     "image": {
       "placeholder": "No photo for this recipe yet"
-    }
+    },
+    "notFound": "Recipe not found."
   },
   "userDashboard": {
     "greeting": {
@@ -607,5 +612,13 @@
       "sheets": "Sheets",
       "sandbox": "Sandbox"
     }
+  },
+  "addRecipe": {
+    "takePhotoA11y": "Take a photo of the recipe",
+    "pickImageA11y": "Choose a photo from the gallery",
+    "nameFirst": "Fill in the fields above first ✍️",
+    "galleryPermission": "Cookez needs access to your photos to add one.",
+    "cameraPermission": "Cookez needs access to the camera to take a photo.",
+    "photoError": "The photo could not be opened. Try again."
   }
 }
