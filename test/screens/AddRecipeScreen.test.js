@@ -96,6 +96,18 @@ describe('AddRecipeScreen photo buttons', () => {
     expect(photo.props.source).toEqual({ uri });
   }, 15000);
 
+  it('tells the user when the picker fails, without an unhandled rejection', async () => {
+    ImagePicker.launchCameraAsync.mockRejectedValueOnce(new Error('camera busy'));
+    renderForm();
+    fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
+    fireEvent.press(screen.getByRole('button', { name: 'Take a photo of the recipe' }));
+
+    await waitFor(() =>
+      expect(global.alert).toHaveBeenCalledWith('The photo could not be opened. Try again.'),
+    );
+    expect(screen.queryByLabelText('photo')).toBeNull();
+  }, 15000);
+
   it('asks for the recipe name before opening a picker', async () => {
     renderForm();
     fireEvent.press(screen.getByRole('button', { name: 'Choose a photo from the gallery' }));

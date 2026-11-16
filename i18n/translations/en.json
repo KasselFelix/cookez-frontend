@@ -615,6 +615,10 @@
   },
   "addRecipe": {
     "takePhotoA11y": "Take a photo of the recipe",
-    "pickImageA11y": "Choose a photo from the gallery"
+    "pickImageA11y": "Choose a photo from the gallery",
+    "nameFirst": "Fill in the fields above first ✍️",
+    "galleryPermission": "Cookez needs access to your photos to add one.",
+    "cameraPermission": "Cookez needs access to the camera to take a photo.",
+    "photoError": "The photo could not be opened. Try again."
   }
 }
