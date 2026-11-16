@@ -1,46 +1,59 @@
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-//import * as ImageManipulator from 'expo-image-manipulator';
-//import * as Unicons from '@iconscout/react-native-unicons';
-import css from '../styles/Global';
-import { setPicture } from '../reducers/picture';
+// Root import like the other Lucide files: lucide-react-native 1.14 exports no
+// per-icon path (plan 018, step 3).
+import { ImagePlus } from 'lucide-react-native';
 import { useDispatch } from 'react-redux';
 
-export default function PickImage(props) {
-    const dispatch=useDispatch();
+import { useTheme } from '../contexts/ThemeProvider';
+import { useT } from '../i18n/useT';
+import { setPicture } from '../reducers/picture';
 
-    const pickImage = async () => {
-        if(props.name){
-            // Demande de permission
-            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+/** Picks the recipe photo from the gallery; needs the recipe name first. */
+export default function PickImage({ name }) {
+  const dispatch = useDispatch();
+  const css = useTheme();
+  const t = useT();
 
-            if (permissionResult.granted === false) {
-            alert("Permission to access camera roll is required!");
-            return;
-            }
-
-            let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-            });
-
-            if (!result.canceled) {
-                dispatch(setPicture(result.assets[0].uri))
-            }
-        }else{
-            alert("fill the fields above before ✍️")
-        }
-    };
-
-    
+  const pickImage = async () => {
+    if (!name) {
+      alert('fill the fields above before ✍️');
+      return;
+    }
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      alert('Permission to access camera roll is required!');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      dispatch(setPicture(result.assets[0].uri));
+    }
+  };
 
   return (
-    <TouchableOpacity onPress={() =>pickImage()}>
-        {/* <Unicons.UilImageSearch size={60} color={css.palette.primary800}/> */}
-    </TouchableOpacity > 
+    <Pressable
+      onPress={pickImage}
+      accessibilityRole="button"
+      accessibilityLabel={t('addRecipe.pickImageA11y')}
+      style={({ pressed }) => [styles.button, { padding: css.spacing.sm, opacity: pressed ? 0.6 : 1 }]}
+    >
+      <ImagePlus size={48} color={css.palette.primary800} />
+    </Pressable>
   );
 }
 
+const styles = StyleSheet.create({
+  button: {
+    minWidth: 48,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

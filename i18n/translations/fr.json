@@ -612,5 +612,9 @@
       "sheets": "Feuilles",
       "sandbox": "Bac à sable"
     }
+  },
+  "addRecipe": {
+    "takePhotoA11y": "Prendre la recette en photo",
+    "pickImageA11y": "Choisir une photo dans la galerie"
   }
 }

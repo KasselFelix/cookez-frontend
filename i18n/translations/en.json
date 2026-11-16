@@ -612,5 +612,9 @@
       "sheets": "Sheets",
       "sandbox": "Sandbox"
     }
+  },
+  "addRecipe": {
+    "takePhotoA11y": "Take a photo of the recipe",
+    "pickImageA11y": "Choose a photo from the gallery"
   }
 }
