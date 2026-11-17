@@ -611,6 +611,14 @@
       "nutrition": "NutritionPill (Skia)",
       "sheets": "Sheets",
       "sandbox": "Sandbox"
+    },
+    "showToast": "SHOW TOAST",
+    "samples": {
+      "toastSuccess": "Your recipe is published.",
+      "toastInfo": "Coming soon.",
+      "toastErrorTitle": "Upload failed",
+      "toastError": "Check your connection and try again.",
+      "inlineError": "Wrong username or password."
     }
   },
   "addRecipe": {

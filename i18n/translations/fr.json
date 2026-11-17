@@ -611,6 +611,14 @@
       "nutrition": "NutritionPill (Skia)",
       "sheets": "Feuilles",
       "sandbox": "Bac à sable"
+    },
+    "showToast": "AFFICHER UN TOAST",
+    "samples": {
+      "toastSuccess": "Ta recette est publiée.",
+      "toastInfo": "Bientôt disponible.",
+      "toastErrorTitle": "Échec de l'envoi",
+      "toastError": "Vérifie ta connexion et réessaie.",
+      "inlineError": "Nom d'utilisateur ou mot de passe incorrect."
     }
   },
   "addRecipe": {

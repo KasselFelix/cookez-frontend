@@ -29,6 +29,9 @@ import StaleCacheBanner from '../components/result/StaleCacheBanner';
 import NutritionPill from '../components/recipe/NutritionPill';
 import NutritionSheet from '../components/recipe/NutritionSheet';
 import ThemePickerSheet from '../components/profile/ThemePickerSheet';
+import Toast from '../components/feedback/Toast';
+import InlineMessage from '../components/feedback/InlineMessage';
+import { useToast } from '../contexts/ToastProvider';
 import TestScreen from './TestScreen';
 
 const SAMPLE_RECIPE = {
@@ -104,6 +107,7 @@ export default function DevGalleryScreen() {
   const [themeSheetVisible, setThemeSheetVisible] = useState(false);
   const [search, setSearch] = useState('');
   const [chipActive, setChipActive] = useState(true);
+  const { show: showToast } = useToast();
 
   const colors = Object.entries(css.palette).filter(([, value]) => typeof value === 'string' && value.startsWith('#'));
   const caption = { fontSize: css.typography.captionSize, color: css.palette.neutral700 };
@@ -194,6 +198,24 @@ export default function DevGalleryScreen() {
         </Section>
 
         <Section id="states" title={t('devGallery.sections.states')}>
+          {/* Messages of plan 020: three static toasts, an inline message, and a
+              real toast, animated at the top of the screen. */}
+          <View testID="gallery-feedback" style={{ gap: css.spacing.sm }}>
+            <Toast type="success" message={t('devGallery.samples.toastSuccess')} onClose={() => {}} />
+            <Toast type="info" message={t('devGallery.samples.toastInfo')} onClose={() => {}} />
+            <Toast
+              type="error"
+              title={t('devGallery.samples.toastErrorTitle')}
+              message={t('devGallery.samples.toastError')}
+              onClose={() => {}}
+            />
+            <InlineMessage message={t('devGallery.samples.inlineError')} />
+            <MyButton
+              dataFlow={() => showToast({ type: 'info', message: t('devGallery.samples.toastInfo') })}
+              text={t('devGallery.showToast')}
+              buttonType={buttonStyles.buttonTwo}
+            />
+          </View>
           <StaleCacheBanner />
           <View style={[styles.stateBox, { borderColor: css.palette.neutral300, borderRadius: css.radius.md }]}>
             <InventoryEmptyState onAdd={() => {}} />
