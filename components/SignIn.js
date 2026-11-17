@@ -10,6 +10,8 @@ import { addUserToStore } from '../reducers/user';
 import buttonStyles from '../styles/Button';
 import css from '../styles/Global';
 import MyButton from './MyButton';
+import InlineMessage from './feedback/InlineMessage';
+import useT from '../i18n/useT';
 import LottieView from 'lottie-react-native';
 
 export default function SignIn({navigation}) {
@@ -19,6 +21,9 @@ export default function SignIn({navigation}) {
     const [modalVisible, setModalVisible]=useState(false);
     // hook state to launch the animation
     const [submitted, setSubmitted]=useState(false);
+    // Error shown inside the modal: a toast would stay hidden under it (plan 020).
+    const [error, setError]=useState('');
+    const t = useT();
 
     const dispatch =useDispatch();
     const user=useSelector((state)=>state.user.value)
@@ -26,6 +31,7 @@ export default function SignIn({navigation}) {
     // funtion to handle the signin
     const handleSignin = async () => {
       // Optionnel : ajouter un état "isLoading" ici
+      setError('');
       try {
         const response = await fetch(`${addressIp}/users/signin`, {
           method: 'POST',
@@ -42,11 +48,11 @@ export default function SignIn({navigation}) {
           setSubmitted(true);
           dispatch(addUserToStore(data.userLogged));
         } else {
-          alert(data.error);
+          setError(data.error || t('common.error'));
         }
       } catch (error) {
         console.error('Sign-in failed:', error.message);
-        alert("Une erreur réseau est survenue.");
+        setError(t('common.networkError'));
       }
     };
 
@@ -59,7 +65,7 @@ export default function SignIn({navigation}) {
   return (
     <SafeAreaView style={styles.buttonWrapper}>
       <MyButton
-        dataFlow={()=>setModalVisible(true)}
+        dataFlow={()=>{ setError(''); setModalVisible(true); }}
         text={"SIGN IN"}
         testID="login-open"
         buttonType={buttonStyles.buttonOne}
@@ -78,8 +84,9 @@ export default function SignIn({navigation}) {
           :
           <View style={styles.modalContainer}>
           <View style={styles.shadowView}>
-            <TextInput testID="login-username" placeholder='username' placeholderTextColor={'grey'} style={styles.formStyle} value={username} onChangeText={(value)=> setUsername(value)}/>
-            <TextInput testID="login-password" placeholder='password' placeholderTextColor={'grey'} textContentType='password' secureTextEntry={true} style={styles.formStyle} value={password} onChangeText={(value)=> setPassword(value)}/>
+            <TextInput testID="login-username" placeholder='username' placeholderTextColor={'grey'} style={styles.formStyle} value={username} onChangeText={(value)=> { setUsername(value); setError(''); }}/>
+            <TextInput testID="login-password" placeholder='password' placeholderTextColor={'grey'} textContentType='password' secureTextEntry={true} style={styles.formStyle} value={password} onChangeText={(value)=> { setPassword(value); setError(''); }}/>
+            <InlineMessage testID="login-error" message={error} style={styles.error} />
             <MyButton
               dataFlow={handleSignin}
               text="Signin"
@@ -146,6 +153,10 @@ const styles = StyleSheet.create({
     padding: 12,
     marginVertical: 10,
     fontSize: 15,
+  },
+
+  error: {
+    marginVertical: 8,
   },
 
   lottieAnim:{
