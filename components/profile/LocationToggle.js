@@ -7,7 +7,7 @@
 // Personal info modal so this surface stays uncluttered.
 
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Switch, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Switch, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../../modules/addressIp';
@@ -15,6 +15,7 @@ import { jsonAuthHeaders } from '../../modules/authHeaders';
 import { updateUserInStore } from '../../reducers/user';
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
+import { useToast } from '../../contexts/ToastProvider';
 
 // We import lazily inside the handler so the component still mounts
 // even if expo-location isn't installed yet (the dependency is part
@@ -32,6 +33,8 @@ export default function LocationToggle() {
   const t = useT();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
+  // Non-blocking messages (plan 020): a Settings row, no modal above it.
+  const { show } = useToast();
   const consent = !!user?.location?.consent;
 
   const [isWorking, setIsWorking] = useState(false);
@@ -50,10 +53,10 @@ export default function LocationToggle() {
         // fields (post-normalisation), so we can dispatch it as-is.
         if (data.updated) dispatch(updateUserInStore(data.updated));
       } else {
-        Alert.alert(t('common.error'), data.error || t('common.networkError'));
+        show({ type: 'error', message: data.error || t('common.networkError') });
       }
     } catch {
-      Alert.alert(t('common.error'), t('common.networkError'));
+      show({ type: 'error', message: t('common.networkError') });
     } finally {
       setIsWorking(false);
     }
@@ -70,10 +73,11 @@ export default function LocationToggle() {
     }
 
     if (!Location) {
-      Alert.alert(
-        t('settings.location.errorTitle'),
-        'expo-location is not installed.',
-      );
+      show({
+        type: 'error',
+        title: t('settings.location.errorTitle'),
+        message: t('settings.location.errorMessage'),
+      });
       return;
     }
 
@@ -86,20 +90,22 @@ export default function LocationToggle() {
       // We surface a dedicated message instead of the generic error.
       const servicesOn = await Location.hasServicesEnabledAsync();
       if (!servicesOn) {
-        Alert.alert(
-          t('settings.location.servicesDisabledTitle'),
-          t('settings.location.servicesDisabledMessage'),
-        );
+        show({
+          type: 'info',
+          title: t('settings.location.servicesDisabledTitle'),
+          message: t('settings.location.servicesDisabledMessage'),
+        });
         return;
       }
 
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         await persist({ consent: false });
-        Alert.alert(
-          t('settings.location.deniedTitle'),
-          t('settings.location.deniedMessage'),
-        );
+        show({
+          type: 'info',
+          title: t('settings.location.deniedTitle'),
+          message: t('settings.location.deniedMessage'),
+        });
         return;
       }
 
@@ -128,10 +134,11 @@ export default function LocationToggle() {
             });
             return;
           }
-          Alert.alert(
-            t('settings.location.errorTitle'),
-            t('settings.location.timeoutMessage'),
-          );
+          show({
+            type: 'error',
+            title: t('settings.location.errorTitle'),
+            message: t('settings.location.timeoutMessage'),
+          });
           return;
         }
         throw err;
@@ -142,10 +149,11 @@ export default function LocationToggle() {
         consent: true,
       });
     } catch {
-      Alert.alert(
-        t('settings.location.errorTitle'),
-        t('settings.location.errorMessage'),
-      );
+      show({
+        type: 'error',
+        title: t('settings.location.errorTitle'),
+        message: t('settings.location.errorMessage'),
+      });
     } finally {
       setIsWorking(false);
     }
