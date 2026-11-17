@@ -317,6 +317,7 @@ export default function AddRecipeScreen({navigation}) {
                   placeholder="units"
                   title={t('addRecipe.unitTitle')}
                   accessibilityLabel={t('addRecipe.unitTitle')}
+                  testID="addRecipe-unit"
                 />
                 <TextInput placeholder='Ingredient*' placeholderTextColor={'grey'} style={styles.ingredientInput}  onChangeText={(value) => setRecipeIngredients(value)} value={recipeIngredients}/>
               </View>

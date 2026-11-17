@@ -160,6 +160,10 @@ export default function OptionPicker({ value, options, onChange, placeholder, ti
                         styles.option,
                         {
                           backgroundColor: active ? css.button.primaryBg : css.palette.secondary200,
+                          // In pastelMint, secondary200 is close to the sheet colour:
+                          // the border keeps each option's shape visible.
+                          borderWidth: 1,
+                          borderColor: active ? css.button.primaryBg : css.input.borderColor,
                           borderRadius: css.radius.pill,
                           paddingHorizontal: css.spacing.md,
                           marginRight: css.spacing.sm,
