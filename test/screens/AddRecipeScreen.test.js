@@ -266,3 +266,23 @@ describe('AddRecipeScreen publish failures', () => {
     jest.restoreAllMocks();
   }, 15000);
 });
+
+// Plan 020: every text of the screen goes through useT(), unit labels too;
+// the unit values sent to the backend do not change.
+describe('AddRecipeScreen in French', () => {
+  it('translates the form and the unit labels', () => {
+    renderWithProviders(<AddRecipeScreen navigation={nav} />, {
+      withNavigation: false,
+      preloadedState: { user: makeUserState(), picture: { value: null }, locale: { value: { lang: 'fr' } } },
+    });
+
+    expect(screen.getByText('Ajoute ta recette 🍳')).toBeTruthy();
+    expect(screen.getByPlaceholderText('nom*')).toBeTruthy();
+    expect(screen.getByText("Ajouter l'ingrédient")).toBeTruthy();
+    expect(screen.getByText('ingrédients ajoutés : 0')).toBeTruthy();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Unité' }));
+    fireEvent.press(screen.getByRole('button', { name: 'c. à s.' }));
+    expect(screen.getByRole('button', { name: 'Unité' })).toHaveAccessibilityValue({ text: 'c. à s.' });
+  }, 15000);
+});

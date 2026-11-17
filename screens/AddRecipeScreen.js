@@ -231,17 +231,18 @@ export default function AddRecipeScreen({navigation}) {
     value: i + 1,
   }));
 
+  // Labels are translated; values stay as they are, the backend reads them.
   const units = [
-    { label: "g", value: "g  " },
-    { label: "kg", value: "kg  " },
-    { label: "liter", value: "L  " },
-    { label: "ml", value: "ml  " },
-    { label: "cl", value: "cl  " },
-    { label: "tbsp", value: "tbsp  " },
-    { label: "tsp", value: "tsp  " },
+    { label: t("addRecipe.units.g"), value: "g  " },
+    { label: t("addRecipe.units.kg"), value: "kg  " },
+    { label: t("addRecipe.units.liter"), value: "L  " },
+    { label: t("addRecipe.units.ml"), value: "ml  " },
+    { label: t("addRecipe.units.cl"), value: "cl  " },
+    { label: t("addRecipe.units.tbsp"), value: "tbsp  " },
+    { label: t("addRecipe.units.tsp"), value: "tsp  " },
     // A count of pieces (3 eggs). The backend trims the value and reads
     // 'unit' as pieces of the ingredient's reference weight.
-    { label: "unit", value: "unit  " },
+    { label: t("addRecipe.units.unit"), value: "unit  " },
   ];
 
 
@@ -257,7 +258,7 @@ export default function AddRecipeScreen({navigation}) {
           buttonType={buttonStyles.buttonSmall}
         />
       {/* </View> */}
-        <Text style={styles.titlePage}>Add your recipe 🍳</Text>
+        <Text style={styles.titlePage}>{t('addRecipe.title')}</Text>
         <View style={styles.btnEmpty}></View>
       </View>
       {/* The space for the floating tab bar sits on the card, not on the
@@ -273,14 +274,14 @@ export default function AddRecipeScreen({navigation}) {
             {/* SECTION RECIPE : TITLE - DESCRIPTION  - SETTINGS*/}
             <View style={styles.section}>
               <View style={styles.separationContainer}>
-                <Text style={styles.sectionTitle}>Recipe</Text>
+                <Text style={styles.sectionTitle}>{t('addRecipe.sections.recipe')}</Text>
                 <View  style={styles.separation}/>
               </View>
-              <TextInput placeholder='name*' placeholderTextColor={'grey'} style={styles.formInput} onChangeText={(value) => setRecipeName(value)} value={recipeName}/>
-              <TextInput placeholder='description*' placeholderTextColor={'grey'} style={styles.formInput} onChangeText={(value) => setRecipeDescription(value)} value={recipeDescription}/>
+              <TextInput placeholder={t('addRecipe.namePlaceholder')} placeholderTextColor={'grey'} style={styles.formInput} onChangeText={(value) => setRecipeName(value)} value={recipeName}/>
+              <TextInput placeholder={t('addRecipe.descriptionPlaceholder')} placeholderTextColor={'grey'} style={styles.formInput} onChangeText={(value) => setRecipeDescription(value)} value={recipeDescription}/>
               < View style={styles.settings}>
                 <View style={styles.servingBloc}>
-                  <Text  style={styles.label}>servings:</Text>
+                  <Text  style={styles.label}>{t('addRecipe.servingsLabel')}</Text>
                     <OptionPicker
                       value={recipeServings}
                       onChange={setRecipeServings}
@@ -289,10 +290,10 @@ export default function AddRecipeScreen({navigation}) {
                       title={t('addRecipe.servingsTitle')}
                       accessibilityLabel={t('addRecipe.servingsTitle')}
                     />
-                  <Text style={styles.unit}>pers.  </Text>
+                  <Text style={styles.unit}>{`${t('addRecipe.persons')}  `}</Text>
                 </View>
                 <View style={styles.difficultyBloc}>
-                  <Text style={styles.label}>difficulty:</Text>
+                  <Text style={styles.label}>{t('addRecipe.difficultyLabel')}</Text>
                   <OptionPicker
                     value={recipeDifficulty}
                     onChange={setRecipeDifficulty}
@@ -307,20 +308,20 @@ export default function AddRecipeScreen({navigation}) {
               <View style={styles.timeInputsContainer}>
                 <View style={styles.timeInput1}>
                   <View>
-                    <Text>preparation:</Text>
+                    <Text>{t('addRecipe.preparationLabel')}</Text>
                   </View>
                   <View style={styles.inputRow1}>
                     <TextInput placeholder='0' keyboardType="numeric" maxLength={5} placeholderTextColor={'grey'} style={styles.formInputSmall} onChangeText={(value) => setRecipePreptime(value)} value={recipePreptime}/>
-                    <Text style={styles.unit}>min.  </Text>
+                    <Text style={styles.unit}>{`${t('addRecipe.minutes')}  `}</Text>
                   </View>
                 </View>
                   <View style={styles.timeInput2}>
                     <View>
-                      <Text>cooking:</Text>
+                      <Text>{t('addRecipe.cookingLabel')}</Text>
                     </View>
                     <View style={styles.inputRow2}>
                       <TextInput placeholder='0'  keyboardType="numeric" maxLength={3} placeholderTextColor={'grey'} style={styles.formInputSmall} onChangeText={(value) => setRecipeCooktime(value)} value={recipeCooktime}/>
-                      <Text style={styles.unit}>min.  </Text>
+                      <Text style={styles.unit}>{`${t('addRecipe.minutes')}  `}</Text>
                     </View>
                   </View>
               </View>
@@ -328,32 +329,32 @@ export default function AddRecipeScreen({navigation}) {
                             {/* SECTION INGREDIENTS */}
             <View style={styles.section}>
               <View style={styles.separationContainer}>
-              <Text style={styles.sectionTitle}>Ingredients</Text>
+              <Text style={styles.sectionTitle}>{t('addRecipe.sections.ingredients')}</Text>
               <View  style={styles.separation}/>
               </View>
               <View style={styles.ingredientBloc}>
-                <TextInput placeholder='Qty'  keyboardType="numeric" maxLength={3} placeholderTextColor={'grey'} style={styles.quantityInput} onChangeText={(value) => setRecipeQuantity(value)} value={recipeQuantity}/>
+                <TextInput placeholder={t('addRecipe.quantityPlaceholder')}  keyboardType="numeric" maxLength={3} placeholderTextColor={'grey'} style={styles.quantityInput} onChangeText={(value) => setRecipeQuantity(value)} value={recipeQuantity}/>
                 <OptionPicker
                   value={recipeUnit}
                   onChange={setRecipeUnit}
                   options={units}
-                  placeholder="units"
+                  placeholder={t('addRecipe.unitPlaceholder')}
                   title={t('addRecipe.unitTitle')}
                   accessibilityLabel={t('addRecipe.unitTitle')}
                   testID="addRecipe-unit"
                 />
-                <TextInput placeholder='Ingredient*' placeholderTextColor={'grey'} style={styles.ingredientInput}  onChangeText={(value) => setRecipeIngredients(value)} value={recipeIngredients}/>
+                <TextInput placeholder={t('addRecipe.ingredientPlaceholder')} placeholderTextColor={'grey'} style={styles.ingredientInput}  onChangeText={(value) => setRecipeIngredients(value)} value={recipeIngredients}/>
               </View>
               {/* Affichage du compteur d'ingrédients */}             
-              <Text style={styles.counterText}>ingredients added: {ingredientCount}</Text>              
+              <Text style={styles.counterText}>{t('addRecipe.ingredientsAdded', { count: ingredientCount })}</Text>              
                       {/* Bouton pour ajouter un ingrédient */}
               <View style={styles.buttonsBloc}>
                   {/* Bouton pour afficher la MODAL */}
                   <TouchableOpacity style={styles.showButton} onPress={()=>{setModalVisible(true)}}>
-                  <Text style={styles.addButtonText}>Show ingredients</Text>
+                  <Text style={styles.addButtonText}>{t('addRecipe.showIngredients')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.addButton} onPress={handleAddIngredient}>  
-                  <Text style={styles.addButtonText}>Add ingredient</Text>
+                  <Text style={styles.addButtonText}>{t('addRecipe.addIngredient')}</Text>
                 </TouchableOpacity>
                </View>
                {modalVisible &&
@@ -369,20 +370,20 @@ export default function AddRecipeScreen({navigation}) {
                           {/* SECTION PREPARATION STEPS */}
             <View style={styles.section}>
               <View style={styles.separationContainer}>
-                <Text style={styles.sectionTitle}>Steps</Text>
+                <Text style={styles.sectionTitle}>{t('addRecipe.sections.steps')}</Text>
                 <View  style={styles.separation}/>
               </View>
               <View style={styles.stepsInput}>
-                <TextInput placeholder='step*' placeholderTextColor={'grey'} style={styles.formInput}  onChangeText={(value) => setRecipeSteps(value)} value={recipeSteps} multiline={true} textAlignVertical="top"/>
+                <TextInput placeholder={t('addRecipe.stepPlaceholder')} placeholderTextColor={'grey'} style={styles.formInput}  onChangeText={(value) => setRecipeSteps(value)} value={recipeSteps} multiline={true} textAlignVertical="top"/>
               </View>
                            {/* Affichage du compteur d'étapes */}             
-              <Text style={styles.counterText}>steps added: {stepCount}</Text>
+              <Text style={styles.counterText}>{t('addRecipe.stepsAdded', { count: stepCount })}</Text>
               <View style={styles.buttonsBloc}>
               <TouchableOpacity style={styles.showButton} onPress={()=>{setModalVisible2(true)}}>
-                  <Text style={styles.addButtonText}>Show steps</Text>
+                  <Text style={styles.addButtonText}>{t('addRecipe.showSteps')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.addButton} onPress={() =>{handleAddSteps()}}>
-                  <Text style={styles.addButtonText}>Add step</Text>
+                  <Text style={styles.addButtonText}>{t('addRecipe.addStep')}</Text>
                 </TouchableOpacity>
               </View>
               {modalVisible2 &&   
@@ -398,18 +399,18 @@ export default function AddRecipeScreen({navigation}) {
                                   {/* SECTION PICTURE */}
             <View style={styles.section}>
               <View style={styles.separationContainer}>
-                <Text style={styles.sectionTitle}>Picture</Text>
+                <Text style={styles.sectionTitle}>{t('addRecipe.sections.picture')}</Text>
                 <View  style={styles.separation}/>
               </View>
                 <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                   {picture ?
                     <View style={{ width:'100%', alignItems: 'center'}}>
                     <View style={styles.deleteIcon}>
-                      <TouchableOpacity onPress={() => dispatch(clearPicture())} style={styles.cross}>
+                      <TouchableOpacity onPress={() => dispatch(clearPicture())} style={styles.cross} accessibilityRole="button" accessibilityLabel={t('addRecipe.removePhotoA11y')}>
                         <FontAwesome name='times' size={20} color={css.palette.error}  />
                       </TouchableOpacity>
                     </View>
-                    <Image source={{ uri: picture }} alt="photo" accessibilityLabel="photo" style={{ width: 200, height: 200,borderRadius:20, borderWidth:5, borderColor:css.palette.primary800 }} />        
+                    <Image source={{ uri: picture }} alt={t('addRecipe.photoA11y')} accessibilityLabel={t('addRecipe.photoA11y')} style={{ width: 200, height: 200,borderRadius:20, borderWidth:5, borderColor:css.palette.primary800 }} />        
                     </View> :
                     <View style={styles.pictureLogo}> 
                         <TakePhoto name={recipeName} onNameMissing={() => setPhotoMessage(t('addRecipe.nameFirst'))}/>
@@ -427,7 +428,7 @@ export default function AddRecipeScreen({navigation}) {
             <View style={{ marginTop: css.spacing.lg }}>
               <MyButton
                 dataFlow={() => {handleAddRecipe()}}
-                text="Add Recipe"
+                text={t('addRecipe.submit')}
                 buttonType={buttonStyles.buttonThree}
               />
             </View>
