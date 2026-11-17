@@ -632,5 +632,15 @@
     "servingsTitle": "Servings",
     "difficultyTitle": "Difficulty",
     "unitTitle": "Unit"
+  },
+  "commentScreen": {
+    "emptyMessage": "Your review can't be empty.",
+    "updateFailed": "Could not save your changes. Try again later.",
+    "saveNetworkError": "Network error: your changes were not saved.",
+    "deleteFailed": "Could not delete the review. Try again later.",
+    "deleteNetworkError": "Network error: the review was not deleted.",
+    "deleteTitle": "Delete review?",
+    "deleteMessage": "This will permanently remove your review from the recipe.",
+    "delete": "Delete"
   }
 }

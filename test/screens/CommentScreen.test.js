@@ -80,4 +80,34 @@ describe('CommentScreen writes', () => {
     expect(init.headers).toEqual({ Authorization: `Bearer ${TOKEN}` });
     await waitFor(() => expect(screen.queryByText('Tasty bowl')).toBeNull());
   });
+
+  it('edit: shows a failed save inside the modal, cleared by typing', async () => {
+    await renderScreen();
+    global.fetch.mockImplementation((url, init = {}) =>
+      init.method ? Promise.reject(new Error('Network request failed')) : Promise.resolve(makeResponse({ result: true })),
+    );
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    fireEvent.press(screen.getByRole('button', { name: 'Edit comment' }));
+    fireEvent.changeText(screen.getByLabelText('Edit comment message'), 'Even better');
+    fireEvent.press(screen.getByRole('button', { name: 'Save edited comment' }));
+
+    expect(await screen.findByText('Network error: your changes were not saved.')).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText('Edit comment message'), 'Even better!');
+    expect(screen.queryByTestId('comment-edit-error')).toBeNull();
+  });
+
+  it('delete: keeps the confirmation dialog and shows a failure in a toast', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation((title, msg, buttons) => {
+      buttons?.find((b) => b.text === 'Delete')?.onPress?.();
+    });
+    await renderScreen();
+    global.fetch.mockImplementation(() => Promise.resolve(makeResponse({ result: false, error: 'Not your comment' })));
+
+    fireEvent.press(screen.getByRole('button', { name: 'Delete comment' }));
+
+    expect(alert).toHaveBeenCalledWith('Delete review?', expect.any(String), expect.any(Array));
+    expect(await screen.findByTestId('toast')).toHaveTextContent('Not your comment');
+    expect(screen.getByText('Tasty bowl')).toBeTruthy();
+  });
 });

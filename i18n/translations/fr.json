@@ -632,5 +632,15 @@
     "servingsTitle": "Portions",
     "difficultyTitle": "Difficulté",
     "unitTitle": "Unité"
+  },
+  "commentScreen": {
+    "emptyMessage": "Votre avis ne peut pas être vide.",
+    "updateFailed": "Vos modifications n'ont pas été enregistrées. Réessayez plus tard.",
+    "saveNetworkError": "Erreur réseau : vos modifications n'ont pas été enregistrées.",
+    "deleteFailed": "L'avis n'a pas pu être supprimé. Réessayez plus tard.",
+    "deleteNetworkError": "Erreur réseau : l'avis n'a pas été supprimé.",
+    "deleteTitle": "Supprimer cet avis ?",
+    "deleteMessage": "Votre avis sera définitivement retiré de la recette.",
+    "delete": "Supprimer"
   }
 }

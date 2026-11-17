@@ -36,6 +36,9 @@ import { authHeaders, jsonAuthHeaders } from '../modules/authHeaders';
 import css from '../styles/Global';
 import useTabBarHeight from '../hooks/useTabBarHeight';
 import UserCommentCard from '../components/recipe/UserCommentCard';
+import InlineMessage from '../components/feedback/InlineMessage';
+import { useToast } from '../contexts/ToastProvider';
+import useT from '../i18n/useT';
 import {
   deleteComment as deleteCommentAction,
   updateCommentMessage as updateCommentMessageAction,
@@ -62,6 +65,8 @@ export default function CommentScreen({ navigation }) {
   const recipesInStore = useSelector((state) => state.recipe.value);
   const dispatch = useDispatch();
   const tabBarHeight = useTabBarHeight();
+  const t = useT();
+  const { show: showToast } = useToast();
 
   const [comments, setComments] = useState([]);
   const [stats, setStats] = useState({ totalComments: 0, totalLikesReceived: 0 });
@@ -74,6 +79,8 @@ export default function CommentScreen({ navigation }) {
   const [editing, setEditing] = useState(null);          // the comment being edited
   const [editDraft, setEditDraft] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
+  // Shown inside the edit modal: a toast would stay hidden under it (plan 020).
+  const [editError, setEditError] = useState('');
 
   // Deduplicated cache of recipe lookups for the JSX render path.
   const recipesById = useMemo(() => {
@@ -153,18 +160,26 @@ export default function CommentScreen({ navigation }) {
   const handleStartEdit = useCallback((comment) => {
     setEditing(comment);
     setEditDraft(comment?.message ?? '');
+    setEditError('');
+  }, []);
+
+  // Typing again clears the last error.
+  const handleChangeDraft = useCallback((value) => {
+    setEditDraft(value);
+    setEditError('');
   }, []);
 
   const handleCancelEdit = useCallback(() => {
     setEditing(null);
     setEditDraft('');
+    setEditError('');
   }, []);
 
   const handleSaveEdit = useCallback(async () => {
     if (!editing?._id) return;
     const trimmed = editDraft.trim();
     if (!trimmed) {
-      Alert.alert('Empty message', 'Your review can\'t be empty.');
+      setEditError(t('commentScreen.emptyMessage'));
       return;
     }
     if (trimmed === editing.message) {
@@ -172,6 +187,7 @@ export default function CommentScreen({ navigation }) {
       return;
     }
     setSavingEdit(true);
+    setEditError('');
     try {
       const res = await fetch(
         `${addressIp}/comments/update/${editing._id}`,
@@ -204,15 +220,15 @@ export default function CommentScreen({ navigation }) {
         ).catch(() => {});
         handleCancelEdit();
       } else {
-        Alert.alert('Update failed', data.error || 'Try again later.');
+        setEditError(data.error || t('commentScreen.updateFailed'));
       }
     } catch (err) {
       console.error('Edit comment failed', err);
-      Alert.alert('Network error', 'Could not save your changes.');
+      setEditError(t('commentScreen.saveNetworkError'));
     } finally {
       setSavingEdit(false);
     }
-  }, [editing, editDraft, user?.token, dispatch, handleCancelEdit]);
+  }, [editing, editDraft, user?.token, dispatch, handleCancelEdit, t]);
 
   const performDelete = useCallback(
     async (comment) => {
@@ -246,32 +262,33 @@ export default function CommentScreen({ navigation }) {
             Haptics.NotificationFeedbackType.Success
           ).catch(() => {});
         } else {
-          Alert.alert('Delete failed', data.error || 'Try again later.');
+          showToast({ type: 'error', message: data.error || t('commentScreen.deleteFailed') });
         }
       } catch (err) {
         console.error('Delete comment failed', err);
-        Alert.alert('Network error', 'Could not delete the comment.');
+        showToast({ type: 'error', message: t('commentScreen.deleteNetworkError') });
       }
     },
-    [user?.token, dispatch]
+    [user?.token, dispatch, showToast, t]
   );
 
   const handleRequestDelete = useCallback(
     (comment) => {
+      // A real choice: the one dialog kept on this screen (plan 020).
       Alert.alert(
-        'Delete review?',
-        'This will permanently remove your review from the recipe.',
+        t('commentScreen.deleteTitle'),
+        t('commentScreen.deleteMessage'),
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('common.cancel'), style: 'cancel' },
           {
-            text: 'Delete',
+            text: t('commentScreen.delete'),
             style: 'destructive',
             onPress: () => performDelete(comment),
           },
         ]
       );
     },
-    [performDelete]
+    [performDelete, t]
   );
 
   const renderItem = useCallback(
@@ -412,7 +429,7 @@ export default function CommentScreen({ navigation }) {
                   <TextInput
                     style={styles.modalInput}
                     value={editDraft}
-                    onChangeText={setEditDraft}
+                    onChangeText={handleChangeDraft}
                     multiline
                     maxLength={MAX_MESSAGE_LENGTH}
                     placeholder="Write your review..."
@@ -423,6 +440,11 @@ export default function CommentScreen({ navigation }) {
                   <Text style={styles.modalCounter}>
                     {editDraft.length}/{MAX_MESSAGE_LENGTH}
                   </Text>
+                  <InlineMessage
+                    testID="comment-edit-error"
+                    message={editError}
+                    style={styles.modalError}
+                  />
                   <View style={styles.modalActions}>
                     <TouchableOpacity
                       style={[styles.modalButton, styles.modalCancel]}
@@ -772,6 +794,9 @@ const styles = StyleSheet.create({
     color: css.palette.neutral500,
     textAlign: 'right',
     marginTop: css.spacing.xs,
+  },
+  modalError: {
+    marginTop: 8,
   },
   modalActions: {
     flexDirection: 'row',
