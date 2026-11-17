@@ -632,7 +632,11 @@
     "photoError": "The photo could not be opened. Try again.",
     "servingsTitle": "Servings",
     "difficultyTitle": "Difficulty",
-    "unitTitle": "Unit"
+    "unitTitle": "Unit",
+    "photoMissing": "Take or choose a photo of the recipe first.",
+    "published": "Your recipe is published.",
+    "publishFailed": "The recipe was not published",
+    "uploadRefused": "The photo was refused. Try a smaller one or another one."
   },
   "commentScreen": {
     "emptyMessage": "Your review can't be empty.",

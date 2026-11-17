@@ -632,7 +632,11 @@
     "photoError": "Impossible d'ouvrir la photo. Réessaie.",
     "servingsTitle": "Portions",
     "difficultyTitle": "Difficulté",
-    "unitTitle": "Unité"
+    "unitTitle": "Unité",
+    "photoMissing": "Prends ou choisis d'abord une photo de la recette.",
+    "published": "Ta recette est publiée.",
+    "publishFailed": "La recette n'a pas été publiée",
+    "uploadRefused": "La photo a été refusée. Essaie une photo plus légère ou une autre."
   },
   "commentScreen": {
     "emptyMessage": "Votre avis ne peut pas être vide.",

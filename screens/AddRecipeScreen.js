@@ -28,12 +28,18 @@ import PickImage from "../components/PickImage";
 import TakePhoto from "../components/TakePhoto";
 import useTabBarHeight from "../hooks/useTabBarHeight";
 import { clearPicture } from "../reducers/picture";
+import InlineMessage from "../components/feedback/InlineMessage";
+import { useToast } from "../contexts/ToastProvider";
 
 const { width, height } = Dimensions.get('window');
 
 export default function AddRecipeScreen({navigation}) {
   const tabBarHeight = useTabBarHeight();
   const t = useT();
+  const { show: showToast } = useToast();
+  // Message under the photo buttons, where the user just touched: the name
+  // field is at the top of the form, often scrolled out of sight (plan 020).
+  const [photoMessage, setPhotoMessage] = useState("");
 
   // ETATS POUR LES PICKERS \\
   const [selectedNumber, setSelectedNumber] = useState(null);
@@ -74,12 +80,17 @@ export default function AddRecipeScreen({navigation}) {
     return ()=>dispatch(clearPicture());
   },[])
 
+  // The next name typed or photo chosen clears the photo message.
+  useEffect(() => {
+    setPhotoMessage("");
+  }, [recipeName, picture]);
+
 
   async function handleAddRecipe() {
     try {
         // Vérification de la photo
         if (!picture) {
-            alert('You should take or select a picture before 😊');
+            setPhotoMessage(t('addRecipe.photoMissing'));
         }else if (user?.token) {
             const pictureName = `${recipeName.trim()}_${Date.now()}`;
             const formData = new FormData();
@@ -99,13 +110,21 @@ export default function AddRecipeScreen({navigation}) {
             });
 
             if (!uploadResponse.ok) {
-                throw new Error('Resize a little your picture or try with another one');
+                showToast({ type: 'error', title: t('addRecipe.publishFailed'), message: t('addRecipe.uploadRefused') });
+                return;
             }
 
             const uploadData = await uploadResponse.json();
             //console.log('Upload response data:', uploadData);
 
-            if (uploadData.result) {
+            if (!uploadData.result) {
+                // Silent before plan 020: the photo was refused, nothing happened.
+                showToast({
+                    type: 'error',
+                    title: t('addRecipe.publishFailed'),
+                    message: uploadData.error || t('addRecipe.uploadRefused'),
+                });
+            } else {
                 // Envoi des informations de la recette. The server sets the
                 // author, the date, the votes and the comments; `picture` is the
                 // id it gave the uploaded photo.
@@ -130,7 +149,7 @@ export default function AddRecipeScreen({navigation}) {
                 //console.log('Recipe creation response data:', recipeData);
 
                 if (recipeData.result) {
-                    alert("Recipe successfully added!");
+                    showToast({ type: 'success', message: t('addRecipe.published') });
 
                     // Réinitialisation du formulaire
                     setIngredientsList([]);
@@ -149,13 +168,17 @@ export default function AddRecipeScreen({navigation}) {
                     setStepsArray([]);
                     dispatch(clearPicture());
                 } else {
-                    alert(recipeData.error);
+                    showToast({
+                        type: 'error',
+                        title: t('addRecipe.publishFailed'),
+                        message: recipeData.error || t('common.error'),
+                    });
                 }
             }
         }
     } catch (error) {
         console.error('There has been a problem with your fetch operation:', error.message);
-        alert(`${error.message}`);
+        showToast({ type: 'error', title: t('addRecipe.publishFailed'), message: t('common.networkError') });
     }
   };
 
@@ -389,10 +412,16 @@ export default function AddRecipeScreen({navigation}) {
                     <Image source={{ uri: picture }} alt="photo" accessibilityLabel="photo" style={{ width: 200, height: 200,borderRadius:20, borderWidth:5, borderColor:css.palette.primary800 }} />        
                     </View> :
                     <View style={styles.pictureLogo}> 
-                        <TakePhoto name={recipeName}/>
-                        <PickImage name={recipeName}/>
+                        <TakePhoto name={recipeName} onNameMissing={() => setPhotoMessage(t('addRecipe.nameFirst'))}/>
+                        <PickImage name={recipeName} onNameMissing={() => setPhotoMessage(t('addRecipe.nameFirst'))}/>
                     </View>
                   }
+                  <InlineMessage
+                    testID="addRecipe-photo-message"
+                    type="info"
+                    message={photoMessage}
+                    style={{ marginTop: css.spacing.sm }}
+                  />
                 </View>
             </View>
             <View style={{ marginTop: css.spacing.lg }}>
