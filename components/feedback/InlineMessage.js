@@ -14,8 +14,8 @@ import { useTheme } from '../../contexts/ThemeProvider';
 import { TOAST_TYPES } from './Toast';
 
 /**
- * Renders nothing while `message` is empty, so a screen can keep it mounted
- * and clear it by clearing its state.
+ * Shows nothing while `message` is empty (an empty live region, no space
+ * taken), so a screen can keep it mounted and clear it by clearing its state.
  *
  * @param {{
  *   type?: 'error' | 'info' | 'warning',
@@ -31,69 +31,78 @@ export default function InlineMessage({ type = 'error', title, message, testID, 
   const accent = css.palette[color];
 
   // iOS has no live region: announce each new message. Android reads the
-  // live region below, so announcing there too would read it twice.
+  // live region below, so announcing there too would read it twice. The live
+  // region stays mounted while empty: TalkBack announces changes inside a
+  // region, not always a region that appears with its text already in it.
   useEffect(() => {
     if (message && Platform.OS === 'ios') {
       AccessibilityInfo.announceForAccessibility(title ? `${title}. ${message}` : message);
     }
   }, [title, message]);
 
-  if (!message) return null;
-
   return (
     <View
-      testID={testID}
-      accessibilityRole={type === 'error' ? 'alert' : 'text'}
       accessibilityLiveRegion={Platform.OS === 'android' ? 'polite' : undefined}
-      style={[
-        styles.box,
-        {
-          backgroundColor: css.palette.surfaceCard,
-          borderColor: css.input.borderColor,
-          borderLeftColor: accent,
-          borderRadius: css.radius.md,
-          paddingHorizontal: css.spacing.sm,
-          paddingVertical: css.spacing.sm,
-        },
-        style,
-      ]}
+      style={styles.region}
     >
-      <View
-        style={[styles.icon, { marginRight: css.spacing.sm }]}
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-        <Icon size={18} color={accent} strokeWidth={2.25} />
-      </View>
-      <View style={styles.text}>
-        {title ? (
-          <Text
-            style={{
-              color: css.palette.neutral900,
-              fontFamily: css.typography.fontHeading,
-              fontSize: css.typography.bodySmSize,
-              lineHeight: css.typography.bodySmLine,
-            }}
-          >
-            {title}
-          </Text>
-        ) : null}
-        <Text
-          style={{
-            color: css.palette.neutral900,
-            fontFamily: css.typography.fontBody,
-            fontSize: css.typography.bodySmSize,
-            lineHeight: css.typography.bodySmLine,
-          }}
+      {message ? (
+        <View
+          testID={testID}
+          accessibilityRole={type === 'error' ? 'alert' : 'text'}
+          style={[
+            styles.box,
+            {
+              backgroundColor: css.palette.surfaceCard,
+              borderColor: css.input.borderColor,
+              borderLeftColor: accent,
+              borderRadius: css.radius.md,
+              paddingHorizontal: css.spacing.sm,
+              paddingVertical: css.spacing.sm,
+            },
+            style,
+          ]}
         >
-          {message}
-        </Text>
-      </View>
+          <View
+            style={[styles.icon, { marginRight: css.spacing.sm }]}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          >
+            <Icon size={18} color={accent} strokeWidth={2.25} />
+          </View>
+          <View style={styles.text}>
+            {title ? (
+              <Text
+                style={{
+                  color: css.palette.neutral900,
+                  fontFamily: css.typography.fontHeading,
+                  fontSize: css.typography.bodySmSize,
+                  lineHeight: css.typography.bodySmLine,
+                }}
+              >
+                {title}
+              </Text>
+            ) : null}
+            <Text
+              style={{
+                color: css.palette.neutral900,
+                fontFamily: css.typography.fontBody,
+                fontSize: css.typography.bodySmSize,
+                lineHeight: css.typography.bodySmLine,
+              }}
+            >
+              {message}
+            </Text>
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  region: {
+    alignSelf: 'stretch',
+  },
   box: {
     flexDirection: 'row',
     alignItems: 'flex-start',

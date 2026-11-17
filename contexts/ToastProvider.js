@@ -79,6 +79,8 @@ export default function ToastProvider({ children }) {
     clearTimer();
     const current = shown.current;
     if (!current) return;
+    // Closing: a second hide (stray tap, the timer armed late) does nothing.
+    shown.current = null;
     progress.value = withTiming(0, { duration: css.animation.fast }, (finished) => {
       if (finished) scheduleOnRN(remove, current.id);
     });
@@ -109,7 +111,9 @@ export default function ToastProvider({ children }) {
     Promise.resolve(AccessibilityInfo.getRecommendedTimeoutMillis?.(base) ?? base)
       .catch(() => base)
       .then((delay) => {
-        if (cancelled) return;
+        // Replaced, unmounted, or already closed by touch before the delay
+        // was known: no timer.
+        if (cancelled || shown.current?.id !== toast.id) return;
         timer.current = setTimeout(hide, Math.max(base, delay || 0));
       });
 
