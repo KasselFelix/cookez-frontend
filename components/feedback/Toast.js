@@ -19,7 +19,9 @@ import useT from '../../i18n/useT';
 /** Icon and accent colour key of each message type. */
 export const TOAST_TYPES = {
   success: { Icon: CircleCheck, color: 'success' },
-  info: { Icon: Info, color: 'primary600' },
+  // primary800 is the darkest primary of every theme (primary600 fades into
+  // the pastelMint card).
+  info: { Icon: Info, color: 'primary800' },
   warning: { Icon: TriangleAlert, color: 'warning' },
   error: { Icon: CircleAlert, color: 'error' },
 };
@@ -47,21 +49,31 @@ export default function Toast({ type = 'info', title, message, onClose, testID }
         css.shadow.heavy,
         {
           backgroundColor: css.palette.surfaceCard,
-          borderRadius: css.radius.lg,
+          borderRadius: css.radius.md,
           borderLeftColor: accent,
           paddingLeft: css.spacing.md,
-          paddingVertical: css.spacing.sm,
+          paddingVertical: css.spacing.xs,
         },
       ]}
     >
+      {/* Icon, first line and close button share the centre line of the
+          44-pt close button, whatever the number of lines. */}
       <View
-        style={[styles.icon, { marginRight: css.spacing.sm }]}
+        style={{ marginRight: css.spacing.sm, paddingTop: (CLOSE_SIZE - ICON_SIZE) / 2 }}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >
-        <Icon size={22} color={accent} strokeWidth={2.25} />
+        <Icon size={ICON_SIZE} color={accent} strokeWidth={2.25} />
       </View>
-      <View style={[styles.body, { paddingVertical: css.spacing.xs }]}>
+      <View
+        style={[
+          styles.body,
+          {
+            paddingTop: (CLOSE_SIZE - css.typography.bodyLine) / 2,
+            paddingBottom: css.spacing.sm,
+          },
+        ]}
+      >
         {title ? (
           <Text
             style={{
@@ -102,22 +114,21 @@ export default function Toast({ type = 'info', title, message, onClose, testID }
   );
 }
 
+const ICON_SIZE = 22;
+const CLOSE_SIZE = 44;
+
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     borderLeftWidth: 4,
-  },
-  icon: {
-    alignSelf: 'flex-start',
-    paddingTop: 6,
   },
   body: {
     flex: 1,
   },
   close: {
-    width: 44,
-    height: 44,
+    width: CLOSE_SIZE,
+    height: CLOSE_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
   },
