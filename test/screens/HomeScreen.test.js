@@ -19,7 +19,7 @@ describe('HomeScreen TEST button', () => {
     global.__DEV__ = false;
     renderScreen();
     expect(screen.queryByText('TEST')).toBeNull();
-    expect(screen.getByText('SNAP 📸')).toBeTruthy();
+    expect(screen.getByText('SNAP')).toBeTruthy();
     expect(screen.getByText('CONNECT')).toBeTruthy();
   });
 

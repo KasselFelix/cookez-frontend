@@ -47,10 +47,10 @@ export default function FavoriteScreen({ navigation, route }) {
                   text={<FontAwesome name='angle-double-left' size={30} color={'white'}/>}
                   buttonType={buttonStyles.buttonSmall}
                 />
-                { favorites.length === 1 ? <Text style={styles.titlePage}> My favorite ❤️</Text> :  <Text style={styles.titlePage}>My favorites ❤️</Text>}
+                { favorites.length === 1 ? <Text style={styles.titlePage}> My favorite</Text> :  <Text style={styles.titlePage}>My favorites</Text>}
             </View>
             { favorites.length === 0 && <View style={styles.noFavoriteContainer}>
-              <View style={styles.noFavorite}><Text>No favorites in your list </Text><Text>at the moment 😔 ...</Text></View>
+              <View style={styles.noFavorite}><Text>No favorites in your list </Text><Text>at the moment.</Text></View>
             </View> }
 
             <ScrollView contentContainerStyle={styles.galleryContainer} 

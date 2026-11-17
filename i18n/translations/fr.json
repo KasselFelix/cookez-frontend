@@ -127,7 +127,7 @@
         "quantity_required": "Saisissez une quantité."
       }
     },
-    "avatarModalTitle": "Choisis ton avatar",
+    "avatarModalTitle": "Choisissez votre avatar",
     "avatarModalDismiss": "Fermer le sélecteur d'avatar",
     "avatarChoose": "Choisir {{name}}",
     "shareMessage": "Découvre {{username}} sur Cookez : https://cookez.app/u/{{username}}",
@@ -248,7 +248,7 @@
     },
     "diets": {
       "title": "Régimes alimentaires",
-      "subtitle": "Coche tout ce qui s'applique",
+      "subtitle": "Cochez tout ce qui s'applique",
       "gluten_free": "Sans gluten",
       "dairy_free": "Sans lactose",
       "no_pork": "Sans porc",
@@ -265,7 +265,7 @@
     },
     "theme": {
       "title": "Thème",
-      "subtitle": "Choisis l'ambiance qui colle à ta cuisine",
+      "subtitle": "Choisissez l'ambiance qui colle à votre cuisine",
       "light": "Clair",
       "dark": "Sombre",
       "pastelMint": "Menthe pastel",
@@ -274,14 +274,14 @@
     },
     "location": {
       "permissionTitle": "Autorisation de localisation",
-      "permissionMessage": "Autoriser Cookez à utiliser ta localisation approximative pour faire ressortir les ingrédients de saison près de chez toi ?",
+      "permissionMessage": "Autoriser Cookez à utiliser votre localisation approximative pour faire ressortir les ingrédients de saison près de chez vous ?",
       "deniedTitle": "Permission refusée",
-      "deniedMessage": "Nous n'accéderons pas à ta localisation.",
+      "deniedMessage": "Nous n'accéderons pas à votre localisation.",
       "errorTitle": "Erreur de localisation",
-      "errorMessage": "Impossible de récupérer ta localisation.",
+      "errorMessage": "Impossible de récupérer votre localisation.",
       "servicesDisabledTitle": "Services de localisation désactivés",
-      "servicesDisabledMessage": "Active les services de localisation dans les paramètres de ton appareil.",
-      "timeoutMessage": "Impossible de récupérer ta localisation à temps. Réessaie."
+      "servicesDisabledMessage": "Activez les services de localisation dans les paramètres de votre appareil.",
+      "timeoutMessage": "Impossible de récupérer votre localisation à temps. Réessayez."
     },
     "preferredTags": {
       "title": "Tags que j'apprécie",
@@ -327,7 +327,7 @@
     "markAllRead": "Tout marquer comme lu",
     "empty": "Aucune notification pour l'instant.",
     "newRecipe": "@{{username}} a publié une nouvelle recette : {{title}}",
-    "newFollower": "@{{username}} a commencé à te suivre",
+    "newFollower": "@{{username}} a commencé à vous suivre",
     "expiryWarning": "Votre {{ingredient}} périme dans {{days}} jours.",
     "expiryWarningFallbackName": "un ingrédient",
     "deleteAction": "Supprimer la notification",
@@ -346,12 +346,12 @@
     "removePhotoA11y": "Retirer la photo",
     "pantryHero": {
       "kicker": "VOTRE GARDE-MANGER · {{count}} ARTICLES",
-      "title": "Tape pour cuisiner avec ce que tu as"
+      "title": "Touchez pour cuisiner avec ce que vous avez"
     },
     "selected": {
       "label": "SÉLECTIONNÉS · {{count}}",
       "add": "+ Ajouter",
-      "photoLabel": "📸 Photo {{index}}",
+      "photoLabel": "Photo {{index}}",
       "removeA11y": "Retirer {{name}}",
       "removePhotoA11y": "Retirer la photo {{index}}"
     },
@@ -362,8 +362,8 @@
     "modal": {
       "searchPlaceholder": "Rechercher un ingrédient",
       "clear": "Effacer la recherche",
-      "waiting": "En attente de votre recherche 🧐 ...",
-      "notFound": "Aucun ingrédient trouvé, réessayez ! 👍",
+      "waiting": "En attente de votre recherche…",
+      "notFound": "Aucun ingrédient trouvé, réessayez !",
       "close": "Fermer"
     },
     "scan": {
@@ -371,7 +371,7 @@
       "empty": "Aucun aliment trouvé",
       "error": "Échec de l'analyse",
       "quota": "Limite du jour atteinte",
-      "signedOut": "Reconnecte-toi",
+      "signedOut": "Reconnectez-vous",
       "toConfirm": "À confirmer",
       "confirmA11y": "Confirmer {{name}}",
       "unmatchedLabel": "NON RECONNUS · {{count}}",
@@ -385,16 +385,16 @@
   "recap": {
     "ingredient": "Ingrédient",
     "ingredients": "Ingrédients",
-    "step1": "1. Sélectionnez vos ingrédients 🎯",
-    "step2": "2. Tente une spécialité",
+    "step1": "1. Sélectionnez vos ingrédients",
+    "step2": "2. Tentez une spécialité",
     "step3": "3. Portions",
     "scrollMore": "D'autres ingrédients en bas, appuie pour y aller",
     "step4": "4. Choisissez les tags",
     "goToResults": "Recettes >>",
     "confirmClear": "Voulez-vous vraiment tout supprimer ?",
-    "noIngredients": "Plus d'ingrédients à supprimer 😊",
-    "emptyHint1": "Revenez en arrière pour ajouter vos ingrédients via 📸 ou 🔎",
-    "emptyHint2": "Vos prochaines recettes vous attendent 🥘 !",
+    "noIngredients": "Plus d'ingrédients à supprimer",
+    "emptyHint1": "Revenez en arrière pour ajouter vos ingrédients en photo ou par la recherche",
+    "emptyHint2": "Vos prochaines recettes vous attendent !",
     "scan": {
       "pending": {
         "one": "{{count}} photo en cours d’analyse…",
@@ -454,11 +454,11 @@
       "savory": "Salé"
     },
     "expiry": {
-      "title": "⚠️ Ingrédients à utiliser rapidement",
+      "title": "Ingrédients à utiliser rapidement",
       "body": "Votre {{items}} expire dans moins de 48h."
     },
     "shopping": {
-      "title": "🛒 Liste de courses",
+      "title": "Liste de courses",
       "percentOwned": "Vous possédez {{ratio}}%",
       "buyOnAmazon": {
         "label": "Acheter sur Amazon",
@@ -548,12 +548,12 @@
     "loadingA11y": "Chargement des recettes",
     "error": {
       "title": "Impossible de charger les recettes",
-      "subtitle": "Vérifie ta connexion et réessaie.",
+      "subtitle": "Vérifiez votre connexion et réessayez.",
       "retryA11y": "Réessayer le chargement"
     },
     "empty": {
       "title": "Aucune recette pour l'instant",
-      "subtitle": "Sois le premier à en ajouter une !",
+      "subtitle": "Soyez le premier à en ajouter une !",
       "addCta": "Ajouter une recette",
       "addCtaA11y": "Ajouter une recette"
     }
@@ -561,7 +561,7 @@
   "result": {
     "title": "Résultats",
     "empty": {
-      "line1": "Essayez avec plus d'ingrédients 🤔",
+      "line1": "Essayez avec plus d'ingrédients",
       "line2": "Il est peut-être temps d'aller faire les courses !"
     },
     "matchBadge": {
@@ -578,7 +578,7 @@
     },
     "error": {
       "title": "Une erreur est survenue",
-      "body": "Impossible de joindre nos serveurs. Tes filtres sont sauvegardés — réessaie.",
+      "body": "Impossible de joindre nos serveurs. Vos filtres sont sauvegardés — réessayez.",
       "retry": "Réessayer"
     },
     "staleCache": {
@@ -616,28 +616,28 @@
     },
     "showToast": "AFFICHER UN TOAST",
     "samples": {
-      "toastSuccess": "Ta recette est publiée.",
+      "toastSuccess": "Votre recette est publiée.",
       "toastInfo": "Bientôt disponible.",
       "toastErrorTitle": "Échec de l'envoi",
-      "toastError": "Vérifie ta connexion et réessaie.",
+      "toastError": "Vérifiez votre connexion et réessayez.",
       "inlineError": "Nom d'utilisateur ou mot de passe incorrect."
     }
   },
   "addRecipe": {
     "takePhotoA11y": "Prendre la recette en photo",
     "pickImageA11y": "Choisir une photo dans la galerie",
-    "nameFirst": "Remplis d'abord les champs au-dessus ✍️",
-    "galleryPermission": "Cookez a besoin d'accéder à tes photos pour en ajouter une.",
+    "nameFirst": "Remplissez d'abord les champs au-dessus.",
+    "galleryPermission": "Cookez a besoin d'accéder à vos photos pour en ajouter une.",
     "cameraPermission": "Cookez a besoin d'accéder à l'appareil photo pour prendre une photo.",
-    "photoError": "Impossible d'ouvrir la photo. Réessaie.",
+    "photoError": "Impossible d'ouvrir la photo. Réessayez.",
     "servingsTitle": "Portions",
     "difficultyTitle": "Difficulté",
     "unitTitle": "Unité",
-    "photoMissing": "Prends ou choisis d'abord une photo de la recette.",
-    "published": "Ta recette est publiée.",
+    "photoMissing": "Prenez ou choisissez d'abord une photo de la recette.",
+    "published": "Votre recette est publiée.",
     "publishFailed": "La recette n'a pas été publiée",
-    "uploadRefused": "La photo a été refusée. Essaie une photo plus légère ou une autre.",
-    "title": "Ajoute ta recette 🍳",
+    "uploadRefused": "La photo a été refusée. Essayez une photo plus légère ou une autre.",
+    "title": "Ajoutez votre recette",
     "sections": {
       "recipe": "Recette",
       "ingredients": "Ingrédients",

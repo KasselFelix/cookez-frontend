@@ -32,7 +32,7 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.buttons}>
           <MyButton
             dataFlow={() => user.token ? enterApp(navigation, "Kickoff") : navigation.navigate("Kickoff")}
-            text={"SNAP 📸"}
+            text={"SNAP"}
             testID="home-snap"
             buttonType={buttonStyles.buttonTwo}
           />

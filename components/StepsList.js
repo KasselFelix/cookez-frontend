@@ -17,7 +17,7 @@ return (
   <SafeAreaView style={styles.container}>
     <Modal visible={modalVisible2} animationType="slide" onRequestClose={() => setModalVisible2(false)}>
     <SafeAreaView style={styles.modalContainer}>
-    <Text style={styles.modalTitle}> Steps List 🥄</Text>
+    <Text style={styles.modalTitle}> Steps List</Text>
     {stepsArray.length === 0 ? (
         <Text style={styles.emptyList2}>No step added yet</Text>
       ) : (

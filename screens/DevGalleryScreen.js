@@ -9,6 +9,10 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Root import like the other Lucide files: lucide-react-native 1.14 exports no
+// per-icon path (plan 018, step 3).
+import { ChefHat } from 'lucide-react-native';
+
 import { useTheme, useThemeControls } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
 import { THEME_KEYS } from '../styles/themes';
@@ -183,7 +187,7 @@ export default function DevGalleryScreen() {
             <SeasonalBadge />
           </View>
           <BadgeCircle
-            icon={<Text style={{ fontSize: css.typography.h4Size }}>🍳</Text>}
+            icon={<ChefHat size={20} color={css.palette.primary800} />}
             label="Badge"
           />
         </Section>

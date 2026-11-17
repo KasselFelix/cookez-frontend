@@ -276,7 +276,7 @@ describe('AddRecipeScreen in French', () => {
       preloadedState: { user: makeUserState(), picture: { value: null }, locale: { value: { lang: 'fr' } } },
     });
 
-    expect(screen.getByText('Ajoute ta recette 🍳')).toBeTruthy();
+    expect(screen.getByText('Ajoutez votre recette')).toBeTruthy();
     expect(screen.getByPlaceholderText('nom*')).toBeTruthy();
     expect(screen.getByText("Ajouter l'ingrédient")).toBeTruthy();
     expect(screen.getByText('ingrédients ajoutés : 0')).toBeTruthy();

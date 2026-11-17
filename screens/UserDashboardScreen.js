@@ -126,7 +126,7 @@ export default function UserDashboardScreen({ navigation }) {
               color: css.palette.white,
             }}
           >
-            {greeting}, {user?.username || t('userDashboard.greeting.fallbackUsername')} {"👋"}
+            {greeting}, {user?.username || t('userDashboard.greeting.fallbackUsername')}
           </Text>
           <Text
             style={{

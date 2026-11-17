@@ -17,7 +17,7 @@ return (
                {/* Modal qui affiche la liste des ingrédients */}
     <Modal visible={modalVisible} animationType="slide" onRequestClose={() => setModalVisible(false)}>
       <View style={styles.modalContainer}>
-        <Text style={styles.modalTitle}> Ingredients List🧂</Text>
+        <Text style={styles.modalTitle}> Ingredients List</Text>
       {ingredientsList.length === 0 ? (
         <Text style={styles.emptyList}>No ingredient added yet</Text>
       ) : (
