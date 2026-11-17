@@ -36,6 +36,7 @@ import { setLocale } from './reducers/locale';
 import { setupI18n } from './i18n';
 import ThemeProvider from './contexts/ThemeProvider';
 import AuthGateProvider from './contexts/AuthGateProvider';
+import ToastProvider from './contexts/ToastProvider';
 
 // SCREENS
 import AddRecipeScreen from "./screens/AddRecipeScreen";
@@ -170,28 +171,30 @@ const AppContent = ({ onLayout}) => {
     <View style={{ flex: 1 }} onLayout={onLayout}>
       <ThemeProvider>
         {__DEV__ && <DevThemeLink />}
-        <NavigationContainer>
-          <AuthGateProvider>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="Home"          component={HomeScreen} />
-              <Stack.Screen name="TabNavigator"  component={TabNavigator} />
-              <Stack.Screen name="Favorite"      component={FavoriteScreen} />
-              <Stack.Screen name="Login"         component={LoginScreen} />
-              <Stack.Screen name="Kickoff"       component={KickoffScreen} />
-              <Stack.Screen name="Recap"         component={RecapScreen} />
-              <Stack.Screen name="Loading"       component={LoadingScreen} />
-              <Stack.Screen name="Result"        component={ResultScreen} />
-              <Stack.Screen name="Recipe"        component={RecipeScreen} />
-              <Stack.Screen name="MoreFeatures"  component={MoreFeaturesScreen} />
-              <Stack.Screen name="UserDashboard" component={UserDashboardScreen} />
-              <Stack.Screen name="Settings"      component={SettingsScreen} />
-              <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
-              <Stack.Screen name="Notifications" component={NotificationsScreen} />
-              <Stack.Screen name="Message"       component={MessageScreen} />
-              {__DEV__ && <Stack.Screen name="DevGallery" component={DevGalleryScreen} />}
-            </Stack.Navigator>
-          </AuthGateProvider>
-        </NavigationContainer>
+        <ToastProvider>
+          <NavigationContainer>
+            <AuthGateProvider>
+              <Stack.Navigator screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="Home"          component={HomeScreen} />
+                <Stack.Screen name="TabNavigator"  component={TabNavigator} />
+                <Stack.Screen name="Favorite"      component={FavoriteScreen} />
+                <Stack.Screen name="Login"         component={LoginScreen} />
+                <Stack.Screen name="Kickoff"       component={KickoffScreen} />
+                <Stack.Screen name="Recap"         component={RecapScreen} />
+                <Stack.Screen name="Loading"       component={LoadingScreen} />
+                <Stack.Screen name="Result"        component={ResultScreen} />
+                <Stack.Screen name="Recipe"        component={RecipeScreen} />
+                <Stack.Screen name="MoreFeatures"  component={MoreFeaturesScreen} />
+                <Stack.Screen name="UserDashboard" component={UserDashboardScreen} />
+                <Stack.Screen name="Settings"      component={SettingsScreen} />
+                <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
+                <Stack.Screen name="Notifications" component={NotificationsScreen} />
+                <Stack.Screen name="Message"       component={MessageScreen} />
+                {__DEV__ && <Stack.Screen name="DevGallery" component={DevGalleryScreen} />}
+              </Stack.Navigator>
+            </AuthGateProvider>
+          </NavigationContainer>
+        </ToastProvider>
       </ThemeProvider>
     </View>
   );

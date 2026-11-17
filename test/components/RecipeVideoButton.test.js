@@ -32,19 +32,21 @@ describe('RecipeVideoButton', () => {
   });
 
   it('renders nothing when videoUrl is null', () => {
-    const { toJSON } = renderWithProviders(
+    renderWithProviders(
       <RecipeVideoButton videoUrl={null} />,
       { withNavigation: false },
     );
-    expect(toJSON()).toBeNull();
+    // The harness also draws an empty toast host: assert on the button.
+    expect(screen.queryByRole('link')).toBeNull();
   });
 
   it('renders nothing when videoUrl is empty/whitespace', () => {
-    const { toJSON } = renderWithProviders(
+    renderWithProviders(
       <RecipeVideoButton videoUrl="   " />,
       { withNavigation: false },
     );
-    expect(toJSON()).toBeNull();
+    // The harness also draws an empty toast host: assert on the button.
+    expect(screen.queryByRole('link')).toBeNull();
   });
 
   it('opens the URL via Linking on press', () => {

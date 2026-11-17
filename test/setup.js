@@ -44,6 +44,10 @@ jest.mock('react-native-reanimated', () => {
     if (!Reanimated.useAnimatedScrollHandler) {
       Reanimated.useAnimatedScrollHandler = () => () => {};
     }
+    // Nor the reduced-motion hook ToastProvider reads ("ADD ME IF NEEDED").
+    if (!Reanimated.useReducedMotion) {
+      Reanimated.useReducedMotion = () => false;
+    }
     return Reanimated;
   } catch (e) {
     // Fallback: minimal inert mock covering the APIs the app uses.
@@ -65,6 +69,7 @@ jest.mock('react-native-reanimated', () => {
       useDerivedValue: (fn) => ({ value: typeof fn === 'function' ? fn() : undefined }),
       useAnimatedRef: () => ({ current: null }),
       useAnimatedScrollHandler: () => () => {},
+      useReducedMotion: () => false,
       // Like the library's own mock: the animation ends at once and its end
       // callback runs, so a sheet that unmounts after its closing animation
       // (rule of the front for dark-backdrop modals) unmounts under test too.
