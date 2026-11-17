@@ -296,3 +296,23 @@ describe('AddRecipeScreen in French', () => {
     expect(screen.getByRole('button', { name: 'Unité' })).toHaveAccessibilityValue({ text: 'c. à s.' });
   }, 15000);
 });
+
+describe('AddRecipeScreen, a response that is not JSON', () => {
+  it('says something went wrong, not that the network failed', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    global.fetch
+      .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve({ result: true, picture: STORED_ID }) })
+      .mockResolvedValueOnce({ ok: false, status: 502, json: () => Promise.reject(new SyntaxError('Unexpected token <')) });
+    renderWithProviders(<AddRecipeScreen navigation={nav} />, {
+      withNavigation: false,
+      preloadedState: { user: makeUserState(), picture: { value: 'file:///photo.jpg' } },
+    });
+    fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
+    fireEvent(screen.getByRole('button', { name: 'Add Recipe' }), 'pressOut');
+
+    const toast = await screen.findByTestId('toast');
+    expect(toast).toHaveTextContent(/Something went wrong/);
+    expect(toast).not.toHaveTextContent(/Network error/);
+    jest.restoreAllMocks();
+  }, 15000);
+});

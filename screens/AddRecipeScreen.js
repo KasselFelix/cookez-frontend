@@ -180,7 +180,12 @@ export default function AddRecipeScreen({navigation}) {
         }
     } catch (error) {
         console.error('There has been a problem with your fetch operation:', error.message);
-        showToast({ type: 'error', title: t('addRecipe.publishFailed'), message: t('common.networkError') });
+        // A body that is not JSON (an HTML error page) is not a network error.
+        showToast({
+            type: 'error',
+            title: t('addRecipe.publishFailed'),
+            message: error instanceof SyntaxError ? t('common.error') : t('common.networkError'),
+        });
     }
   };
 

@@ -58,3 +58,17 @@ describe('LocationToggle', () => {
     expect(await screen.findByText('Network error. Please try again.')).toBeTruthy();
   });
 });
+
+describe('LocationToggle, refused permission and failed save', () => {
+  it('keeps the save error instead of the refusal info', async () => {
+    Location.hasServicesEnabledAsync.mockResolvedValue(true);
+    Location.requestForegroundPermissionsAsync.mockResolvedValue({ status: 'denied' });
+    mockFetchError();
+    render();
+
+    fireEvent(screen.getByRole('switch'), 'valueChange', true);
+
+    expect(await screen.findByText('Network error. Please try again.')).toBeTruthy();
+    expect(screen.queryByText('Permission denied')).toBeNull();
+  });
+});

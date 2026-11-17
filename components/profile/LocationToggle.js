@@ -39,6 +39,7 @@ export default function LocationToggle() {
 
   const [isWorking, setIsWorking] = useState(false);
 
+  // Returns whether the server saved it; a failure already showed its toast.
   const persist = async (payload) => {
     setIsWorking(true);
     try {
@@ -52,11 +53,13 @@ export default function LocationToggle() {
         // Backend now returns `{ result, updated }` with only the changed
         // fields (post-normalisation), so we can dispatch it as-is.
         if (data.updated) dispatch(updateUserInStore(data.updated));
-      } else {
-        show({ type: 'error', message: data.error || t('common.networkError') });
+        return true;
       }
+      show({ type: 'error', message: data.error || t('common.networkError') });
+      return false;
     } catch {
       show({ type: 'error', message: t('common.networkError') });
+      return false;
     } finally {
       setIsWorking(false);
     }
@@ -100,7 +103,8 @@ export default function LocationToggle() {
 
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        await persist({ consent: false });
+        // One toast at a time: a failed save keeps its error toast.
+        if (!(await persist({ consent: false }))) return;
         show({
           type: 'info',
           title: t('settings.location.deniedTitle'),
