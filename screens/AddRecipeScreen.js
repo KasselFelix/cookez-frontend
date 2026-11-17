@@ -17,7 +17,8 @@ import buttonStyles from "../styles/Button";
 import MyButton from "../components/MyButton";
 import MySmallButton from "../components/MySmallButton";
 import { FontAwesome } from "@expo/vector-icons";
-import RNPickerSelect from 'react-native-picker-select';
+import OptionPicker from "../components/addRecipe/OptionPicker";
+import useT from "../i18n/useT";
 import addressIp from "../modules/addressIp";
 import { authHeaders, jsonAuthHeaders } from "../modules/authHeaders";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,6 +33,7 @@ const { width, height } = Dimensions.get('window');
 
 export default function AddRecipeScreen({navigation}) {
   const tabBarHeight = useTabBarHeight();
+  const t = useT();
 
   // ETATS POUR LES PICKERS \\
   const [selectedNumber, setSelectedNumber] = useState(null);
@@ -214,13 +216,16 @@ export default function AddRecipeScreen({navigation}) {
     { label: "cl", value: "cl  " },
     { label: "tbsp", value: "tbsp  " },
     { label: "tsp", value: "tsp  " },
+    // A count of pieces (3 eggs). The backend trims the value and reads
+    // 'unit' as pieces of the ingredient's reference weight.
+    { label: "unit", value: "unit  " },
   ];
 
 
   return (
     <KeyboardAvoidingView
     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    style={[styles.container, { paddingBottom: tabBarHeight }]}>
+    style={styles.container}>
       <View style={styles.header}>
         {/* <View style={styles.buttonReturn}> */}
           <MySmallButton
@@ -232,7 +237,11 @@ export default function AddRecipeScreen({navigation}) {
         <Text style={styles.titlePage}>Add your recipe 🍳</Text>
         <View style={styles.btnEmpty}></View>
       </View>
-      <View style={styles.formBloc}>
+      {/* The space for the floating tab bar sits on the card, not on the
+          KeyboardAvoidingView: in iOS "padding" mode, that view replaces its
+          paddingBottom with the keyboard height (0 when closed), and the card
+          then ran under the tab bar, hiding "Add Recipe" (plan 017, step 29). */}
+      <View testID="addRecipe-card" style={[styles.formBloc, { marginBottom: tabBarHeight + css.spacing.md }]}>
         <View style={styles.formContainer}>
           <ScrollView
             style={styles.scroll}
@@ -249,25 +258,25 @@ export default function AddRecipeScreen({navigation}) {
               < View style={styles.settings}>
                 <View style={styles.servingBloc}>
                   <Text  style={styles.label}>servings:</Text>
-                    <RNPickerSelect
-                    value={recipeServings}
-                    onValueChange={(value) => setRecipeServings(value)}
-                    items={numbers}
-                    placeholder={{ label: "0", value: null }}
-                    style={pickerSelectStyles}
-                    useNativeAndroidPickerStyle={false} // Permet de personnaliser le style sur Android
+                    <OptionPicker
+                      value={recipeServings}
+                      onChange={setRecipeServings}
+                      options={numbers}
+                      placeholder="0"
+                      title={t('addRecipe.servingsTitle')}
+                      accessibilityLabel={t('addRecipe.servingsTitle')}
                     />
                   <Text style={styles.unit}>pers.  </Text>
                 </View>
                 <View style={styles.difficultyBloc}>
                   <Text style={styles.label}>difficulty:</Text>
-                  <RNPickerSelect
-                  value={recipeDifficulty}
-                  onValueChange={(value) => setRecipeDifficulty(value)}
-                  items={numbers2}
-                  placeholder={{ label: "0", value: null }}
-                  style={pickerSelectStyles} 
-                  useNativeAndroidPickerStyle={false}
+                  <OptionPicker
+                    value={recipeDifficulty}
+                    onChange={setRecipeDifficulty}
+                    options={numbers2}
+                    placeholder="0"
+                    title={t('addRecipe.difficultyTitle')}
+                    accessibilityLabel={t('addRecipe.difficultyTitle')}
                   />
                 <Text style={styles.unit}>/5</Text>
                 </View>          
@@ -301,13 +310,14 @@ export default function AddRecipeScreen({navigation}) {
               </View>
               <View style={styles.ingredientBloc}>
                 <TextInput placeholder='Qty'  keyboardType="numeric" maxLength={3} placeholderTextColor={'grey'} style={styles.quantityInput} onChangeText={(value) => setRecipeQuantity(value)} value={recipeQuantity}/>
-                <RNPickerSelect
-                value={recipeUnit}
-                items={units}
-                onValueChange={(value)=>setRecipeUnit(value)}
-                placeholder={{ label: "units", value: null}}
-                style={pickerSelectStyles}
-                useNativeAndroidPickerStyle={false}
+                <OptionPicker
+                  value={recipeUnit}
+                  onChange={setRecipeUnit}
+                  options={units}
+                  placeholder="units"
+                  title={t('addRecipe.unitTitle')}
+                  accessibilityLabel={t('addRecipe.unitTitle')}
+                  testID="addRecipe-unit"
                 />
                 <TextInput placeholder='Ingredient*' placeholderTextColor={'grey'} style={styles.ingredientInput}  onChangeText={(value) => setRecipeIngredients(value)} value={recipeIngredients}/>
               </View>
@@ -447,7 +457,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: css.palette.secondary500,
     elevation: 5,
-    marginBottom:'3.5%',
     borderRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -674,38 +683,5 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: css.palette.accent500,
     fontSize: 12,
-  },
-})
-
-const pickerSelectStyles = StyleSheet.create({
-  label: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  
-  inputIOS: {
-    width: 50,
-    height: 40,
-    fontSize: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 5,
-    borderWidth: 2,
-    borderColor: css.palette.primary800,
-    borderRadius: 5,
-    backgroundColor: 'white',
-    color: 'black',
-  },
-  inputAndroid: {
-    width: 50,
-    height: 40,
-    fontSize: 12,
-    alignItems: 'center',
-    paddingHorizontal: 5,
-    paddingVertical: 8,
-    borderWidth: 2,
-    borderColor: css.palette.primary800,
-    borderRadius: 5,
-    backgroundColor: 'white',
-    color: 'black',
   },
 })
