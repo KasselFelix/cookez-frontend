@@ -7,7 +7,13 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..', '..');
-const SOURCE_DIRS = ['screens', 'components', 'modules', 'hooks', 'reducers', 'contexts'];
+// Every top-level folder of the app, so a new one (navigation/, utils/...) is
+// scanned too; only tooling, tests and generated code are left out.
+const NOT_APP = new Set(['node_modules', 'test', 'android', 'ios', 'scripts', 'assets', 'coverage', 'dist']);
+const SOURCE_DIRS = fs
+  .readdirSync(ROOT, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.') && !NOT_APP.has(entry.name))
+  .map((entry) => entry.name);
 const ROOT_FILES = ['App.js'];
 
 // The only dialogs left: each one asks the user to choose.
@@ -25,8 +31,9 @@ const sourceFiles = (dir) => {
   });
 };
 
-// `alert(` not preceded by a dot or a word character: excludes Alert.alert(.
-const BARE_ALERT = /(^|[^.\w])alert\(/gm;
+// `alert(` not preceded by a dot or a word character (excludes Alert.alert()),
+// or called on the global object.
+const BARE_ALERT = /(^|[^.\w])alert\(|\b(window|globalThis|global)\.alert\(/gm;
 const DIALOG = /\bAlert\.alert\(/g;
 
 const count = (source, pattern) => (source.match(pattern) || []).length;
@@ -42,6 +49,7 @@ describe('no bare alert, and dialogs only for choices', () => {
 
   it('scans the app sources', () => {
     expect(files.length).toBeGreaterThan(20);
+    expect(SOURCE_DIRS).toEqual(expect.arrayContaining(['screens', 'components', 'contexts']));
   });
 
   it('finds no bare alert()', () => {
@@ -61,5 +69,7 @@ describe('no bare alert, and dialogs only for choices', () => {
     expect(count('  } else { alert(data.error) }', BARE_ALERT)).toBe(1);
     expect(count("Alert.alert('Delete review?', msg, buttons)", BARE_ALERT)).toBe(0);
     expect(count('showAlert(x)', BARE_ALERT)).toBe(0);
+    expect(count("window.alert('Saved')", BARE_ALERT)).toBe(1);
+    expect(count("globalThis.alert('Saved')", BARE_ALERT)).toBe(1);
   });
 });
