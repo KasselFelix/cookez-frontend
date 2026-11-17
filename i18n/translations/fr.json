@@ -17,6 +17,7 @@
     "networkError": "Erreur réseau. Réessayez.",
     "logoutTitle": "Se déconnecter",
     "logoutMessage": "Voulez-vous vraiment vous déconnecter ?",
+    "logoutFailed": "La déconnexion n'a pas abouti. Réessayez.",
     "deleteTitle": "Supprimer le compte",
     "deleteMessage": "Bientôt disponible."
   },

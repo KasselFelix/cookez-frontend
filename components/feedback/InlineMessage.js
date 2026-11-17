@@ -19,12 +19,13 @@ import { TOAST_TYPES } from './Toast';
  *
  * @param {{
  *   type?: 'error' | 'info' | 'warning',
+ *   title?: string,
  *   message?: string | null,
  *   testID?: string,
  *   style?: import('react-native').StyleProp<import('react-native').ViewStyle>,
  * }} props
  */
-export default function InlineMessage({ type = 'error', message, testID, style }) {
+export default function InlineMessage({ type = 'error', title, message, testID, style }) {
   const css = useTheme();
   const { Icon, color } = TOAST_TYPES[type] ?? TOAST_TYPES.error;
   const accent = css.palette[color];
@@ -32,8 +33,10 @@ export default function InlineMessage({ type = 'error', message, testID, style }
   // iOS has no live region: announce each new message. Android reads the
   // live region below, so announcing there too would read it twice.
   useEffect(() => {
-    if (message && Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(message);
-  }, [message]);
+    if (message && Platform.OS === 'ios') {
+      AccessibilityInfo.announceForAccessibility(title ? `${title}. ${message}` : message);
+    }
+  }, [title, message]);
 
   if (!message) return null;
 
@@ -62,19 +65,30 @@ export default function InlineMessage({ type = 'error', message, testID, style }
       >
         <Icon size={18} color={accent} strokeWidth={2.25} />
       </View>
-      <Text
-        style={[
-          styles.text,
-          {
+      <View style={styles.text}>
+        {title ? (
+          <Text
+            style={{
+              color: css.palette.neutral900,
+              fontFamily: css.typography.fontHeading,
+              fontSize: css.typography.bodySmSize,
+              lineHeight: css.typography.bodySmLine,
+            }}
+          >
+            {title}
+          </Text>
+        ) : null}
+        <Text
+          style={{
             color: css.palette.neutral900,
             fontFamily: css.typography.fontBody,
             fontSize: css.typography.bodySmSize,
             lineHeight: css.typography.bodySmLine,
-          },
-        ]}
-      >
-        {message}
-      </Text>
+          }}
+        >
+          {message}
+        </Text>
+      </View>
     </View>
   );
 }

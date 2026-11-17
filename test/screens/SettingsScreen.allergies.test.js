@@ -1,6 +1,5 @@
 /* global describe, it, expect, jest, beforeEach, afterEach */
 import React from 'react';
-import { Alert } from 'react-native';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 import SettingsScreen from '../../screens/SettingsScreen';
@@ -56,8 +55,7 @@ describe('SettingsScreen, allergies modal', () => {
     expect(body.settings.allergy).toEqual(['soy', 'gluten', 'kiwi', 'ananas']);
   });
 
-  it('warns about the terms the backend does not know', async () => {
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+  it('warns about unknown terms inside the modal, which stays open until Close', async () => {
     global.fetch = jest.fn(async () => ({
       json: async () => ({ result: true, updated: {}, unrecognizedAllergies: ['kiwi'] }),
     }));
@@ -66,20 +64,52 @@ describe('SettingsScreen, allergies modal', () => {
       fireEvent.press(screen.getByRole('button', { name: /^(Save|Enregistrer)$/ }));
     });
 
-    await waitFor(() => expect(alert).toHaveBeenCalledTimes(1));
-    expect(alert.mock.calls[0][1]).toContain('kiwi');
-    alert.mockRestore();
+    const warning = await screen.findByTestId('settings-modal-message');
+    expect(warning).toHaveTextContent(/kiwi/);
+    // Saved: only Close is left, and the modal is still there.
+    expect(screen.queryByRole('button', { name: /^(Save|Enregistrer)$/ })).toBeNull();
+    fireEvent.press(screen.getByRole('button', { name: /^(Close|Fermer)$/ }));
+    expect(screen.queryByTestId('settings-modal-message')).toBeNull();
+    expect(screen.queryByLabelText(/Other allergies|Autres allergies/)).toBeNull();
   });
 
-  it('stays silent when every term is known', async () => {
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+  it('closes the modal when every term is known', async () => {
     await openModal();
     await act(async () => {
       fireEvent.press(screen.getByRole('button', { name: /^(Save|Enregistrer)$/ }));
     });
 
     await waitFor(() => expect(profileCalls()).toHaveLength(1));
-    expect(alert).not.toHaveBeenCalled();
-    alert.mockRestore();
+    expect(screen.queryByTestId('settings-modal-message')).toBeNull();
+    expect(screen.queryByLabelText(/Other allergies|Autres allergies/)).toBeNull();
+  });
+
+  it('shows a failed save inside the modal, cleared by the next edit', async () => {
+    global.fetch = jest.fn(async () => {
+      throw new Error('Network request failed');
+    });
+    await openModal();
+    await act(async () => {
+      fireEvent.press(screen.getByRole('button', { name: /^(Save|Enregistrer)$/ }));
+    });
+
+    expect(await screen.findByText('Network error. Please try again.')).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText(/Other allergies|Autres allergies/), 'kiwi, mango');
+    expect(screen.queryByTestId('settings-modal-message')).toBeNull();
+  });
+});
+
+describe('SettingsScreen, rows not built yet', () => {
+  it('shows "Coming soon" in a toast, closed by touch', async () => {
+    renderWithProviders(<SettingsScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} />, {
+      preloadedState: { user: makeUserState() },
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByText('Security & password'));
+    });
+
+    expect(screen.getByTestId('toast')).toHaveTextContent('Coming soon');
+    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.queryByTestId('toast')).toBeNull();
   });
 });

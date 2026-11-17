@@ -17,6 +17,7 @@
     "networkError": "Network error. Please try again.",
     "logoutTitle": "Log out",
     "logoutMessage": "Are you sure you want to log out?",
+    "logoutFailed": "Could not complete logout. Try again.",
     "deleteTitle": "Delete account",
     "deleteMessage": "Coming soon."
   },
