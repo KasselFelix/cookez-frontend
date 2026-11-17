@@ -114,6 +114,20 @@ describe('AddRecipeScreen pickers', () => {
       expect.objectContaining({ name: 'flour', quantity: 200, unit: 'g  ' }),
     ]);
   }, 15000);
+
+  it('offers a count of pieces as a unit', () => {
+    renderWithProviders(<AddRecipeScreen navigation={nav} />, {
+      withNavigation: false,
+      preloadedState: { user: makeUserState(), picture: { value: null } },
+    });
+
+    fireEvent.changeText(screen.getByPlaceholderText('Qty'), '3');
+    pick('Unit', 'unit');
+    expect(screen.getByRole('button', { name: 'Unit' })).toHaveAccessibilityValue({ text: 'unit' });
+    fireEvent.changeText(screen.getByPlaceholderText('Ingredient*'), 'egg');
+    fireEvent.press(screen.getByText('Add ingredient'));
+    expect(screen.getByText('ingredients added: 1')).toBeTruthy();
+  }, 15000);
 });
 
 // Plan 017, step 29: in iOS "padding" mode, KeyboardAvoidingView replaces its

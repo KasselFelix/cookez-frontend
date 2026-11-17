@@ -216,6 +216,9 @@ export default function AddRecipeScreen({navigation}) {
     { label: "cl", value: "cl  " },
     { label: "tbsp", value: "tbsp  " },
     { label: "tsp", value: "tsp  " },
+    // A count of pieces (3 eggs). The backend trims the value and reads
+    // 'unit' as pieces of the ingredient's reference weight.
+    { label: "unit", value: "unit  " },
   ];
 
 
