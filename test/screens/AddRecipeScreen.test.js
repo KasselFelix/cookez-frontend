@@ -94,6 +94,8 @@ describe('AddRecipeScreen pickers', () => {
     });
 
     fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
+    // Nothing chosen yet: the "0" placeholder is not announced as a value.
+    expect(screen.getByRole('button', { name: 'Servings' }).props.accessibilityValue?.text).toBeUndefined();
     pick('Servings', '4');
     pick('Difficulty', '2');
     expect(screen.getByRole('button', { name: 'Servings' })).toHaveAccessibilityValue({ text: '4' });
@@ -144,10 +146,10 @@ describe('AddRecipeScreen above the floating tab bar', () => {
       preloadedState: { user: makeUserState(), picture: { value: null } },
     });
 
-    // Zero insets under Jest: 60 (bar) + 8 (min bottom inset) + 12 + 16.
-    const tabBarHeight = 96;
+    // Zero insets under Jest: useTabBarHeight() is 60 (bar) + 8 (min bottom
+    // inset) + 12 + 16 = 96, then 16 (spacing.md) of gap above the bar.
     const card = StyleSheet.flatten(screen.getByTestId('addRecipe-card').props.style);
-    expect(card.marginBottom).toBe(tabBarHeight);
+    expect(card.marginBottom).toBe(96 + 16);
   });
 });
 

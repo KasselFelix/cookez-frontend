@@ -241,7 +241,7 @@ export default function AddRecipeScreen({navigation}) {
           KeyboardAvoidingView: in iOS "padding" mode, that view replaces its
           paddingBottom with the keyboard height (0 when closed), and the card
           then ran under the tab bar, hiding "Add Recipe" (plan 017, step 29). */}
-      <View testID="addRecipe-card" style={[styles.formBloc, { marginBottom: tabBarHeight }]}>
+      <View testID="addRecipe-card" style={[styles.formBloc, { marginBottom: tabBarHeight + css.spacing.md }]}>
         <View style={styles.formContainer}>
           <ScrollView
             style={styles.scroll}
@@ -456,7 +456,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: css.palette.secondary500,
     elevation: 5,
-    marginBottom:'3.5%',
     borderRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

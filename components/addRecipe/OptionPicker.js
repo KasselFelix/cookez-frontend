@@ -10,7 +10,7 @@
 // animation.
 
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Keyboard, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { useTheme } from '../../contexts/ThemeProvider';
@@ -46,7 +46,12 @@ export default function OptionPicker({ value, options, onChange, placeholder, ti
     transform: [{ translateY: (1 - progress.value) * SCREEN_HEIGHT }],
   }));
 
-  const openSheet = () => setOpen(true);
+  const openSheet = () => {
+    // The sheet would open over a keyboard left up by the Qty or Ingredient field.
+    Keyboard.dismiss();
+    progress.value = 0;
+    setOpen(true);
+  };
   const close = () => setOpen(false);
   const choose = (next) => {
     onChange(next);
@@ -60,7 +65,9 @@ export default function OptionPicker({ value, options, onChange, placeholder, ti
         onPress={openSheet}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
-        accessibilityValue={{ text: selected ? selected.label : placeholder }}
+        // Nothing chosen: no value, so a screen reader does not read the "0"
+        // placeholder as a choice.
+        accessibilityValue={selected ? { text: selected.label } : undefined}
         style={({ pressed }) => [
           styles.field,
           // Same look as the other fields of AddRecipeScreen (white, primary
