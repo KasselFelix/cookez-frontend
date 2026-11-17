@@ -379,7 +379,8 @@
       "dismissA11y": "Dismiss {{name}}",
       "photoA11y": "Photo {{index}}: {{status}}",
       "snapA11y": "Take a photo"
-    }
+    },
+    "photoFailed": "The photo could not be taken. Try again."
   },
   "recap": {
     "ingredient": "Ingredient",

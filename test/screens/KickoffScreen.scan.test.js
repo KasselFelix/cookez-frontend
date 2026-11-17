@@ -89,16 +89,12 @@ describe('KickoffScreen scan', () => {
   });
 
   it('keeps the screen usable when the camera fails to take the photo', async () => {
-    const savedAlert = global.alert;
-    const alert = jest.fn();
-    global.alert = alert;
     mockCamera.takePictureAsync.mockRejectedValueOnce(new Error('Camera is not running'));
     renderKickoff(makeUserState());
     await act(async () => {
       fireEvent.press(await screen.findByTestId('kickoff-snap'));
     });
-    await waitFor(() => expect(alert).toHaveBeenCalled());
+    expect(await screen.findByTestId('toast')).toHaveTextContent('The photo could not be taken. Try again.');
     expect(global.fetch.mock.calls.some(([url]) => String(url).includes('/vision/'))).toBe(false);
-    global.alert = savedAlert;
   });
 });
