@@ -24,6 +24,8 @@ export default function SignIn({navigation}) {
     // Error shown inside the modal: a toast would stay hidden under it (plan 020).
     const [error, setError]=useState('');
     const t = useT();
+    // Typing again clears the last error.
+    const edit = (setter) => (value) => { setter(value); setError(''); };
 
     const dispatch =useDispatch();
     const user=useSelector((state)=>state.user.value)
@@ -84,8 +86,8 @@ export default function SignIn({navigation}) {
           :
           <View style={styles.modalContainer}>
           <View style={styles.shadowView}>
-            <TextInput testID="login-username" placeholder='username' placeholderTextColor={'grey'} style={styles.formStyle} value={username} onChangeText={(value)=> { setUsername(value); setError(''); }}/>
-            <TextInput testID="login-password" placeholder='password' placeholderTextColor={'grey'} textContentType='password' secureTextEntry={true} style={styles.formStyle} value={password} onChangeText={(value)=> { setPassword(value); setError(''); }}/>
+            <TextInput testID="login-username" placeholder='username' placeholderTextColor={'grey'} style={styles.formStyle} value={username} onChangeText={edit(setUsername)}/>
+            <TextInput testID="login-password" placeholder='password' placeholderTextColor={'grey'} textContentType='password' secureTextEntry={true} style={styles.formStyle} value={password} onChangeText={edit(setPassword)}/>
             <InlineMessage testID="login-error" message={error} style={styles.error} />
             <MyButton
               dataFlow={handleSignin}

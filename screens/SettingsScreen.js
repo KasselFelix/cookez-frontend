@@ -701,92 +701,59 @@ function EditModal({ schemaKind, draft, setDraft, message, isSaving, onSave, onC
           />
           <View style={[styles.modalActions, { marginTop: css.spacing.sm }]}>
             {savedWithWarning ? (
-              <TouchableOpacity
-                onPress={onClose}
-                style={[
-                  styles.modalBtn,
-                  {
-                    borderRadius: css.radius.pill,
-                    paddingHorizontal: css.spacing.lg,
-                    paddingVertical: css.spacing.sm,
-                    backgroundColor: css.palette.neutral900,
-                    marginLeft: css.spacing.sm,
-                  },
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={t('common.close')}
-              >
-                <Text
-                  style={{
-                    fontFamily: css.typography.fontUI,
-                    color: css.text.inverse,
-                    fontWeight: '600',
-                  }}
-                >
-                  {t('common.close')}
-                </Text>
-              </TouchableOpacity>
+              <ModalButton primary label={t('common.close')} onPress={onClose} css={css} />
             ) : (
               <>
-              <TouchableOpacity
-                onPress={onClose}
-                style={[
-                  styles.modalBtn,
-                  {
-                    borderRadius: css.radius.pill,
-                    paddingHorizontal: css.spacing.lg,
-                    paddingVertical: css.spacing.sm,
-                    borderColor: css.palette.neutral300,
-                    borderWidth: 1,
-                    marginLeft: css.spacing.sm,
-                  },
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={t('common.cancel')}
-              >
-                <Text
-                  style={{
-                    fontFamily: css.typography.fontUI,
-                    color: css.palette.neutral900,
-                    fontWeight: '500',
-                  }}
-                >
-                  {t('common.cancel')}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={onSave}
-                disabled={isSaving}
-                style={[
-                  styles.modalBtn,
-                  {
-                    borderRadius: css.radius.pill,
-                    paddingHorizontal: css.spacing.lg,
-                    paddingVertical: css.spacing.sm,
-                    backgroundColor: css.palette.neutral900,
-                    marginLeft: css.spacing.sm,
-                    opacity: isSaving ? 0.6 : 1,
-                  },
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={t('common.save')}
-              >
-                <Text
-                  style={{
-                    fontFamily: css.typography.fontUI,
-                    color: css.text.inverse,
-                    fontWeight: '600',
-                  }}
-                >
-                  {isSaving ? t('common.saving') : t('common.save')}
-                </Text>
-              </TouchableOpacity>
+                <ModalButton label={t('common.cancel')} onPress={onClose} css={css} />
+                <ModalButton
+                  primary
+                  label={t('common.save')}
+                  text={isSaving ? t('common.saving') : t('common.save')}
+                  onPress={onSave}
+                  disabled={isSaving}
+                  css={css}
+                />
               </>
             )}
           </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
+  );
+}
+
+// Button of the edit modal: primary (filled) or secondary (outlined).
+function ModalButton({ label, text = label, onPress, primary = false, disabled = false, css }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      style={[
+        styles.modalBtn,
+        {
+          borderRadius: css.radius.pill,
+          paddingHorizontal: css.spacing.lg,
+          paddingVertical: css.spacing.sm,
+          marginLeft: css.spacing.sm,
+          opacity: disabled ? 0.6 : 1,
+        },
+        primary
+          ? { backgroundColor: css.palette.neutral900 }
+          : { borderColor: css.palette.neutral300, borderWidth: 1 },
+      ]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <Text
+        style={{
+          fontFamily: css.typography.fontUI,
+          color: primary ? css.text.inverse : css.palette.neutral900,
+          fontWeight: primary ? '600' : '500',
+        }}
+      >
+        {text}
+      </Text>
+    </TouchableOpacity>
   );
 }
 
