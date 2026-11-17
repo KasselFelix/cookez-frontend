@@ -8,7 +8,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -25,6 +24,7 @@ import { jsonAuthHeaders } from '../../modules/authHeaders';
 import { updateUserInStore } from '../../reducers/user';
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
+import InlineMessage from '../feedback/InlineMessage';
 
 export const DIET_OPTIONS = [
   'gluten_free',
@@ -59,12 +59,18 @@ export default function DietMultiSelect({ visible, onClose }) {
   const initial = useMemo(() => readDietRestrictions(user), [user]);
   const [selected, setSelected] = useState(initial);
   const [isSaving, setIsSaving] = useState(false);
+  // Shown inside the modal: a toast would stay hidden under it (plan 020).
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (visible) setSelected(initial);
+    if (visible) {
+      setSelected(initial);
+      setError('');
+    }
   }, [visible, initial]);
 
   const toggle = (key) => {
+    setError('');
     setSelected((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     );
@@ -73,6 +79,7 @@ export default function DietMultiSelect({ visible, onClose }) {
   const save = async () => {
     if (!user?.token) return;
     setIsSaving(true);
+    setError('');
     try {
       const res = await fetch(`${addressIp}/users/profile`, {
         method: 'PUT',
@@ -89,10 +96,10 @@ export default function DietMultiSelect({ visible, onClose }) {
         if (data.updated) dispatch(updateUserInStore(data.updated));
         onClose?.();
       } else {
-        Alert.alert(t('common.error'), data.error || t('common.networkError'));
+        setError(data.error || t('common.networkError'));
       }
     } catch {
-      Alert.alert(t('common.error'), t('common.networkError'));
+      setError(t('common.networkError'));
     } finally {
       setIsSaving(false);
     }
@@ -205,6 +212,8 @@ export default function DietMultiSelect({ visible, onClose }) {
               );
             })}
           </ScrollView>
+
+          <InlineMessage testID="diet-error" message={error} style={{ marginTop: css.spacing.sm }} />
 
           <View style={styles.actions}>
             <TouchableOpacity

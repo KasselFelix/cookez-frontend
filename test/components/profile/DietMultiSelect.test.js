@@ -28,3 +28,27 @@ describe('DietMultiSelect', () => {
     expect(JSON.parse(init.body)).toEqual({ dietRestrictions: [], diet: '' });
   });
 });
+
+describe('DietMultiSelect errors (plan 020)', () => {
+  it('shows a failed save inside the modal and keeps it open', async () => {
+    mockFetchJsonAlways({ result: false, error: 'Invalid diet' });
+    const onClose = jest.fn();
+    renderWithProviders(<DietMultiSelect visible onClose={onClose} />, {
+      withNavigation: false,
+      preloadedState: {
+        locale: { value: { lang: 'en' } },
+        user: { value: { username: 'chef', token: 'tok', dietRestrictions: [], settings: {} } },
+      },
+    });
+
+    fireEvent.press(await screen.findByLabelText('Gluten free'));
+    fireEvent.press(screen.getByText('Save'));
+
+    expect(await screen.findByText('Invalid diet')).toBeTruthy();
+    expect(onClose).not.toHaveBeenCalled();
+
+    // The next choice clears it.
+    fireEvent.press(screen.getByLabelText('Gluten free'));
+    expect(screen.queryByTestId('diet-error')).toBeNull();
+  });
+});
