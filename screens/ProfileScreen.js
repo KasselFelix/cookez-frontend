@@ -18,7 +18,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
-  Alert,
   Animated,
   FlatList,
   Image,
@@ -78,6 +77,7 @@ import InventorySummaryRow from '../components/inventory/InventorySummaryRow';
 import { useTheme } from '../contexts/ThemeProvider';
 import useTabBarHeight from '../hooks/useTabBarHeight';
 import useT from '../i18n/useT';
+import { useToast } from '../contexts/ToastProvider';
 import { useResponsive } from '../styles/responsive';
 
 const TAB_KEYS = ['recipes', 'favorites', 'inventory', 'badges'];
@@ -276,6 +276,15 @@ function TopBarButton({ label, onPress, badge, children, css }) {
 export default function ProfileScreen({ navigation, route }) {
   const css = useTheme();
   const t = useT();
+  // Errors after the avatar modal or the pantry sheet has closed: toasts
+  // (plan 020).
+  const { show: showToast } = useToast();
+  const showPantryError = (titleKey, error) =>
+    showToast(
+      error
+        ? { type: 'error', title: t(titleKey), message: error }
+        : { type: 'error', message: t(titleKey) },
+    );
   const tabBarHeight = useTabBarHeight();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
@@ -442,10 +451,10 @@ export default function ProfileScreen({ navigation, route }) {
         // fields (post-normalisation), so we can dispatch it as-is.
         if (data.updated) dispatch(updateUserInStore(data.updated));
       } else {
-        Alert.alert(t('common.error'), data.error || t('common.networkError'));
+        showToast({ type: 'error', message: data.error || t('common.networkError') });
       }
     } catch {
-      Alert.alert(t('common.error'), t('common.networkError'));
+      showToast({ type: 'error', message: t('common.networkError') });
     }
   };
 
@@ -526,7 +535,7 @@ export default function ProfileScreen({ navigation, route }) {
     const { ok, error } = await removePantryItem(user.token, id);
     if (!ok) {
       if (previous) dispatch(addItem(previous));
-      Alert.alert(t('profile.inventory.errors.delete_failed'), error || '');
+      showPantryError('profile.inventory.errors.delete_failed', error);
     }
   };
 
@@ -536,11 +545,11 @@ export default function ProfileScreen({ navigation, route }) {
       const { _id } = editing;
       const { ok, data, error } = await updatePantryItem(user.token, _id, payload);
       if (ok && data?.item) dispatch(updateItem({ _id, patch: data.item }));
-      else Alert.alert(t('profile.inventory.errors.update_failed'), error || '');
+      else showPantryError('profile.inventory.errors.update_failed', error);
     } else {
       const { ok, data, error } = await addPantryItem(user.token, payload);
       if (ok && data?.item) dispatch(addItem(data.item));
-      else Alert.alert(t('profile.inventory.errors.add_failed'), error || '');
+      else showPantryError('profile.inventory.errors.add_failed', error);
     }
     setEditing(null);
   };
