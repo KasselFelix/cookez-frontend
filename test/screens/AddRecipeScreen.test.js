@@ -247,6 +247,16 @@ describe('AddRecipeScreen publish failures', () => {
     expect(global.alert).not.toHaveBeenCalled();
   }, 15000);
 
+  it('shows why the upload route refused the photo (error status with a JSON body)', async () => {
+    mockFetchSequence([
+      { body: { result: false, error: 'Upload service limit reached for today' }, init: { status: 429, ok: false } },
+    ]);
+    publish();
+
+    expect(await screen.findByTestId('toast')).toHaveTextContent(/Upload service limit reached for today/);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  }, 15000);
+
   it('shows the server error of /recipes/add', async () => {
     mockFetchSequence([
       { result: true, picture: STORED_ID },

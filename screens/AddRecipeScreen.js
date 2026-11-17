@@ -109,20 +109,22 @@ export default function AddRecipeScreen({navigation}) {
                 body: formData,
             });
 
-            if (!uploadResponse.ok) {
-                showToast({ type: 'error', title: t('addRecipe.publishFailed'), message: t('addRecipe.uploadRefused') });
-                return;
+            // The upload route answers its errors with a 4xx/5xx status and a JSON
+            // body: read it first, so the user sees why (daily limit, invalid
+            // image) rather than a generic message.
+            let uploadData = null;
+            try {
+                uploadData = await uploadResponse.json();
+            } catch {
+                uploadData = null;
             }
 
-            const uploadData = await uploadResponse.json();
-            //console.log('Upload response data:', uploadData);
-
-            if (!uploadData.result) {
-                // Silent before plan 020: the photo was refused, nothing happened.
+            if (!uploadResponse.ok || !uploadData?.result) {
+                // Silent before plan 020 when the status was 200: nothing happened.
                 showToast({
                     type: 'error',
                     title: t('addRecipe.publishFailed'),
-                    message: uploadData.error || t('addRecipe.uploadRefused'),
+                    message: uploadData?.error || t('addRecipe.uploadRefused'),
                 });
             } else {
                 // Envoi des informations de la recette. The server sets the
