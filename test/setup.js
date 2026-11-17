@@ -35,6 +35,17 @@ import 'react-native-gesture-handler/jestSetup';
 // https://docs.swmansion.com/react-native-reanimated/docs/guides/testing
 // ---------------------------------------------------------------------------
 jest.mock('react-native-reanimated', () => {
+  // Both mocks end an animation at once and run its end callback right away.
+  // A test that races an action against a running animation holds the end
+  // callbacks instead (test/helpers/animations.js): they wait in
+  // global.__reanimatedHeld until finishAnimations().
+  const holdEnd = (animate) => (toValue, config, callback) => {
+    if (callback && global.__reanimatedHeld) {
+      global.__reanimatedHeld.push(callback);
+      return animate(toValue, config);
+    }
+    return animate(toValue, config, callback);
+  };
   try {
     // Preferred: the library's own jest mock (no-op animation drivers).
     // eslint-disable-next-line global-require
@@ -48,6 +59,8 @@ jest.mock('react-native-reanimated', () => {
     if (!Reanimated.useReducedMotion) {
       Reanimated.useReducedMotion = () => false;
     }
+    Reanimated.withTiming = holdEnd(Reanimated.withTiming);
+    Reanimated.withSpring = holdEnd(Reanimated.withSpring);
     return Reanimated;
   } catch (e) {
     // Fallback: minimal inert mock covering the APIs the app uses.
@@ -73,14 +86,14 @@ jest.mock('react-native-reanimated', () => {
       // Like the library's own mock: the animation ends at once and its end
       // callback runs, so a sheet that unmounts after its closing animation
       // (rule of the front for dark-backdrop modals) unmounts under test too.
-      withTiming: (v, _config, callback) => {
+      withTiming: holdEnd((v, _config, callback) => {
         callback?.(true);
         return v;
-      },
-      withSpring: (v, _config, callback) => {
+      }),
+      withSpring: holdEnd((v, _config, callback) => {
         callback?.(true);
         return v;
-      },
+      }),
       withDelay: (_, v) => v,
       withRepeat: (v) => v,
       withSequence: (...vals) => vals[vals.length - 1],
@@ -101,6 +114,10 @@ jest.mock('react-native-reanimated', () => {
 });
 // Silence the worklets init that reanimated 4 expects on the global.
 global.__reanimatedWorkletInit = () => {};
+// A test that held animation ends never leaks the hold into the next test.
+afterEach(() => {
+  global.__reanimatedHeld = null;
+});
 
 // ---------------------------------------------------------------------------
 // react-native-worklets — reanimated 4 split the worklet runtime out into

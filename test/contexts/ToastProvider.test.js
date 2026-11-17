@@ -8,6 +8,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { toastDuration, useToast } from '../../contexts/ToastProvider';
 import { renderWithProviders } from '../helpers/renderWithProviders';
+import { finishAnimations, holdAnimations } from '../helpers/animations';
 
 function Trigger({ toast, label = 'show' }) {
   const { show } = useToast();
@@ -74,6 +75,27 @@ describe('ToastProvider', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Close' }));
 
     expect(screen.queryByText('Coming soon')).toBeNull();
+  });
+
+  it('arms no timer for a toast closed before its delay is known', async () => {
+    renderWithProviders(<Trigger toast={{ type: 'info', message: 'Quick' }} />, { withNavigation: false });
+    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+    // The fade-out keeps running, as on a device.
+    holdAnimations();
+
+    fireEvent.press(screen.getByText('show'));
+    // Closed before the recommended-timeout promise resolves, twice.
+    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+    await flushTimeout();
+
+    const base = toastDuration({ type: 'info', message: 'Quick' });
+    expect(setTimeoutSpy.mock.calls.some(([, ms]) => ms >= base)).toBe(false);
+    // One fade-out, not one per tap.
+    expect(global.__reanimatedHeld).toHaveLength(1);
+
+    act(() => finishAnimations());
+    expect(screen.queryByText('Quick')).toBeNull();
   });
 
   it('closes by itself after its delay, stretched by the accessibility setting', async () => {
