@@ -65,8 +65,17 @@ jest.mock('react-native-reanimated', () => {
       useDerivedValue: (fn) => ({ value: typeof fn === 'function' ? fn() : undefined }),
       useAnimatedRef: () => ({ current: null }),
       useAnimatedScrollHandler: () => () => {},
-      withTiming: (v) => v,
-      withSpring: (v) => v,
+      // Like the library's own mock: the animation ends at once and its end
+      // callback runs, so a sheet that unmounts after its closing animation
+      // (rule of the front for dark-backdrop modals) unmounts under test too.
+      withTiming: (v, _config, callback) => {
+        callback?.(true);
+        return v;
+      },
+      withSpring: (v, _config, callback) => {
+        callback?.(true);
+        return v;
+      },
       withDelay: (_, v) => v,
       withRepeat: (v) => v,
       withSequence: (...vals) => vals[vals.length - 1],

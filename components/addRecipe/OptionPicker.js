@@ -4,14 +4,14 @@
 // one implementation for Android and iOS, testable in Jest.
 //
 // Modal structure of components/recipeFilters/TagsMultiSelect.js
-// (statusBarTranslucent, navigationBarTranslucent, animationType="none"),
-// opening animated with Reanimated. It closes at once on a choice, like an
-// iOS action sheet, so it needs no `rendered` state kept for a closing
-// animation.
+// (statusBarTranslucent, navigationBarTranslucent, animationType="none",
+// `rendered` kept while the closing animation plays), animated with
+// Reanimated.
 
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Keyboard, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
@@ -32,14 +32,23 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 export default function OptionPicker({ value, options, onChange, placeholder, title, accessibilityLabel, testID }) {
   const css = useTheme();
   const t = useT();
+  // `open` is the intent; `rendered` keeps the Modal mounted while the
+  // closing animation plays, then the animation's end unmounts it.
   const [open, setOpen] = useState(false);
+  const [rendered, setRendered] = useState(false);
   const progress = useSharedValue(0);
 
   const selected = options.find((o) => o.value === value);
 
   useEffect(() => {
-    progress.value = open ? withTiming(1, { duration: 250 }) : 0;
-  }, [open, progress]);
+    if (open) {
+      progress.value = withTiming(1, { duration: 250 });
+    } else if (rendered) {
+      progress.value = withTiming(0, { duration: 200 }, (finished) => {
+        if (finished) scheduleOnRN(setRendered, false);
+      });
+    }
+  }, [open, rendered, progress]);
 
   const backdropStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
   const sheetStyle = useAnimatedStyle(() => ({
@@ -49,7 +58,7 @@ export default function OptionPicker({ value, options, onChange, placeholder, ti
   const openSheet = () => {
     // The sheet would open over a keyboard left up by the Qty or Ingredient field.
     Keyboard.dismiss();
-    progress.value = 0;
+    setRendered(true);
     setOpen(true);
   };
   const close = () => setOpen(false);
@@ -96,7 +105,7 @@ export default function OptionPicker({ value, options, onChange, placeholder, ti
       </Pressable>
 
       <Modal
-        visible={open}
+        visible={rendered}
         animationType="none"
         transparent
         statusBarTranslucent
