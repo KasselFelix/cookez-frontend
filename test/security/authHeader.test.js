@@ -42,7 +42,8 @@ const PUBLIC_ROUTES = [
 
 // Comments mention fetch() in prose. A line comment starts a line or follows
 // a space: `//` in a URL ('http://') or a string ('//') is kept.
-const stripComments = (source) => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\s)\/\/.*$/gm, '$1');
+const stripComments = (source) =>
+  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\s)\/\/.*$/gm, '$1');
 
 /** Text from `open` (index of a `(` or a `{`) to its matching closer, both included. */
 const balanced = (source, open) => {
@@ -70,7 +71,11 @@ const fetchCalls = (source) => {
     // fetch(url, …): use the last `const url = …` written before the call.
     const ident = /^([A-Za-z_$][\w$]*)\s*[,)]/.exec(target);
     if (ident) {
-      const defs = [...source.slice(0, open).matchAll(new RegExp(`\\b(?:const|let)\\s+${ident[1]}\\s*=\\s*([^;]+);`, 'g'))];
+      const defs = [
+        ...source
+          .slice(0, open)
+          .matchAll(new RegExp(`\\b(?:const|let)\\s+${ident[1]}\\s*=\\s*([^;]+);`, 'g')),
+      ];
       if (defs.length) target = defs[defs.length - 1][1];
     }
     calls.push({ text, target });
@@ -88,7 +93,11 @@ const stringifyArgs = (source) =>
     const arg = balanced(source, open);
     const ident = /^\(\s*([A-Za-z_$][\w$]*)\s*[,)]/.exec(arg);
     if (!ident) return arg;
-    const defs = [...source.slice(0, open).matchAll(new RegExp(`\\b(?:const|let)\\s+${ident[1]}\\s*=\\s*\\{`, 'g'))];
+    const defs = [
+      ...source
+        .slice(0, open)
+        .matchAll(new RegExp(`\\b(?:const|let)\\s+${ident[1]}\\s*=\\s*\\{`, 'g')),
+    ];
     if (!defs.length) return arg;
     const last = defs[defs.length - 1];
     return `${arg} ${balanced(source, last.index + last[0].length - 1)}`;
@@ -102,12 +111,17 @@ const TOKEN_KEY = /(^|[{,\s])["']?\w*token["']?\s*[:,}]|\.\.\.\s*\w*user\b/i;
 const USERNAME_KEY = /(^|[{,\s])["']?username["']?\s*[:,}]/;
 
 describe('session token in the Authorization header only', () => {
-  const files = [path.join(ROOT, 'App.js'), ...SOURCE_DIRS.flatMap((d) => sourceFiles(path.join(ROOT, d)))];
+  const files = [
+    path.join(ROOT, 'App.js'),
+    ...SOURCE_DIRS.flatMap((d) => sourceFiles(path.join(ROOT, d))),
+  ];
   const sources = files.map((file) => ({
     file: path.relative(ROOT, file),
     source: stripComments(fs.readFileSync(file, 'utf8')),
   }));
-  const calls = sources.flatMap(({ file, source }) => fetchCalls(source).map((call) => ({ file, ...call })));
+  const calls = sources.flatMap(({ file, source }) =>
+    fetchCalls(source).map((call) => ({ file, ...call })),
+  );
   const label = ({ file, target }) => `${file}: ${target.split('\n')[0]}`;
 
   it('scans the app calls', () => {
@@ -116,7 +130,8 @@ describe('session token in the Authorization header only', () => {
 
   it('classifies every fetch as authenticated or public', () => {
     const unknown = calls.filter(
-      ({ target }) => !AUTH_ROUTES.some((r) => r.test(target)) && !PUBLIC_ROUTES.some((r) => r.test(target)),
+      ({ target }) =>
+        !AUTH_ROUTES.some((r) => r.test(target)) && !PUBLIC_ROUTES.some((r) => r.test(target)),
     );
     expect(unknown.map(label)).toEqual([]);
   });
@@ -132,13 +147,18 @@ describe('session token in the Authorization header only', () => {
     // jsonAuthHeaders would override the boundary fetch sets for a FormData body.
     const multipart = calls.filter(({ target }) => /\/(upload|vision)\//.test(target));
     expect(multipart.length).toBeGreaterThanOrEqual(2);
-    const offenders = multipart.filter(({ text }) => /jsonAuthHeaders\s*\(|Content-Type/i.test(text) || !/\bauthHeaders\s*\(/.test(text));
+    const offenders = multipart.filter(
+      ({ text }) =>
+        /jsonAuthHeaders\s*\(|Content-Type/i.test(text) || !/\bauthHeaders\s*\(/.test(text),
+    );
     expect(offenders.map(label)).toEqual([]);
   });
 
   it('puts no token in a request body', () => {
     const inFetch = calls.filter(({ text }) => /\bbody\s*:[^\n]*\btoken\b/i.test(text));
-    const inJson = sources.filter(({ source }) => stringifyArgs(source).some((arg) => TOKEN_KEY.test(arg)));
+    const inJson = sources.filter(({ source }) =>
+      stringifyArgs(source).some((arg) => TOKEN_KEY.test(arg)),
+    );
     expect([...inFetch.map(label), ...inJson.map(({ file }) => file)]).toEqual([]);
   });
 
@@ -146,20 +166,28 @@ describe('session token in the Authorization header only', () => {
     // Plan 019, step 3.1 (audit 2.15): the backend reads the author from the
     // token. A username in the body is ignored today and misleads a reader.
     const writes = calls.filter(({ target }) => AUTH_ROUTES.some((r) => r.test(target)));
-    const offenders = writes.filter(({ text }) => stringifyArgs(text).some((arg) => USERNAME_KEY.test(arg)));
+    const offenders = writes.filter(({ text }) =>
+      stringifyArgs(text).some((arg) => USERNAME_KEY.test(arg)),
+    );
     expect(offenders.map(label)).toEqual([]);
   });
 
   it('would catch a username key in a body, not a username in a URL', () => {
     const inBody = (text) => stringifyArgs(text).some((arg) => USERNAME_KEY.test(arg));
-    expect(inBody('fetch(u, { body: JSON.stringify({ username: user.username, note }) })')).toBe(true);
+    expect(inBody('fetch(u, { body: JSON.stringify({ username: user.username, note }) })')).toBe(
+      true,
+    );
     expect(inBody('fetch(u, { body: JSON.stringify({\n  username,\n  _id }) })')).toBe(true);
-    expect(inBody('fetch(`${addressIp}/users/${path}/${username}`, { headers: authHeaders(t) })')).toBe(false);
+    expect(
+      inBody('fetch(`${addressIp}/users/${path}/${username}`, { headers: authHeaders(t) })'),
+    ).toBe(false);
     expect(inBody('fetch(u, { body: JSON.stringify({ note }) })')).toBe(false);
   });
 
   it('writes the Bearer scheme in the helper only', () => {
-    const offenders = sources.filter(({ file, source }) => file !== HELPER_FILE && /Bearer\s/.test(source));
+    const offenders = sources.filter(
+      ({ file, source }) => file !== HELPER_FILE && /Bearer\s/.test(source),
+    );
     expect(offenders.map(({ file }) => file)).toEqual([]);
   });
 
@@ -175,11 +203,15 @@ describe('session token in the Authorization header only', () => {
     expect(TOKEN_KEY.test('({ ...currentUser, ids })')).toBe(true);
     expect(TOKEN_KEY.test('({ message, recipe: recipeId })')).toBe(false);
     // The pre-PR 3 /recipes/result: the token sat in a payload stringified later.
-    const [payload] = stringifyArgs('const payload = {\n  token: token || undefined,\n  origins: [],\n};\nfetch(u, { body: JSON.stringify(payload) });');
+    const [payload] = stringifyArgs(
+      'const payload = {\n  token: token || undefined,\n  origins: [],\n};\nfetch(u, { body: JSON.stringify(payload) });',
+    );
     expect(TOKEN_KEY.test(payload)).toBe(true);
     expect(stripComments("fetch('//x', a); // note")).toBe("fetch('//x', a); ");
 
-    const [viaVariable] = fetchCalls('const url = `${addressIp}/notifications?limit=1`;\nfetch(url, { headers: authHeaders(token) })');
+    const [viaVariable] = fetchCalls(
+      'const url = `${addressIp}/notifications?limit=1`;\nfetch(url, { headers: authHeaders(token) })',
+    );
     expect(viaVariable.target).toContain('/notifications');
     expect(USES_HELPER.test(viaVariable.text)).toBe(true);
   });
