@@ -74,6 +74,31 @@ describe('LocationToggle, saved', () => {
     expect(init.headers.Authorization).toBe('Bearer tok');
     expect(JSON.parse(init.body)).toEqual({ location: { consent: false } });
   });
+
+  it('sends the position with consent=true when enabled, and stores the diff', async () => {
+    Location.hasServicesEnabledAsync.mockResolvedValue(true);
+    Location.requestForegroundPermissionsAsync.mockResolvedValue({ status: 'granted' });
+    Location.getCurrentPositionAsync.mockResolvedValue({
+      coords: { latitude: 48.8566, longitude: 2.3522 },
+    });
+    const location = { consent: true, coords: { lat: 48.8566, lng: 2.3522 } };
+    mockFetchJsonAlways({ result: true, updated: { location } });
+    const { store } = render(false);
+
+    fireEvent(screen.getByRole('switch'), 'valueChange', true);
+
+    await waitFor(() => expect(store.getState().user.value.location.consent).toBe(true));
+    expect(store.getState().user.value.location.coords).toEqual({ lat: 48.8566, lng: 2.3522 });
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    const [url, init] = global.fetch.mock.calls[0];
+    expect(url).toBe('https://api.invalid/users/profile');
+    expect(init.method).toBe('PUT');
+    expect(init.headers.Authorization).toBe('Bearer tok');
+    expect(JSON.parse(init.body)).toEqual({
+      location: { coords: { lat: 48.8566, lng: 2.3522 }, consent: true },
+    });
+    expect(screen.queryByTestId('toast')).toBeNull();
+  });
 });
 
 describe('LocationToggle, refused permission and failed save', () => {
