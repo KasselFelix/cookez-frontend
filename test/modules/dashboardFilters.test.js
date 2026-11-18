@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 // The Dashboard's Community Favorites filters, moved out of the screen
 // (plan 017, point 1).
 import {

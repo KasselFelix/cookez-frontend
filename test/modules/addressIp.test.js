@@ -1,4 +1,3 @@
-/* global describe, it, expect, jest, afterEach, require */
 // Plan 019, step 3.5 (audit 2.9): no silent fallback to the production API.
 // Without EXPO_PUBLIC_API_URL, modules/addressIp.js throws, and metro.config.js
 // refuses to start, so `expo start`, `expo export`, `eas update` and release

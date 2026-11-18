@@ -1,4 +1,3 @@
-/* global describe, it, expect, jest, beforeEach, afterEach */
 import React from 'react';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 

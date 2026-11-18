@@ -1,4 +1,3 @@
-/* global describe, it, expect, jest */
 // Plan 019, step 3.1 (audit 2.15): a recipe vote sends the note only. The
 // backend reads the voter from the token in the Authorization header.
 import React from 'react';

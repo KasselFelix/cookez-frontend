@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 import { makeCacheKey } from '../../modules/recipeCache';
 
 const input = { userId: 'u1', ingredientIds: ['b', 'a'], origins: [], tags: [], servings: 2 };

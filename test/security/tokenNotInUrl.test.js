@@ -1,4 +1,3 @@
-/* global describe, it, expect, __dirname */
 // Plan 010 (S6): a session token in a URL lands in the Vercel and morgan logs.
 // The app sends it in the Authorization header only, never in an API URL.
 const fs = require('fs');

@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect */
 // Plan 015: a photo is analysed as soon as it is taken; its ingredients enter the
 // ingredient slice with the catalog id and photo, its unknown names wait for a
 // search, and the answer of a deleted photo is ignored.

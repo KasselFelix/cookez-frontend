@@ -1,4 +1,3 @@
-/* global describe, it, expect, jest, afterEach */
 // Plan 019, step 3.1 (audit 2.15): editing a comment sends the message only,
 // and deleting one sends no body at all. The backend reads the author from the
 // token in the Authorization header.

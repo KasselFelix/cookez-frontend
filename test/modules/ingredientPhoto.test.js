@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect, beforeEach, afterEach */
 // Plan 015 (A2): the catalog photo, through the backend's Pexels cache, is the
 // only image source of an ingredient.
 import {

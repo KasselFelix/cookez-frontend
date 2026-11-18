@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 import { ALLERGEN_KEYS, joinAllergies, splitAllergies } from '../../modules/allergenOptions';
 import en from '../../i18n/translations/en.json';
 import fr from '../../i18n/translations/fr.json';

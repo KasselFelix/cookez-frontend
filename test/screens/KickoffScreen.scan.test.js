@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect, beforeEach */
 // Plan 015: SNAP needs an account; a photo is sent to POST /vision/analyze as soon
 // as it is taken, at about 1024 px, and its slot says it is being analysed.
 import React from 'react';

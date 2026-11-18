@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 // A picked ingredient that started from the pantry quantity goes back to the
 // catalog reference once its pantry item is deleted. Reported on 2026-11-06:
 // 5 tomatoes deleted from the pantry, a new scan still showed "5 unit" in Recap

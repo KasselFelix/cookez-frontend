@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect, beforeEach, afterEach */
 // Plan 010 (S6): the session token goes in the Authorization header only, and the
 // auto-login forgets a stored token on a 401 only.
 import { fetchSessionUser, recordRecipeView } from '../../modules/session';

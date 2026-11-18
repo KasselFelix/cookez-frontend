@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect, beforeEach, afterEach */
 // Plan 015 (A2, A3): Kickoff and Recap show the same image for an ingredient.
 // The hook writes the catalog photo into the ingredient slice; Recap renders
 // that `photo`, as Kickoff does, and the app never calls Pexels itself.

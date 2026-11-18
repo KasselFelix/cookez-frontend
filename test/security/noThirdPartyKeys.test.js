@@ -1,4 +1,3 @@
-/* global describe, it, expect, __dirname */
 // Plan 015 (S5): every third-party call goes through the backend, which keeps the
 // keys. No EXPO_PUBLIC_*_KEY and no third-party API host in the app sources: a
 // value read by the bundle is readable by anyone who has the app.

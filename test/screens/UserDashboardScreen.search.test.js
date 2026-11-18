@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect, beforeEach, afterEach */
 // Plan 013 — the dashboard search asks the server, debounced, ranks by name
 // relevance then votes, and never shows the answer to an older query.
 import React from 'react';
