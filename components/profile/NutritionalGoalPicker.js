@@ -4,7 +4,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   Pressable,
   StyleSheet,
@@ -20,6 +19,7 @@ import { jsonAuthHeaders } from '../../modules/authHeaders';
 import { updateUserInStore } from '../../reducers/user';
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
+import InlineMessage from '../feedback/InlineMessage';
 
 export const NUTRITIONAL_GOALS = ['weight_loss', 'muscle_gain', 'balanced', 'seasonal_local'];
 
@@ -31,14 +31,20 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
 
   const [selected, setSelected] = useState(user?.nutritionalGoal || null);
   const [isSaving, setIsSaving] = useState(false);
+  // Shown inside the modal: a toast would stay hidden under it (plan 020).
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (visible) setSelected(user?.nutritionalGoal || null);
+    if (visible) {
+      setSelected(user?.nutritionalGoal || null);
+      setError('');
+    }
   }, [visible, user?.nutritionalGoal]);
 
   const save = async (goal) => {
     if (!user?.token) return;
     setIsSaving(true);
+    setError('');
     try {
       const res = await fetch(`${addressIp}/users/profile`, {
         method: 'PUT',
@@ -52,10 +58,10 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
         if (data.updated) dispatch(updateUserInStore(data.updated));
         onClose?.();
       } else {
-        Alert.alert(t('common.error'), data.error || t('common.networkError'));
+        setError(data.error || t('common.networkError'));
       }
     } catch {
-      Alert.alert(t('common.error'), t('common.networkError'));
+      setError(t('common.networkError'));
     } finally {
       setIsSaving(false);
     }
@@ -170,6 +176,7 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
               </TouchableOpacity>
             );
           })}
+          <InlineMessage testID="goal-error" message={error} style={{ marginTop: css.spacing.sm }} />
         </Pressable>
       </Pressable>
     </Modal>

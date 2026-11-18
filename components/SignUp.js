@@ -9,6 +9,8 @@ import { addUserToStore } from '../reducers/user';
 import buttonStyles from '../styles/Button';
 import css from '../styles/Global';
 import MyButton from './MyButton';
+import InlineMessage from './feedback/InlineMessage';
+import useT from '../i18n/useT';
 
 export default function SignUp({navigation}) {
     const [email, setEmail]=useState('');
@@ -19,6 +21,11 @@ export default function SignUp({navigation}) {
     const [password, setPassword]=useState('');
     const [modalVisible, setModalVisible]=useState(false);
     const [submitted, setSubmitted]=useState(false);
+    // Error shown inside the modal: a toast would stay hidden under it (plan 020).
+    const [error, setError]=useState('');
+    const t = useT();
+    // Typing again clears the last error.
+    const edit = (setter) => (value) => { setter(value); setError(''); };
 
     const dispatch =useDispatch();
 
@@ -26,6 +33,7 @@ export default function SignUp({navigation}) {
 
   const signUpUser = () => {
       // setLoading(true);
+      setError('');
 
       fetch(`${addressIp}/users/signup`, {
         method:'POST',
@@ -52,11 +60,11 @@ export default function SignUp({navigation}) {
           setSubmitted(true);
           dispatch(addUserToStore(data.newUser))
         }else{
-          alert(data.error)
+          setError(data.error || t('common.error'))
         }
       })
-      .catch((error) => {
-        //console.log(error)
+      .catch(() => {
+        setError(t('common.networkError'));
       })
       // .finally(() => setLoading(false))
   };
@@ -70,7 +78,7 @@ export default function SignUp({navigation}) {
   return (
     <SafeAreaView style={styles.buttonWrapper}>
        <MyButton
-        dataFlow={()=>setModalVisible(true)}
+        dataFlow={()=>{ setError(''); setModalVisible(true); }}
         text={"SIGN UP"}
         buttonType={buttonStyles.buttonOne}
       />
@@ -92,13 +100,14 @@ export default function SignUp({navigation}) {
                 <Text style={styles.modalTitle}>Register</Text>
                 
                   {/*lire la doc pour specifier les options manquante */}
-                  <TextInput placeholder='firstname' placeholderTextColor={'grey'}  style={styles.formStyle} value={firstname} onChangeText={(value)=> setFirstname(value)}/>
-                  <TextInput placeholder='lastname' placeholderTextColor={'grey'}  style={styles.formStyle} value={lastname} onChangeText={(value)=> setLastname(value)}/>
-                  <TextInput placeholder='username' placeholderTextColor={'grey'}  style={styles.formStyle} value={username} onChangeText={(value)=> setUsername(value)}/>
-                  <TextInput placeholder='age' placeholderTextColor={'grey'}  style={styles.formStyle} value={age} onChangeText={(value)=> setAge(value)}/>
-                  <TextInput placeholder='email' placeholderTextColor={'grey'}  KeyboardType={'email-address'} InputModeOptions={'email'} textContentType={'emailAddress'} autoCapitalize={'email'}  style={styles.formStyle} value={email} onChangeText={(value)=> setEmail(value)}/>
-                  <TextInput placeholder='password' placeholderTextColor={'grey'} textContentType='password' autoComplete='new-password' secureTextEntry={true}  style={styles.formStyle} value={password} onChangeText={(value)=> setPassword(value)}/>
+                  <TextInput placeholder='firstname' placeholderTextColor={'grey'}  style={styles.formStyle} value={firstname} onChangeText={edit(setFirstname)}/>
+                  <TextInput placeholder='lastname' placeholderTextColor={'grey'}  style={styles.formStyle} value={lastname} onChangeText={edit(setLastname)}/>
+                  <TextInput placeholder='username' placeholderTextColor={'grey'}  style={styles.formStyle} value={username} onChangeText={edit(setUsername)}/>
+                  <TextInput placeholder='age' placeholderTextColor={'grey'}  style={styles.formStyle} value={age} onChangeText={edit(setAge)}/>
+                  <TextInput placeholder='email' placeholderTextColor={'grey'}  KeyboardType={'email-address'} InputModeOptions={'email'} textContentType={'emailAddress'} autoCapitalize={'email'}  style={styles.formStyle} value={email} onChangeText={edit(setEmail)}/>
+                  <TextInput placeholder='password' placeholderTextColor={'grey'} textContentType='password' autoComplete='new-password' secureTextEntry={true}  style={styles.formStyle} value={password} onChangeText={edit(setPassword)}/>
 
+                  <InlineMessage testID="signup-error" message={error} style={styles.error} />
                   <MyButton
                   dataFlow={signUpUser}
                   text="Signup"
@@ -175,6 +184,9 @@ const styles = StyleSheet.create({
         fontSize: 15,
   },
 
+  error: {
+    marginVertical: 8,
+  },
   lottieAnim:{
     width:'100%',
     height:'100%',

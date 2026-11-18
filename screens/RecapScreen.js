@@ -347,7 +347,7 @@ export default function RecapScreen({ navigation }) {
         )}
 
         {/* Step 2 — Origin (multi-select cuisine filter) */}
-        <SectionHeading css={css}>{`${t('recap.step2')} 🌍`}</SectionHeading>
+        <SectionHeading css={css}>{t('recap.step2')}</SectionHeading>
         <View style={styles.filterRow}>
           <OriginPicker
             value={filters.selectedOrigins}
@@ -356,7 +356,7 @@ export default function RecapScreen({ navigation }) {
         </View>
 
         {/* Step 3 — Servings */}
-        <SectionHeading css={css}>{`${t('recap.step3')} 👨‍👩‍👧‍👦`}</SectionHeading>
+        <SectionHeading css={css}>{t('recap.step3')}</SectionHeading>
         <View style={styles.filterRow}>
           <ServingsStepper
             value={filters.currentServings}
@@ -367,7 +367,7 @@ export default function RecapScreen({ navigation }) {
         </View>
 
         {/* Step 4 — Tags */}
-        <SectionHeading css={css}>{`${t('recap.step4')} 🏷️`}</SectionHeading>
+        <SectionHeading css={css}>{t('recap.step4')}</SectionHeading>
         <View style={styles.filterRow}>
           <TagsMultiSelect
             value={filters.selectedTags}

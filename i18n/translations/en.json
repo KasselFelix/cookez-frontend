@@ -17,6 +17,7 @@
     "networkError": "Network error. Please try again.",
     "logoutTitle": "Log out",
     "logoutMessage": "Are you sure you want to log out?",
+    "logoutFailed": "Could not complete logout. Try again.",
     "deleteTitle": "Delete account",
     "deleteMessage": "Coming soon."
   },
@@ -350,7 +351,7 @@
     "selected": {
       "label": "SELECTED · {{count}}",
       "add": "+ Add",
-      "photoLabel": "📸 Photo {{index}}",
+      "photoLabel": "Photo {{index}}",
       "removeA11y": "Remove {{name}}",
       "removePhotoA11y": "Remove photo {{index}}"
     },
@@ -361,8 +362,8 @@
     "modal": {
       "searchPlaceholder": "Search an ingredient",
       "clear": "Clear search",
-      "waiting": "Waiting for your search 🧐 ...",
-      "notFound": "No ingredients found, try again! 👍",
+      "waiting": "Waiting for your search…",
+      "notFound": "No ingredients found, try again!",
       "close": "Close"
     },
     "scan": {
@@ -378,21 +379,22 @@
       "dismissA11y": "Dismiss {{name}}",
       "photoA11y": "Photo {{index}}: {{status}}",
       "snapA11y": "Take a photo"
-    }
+    },
+    "photoFailed": "The photo could not be taken. Try again."
   },
   "recap": {
     "ingredient": "Ingredient",
     "ingredients": "Ingredients",
-    "step1": "1. Select your ingredients 🎯",
+    "step1": "1. Select your ingredients",
     "step2": "2. Try a speciality",
     "step3": "3. Servings",
     "scrollMore": "More ingredients below, tap to jump",
     "step4": "4. Choose tags",
     "goToResults": "Recipes >>",
     "confirmClear": "Sure about removing them all ?!",
-    "noIngredients": "No ingredients to remove again 😊",
-    "emptyHint1": "Go back to add your ingredients by 📸 or 🔎",
-    "emptyHint2": "Your future recipes await you 🥘 !",
+    "noIngredients": "No more ingredients to remove",
+    "emptyHint1": "Go back to add your ingredients with a photo or a search",
+    "emptyHint2": "Your future recipes are waiting for you!",
     "scan": {
       "pending": {
         "one": "{{count}} photo being analysed…",
@@ -452,11 +454,11 @@
       "savory": "Savory"
     },
     "expiry": {
-      "title": "⚠️ Use these ingredients soon",
+      "title": "Use these ingredients soon",
       "body": "Your {{items}} expires in less than 48h."
     },
     "shopping": {
-      "title": "🛒 Shopping list",
+      "title": "Shopping list",
       "percentOwned": "You own {{ratio}}%",
       "buyOnAmazon": {
         "label": "Buy on Amazon",
@@ -559,7 +561,7 @@
   "result": {
     "title": "Results",
     "empty": {
-      "line1": "Try with more ingredients again 🤔",
+      "line1": "Try again with more ingredients",
       "line2": "Maybe it's time to go shopping!"
     },
     "matchBadge": {
@@ -611,17 +613,77 @@
       "nutrition": "NutritionPill (Skia)",
       "sheets": "Sheets",
       "sandbox": "Sandbox"
+    },
+    "showToast": "SHOW TOAST",
+    "samples": {
+      "toastSuccess": "Your recipe is published.",
+      "toastInfo": "Coming soon.",
+      "toastErrorTitle": "Upload failed",
+      "toastError": "Check your connection and try again.",
+      "inlineError": "Wrong username or password."
     }
   },
   "addRecipe": {
     "takePhotoA11y": "Take a photo of the recipe",
     "pickImageA11y": "Choose a photo from the gallery",
-    "nameFirst": "Fill in the fields above first ✍️",
+    "nameFirst": "Fill in the fields above first.",
     "galleryPermission": "Cookez needs access to your photos to add one.",
     "cameraPermission": "Cookez needs access to the camera to take a photo.",
     "photoError": "The photo could not be opened. Try again.",
     "servingsTitle": "Servings",
     "difficultyTitle": "Difficulty",
-    "unitTitle": "Unit"
+    "unitTitle": "Unit",
+    "photoMissing": "Take or choose a photo of the recipe first.",
+    "published": "Your recipe is published.",
+    "publishFailed": "The recipe was not published",
+    "uploadRefused": "The photo was refused. Try a smaller one or another one.",
+    "title": "Add your recipe",
+    "sections": {
+      "recipe": "Recipe",
+      "ingredients": "Ingredients",
+      "steps": "Steps",
+      "picture": "Picture"
+    },
+    "namePlaceholder": "name*",
+    "descriptionPlaceholder": "description*",
+    "servingsLabel": "servings:",
+    "persons": "pers.",
+    "difficultyLabel": "difficulty:",
+    "preparationLabel": "preparation:",
+    "cookingLabel": "cooking:",
+    "minutes": "min.",
+    "quantityPlaceholder": "Qty",
+    "unitPlaceholder": "units",
+    "ingredientPlaceholder": "Ingredient*",
+    "ingredientsAdded": "ingredients added: {{count}}",
+    "showIngredients": "Show ingredients",
+    "addIngredient": "Add ingredient",
+    "stepPlaceholder": "step*",
+    "stepsAdded": "steps added: {{count}}",
+    "showSteps": "Show steps",
+    "addStep": "Add step",
+    "photoA11y": "photo",
+    "removePhotoA11y": "Remove the photo",
+    "submit": "Add Recipe",
+    "units": {
+      "g": "g",
+      "kg": "kg",
+      "liter": "liter",
+      "ml": "ml",
+      "cl": "cl",
+      "tbsp": "tbsp",
+      "tsp": "tsp",
+      "unit": "unit"
+    }
+  },
+  "commentScreen": {
+    "emptyMessage": "Your review can't be empty.",
+    "updateFailed": "Could not save your changes. Try again later.",
+    "saveNetworkError": "Network error: your changes were not saved.",
+    "deleteFailed": "Could not delete the review. Try again later.",
+    "deleteNetworkError": "Network error: the review was not deleted.",
+    "deleteTitle": "Delete review?",
+    "deleteMessage": "This will permanently remove your review from the recipe.",
+    "delete": "Delete"
   }
 }

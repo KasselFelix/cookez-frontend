@@ -2,7 +2,11 @@
 // harness. Every component / hook test should go through `renderWithProviders`
 // so the provider chain matches production (App.js):
 //
-//   Provider(store) → ThemeProvider → [NavigationContainer] → ui
+//   Provider(store) → ThemeProvider → ToastProvider → [NavigationContainer] → ui
+//
+// ToastProvider is part of the chain, so a screen that calls `useToast().show`
+// draws its toast in the tree: assert it with `screen.getByTestId('toast')`
+// or its text.
 //
 // `makeStore(preloadedState)` rebuilds a real store from the actual reducers
 // in `reducers/`, so preloaded `.value` state behaves exactly like runtime
@@ -16,6 +20,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { render } from '@testing-library/react-native';
 
 import ThemeProvider from '../../contexts/ThemeProvider';
+import ToastProvider from '../../contexts/ToastProvider';
 
 // Import the REAL reducers so the store under test matches App.js exactly.
 import user from '../../reducers/user';
@@ -101,7 +106,9 @@ export function renderWithProviders(
 
     return (
       <Provider store={store}>
-        <ThemeProvider>{inner}</ThemeProvider>
+        <ThemeProvider>
+          <ToastProvider>{inner}</ToastProvider>
+        </ThemeProvider>
       </Provider>
     );
   }

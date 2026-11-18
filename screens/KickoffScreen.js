@@ -27,6 +27,7 @@ import SelectedChips from "../components/kickoff/SelectedChips";
 import buttonStyles from '../styles/Button';
 import { useTheme } from "../contexts/ThemeProvider";
 import useT from "../i18n/useT";
+import { useToast } from "../contexts/ToastProvider";
 import useIngredientPhotos from "../hooks/useIngredientPhotos";
 import * as Animatable from 'react-native-animatable';
 
@@ -63,6 +64,7 @@ export default function KickoffScreen({navigation}) {
 	const css = useTheme();
 	const styles = makeStyles(css);
 	const t = useT();
+	const { show: showToast } = useToast();
 
   	const dispatch = useDispatch();
   	const isFocused = useIsFocused();
@@ -242,7 +244,7 @@ export default function KickoffScreen({navigation}) {
 		if (photo?.uri) {
 			dispatch(scanPhoto({ uri: photo.uri, token: user.token }));
 		} else {
-			alert('Your photo was not taken well, Try to retake it pls 👏')
+			showToast({ type: 'error', message: t('kickoff.photoFailed') });
 		}
 	};
 

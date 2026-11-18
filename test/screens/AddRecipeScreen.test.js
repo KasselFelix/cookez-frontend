@@ -64,7 +64,9 @@ describe('AddRecipeScreen publish', () => {
     for (const key of ['username', 'date', 'votes', 'comments']) {
       expect(body).not.toHaveProperty(key);
     }
-    await waitFor(() => expect(global.alert).toHaveBeenCalledWith('Recipe successfully added!'));
+    // Plan 020: a success toast, never the "Alert" dialog.
+    expect(await screen.findByTestId('toast')).toHaveTextContent('Your recipe is published.');
+    expect(global.alert).not.toHaveBeenCalled();
     // The first render of this screen passes 5 s when the whole suite runs in
     // parallel; alone, it takes well under that.
   }, 15000);
@@ -186,9 +188,8 @@ describe('AddRecipeScreen photo buttons', () => {
     fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
     fireEvent.press(screen.getByRole('button', { name: 'Take a photo of the recipe' }));
 
-    await waitFor(() =>
-      expect(global.alert).toHaveBeenCalledWith('The photo could not be opened. Try again.'),
-    );
+    expect(await screen.findByTestId('toast')).toHaveTextContent('The photo could not be opened. Try again.');
+    expect(global.alert).not.toHaveBeenCalled();
     expect(screen.queryByLabelText('photo')).toBeNull();
   }, 15000);
 
@@ -197,8 +198,121 @@ describe('AddRecipeScreen photo buttons', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Choose a photo from the gallery' }));
     fireEvent.press(screen.getByRole('button', { name: 'Take a photo of the recipe' }));
 
-    await waitFor(() => expect(global.alert).toHaveBeenCalledTimes(2));
+    // Plan 020: under the photo buttons, where the user just touched.
+    expect(screen.getByTestId('addRecipe-photo-message')).toHaveTextContent(/^Fill in the fields above first/);
+    expect(global.alert).not.toHaveBeenCalled();
     expect(ImagePicker.launchImageLibraryAsync).not.toHaveBeenCalled();
     expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled();
+
+    // Typing the name clears it.
+    fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
+    expect(screen.queryByTestId('addRecipe-photo-message')).toBeNull();
+  }, 15000);
+
+  it('tells the user under the photo buttons when publishing without a photo', () => {
+    renderForm();
+    fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
+    fireEvent(screen.getByRole('button', { name: 'Add Recipe' }), 'pressOut');
+
+    return waitFor(() =>
+      expect(screen.getByTestId('addRecipe-photo-message')).toHaveTextContent('Take or choose a photo of the recipe first.'),
+    ).then(() => expect(global.fetch).not.toHaveBeenCalled());
+  }, 15000);
+});
+
+// Plan 020: a failed publication is an error toast, including the refused
+// upload that used to fail silently.
+describe('AddRecipeScreen publish failures', () => {
+  const originalAlert = global.alert;
+  beforeEach(() => { global.alert = jest.fn(); });
+  afterEach(() => { global.alert = originalAlert; });
+
+  const publish = () => {
+    renderWithProviders(<AddRecipeScreen navigation={nav} />, {
+      withNavigation: false,
+      preloadedState: { user: makeUserState(), picture: { value: 'file:///photo.jpg' } },
+    });
+    fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
+    fireEvent(screen.getByRole('button', { name: 'Add Recipe' }), 'pressOut');
+  };
+
+  it('shows a refused upload, and sends no recipe', async () => {
+    mockFetchSequence([{ result: false, error: 'Image too large' }]);
+    publish();
+
+    const toast = await screen.findByTestId('toast');
+    expect(toast).toHaveTextContent(/The recipe was not published/);
+    expect(toast).toHaveTextContent(/Image too large/);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.alert).not.toHaveBeenCalled();
+  }, 15000);
+
+  it('shows why the upload route refused the photo (error status with a JSON body)', async () => {
+    mockFetchSequence([
+      { body: { result: false, error: 'Upload service limit reached for today' }, init: { status: 429, ok: false } },
+    ]);
+    publish();
+
+    expect(await screen.findByTestId('toast')).toHaveTextContent(/Upload service limit reached for today/);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  }, 15000);
+
+  it('shows the server error of /recipes/add', async () => {
+    mockFetchSequence([
+      { result: true, picture: STORED_ID },
+      { result: false, error: 'Missing ingredients' },
+    ]);
+    publish();
+
+    expect(await screen.findByTestId('toast')).toHaveTextContent(/Missing ingredients/);
+  }, 15000);
+
+  it('shows a network error', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    global.fetch.mockImplementation(() => Promise.reject(new Error('Network request failed')));
+    publish();
+
+    expect(await screen.findByTestId('toast')).toHaveTextContent(/Network error/);
+    jest.restoreAllMocks();
+  }, 15000);
+});
+
+// Plan 020: every text of the screen goes through useT(), unit labels too;
+// the unit values sent to the backend do not change.
+describe('AddRecipeScreen in French', () => {
+  it('translates the form and the unit labels', () => {
+    renderWithProviders(<AddRecipeScreen navigation={nav} />, {
+      withNavigation: false,
+      preloadedState: { user: makeUserState(), picture: { value: null }, locale: { value: { lang: 'fr' } } },
+    });
+
+    expect(screen.getByText('Ajoutez votre recette')).toBeTruthy();
+    expect(screen.getByPlaceholderText('nom*')).toBeTruthy();
+    expect(screen.getByText("Ajouter l'ingrédient")).toBeTruthy();
+    expect(screen.getByText('ingrédients ajoutés : 0')).toBeTruthy();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Unité' }));
+    fireEvent.press(screen.getByRole('button', { name: 'c. à s.' }));
+    expect(screen.getByRole('button', { name: 'Unité' })).toHaveAccessibilityValue({ text: 'c. à s.' });
+  }, 15000);
+});
+
+describe('AddRecipeScreen, a response that is not JSON', () => {
+  it('says something went wrong, not that the network failed', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    global.fetch
+      .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve({ result: true, picture: STORED_ID }) })
+      .mockResolvedValueOnce({ ok: false, status: 502, json: () => Promise.reject(new SyntaxError('Unexpected token <')) });
+    renderWithProviders(<AddRecipeScreen navigation={nav} />, {
+      withNavigation: false,
+      preloadedState: { user: makeUserState(), picture: { value: 'file:///photo.jpg' } },
+    });
+    fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
+    fireEvent(screen.getByRole('button', { name: 'Add Recipe' }), 'pressOut');
+
+    const toast = await screen.findByTestId('toast');
+    expect(toast).toHaveTextContent(/Something went wrong/);
+    expect(toast).not.toHaveTextContent(/Network error/);
+    jest.restoreAllMocks();
   }, 15000);
 });

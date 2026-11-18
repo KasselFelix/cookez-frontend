@@ -120,6 +120,24 @@ mockFetchError(); // next fetch rejects → exercise the error path
 Helpers: `mockFetchJson`, `mockFetchJsonAlways`, `mockFetchSequence`,
 `mockFetchError`, `makeResponse`.
 
+## Animations (Reanimated mock)
+
+The Reanimated mock in `test/setup.js` ends every `withTiming` / `withSpring`
+at once and runs its end callback right away. To test a race with a running
+animation (a tap during a fade-out), hold the end callbacks with
+`test/helpers/animations.js`:
+
+```js
+import { finishAnimations, holdAnimations } from '../helpers/animations';
+
+holdAnimations();               // end callbacks wait
+fireEvent.press(closeButton);   // the fade-out stays running
+// ...act and assert while it runs...
+act(() => finishAnimations());  // the end callbacks run now
+```
+
+The hold is cleared after each test. Example: `test/contexts/ToastProvider.test.js`.
+
 `addressIp` reads `process.env.EXPO_PUBLIC_API_URL` and throws without it:
 there is no fallback to the Vercel URL. `test/setupEnv.js` (Jest
 `setupFiles`, run before any module loads) sets it to `https://api.invalid`,

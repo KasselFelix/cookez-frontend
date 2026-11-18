@@ -16,7 +16,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -49,6 +48,7 @@ import ProfileScreenContainer from '../components/profile/ProfileScreenContainer
 import ProfileStatsRow from '../components/profile/ProfileStatsRow';
 import { useTheme } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
+import { useToast } from '../contexts/ToastProvider';
 import { useResponsive } from '../styles/responsive';
 import RecipeImage from '../components/recipe/RecipeImage';
 
@@ -82,6 +82,7 @@ function HeaderIconButton({ label, onPress, children }) {
 }
 
 function PublicHeader({ navigation, title, t, css }) {
+  const { show } = useToast();
   return (
     <View
       style={[
@@ -116,7 +117,7 @@ function PublicHeader({ navigation, title, t, css }) {
       </Text>
       <HeaderIconButton
         label={t('publicProfile.headerMore')}
-        onPress={() => Alert.alert(t('common.comingSoon'))}
+        onPress={() => show({ type: 'info', message: t('common.comingSoon') })}
       >
         <MoreHorizontal size={20} color={css.palette.neutral900} />
       </HeaderIconButton>
@@ -144,6 +145,7 @@ function RecipeGridItem({ item, css }) {
 export default function PublicProfileScreen({ navigation, route }) {
   const css = useTheme();
   const t = useT();
+  const { show: showToast } = useToast();
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.user.value);
   const followingMap = useSelector((state) => state.follow?.value?.followingByUsername || {});
@@ -255,7 +257,7 @@ export default function PublicProfileScreen({ navigation, route }) {
       }
     } catch {
       dispatch(commitFollow({ username, ok: false, value: next }));
-      Alert.alert(t('common.error'), t('common.networkError'));
+      showToast({ type: 'error', message: t('common.networkError') });
     }
   };
 
@@ -527,7 +529,7 @@ export default function PublicProfileScreen({ navigation, route }) {
           />
         </View>
         <TouchableOpacity
-          onPress={() => Alert.alert(t('common.comingSoon'))}
+          onPress={() => showToast({ type: 'info', message: t('common.comingSoon') })}
           style={[
             styles.filterBtn,
             { backgroundColor: css.palette.neutral900, borderRadius: css.radius.pill, marginLeft: css.spacing.sm },

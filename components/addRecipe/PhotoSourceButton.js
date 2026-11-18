@@ -4,11 +4,15 @@ import { useDispatch } from 'react-redux';
 
 import { useTheme } from '../../contexts/ThemeProvider';
 import { useT } from '../../i18n/useT';
+import { useToast } from '../../contexts/ToastProvider';
 import { setPicture } from '../../reducers/picture';
 
 /**
  * Round button that gets the recipe photo from one source (camera or gallery)
- * and stores its uri in the picture slice. Needs the recipe name first.
+ * and stores its uri in the picture slice. Needs the recipe name first: without
+ * it, `onNameMissing` lets the screen show its message under the buttons,
+ * where the user just touched (plan 020). Permission refused and unreadable
+ * photo show a toast.
  * @param {{
  *   name: string,
  *   Icon: React.ComponentType<{ size: number, color: string }>,
@@ -16,22 +20,32 @@ import { setPicture } from '../../reducers/picture';
  *   permissionKey: string,
  *   requestPermission: () => Promise<{ granted: boolean }>,
  *   launch: () => Promise<{ canceled: boolean, assets?: { uri: string }[] }>,
+ *   onNameMissing?: () => void,
  * }} props
  */
-export default function PhotoSourceButton({ name, Icon, a11yKey, permissionKey, requestPermission, launch }) {
+export default function PhotoSourceButton({
+  name,
+  Icon,
+  a11yKey,
+  permissionKey,
+  requestPermission,
+  launch,
+  onNameMissing,
+}) {
   const dispatch = useDispatch();
   const css = useTheme();
   const t = useT();
+  const { show } = useToast();
 
   const getPhoto = async () => {
     if (!name) {
-      alert(t('addRecipe.nameFirst'));
+      onNameMissing?.();
       return;
     }
     try {
       const permission = await requestPermission();
       if (permission.granted === false) {
-        alert(t(permissionKey));
+        show({ type: 'info', message: t(permissionKey) });
         return;
       }
       const result = await launch();
@@ -39,7 +53,7 @@ export default function PhotoSourceButton({ name, Icon, a11yKey, permissionKey, 
         dispatch(setPicture(result.assets[0].uri));
       }
     } catch {
-      alert(t('addRecipe.photoError'));
+      show({ type: 'error', message: t('addRecipe.photoError') });
     }
   };
 

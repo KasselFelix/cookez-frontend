@@ -83,6 +83,8 @@ import ExcludedIngredientsEditor from '../components/settings/ExcludedIngredient
 import TagPreferencesEditor from '../components/settings/TagPreferencesEditor';
 import { useTheme, useThemeControls } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
+import { useToast } from '../contexts/ToastProvider';
+import InlineMessage from '../components/feedback/InlineMessage';
 
 const ICON_SIZE = 18;
 
@@ -99,6 +101,11 @@ export default function SettingsScreen({ navigation }) {
   const [modalKind, setModalKind] = useState(null);
   const [draft, setDraft] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  // Message shown inside the edit modal (a toast would stay hidden under it):
+  // a save error, or the unrecognized-allergies warning after a save, which
+  // keeps the modal open until "Close" (plan 020).
+  const [modalMessage, setModalMessage] = useState(null);
+  const { show: showToast } = useToast();
 
   // Pickers / sheets visibility.
   const [themeSheetVisible, setThemeSheetVisible] = useState(false);
@@ -154,11 +161,19 @@ export default function SettingsScreen({ navigation }) {
   const closeModal = () => {
     setModalKind(null);
     setDraft({});
+    setModalMessage(null);
+  };
+
+  // Editing a field clears the modal's message.
+  const editDraft = (update) => {
+    setModalMessage(null);
+    setDraft(update);
   };
 
   // PUT /users/profile: partial update, token in the Authorization header.
   const putUpdate = async (overrides) => {
     setIsSaving(true);
+    setModalMessage(null);
     try {
       const res = await fetch(`${addressIp}/users/profile`, {
         method: 'PUT',
@@ -170,20 +185,22 @@ export default function SettingsScreen({ navigation }) {
         // Backend now returns `{ result, updated }` with only the changed
         // fields (post-normalisation), so we can dispatch it as-is.
         if (data.updated) dispatch(updateUserInStore(data.updated));
-        closeModal();
         if (modalKind === 'allergies' && data.unrecognizedAllergies?.length > 0) {
-          Alert.alert(
-            t('settings.modals.allergiesUnknownTitle'),
-            t('settings.modals.allergiesUnknownMessage', {
+          setModalMessage({
+            type: 'warning',
+            title: t('settings.modals.allergiesUnknownTitle'),
+            text: t('settings.modals.allergiesUnknownMessage', {
               terms: data.unrecognizedAllergies.join(', '),
             }),
-          );
+          });
+        } else {
+          closeModal();
         }
       } else {
-        Alert.alert(t('common.error'), data.error || t('common.networkError'));
+        setModalMessage({ type: 'error', text: data.error || t('common.networkError') });
       }
     } catch {
-      Alert.alert(t('common.error'), t('common.networkError'));
+      setModalMessage({ type: 'error', text: t('common.networkError') });
     } finally {
       setIsSaving(false);
     }
@@ -213,7 +230,7 @@ export default function SettingsScreen({ navigation }) {
       dispatch(resetFilters());
       exitToHome(navigation);
     } catch {
-      Alert.alert(t('common.error'), 'Could not complete logout.');
+      showToast({ type: 'error', message: t('common.logoutFailed') });
     }
   };
 
@@ -242,6 +259,7 @@ export default function SettingsScreen({ navigation }) {
       default:
         return;
     }
+    setModalMessage(null);
     setModalKind(kind);
   };
 
@@ -280,8 +298,9 @@ export default function SettingsScreen({ navigation }) {
       { text: t('common.logoutTitle'), style: 'destructive', onPress: handleLogout },
     ]);
 
+  // Not built yet: an info, not a dialog with a single button.
   const confirmDelete = () =>
-    Alert.alert(t('common.deleteTitle'), t('common.deleteMessage'), [{ text: t('common.ok') }]);
+    showToast({ type: 'info', title: t('common.deleteTitle'), message: t('common.deleteMessage') });
 
   const handleInvite = async () => {
     try {
@@ -368,7 +387,7 @@ export default function SettingsScreen({ navigation }) {
         icon={<Lock size={ICON_SIZE} color={iconColor} />}
         label={t('settings.account.security')}
         value={t('common.comingSoon')}
-        onPress={() => Alert.alert(t('common.comingSoon'))}
+        onPress={() => showToast({ type: 'info', message: t('common.comingSoon') })}
       />
 
       <SectionHeader css={css}>{t('settings.sections.culinary')}</SectionHeader>
@@ -491,7 +510,7 @@ export default function SettingsScreen({ navigation }) {
         icon={<Bell size={ICON_SIZE} color={iconColor} />}
         label={t('settings.appPrefs.notifications')}
         value={t('common.comingSoon')}
-        onPress={() => Alert.alert(t('common.comingSoon'))}
+        onPress={() => showToast({ type: 'info', message: t('common.comingSoon') })}
       />
 
       <SectionHeader css={css}>{t('settings.sections.social')}</SectionHeader>
@@ -506,7 +525,7 @@ export default function SettingsScreen({ navigation }) {
         icon={<Info size={ICON_SIZE} color={iconColor} />}
         label={t('settings.about.version')}
         value={t('settings.about.appVersion')}
-        onPress={() => Alert.alert(t('common.comingSoon'))}
+        onPress={() => showToast({ type: 'info', message: t('common.comingSoon') })}
       />
 
       <SectionHeader css={css}>{t('settings.sections.danger')}</SectionHeader>
@@ -529,7 +548,8 @@ export default function SettingsScreen({ navigation }) {
         <EditModal
           schemaKind={modalKind}
           draft={draft}
-          setDraft={setDraft}
+          setDraft={editDraft}
+          message={modalMessage}
           isSaving={isSaving}
           onSave={saveModal}
           onClose={closeModal}
@@ -580,9 +600,11 @@ function SectionHeader({ children, css }) {
   );
 }
 
-function EditModal({ schemaKind, draft, setDraft, isSaving, onSave, onClose, css, t }) {
+function EditModal({ schemaKind, draft, setDraft, message, isSaving, onSave, onClose, css, t }) {
   const schema = useMemo(() => buildSchema(schemaKind, t), [schemaKind, t]);
   if (!schema) return null;
+  // Saved, with a warning to read: only "Close" is left.
+  const savedWithWarning = message?.type === 'warning';
 
   return (
     <Modal transparent animationType="fade" visible onRequestClose={onClose}>
@@ -670,64 +692,68 @@ function EditModal({ schemaKind, draft, setDraft, isSaving, onSave, onClose, css
               </View>
             ))}
           </ScrollView>
+          <InlineMessage
+            testID="settings-modal-message"
+            type={message?.type}
+            title={message?.title}
+            message={message?.text}
+            style={{ marginTop: css.spacing.sm }}
+          />
           <View style={[styles.modalActions, { marginTop: css.spacing.sm }]}>
-            <TouchableOpacity
-              onPress={onClose}
-              style={[
-                styles.modalBtn,
-                {
-                  borderRadius: css.radius.pill,
-                  paddingHorizontal: css.spacing.lg,
-                  paddingVertical: css.spacing.sm,
-                  borderColor: css.palette.neutral300,
-                  borderWidth: 1,
-                  marginLeft: css.spacing.sm,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={t('common.cancel')}
-            >
-              <Text
-                style={{
-                  fontFamily: css.typography.fontUI,
-                  color: css.palette.neutral900,
-                  fontWeight: '500',
-                }}
-              >
-                {t('common.cancel')}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onSave}
-              disabled={isSaving}
-              style={[
-                styles.modalBtn,
-                {
-                  borderRadius: css.radius.pill,
-                  paddingHorizontal: css.spacing.lg,
-                  paddingVertical: css.spacing.sm,
-                  backgroundColor: css.palette.neutral900,
-                  marginLeft: css.spacing.sm,
-                  opacity: isSaving ? 0.6 : 1,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={t('common.save')}
-            >
-              <Text
-                style={{
-                  fontFamily: css.typography.fontUI,
-                  color: css.text.inverse,
-                  fontWeight: '600',
-                }}
-              >
-                {isSaving ? t('common.saving') : t('common.save')}
-              </Text>
-            </TouchableOpacity>
+            {savedWithWarning ? (
+              <ModalButton primary label={t('common.close')} onPress={onClose} css={css} />
+            ) : (
+              <>
+                <ModalButton label={t('common.cancel')} onPress={onClose} css={css} />
+                <ModalButton
+                  primary
+                  label={t('common.save')}
+                  text={isSaving ? t('common.saving') : t('common.save')}
+                  onPress={onSave}
+                  disabled={isSaving}
+                  css={css}
+                />
+              </>
+            )}
           </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
+  );
+}
+
+// Button of the edit modal: primary (filled) or secondary (outlined).
+function ModalButton({ label, text = label, onPress, primary = false, disabled = false, css }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      style={[
+        styles.modalBtn,
+        {
+          borderRadius: css.radius.pill,
+          paddingHorizontal: css.spacing.lg,
+          paddingVertical: css.spacing.sm,
+          marginLeft: css.spacing.sm,
+          opacity: disabled ? 0.6 : 1,
+        },
+        primary
+          ? { backgroundColor: css.palette.neutral900 }
+          : { borderColor: css.palette.neutral300, borderWidth: 1 },
+      ]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <Text
+        style={{
+          fontFamily: css.typography.fontUI,
+          color: primary ? css.text.inverse : css.palette.neutral900,
+          fontWeight: primary ? '600' : '500',
+        }}
+      >
+        {text}
+      </Text>
+    </TouchableOpacity>
   );
 }
 
