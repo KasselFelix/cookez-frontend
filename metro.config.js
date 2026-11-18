@@ -24,13 +24,20 @@ if (!process.env.EXPO_PUBLIC_API_URL?.trim()) {
 const PRODUCTION_API_HOST = 'cookez-backend.vercel.app';
 const apiUrl = process.env.EXPO_PUBLIC_API_URL.trim();
 let apiHost = '';
+let printedUrl = apiUrl;
 try {
+  const url = new URL(apiUrl);
   // Lowercased by hand: Expo's URL polyfill, which Jest loads, keeps the case.
-  apiHost = new URL(apiUrl).hostname.toLowerCase();
+  // A final dot (fully qualified name) reaches the same host.
+  apiHost = url.hostname.toLowerCase().replace(/\.$/, '');
+  // The log never carries credentials, a query or a fragment.
+  if (url.username || url.password || url.search || url.hash) {
+    printedUrl = `${url.protocol}//${url.host}${url.pathname}`;
+  }
 } catch {
   // Not a URL: printed as is, no warning.
 }
-console.log(`Metro: EXPO_PUBLIC_API_URL = ${apiUrl}`);
+console.log(`Metro: EXPO_PUBLIC_API_URL = ${printedUrl}`);
 if (apiHost === PRODUCTION_API_HOST) {
   console.warn('!! PRODUCTION API: every action writes to the production database');
 }
