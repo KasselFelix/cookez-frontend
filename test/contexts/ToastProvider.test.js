@@ -26,7 +26,9 @@ describe('ToastProvider', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.spyOn(AccessibilityInfo, 'announceForAccessibility').mockImplementation(() => {});
-    jest.spyOn(AccessibilityInfo, 'getRecommendedTimeoutMillis').mockImplementation((ms) => Promise.resolve(ms));
+    jest
+      .spyOn(AccessibilityInfo, 'getRecommendedTimeoutMillis')
+      .mockImplementation((ms) => Promise.resolve(ms));
   });
 
   afterEach(() => {
@@ -35,9 +37,12 @@ describe('ToastProvider', () => {
   });
 
   it('shows the message, with its title, and nothing before', async () => {
-    renderWithProviders(<Trigger toast={{ type: 'success', title: 'Done', message: 'Recipe published' }} />, {
-      withNavigation: false,
-    });
+    renderWithProviders(
+      <Trigger toast={{ type: 'success', title: 'Done', message: 'Recipe published' }} />,
+      {
+        withNavigation: false,
+      },
+    );
     expect(screen.queryByTestId('toast')).toBeNull();
 
     fireEvent.press(screen.getByText('show'));
@@ -68,7 +73,9 @@ describe('ToastProvider', () => {
   });
 
   it('closes on touch of its close button', async () => {
-    renderWithProviders(<Trigger toast={{ type: 'info', message: 'Coming soon' }} />, { withNavigation: false });
+    renderWithProviders(<Trigger toast={{ type: 'info', message: 'Coming soon' }} />, {
+      withNavigation: false,
+    });
     fireEvent.press(screen.getByText('show'));
     await flushTimeout();
 
@@ -78,7 +85,9 @@ describe('ToastProvider', () => {
   });
 
   it('arms no timer for a toast closed before its delay is known', async () => {
-    renderWithProviders(<Trigger toast={{ type: 'info', message: 'Quick' }} />, { withNavigation: false });
+    renderWithProviders(<Trigger toast={{ type: 'info', message: 'Quick' }} />, {
+      withNavigation: false,
+    });
     const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
     // The fade-out keeps running, as on a device.
     holdAnimations();
@@ -100,7 +109,9 @@ describe('ToastProvider', () => {
 
   it('closes by itself after its delay, stretched by the accessibility setting', async () => {
     AccessibilityInfo.getRecommendedTimeoutMillis.mockImplementation(() => Promise.resolve(20000));
-    renderWithProviders(<Trigger toast={{ type: 'error', message: 'Upload failed' }} />, { withNavigation: false });
+    renderWithProviders(<Trigger toast={{ type: 'error', message: 'Upload failed' }} />, {
+      withNavigation: false,
+    });
     fireEvent.press(screen.getByText('show'));
     await flushTimeout();
 
@@ -134,13 +145,18 @@ describe('ToastProvider', () => {
   });
 
   it('announces the toast to the screen reader on iOS', async () => {
-    renderWithProviders(<Trigger toast={{ type: 'success', title: 'Done', message: 'Recipe published' }} />, {
-      withNavigation: false,
-    });
+    renderWithProviders(
+      <Trigger toast={{ type: 'success', title: 'Done', message: 'Recipe published' }} />,
+      {
+        withNavigation: false,
+      },
+    );
     fireEvent.press(screen.getByText('show'));
     await flushTimeout();
 
-    expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith('Done. Recipe published');
+    expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith(
+      'Done. Recipe published',
+    );
   });
 
   it('clears its timer on unmount', async () => {

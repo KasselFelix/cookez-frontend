@@ -18,32 +18,32 @@
 //     carries through to cards. Food photos still pop because the tint
 //     is light enough.
 // ─────────────────────────────────────────────
- 
+
 import css from '../Global';
- 
+
 const palette = {
   ...css.palette,
- 
+
   // Surfaces — peach dominates
-  background:  '#fde3b0', // dominant warm peach
-  surface:     '#fef0d2', // medium peach — section backgrounds
+  background: '#fde3b0', // dominant warm peach
+  surface: '#fef0d2', // medium peach — section backgrounds
   surfaceCard: '#fef8e8', // soft peach-cream — cards (food-photo friendly)
-  overlay:     'rgba(44,24,7,0.55)',
-  overlayLight:'rgba(255,255,255,0.5)',
+  overlay: 'rgba(44,24,7,0.55)',
+  overlayLight: 'rgba(255,255,255,0.5)',
   overlayDark: 'rgba(44,24,7,0.65)',
- 
+
   // Deep amber primaries — confident CTAs on warm background
   primary800: '#c47d2e',
   primary700: '#d49845',
   primary600: '#e8a851',
   primary500: '#c47d2e',
- 
+
   // Accent shifts to complementary sage — summer poolside contrast
   accent500: '#7fb8a9',
   accent400: '#a3cabf',
   accent300: '#c3dfd9',
   accent200: '#dbeae6',
- 
+
   // Warm-tinted neutrals — paint feel instead of cold grey
   neutral900: '#2c1807', // deep burnt brown — primary text
   neutral700: '#5a3e10',
@@ -52,62 +52,62 @@ const palette = {
   neutral200: '#e3c9a8',
   neutral100: '#f5e4cf',
 };
- 
+
 const card = {
   ...css.card,
-  bg:      palette.surfaceCard,
-  tagBg:   '#fef0d2',
+  bg: palette.surfaceCard,
+  tagBg: '#fef0d2',
   tagText: palette.primary800,
 };
- 
+
 const input = {
   ...css.input,
-  bg:               palette.surfaceCard,
-  borderColor:      palette.neutral300,
+  bg: palette.surfaceCard,
+  borderColor: palette.neutral300,
   borderColorFocus: palette.primary500,
-  textColor:        palette.neutral900,
+  textColor: palette.neutral900,
   placeholderColor: palette.neutral500,
-  labelColor:       palette.neutral700,
+  labelColor: palette.neutral700,
 };
- 
+
 const tabBar = {
   ...css.tabBar,
-  backgroundColor:   'rgba(253,227,176,0.92)',
-  activeTintColor:   palette.primary800,
+  backgroundColor: 'rgba(253,227,176,0.92)',
+  activeTintColor: palette.primary800,
   inactiveTintColor: palette.neutral500,
-  indicatorBg:       '#fef0d2',
+  indicatorBg: '#fef0d2',
 };
- 
+
 const button = {
   ...css.button,
-  primaryBg:           palette.primary800,
-  primaryBorderColor:  palette.primary800,
-  primaryText:         css.palette.white,
+  primaryBg: palette.primary800,
+  primaryBorderColor: palette.primary800,
+  primaryText: css.palette.white,
   // Complementary cool accent — summer poolside feel
-  accentBg:            palette.accent500,
-  accentText:          css.palette.white,
-  ghostText:           palette.primary800,
-  ghostBorderColor:    palette.primary800,
-  disabledBg:          palette.neutral200,
-  disabledText:        palette.neutral500,
+  accentBg: palette.accent500,
+  accentText: css.palette.white,
+  ghostText: palette.primary800,
+  ghostBorderColor: palette.primary800,
+  disabledBg: palette.neutral200,
+  disabledText: palette.neutral500,
   disabledBorderColor: palette.neutral200,
 };
 
 const pill = {
   ...css.pill,
-  bgSelected:  palette.primary800,
+  bgSelected: palette.primary800,
   textNeutral: palette.primary800,
 };
- 
+
 // Shadows tinted with deep amber — integrate with peach surfaces
 const shadow = {
   ...css.shadow,
-  sm:   { ...css.shadow.sm,   shadowColor: '#5a3e10' },
-  md:   { ...css.shadow.md,   shadowColor: '#5a3e10' },
-  lg:   { ...css.shadow.lg,   shadowColor: '#5a3e10' },
+  sm: { ...css.shadow.sm, shadowColor: '#5a3e10' },
+  md: { ...css.shadow.md, shadowColor: '#5a3e10' },
+  lg: { ...css.shadow.lg, shadowColor: '#5a3e10' },
   card: { ...css.shadow.card, shadowColor: '#5a3e10' },
 };
- 
+
 const gradient = {
   ...css.gradient,
   hero: {
@@ -119,56 +119,56 @@ const gradient = {
     locations: [0.3, 1],
   },
 };
- 
+
 const glassmorphism = {
   ...css.glassmorphism,
   backgroundColor: 'rgba(254,240,210,0.88)',
-  borderColor:     'rgba(255,255,255,0.4)',
+  borderColor: 'rgba(255,255,255,0.4)',
 };
- 
+
 // ─── Semantic layer remap ───
 const text = {
-  primary:   palette.neutral900,  // deep burnt brown
+  primary: palette.neutral900, // deep burnt brown
   secondary: palette.neutral700,
-  muted:     palette.neutral500,
-  inverse:   css.palette.white,
-  accent:    palette.primary800,
-  success:   palette.success,
-  error:     palette.error,
-  warning:   palette.warning,
+  muted: palette.neutral500,
+  inverse: css.palette.white,
+  accent: palette.primary800,
+  success: palette.success,
+  error: palette.error,
+  warning: palette.warning,
 };
- 
+
 const border = {
-  subtle:  palette.neutral200,
+  subtle: palette.neutral200,
   default: palette.neutral300,
-  focus:   palette.primary500,
-  error:   palette.error,
+  focus: palette.primary500,
+  error: palette.error,
 };
- 
+
 const surface = {
-  base:    palette.background,
-  raised:  palette.surface,
-  card:    palette.surfaceCard,
+  base: palette.background,
+  raised: palette.surface,
+  card: palette.surfaceCard,
   overlay: palette.overlay,
-  glass:   'rgba(254,240,210,0.88)',
+  glass: 'rgba(254,240,210,0.88)',
 };
- 
+
 const elevation = {
-  flat:     shadow.none,
-  raised:   shadow.sm,
-  card:     shadow.card,
+  flat: shadow.none,
+  raised: shadow.sm,
+  card: shadow.card,
   floating: shadow.md,
-  modal:    shadow.lg,
+  modal: shadow.lg,
 };
- 
+
 // Result screen: the Home tab color, meter in the theme's darkest ink.
 const result = {
   ...css.result,
   background: palette.surface,
-  card:       palette.surfaceCard,
-  ink:        palette.neutral900,
-  muted:      palette.neutral700,
-  meterFill:  palette.neutral900,
+  card: palette.surfaceCard,
+  ink: palette.neutral900,
+  muted: palette.neutral700,
+  meterFill: palette.neutral900,
   meterTrack: palette.surface,
 };
 
@@ -176,38 +176,38 @@ const result = {
 // theme's darkest ink with its accent (7.5:1 or more).
 const flow = {
   ...css.flow,
-  background:   palette.surface,
-  label:        palette.neutral700,
-  chipText:     palette.neutral900,
-  chipBorder:   palette.primary800,
-  placeholder:  'rgba(44,24,7,0.3)',                // neutral900 at 30%
-  cardIcon:     palette.primary900,
-  actionBg:     palette.neutral900,
-  actionIcon:   palette.accent500,
-  actionText:   palette.accent500,
-  clearIcon:    palette.error,               // 3.8:1 or more on actionBg
-  shutterBg:    palette.neutral900,          // same ink as + and »
-  shutterRing:  palette.accent500,
-  confirmBg:    palette.surfaceCard,         // soft theme white, theme ink
-  confirmBorder:palette.primary800,
-  confirmText:  palette.neutral900,
+  background: palette.surface,
+  label: palette.neutral700,
+  chipText: palette.neutral900,
+  chipBorder: palette.primary800,
+  placeholder: 'rgba(44,24,7,0.3)', // neutral900 at 30%
+  cardIcon: palette.primary900,
+  actionBg: palette.neutral900,
+  actionIcon: palette.accent500,
+  actionText: palette.accent500,
+  clearIcon: palette.error, // 3.8:1 or more on actionBg
+  shutterBg: palette.neutral900, // same ink as + and »
+  shutterRing: palette.accent500,
+  confirmBg: palette.surfaceCard, // soft theme white, theme ink
+  confirmBorder: palette.primary800,
+  confirmText: palette.neutral900,
   // Search modal: the page background, theme cards, picked rows like the buttons.
-  modalBg:          palette.surface,
-  modalField:       palette.surfaceCard,
-  modalInk:         palette.neutral900,
-  modalMuted:       palette.neutral700,
-  modalClear:       palette.neutral700,
-  modalSelectedBg:  palette.neutral900,
+  modalBg: palette.surface,
+  modalField: palette.surfaceCard,
+  modalInk: palette.neutral900,
+  modalMuted: palette.neutral700,
+  modalClear: palette.neutral700,
+  modalSelectedBg: palette.neutral900,
   modalSelectedInk: palette.accent500,
-  modalSelectedText:palette.accent500,
+  modalSelectedText: palette.accent500,
   // Recap filters like the action buttons; idle tags on the page color.
-  stepperBg:        palette.neutral900,
-  stepperInk:       palette.accent500,
-  tagBg:            palette.neutral900,
-  tagInk:           palette.accent500,
-  tagIdleBg:        palette.surface,
-  tagIdleInk:       palette.neutral900,
-  selectedBg:   palette.neutral900,
+  stepperBg: palette.neutral900,
+  stepperInk: palette.accent500,
+  tagBg: palette.neutral900,
+  tagInk: palette.accent500,
+  tagIdleBg: palette.surface,
+  tagIdleInk: palette.neutral900,
+  selectedBg: palette.neutral900,
   selectedText: palette.accent500,
 };
 
@@ -215,7 +215,7 @@ const pastelPeach = {
   ...css,
   key: 'pastelPeach',
   mood: 'joyful, sunny, early-summer — for brunch, fruit dishes, summer cocktails',
- 
+
   palette,
   card,
   input,
@@ -227,12 +227,12 @@ const pastelPeach = {
   shadow,
   gradient,
   glassmorphism,
- 
+
   // Semantic layer
   text,
   border,
   surface,
   elevation,
 };
- 
+
 export default pastelPeach;

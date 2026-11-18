@@ -37,7 +37,8 @@ export const scanSlice = createSlice({
     addUnmatched: (state, action) => {
       for (const name of action.payload || []) {
         if (typeof name !== 'string' || !name.trim()) continue;
-        if (!state.value.unmatched.some((n) => sameName(n, name))) state.value.unmatched.push(name.trim());
+        if (!state.value.unmatched.some((n) => sameName(n, name)))
+          state.value.unmatched.push(name.trim());
       }
     },
     removeUnmatched: (state, action) => {

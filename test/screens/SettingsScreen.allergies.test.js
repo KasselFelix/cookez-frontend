@@ -101,9 +101,12 @@ describe('SettingsScreen, allergies modal', () => {
 
 describe('SettingsScreen, rows not built yet', () => {
   it('shows "Coming soon" in a toast, closed by touch', async () => {
-    renderWithProviders(<SettingsScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} />, {
-      preloadedState: { user: makeUserState() },
-    });
+    renderWithProviders(
+      <SettingsScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} />,
+      {
+        preloadedState: { user: makeUserState() },
+      },
+    );
     await act(async () => {
       fireEvent.press(screen.getByText('Security & password'));
     });

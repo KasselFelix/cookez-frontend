@@ -29,10 +29,13 @@ describe('modules/addressIp', () => {
     expect(load('../../modules/addressIp').default).toBe('http://10.0.2.2:3000');
   });
 
-  it.each([[undefined], [''], ['   ']])('throws an explicit error without the variable (%p)', (value) => {
-    setApiUrl(value);
-    expect(() => load('../../modules/addressIp')).toThrow(/EXPO_PUBLIC_API_URL/);
-  });
+  it.each([[undefined], [''], ['   ']])(
+    'throws an explicit error without the variable (%p)',
+    (value) => {
+      setApiUrl(value);
+      expect(() => load('../../modules/addressIp')).toThrow(/EXPO_PUBLIC_API_URL/);
+    },
+  );
 
   it('is set for the whole suite by test/setupEnv.js', () => {
     expect(saved).toBe('https://api.invalid');

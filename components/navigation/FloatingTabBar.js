@@ -13,29 +13,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
-import {
-  Camera,
-  Home,
-  MessageCircle,
-  Plus,
-  User,
-} from 'lucide-react-native';
+import { Camera, Home, MessageCircle, Plus, User } from 'lucide-react-native';
 
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
-import {
-  BAR_HEIGHT,
-  BAR_MARGIN_BOTTOM,
-  BAR_PADDING_HORIZONTAL,
-} from '../../hooks/useTabBarHeight';
+import { BAR_HEIGHT, BAR_MARGIN_BOTTOM, BAR_PADDING_HORIZONTAL } from '../../hooks/useTabBarHeight';
 
 // Map route.name → Lucide icon component.
 // Order in App.js Tab.Screen declarations:
@@ -101,8 +87,7 @@ export default function FloatingTabBar({ state, descriptors, navigation }) {
   // Some themes may not declare glassmorphism — fall back to a soft white
   // border so the capsule edge still reads on every background.
   const borderColor =
-    (css.glassmorphism && css.glassmorphism.borderColor) ||
-    'rgba(255,255,255,0.3)';
+    (css.glassmorphism && css.glassmorphism.borderColor) || 'rgba(255,255,255,0.3)';
 
   return (
     <View
@@ -149,17 +134,13 @@ export default function FloatingTabBar({ state, descriptors, navigation }) {
           {state.routes.map((route, index) => {
             const isActive = index === state.index;
             const Icon = ROUTE_ICONS[route.name];
-            const color = isActive
-              ? css.pill.textSelected
-              : css.tabBar.inactiveTintColor;
+            const color = isActive ? css.pill.textSelected : css.tabBar.inactiveTintColor;
             const a11yLabel = t(`tabBar.${routeKeyToI18n(route.name)}`);
 
             const onPress = () => {
               // Fire-and-forget light haptic. Catch swallows the rejection on
               // simulators/web where the native module is a no-op.
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(
-                () => {},
-              );
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
               const event = navigation.emit({
                 type: 'tabPress',
                 target: route.key,

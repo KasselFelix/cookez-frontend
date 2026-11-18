@@ -36,7 +36,7 @@ const renderKickoff = (user, state = {}) =>
     <AuthGateProvider>
       <KickoffScreen navigation={navigation} />
     </AuthGateProvider>,
-    { preloadedState: { user, ...state } }
+    { preloadedState: { user, ...state } },
   );
 
 const pendingFetch = () => new Promise(() => {});
@@ -54,7 +54,9 @@ describe('KickoffScreen scan', () => {
   it('asks a guest to create an account instead of taking the photo', async () => {
     renderKickoff(makeLoggedOutUserState());
     fireEvent.press(await screen.findByTestId('kickoff-snap'));
-    expect(await screen.findByText('Create a free account to recognise ingredients from your photos.')).toBeTruthy();
+    expect(
+      await screen.findByText('Create a free account to recognise ingredients from your photos.'),
+    ).toBeTruthy();
     expect(mockCamera.takePictureAsync).not.toHaveBeenCalled();
     expect(global.fetch.mock.calls.some(([url]) => String(url).includes('/vision/'))).toBe(false);
   });
@@ -77,14 +79,18 @@ describe('KickoffScreen scan', () => {
   });
 
   it('opens the search pre-filled with a name the analysis did not recognize', async () => {
-    renderKickoff(makeUserState(), { scan: { value: { photos: [], unmatched: ['yuzu kosho'], pendingSearch: null } } });
+    renderKickoff(makeUserState(), {
+      scan: { value: { photos: [], unmatched: ['yuzu kosho'], pendingSearch: null } },
+    });
     fireEvent.press(await screen.findByLabelText('Search for yuzu kosho'));
     expect((await screen.findByTestId('kickoff-search-input')).props.value).toBe('yuzu kosho');
     expect(screen.queryByLabelText('Search for yuzu kosho')).toBeNull();
   });
 
   it('opens the search asked by Recap for an unknown name', async () => {
-    renderKickoff(makeUserState(), { scan: { value: { photos: [], unmatched: [], pendingSearch: 'yuzu kosho' } } });
+    renderKickoff(makeUserState(), {
+      scan: { value: { photos: [], unmatched: [], pendingSearch: 'yuzu kosho' } },
+    });
     expect((await screen.findByTestId('kickoff-search-input')).props.value).toBe('yuzu kosho');
   });
 
@@ -94,7 +100,9 @@ describe('KickoffScreen scan', () => {
     await act(async () => {
       fireEvent.press(await screen.findByTestId('kickoff-snap'));
     });
-    expect(await screen.findByTestId('toast')).toHaveTextContent('The photo could not be taken. Try again.');
+    expect(await screen.findByTestId('toast')).toHaveTextContent(
+      'The photo could not be taken. Try again.',
+    );
     expect(global.fetch.mock.calls.some(([url]) => String(url).includes('/vision/'))).toBe(false);
   });
 });

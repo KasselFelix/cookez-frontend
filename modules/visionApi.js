@@ -38,7 +38,10 @@ export async function analyzePhoto(uri, token) {
     if (response.status === 429) return { status: 'quota' };
     if (response.status === 503) {
       const retryAfter = Number(response.headers?.get?.('Retry-After'));
-      return { status: 'busy', retryAfter: Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : 5 };
+      return {
+        status: 'busy',
+        retryAfter: Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : 5,
+      };
     }
     if (!response.ok) return { status: 'error' };
     const data = await response.json();

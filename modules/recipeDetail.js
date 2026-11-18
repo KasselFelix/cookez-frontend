@@ -34,10 +34,9 @@ export function isRecipeComplete(recipe) {
  * @returns {Promise<object|null>} the recipe, or null when the API refuses it.
  */
 export async function fetchRecipeDetail(recipeId, { signal } = {}) {
-  const response = await fetch(
-    `${addressIp}/recipes/detail/${encodeURIComponent(recipeId)}`,
-    { signal }
-  );
+  const response = await fetch(`${addressIp}/recipes/detail/${encodeURIComponent(recipeId)}`, {
+    signal,
+  });
   const data = await response.json();
   return data?.result && isObject(data.recipe) ? data.recipe : null;
 }

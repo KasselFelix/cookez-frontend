@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View, Image } from "react-native";
-import React from "react";
-import css from "../styles/Global";
+import { StyleSheet, Text, View, Image } from 'react-native';
+import React from 'react';
+import css from '../styles/Global';
 
 export default function MessageScreen() {
   return (
@@ -12,12 +12,12 @@ export default function MessageScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    display:'flex',
+    display: 'flex',
     backgroundColor: css.palette.secondary500,
-    flex:1,
+    flex: 1,
   },
   text: {
     fontSize: 35,
-    color: "#004643",
+    color: '#004643',
   },
 });

@@ -5,7 +5,11 @@
 // until a logout.
 import { makeStore } from '../helpers/renderWithProviders';
 import { scanPhoto } from '../../modules/scanPhoto';
-import { addIngredient, syncIngredientsWithPantry, updateIngredientQuantity } from '../../reducers/ingredient';
+import {
+  addIngredient,
+  syncIngredientsWithPantry,
+  updateIngredientQuantity,
+} from '../../reducers/ingredient';
 
 const TOMATO_ID = 'a'.repeat(24);
 const TOMATO = {
@@ -17,12 +21,23 @@ const TOMATO = {
   confidence: 'high',
   confirm: false,
 };
-const pantryTomatoes = (quantity = 5) => [{ _id: 'p1', ingredient: { _id: TOMATO_ID, name: 'tomato', defaultUnit: 'g' }, quantity, unit: 'unit' }];
+const pantryTomatoes = (quantity = 5) => [
+  {
+    _id: 'p1',
+    ingredient: { _id: TOMATO_ID, name: 'tomato', defaultUnit: 'g' },
+    quantity,
+    unit: 'unit',
+  },
+];
 const pantryState = (items) => ({ pantry: { value: { items, loading: false, error: null } } });
-const tomatoData = (store) => store.getState().ingredient.value.find((i) => i.data._id === TOMATO_ID)?.data;
+const tomatoData = (store) =>
+  store.getState().ingredient.value.find((i) => i.data._id === TOMATO_ID)?.data;
 const scanTomato = (store) =>
   store.dispatch(
-    scanPhoto({ uri: 'file:///t.jpg', token: 't' }, { analyze: async () => ({ status: 'ok', ingredients: [TOMATO], unmatched: [] }) })
+    scanPhoto(
+      { uri: 'file:///t.jpg', token: 't' },
+      { analyze: async () => ({ status: 'ok', ingredients: [TOMATO], unmatched: [] }) },
+    ),
   );
 
 describe('syncIngredientsWithPantry', () => {
@@ -49,16 +64,44 @@ describe('syncIngredientsWithPantry', () => {
 
   it('switches an ingredient picked from the catalog to the pantry once the user owns it, and back', () => {
     const store = makeStore();
-    store.dispatch(addIngredient({ photo: null, data: { _id: TOMATO_ID, display_name: 'tomato', g_per_serving: 120, defaultUnit: 'g', unit: 'g' } }));
+    store.dispatch(
+      addIngredient({
+        photo: null,
+        data: {
+          _id: TOMATO_ID,
+          display_name: 'tomato',
+          g_per_serving: 120,
+          defaultUnit: 'g',
+          unit: 'g',
+        },
+      }),
+    );
     store.dispatch(syncIngredientsWithPantry(pantryTomatoes()));
-    expect(tomatoData(store)).toMatchObject({ g_per_serving: 5, unit: 'unit', referenceQuantity: 120, fromPantry: true });
+    expect(tomatoData(store)).toMatchObject({
+      g_per_serving: 5,
+      unit: 'unit',
+      referenceQuantity: 120,
+      fromPantry: true,
+    });
     store.dispatch(syncIngredientsWithPantry([]));
     expect(tomatoData(store)).toMatchObject({ g_per_serving: 120, unit: 'g', fromPantry: false });
   });
 
   it('keeps a quantity the user typed for an ingredient the pantry does not have', () => {
     const store = makeStore();
-    store.dispatch(addIngredient({ photo: null, data: { _id: TOMATO_ID, display_name: 'tomato', g_per_serving: 120, defaultUnit: 'g', unit: 'g', fromPantry: false } }));
+    store.dispatch(
+      addIngredient({
+        photo: null,
+        data: {
+          _id: TOMATO_ID,
+          display_name: 'tomato',
+          g_per_serving: 120,
+          defaultUnit: 'g',
+          unit: 'g',
+          fromPantry: false,
+        },
+      }),
+    );
     store.dispatch(updateIngredientQuantity({ display_name: 'tomato', quantity: 300 }));
     store.dispatch(syncIngredientsWithPantry([]));
     expect(tomatoData(store)).toMatchObject({ g_per_serving: 300, unit: 'g' });

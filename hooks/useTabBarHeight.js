@@ -21,10 +21,5 @@ export default function useTabBarHeight() {
   // Mirrors FloatingTabBar's wrapper math:
   //   paddingBottom = Math.max(insets.bottom, 8) + BAR_MARGIN_BOTTOM
   // Plus the capsule height itself + a final 16-pt content buffer.
-  return (
-    BAR_HEIGHT
-    + Math.max(insets.bottom, 8)
-    + BAR_MARGIN_BOTTOM
-    + BAR_CONTENT_BUFFER
-  );
+  return BAR_HEIGHT + Math.max(insets.bottom, 8) + BAR_MARGIN_BOTTOM + BAR_CONTENT_BUFFER;
 }

@@ -26,7 +26,7 @@ function Probe() {
 beforeEach(() => {
   resetIngredientPhotoCache();
   global.fetch = jest.fn(() =>
-    Promise.resolve({ json: () => Promise.resolve({ result: true, photoUrl: PHOTO }) })
+    Promise.resolve({ json: () => Promise.resolve({ result: true, photoUrl: PHOTO }) }),
   );
 });
 
@@ -47,7 +47,9 @@ describe('useIngredientPhotos', () => {
   it('keeps a photo that is already loadable, without a request', async () => {
     const { store } = renderWithProviders(<Probe />, {
       withNavigation: false,
-      preloadedState: { ingredient: { value: [picked({ photo: 'https://cdn.example.com/kept.jpg' })] } },
+      preloadedState: {
+        ingredient: { value: [picked({ photo: 'https://cdn.example.com/kept.jpg' })] },
+      },
     });
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(global.fetch).not.toHaveBeenCalled();

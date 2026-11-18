@@ -12,7 +12,9 @@ const respond = (body) => Promise.resolve({ json: () => Promise.resolve(body) })
 
 beforeEach(() => {
   resetIngredientPhotoCache();
-  global.fetch = jest.fn(() => respond({ result: true, photoUrl: 'https://images.pexels.com/a.jpeg' }));
+  global.fetch = jest.fn(() =>
+    respond({ result: true, photoUrl: 'https://images.pexels.com/a.jpeg' }),
+  );
 });
 
 afterEach(() => {

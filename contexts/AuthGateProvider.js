@@ -40,7 +40,7 @@ export default function AuthGateProvider({ children }) {
       setVisible(true);
       return false;
     },
-    [userToken]
+    [userToken],
   );
 
   const handleClose = useCallback(() => setVisible(false), []);

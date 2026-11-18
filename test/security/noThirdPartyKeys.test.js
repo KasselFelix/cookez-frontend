@@ -6,7 +6,16 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..', '..');
-const SOURCE_DIRS = ['screens', 'components', 'modules', 'hooks', 'reducers', 'contexts', 'i18n', 'styles'];
+const SOURCE_DIRS = [
+  'screens',
+  'components',
+  'modules',
+  'hooks',
+  'reducers',
+  'contexts',
+  'i18n',
+  'styles',
+];
 const ROOT_FILES = ['App.js', 'app.config.js', 'app.json', 'eas.json'];
 
 const sourceFiles = (dir) => {
@@ -40,13 +49,16 @@ describe('no third-party key or API host in the app', () => {
 
   it('finds none', () => {
     const found = files
-      .map((file) => ({ file: path.relative(ROOT, file), offences: offences(fs.readFileSync(file, 'utf8')) }))
+      .map((file) => ({
+        file: path.relative(ROOT, file),
+        offences: offences(fs.readFileSync(file, 'utf8')),
+      }))
       .filter((entry) => entry.offences.length > 0);
     expect(found).toEqual([]);
   });
 
   it('would catch the old Foodvisor call and key', () => {
-    expect(offences("process.env.EXPO_PUBLIC_FOODVISOR_KEY")).not.toEqual([]);
+    expect(offences('process.env.EXPO_PUBLIC_FOODVISOR_KEY')).not.toEqual([]);
     expect(offences('fetch("https://vision.foodvisor.io/api/1.0/en/analysis")')).not.toEqual([]);
     expect(offences('`https://api.pexels.com/v1/search?query=${name}`')).not.toEqual([]);
     expect(offences('https://api.eu.mistral.ai/v1/chat/completions')).not.toEqual([]);

@@ -22,7 +22,13 @@ export default function UnmatchedChips({ names = [], onSearch, onDismiss }) {
   if (names.length === 0) return null;
 
   return (
-    <View style={[styles.container, { paddingHorizontal: css.spacing.md, paddingVertical: css.spacing.xs }]} testID="unmatched-chips">
+    <View
+      style={[
+        styles.container,
+        { paddingHorizontal: css.spacing.md, paddingVertical: css.spacing.xs },
+      ]}
+      testID="unmatched-chips"
+    >
       <Text
         style={[
           styles.label,
@@ -36,11 +42,18 @@ export default function UnmatchedChips({ names = [], onSearch, onDismiss }) {
       >
         {t('kickoff.scan.unmatchedLabel', { count: names.length })}
       </Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: css.spacing.sm }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: css.spacing.sm }}
+      >
         {names.map((name) => (
           <View
             key={name}
-            style={[styles.chip, { borderColor: css.flow.chipBorder, borderRadius: css.radius.pill }]}
+            style={[
+              styles.chip,
+              { borderColor: css.flow.chipBorder, borderRadius: css.radius.pill },
+            ]}
           >
             <Pressable
               onPress={() => onSearch?.(name)}
@@ -55,7 +68,11 @@ export default function UnmatchedChips({ names = [], onSearch, onDismiss }) {
                 numberOfLines={1}
                 style={[
                   styles.name,
-                  { color: css.flow.chipText, fontFamily: css.typography.fontUI, fontSize: css.typography.captionSize + 1 },
+                  {
+                    color: css.flow.chipText,
+                    fontFamily: css.typography.fontUI,
+                    fontSize: css.typography.captionSize + 1,
+                  },
                 ]}
               >
                 {name}

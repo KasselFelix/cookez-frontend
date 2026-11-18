@@ -36,7 +36,8 @@ export default function CommentsSection({ recipeId, onPromptCompose }) {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>
-          {t('recipe.comments.title')}{hasComments ? ` (${comments.length})` : ''}
+          {t('recipe.comments.title')}
+          {hasComments ? ` (${comments.length})` : ''}
         </Text>
       </View>
 
@@ -48,15 +49,9 @@ export default function CommentsSection({ recipeId, onPromptCompose }) {
           accessibilityLabel={t('recipe.comments.empty.title')}
           activeOpacity={0.7}
         >
-          <FontAwesome
-            name="comment-o"
-            size={32}
-            color={css.palette.primary600}
-          />
+          <FontAwesome name="comment-o" size={32} color={css.palette.primary600} />
           <Text style={styles.emptyTitle}>{t('recipe.comments.empty.title')}</Text>
-          <Text style={styles.emptyHint}>
-            {t('recipe.comments.empty.hint')}
-          </Text>
+          <Text style={styles.emptyHint}>{t('recipe.comments.empty.hint')}</Text>
         </TouchableOpacity>
       ) : (
         <View>

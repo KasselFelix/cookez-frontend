@@ -33,11 +33,13 @@ const cookezRules = {
         paths: [
           {
             name: 'lucide-react-native',
-            message: "Importe chaque icône à part : import Check from 'lucide-react-native/icons/check' (D17).",
+            message:
+              "Importe chaque icône à part : import Check from 'lucide-react-native/icons/check' (D17).",
           },
           {
             name: 'lucide-react-native/icons',
-            message: "Importe chaque icône à part : import Check from 'lucide-react-native/icons/check' (D17).",
+            message:
+              "Importe chaque icône à part : import Check from 'lucide-react-native/icons/check' (D17).",
           },
           { name: '@expo/vector-icons', message: 'Icônes : Lucide seul (D17).' },
           { name: 'react-native-animatable', message: 'Animations : Reanimated 4.' },

@@ -1,7 +1,7 @@
-import React from "react";
-import css from "../styles/Global";
-import { View, StyleSheet, Animated, Easing } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import React from 'react';
+import css from '../styles/Global';
+import { View, StyleSheet, Animated, Easing } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const LoadingPageOne = () => {
   const rotation = new Animated.Value(0);
@@ -15,7 +15,7 @@ const LoadingPageOne = () => {
       duration: 1700,
       easing: Easing.linear,
       useNativeDriver: true,
-    })
+    }),
   ).start();
 
   // Flip animation
@@ -33,7 +33,7 @@ const LoadingPageOne = () => {
         easing: Easing.linear,
         useNativeDriver: true,
       }),
-    ])
+    ]),
   ).start();
 
   // Shadow animation
@@ -51,32 +51,28 @@ const LoadingPageOne = () => {
         easing: Easing.linear,
         useNativeDriver: true,
       }),
-    ])
+    ]),
   ).start();
 
   const rotate = rotation.interpolate({
     inputRange: [0, 1],
-    outputRange: ["0deg", "20deg"],
+    outputRange: ['0deg', '20deg'],
   });
 
   const flip = flipAnimation.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: ["0deg", "-180deg", "0deg"],
+    outputRange: ['0deg', '-180deg', '0deg'],
   });
 
   return (
     <LinearGradient colors={['#FFAD60', '#FF8080']} style={styles.loader}>
       <View style={styles.panWrapper}>
         <Animated.View style={[styles.pan, { transform: [{ rotate }] }]}>
-          <Animated.View
-            style={[styles.food, { transform: [{ translateY: flip }] }]}
-          />
+          <Animated.View style={[styles.food, { transform: [{ translateY: flip }] }]} />
           <View style={styles.panBase} />
           <View style={styles.panHandle} />
         </Animated.View>
-        <Animated.View
-          style={[styles.panShadow, { transform: [{ scaleX: shadowScale }] }]}
-        />
+        <Animated.View style={[styles.panShadow, { transform: [{ scaleX: shadowScale }] }]} />
       </View>
     </LinearGradient>
   );
@@ -85,46 +81,46 @@ const LoadingPageOne = () => {
 const styles = StyleSheet.create({
   loader: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   panWrapper: {
     width: 200,
-    height: "auto",
-    position: "relative",
-    alignItems: "flex-start",
-    justifyContent: "flex-end",
-    flexDirection: "column",
+    height: 'auto',
+    position: 'relative',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-end',
+    flexDirection: 'column',
     gap: 20,
   },
   pan: {
-    alignItems: "flex-start",
-    justifyContent: "flex-start",
-    width: "100%",
-    height: "auto",
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    width: '100%',
+    height: 'auto',
   },
   food: {
-    position: "absolute",
-    width: "40%",
+    position: 'absolute',
+    width: '40%',
     height: 6,
   },
   panBase: {
-    width: "50%",
+    width: '50%',
     height: 22,
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
     backgroundColor: css.palette.accent500,
   },
   panHandle: {
-    width: "40%",
-    backgroundColor: "#2c2c2c",
+    width: '40%',
+    backgroundColor: '#2c2c2c',
     height: 10,
     borderRadius: 10,
   },
   panShadow: {
     width: 70,
     height: 8,
-    backgroundColor: "rgba(0, 0, 0, 0.21)",
+    backgroundColor: 'rgba(0, 0, 0, 0.21)',
     marginLeft: 15,
     borderRadius: 10,
   },

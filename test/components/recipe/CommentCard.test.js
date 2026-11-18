@@ -21,16 +21,22 @@ describe('CommentCard votes', () => {
   it.each([
     ['Upvote comment, 0 upvotes', '/comments/upvote'],
     ['Downvote comment, 0 downvotes', '/comments/downvote'],
-  ])('%s: sends the comment id, no username, with the token in the header', async (label, route) => {
-    mockFetchJsonAlways({ result: true, comment: { up: [], down: [], usersAlreadyUpVoted: [], usersAlreadyDownVoted: [] } });
-    renderCard();
+  ])(
+    '%s: sends the comment id, no username, with the token in the header',
+    async (label, route) => {
+      mockFetchJsonAlways({
+        result: true,
+        comment: { up: [], down: [], usersAlreadyUpVoted: [], usersAlreadyDownVoted: [] },
+      });
+      renderCard();
 
-    fireEvent.press(screen.getByRole('button', { name: label }));
+      fireEvent.press(screen.getByRole('button', { name: label }));
 
-    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
-    const [url, init] = global.fetch.mock.calls[0];
-    expect(url).toContain(route);
-    expect(JSON.parse(init.body)).toEqual({ _id: 'c1' });
-    expect(init.headers.Authorization).toBe(`Bearer ${TOKEN}`);
-  });
+      await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+      const [url, init] = global.fetch.mock.calls[0];
+      expect(url).toContain(route);
+      expect(JSON.parse(init.body)).toEqual({ _id: 'c1' });
+      expect(init.headers.Authorization).toBe(`Bearer ${TOKEN}`);
+    },
+  );
 });

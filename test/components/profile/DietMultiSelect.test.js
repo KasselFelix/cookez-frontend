@@ -10,13 +10,23 @@ import DietMultiSelect from '../../../components/profile/DietMultiSelect';
 
 describe('DietMultiSelect', () => {
   it('clears the legacy diet when the user unticks every restriction', async () => {
-    mockFetchJsonAlways({ result: true, updated: { dietRestrictions: [], settings: { diet: '' } } });
+    mockFetchJsonAlways({
+      result: true,
+      updated: { dietRestrictions: [], settings: { diet: '' } },
+    });
     const onClose = jest.fn();
     renderWithProviders(<DietMultiSelect visible onClose={onClose} />, {
       withNavigation: false,
       preloadedState: {
         locale: { value: { lang: 'en' } },
-        user: { value: { username: 'chef', token: 'tok', dietRestrictions: [], settings: { diet: 'gluten_free' } } },
+        user: {
+          value: {
+            username: 'chef',
+            token: 'tok',
+            dietRestrictions: [],
+            settings: { diet: 'gluten_free' },
+          },
+        },
       },
     });
 
@@ -24,7 +34,9 @@ describe('DietMultiSelect', () => {
     fireEvent.press(screen.getByText('Save'));
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
-    const [, init] = global.fetch.mock.calls.find(([url]) => String(url).includes('/users/profile'));
+    const [, init] = global.fetch.mock.calls.find(([url]) =>
+      String(url).includes('/users/profile'),
+    );
     expect(JSON.parse(init.body)).toEqual({ dietRestrictions: [], diet: '' });
   });
 });

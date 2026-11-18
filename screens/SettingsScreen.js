@@ -66,9 +66,7 @@ import { clearNotifications } from '../reducers/notifications';
 import { clearPantry } from '../reducers/pantry';
 import { clearScan } from '../reducers/scan';
 import { removeUserToStore, updateUserInStore } from '../reducers/user';
-import DietMultiSelect, {
-  readDietRestrictions,
-} from '../components/profile/DietMultiSelect';
+import DietMultiSelect, { readDietRestrictions } from '../components/profile/DietMultiSelect';
 import ExpandableSettingsRow from '../components/profile/ExpandableSettingsRow';
 import LanguagePickerSheet from '../components/profile/LanguagePickerSheet';
 import LocationToggle from '../components/profile/LocationToggle';
@@ -91,9 +89,7 @@ export default function SettingsScreen({ navigation }) {
   const t = useT();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
-  const localeMode = useSelector(
-    (state) => state?.locale?.value?.lang ?? 'system',
-  );
+  const localeMode = useSelector((state) => state?.locale?.value?.lang ?? 'system');
   const { themeKey } = useThemeControls();
 
   const [modalKind, setModalKind] = useState(null);
@@ -116,8 +112,7 @@ export default function SettingsScreen({ navigation }) {
   // here (not in each row) keeps the "only one open at a time" rule
   // trivial without cross-row coordination.
   const [openSection, setOpenSection] = useState(null);
-  const toggleSection = (key) =>
-    setOpenSection((prev) => (prev === key ? null : key));
+  const toggleSection = (key) => setOpenSection((prev) => (prev === key ? null : key));
 
   // Debounced PATCH /users/settings — used by the three preference
   // editors (preferred tags, excluded tags, excluded ingredients). 500ms
@@ -312,16 +307,14 @@ export default function SettingsScreen({ navigation }) {
   const dietSummary =
     dietRestrictions.length === 0
       ? t('settings.diets.noneSelected')
-      : dietRestrictions
-          .map((k) => t(`settings.diets.${k}`, { defaultValue: k }))
-          .join(', ');
+      : dietRestrictions.map((k) => t(`settings.diets.${k}`, { defaultValue: k })).join(', ');
 
   const languageLabel =
     localeMode === 'fr'
       ? t('settings.language.french')
       : localeMode === 'en'
-      ? t('settings.language.english')
-      : t('settings.language.system');
+        ? t('settings.language.english')
+        : t('settings.language.system');
 
   const themeLabel = t(`settings.theme.${themeKey}`, { defaultValue: themeKey });
 
@@ -493,9 +486,7 @@ export default function SettingsScreen({ navigation }) {
             marginRight: 8,
           }}
         >
-          {locationConsent
-            ? t('settings.appPrefs.locationOn')
-            : t('settings.appPrefs.locationOff')}
+          {locationConsent ? t('settings.appPrefs.locationOn') : t('settings.appPrefs.locationOff')}
         </Text>
         <LocationToggle />
       </View>
@@ -551,18 +542,12 @@ export default function SettingsScreen({ navigation }) {
         />
       ) : null}
 
-      <ThemePickerSheet
-        visible={themeSheetVisible}
-        onClose={() => setThemeSheetVisible(false)}
-      />
+      <ThemePickerSheet visible={themeSheetVisible} onClose={() => setThemeSheetVisible(false)} />
       <LanguagePickerSheet
         visible={languageSheetVisible}
         onClose={() => setLanguageSheetVisible(false)}
       />
-      <DietMultiSelect
-        visible={dietPickerVisible}
-        onClose={() => setDietPickerVisible(false)}
-      />
+      <DietMultiSelect visible={dietPickerVisible} onClose={() => setDietPickerVisible(false)} />
       <NutritionalGoalPicker
         visible={goalPickerVisible}
         onClose={() => setGoalPickerVisible(false)}
@@ -759,7 +744,12 @@ function buildSchema(kind, t) {
         fields: [
           { key: 'firstname', label: t('settings.modals.fields.firstname') },
           { key: 'lastname', label: t('settings.modals.fields.lastname') },
-          { key: 'email', label: t('settings.modals.fields.email'), keyboardType: 'email-address', autoCapitalize: 'none' },
+          {
+            key: 'email',
+            label: t('settings.modals.fields.email'),
+            keyboardType: 'email-address',
+            autoCapitalize: 'none',
+          },
           { key: 'age', label: t('settings.modals.fields.age'), keyboardType: 'numeric' },
           { key: 'bio', label: t('settings.modals.fields.bio'), multiline: true },
           { key: 'region', label: t('settings.modals.fields.region') },
@@ -770,7 +760,11 @@ function buildSchema(kind, t) {
       return {
         title: t('settings.modals.householdTitle'),
         fields: [
-          { key: 'householdComposition', label: t('settings.modals.householdLabel'), keyboardType: 'numeric' },
+          {
+            key: 'householdComposition',
+            label: t('settings.modals.householdLabel'),
+            keyboardType: 'numeric',
+          },
         ],
       };
     case 'allergies':

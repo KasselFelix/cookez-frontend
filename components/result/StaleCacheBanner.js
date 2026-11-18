@@ -13,12 +13,7 @@ export default function StaleCacheBanner() {
   const t = useT();
 
   return (
-    <View
-      style={[
-        styles.banner,
-        { backgroundColor: css.palette.accent200 || '#FFF3CD' },
-      ]}
-    >
+    <View style={[styles.banner, { backgroundColor: css.palette.accent200 || '#FFF3CD' }]}>
       <FontAwesome name="info-circle" size={14} color={css.palette.neutral900} />
       <Text
         style={[

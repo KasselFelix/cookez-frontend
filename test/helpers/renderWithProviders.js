@@ -98,11 +98,7 @@ export function renderWithProviders(
   } = {},
 ) {
   function Wrapper({ children }) {
-    const inner = withNavigation ? (
-      <NavigationContainer>{children}</NavigationContainer>
-    ) : (
-      children
-    );
+    const inner = withNavigation ? <NavigationContainer>{children}</NavigationContainer> : children;
 
     return (
       <Provider store={store}>

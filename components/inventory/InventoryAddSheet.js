@@ -22,10 +22,7 @@ import {
   View,
 } from 'react-native';
 import { useSelector } from 'react-redux';
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetView,
-} from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { useTheme } from '../../contexts/ThemeProvider';
@@ -75,12 +72,8 @@ export default function InventoryAddSheet({ bottomSheetRef, initial, onSubmit })
   const [query, setQuery] = useState(initial?.ingredient?.name ?? '');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
-  const [qty, setQty] = useState(
-    initial?.quantity != null ? String(initial.quantity) : '',
-  );
-  const [unit, setUnit] = useState(
-    initial?.unit || initial?.ingredient?.defaultUnit || 'g',
-  );
+  const [qty, setQty] = useState(initial?.quantity != null ? String(initial.quantity) : '');
+  const [unit, setUnit] = useState(initial?.unit || initial?.ingredient?.defaultUnit || 'g');
   const [location, setLocation] = useState(
     initial?.storageLocation || initial?.ingredient?.category || 'pantry',
   );
@@ -362,11 +355,7 @@ export default function InventoryAddSheet({ bottomSheetRef, initial, onSubmit })
           </Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: css.spacing.xs }}>
             {LOCATIONS.map((loc) => (
-              <PillChip
-                key={loc}
-                active={location === loc}
-                onPress={() => setLocation(loc)}
-              >
+              <PillChip key={loc} active={location === loc} onPress={() => setLocation(loc)}>
                 {t(`profile.inventory.location.${loc}`)}
               </PillChip>
             ))}
@@ -428,16 +417,12 @@ export default function InventoryAddSheet({ bottomSheetRef, initial, onSubmit })
           disabled={!canSubmit}
           accessibilityRole="button"
           accessibilityLabel={
-            initial
-              ? t('profile.inventory.add_sheet.save')
-              : t('profile.inventory.add_sheet.add')
+            initial ? t('profile.inventory.add_sheet.save') : t('profile.inventory.add_sheet.add')
           }
           style={({ pressed }) => [
             styles.submitBtn,
             {
-              backgroundColor: canSubmit
-                ? css.palette.accent500
-                : css.palette.neutral200,
+              backgroundColor: canSubmit ? css.palette.accent500 : css.palette.neutral200,
               borderRadius: css.radius.pill,
               opacity: pressed && canSubmit ? 0.85 : 1,
             },
@@ -451,9 +436,7 @@ export default function InventoryAddSheet({ bottomSheetRef, initial, onSubmit })
               fontWeight: '600',
             }}
           >
-            {initial
-              ? t('profile.inventory.add_sheet.save')
-              : t('profile.inventory.add_sheet.add')}
+            {initial ? t('profile.inventory.add_sheet.save') : t('profile.inventory.add_sheet.add')}
           </Text>
         </Pressable>
       </BottomSheetView>

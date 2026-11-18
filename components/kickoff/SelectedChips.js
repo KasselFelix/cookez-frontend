@@ -90,11 +90,7 @@ export default function SelectedChips({
                 hitSlop={6}
                 style={styles.closeBtn}
               >
-                <FontAwesome
-                  name="times-circle"
-                  size={16}
-                  color={css.palette.accent500}
-                />
+                <FontAwesome name="times-circle" size={16} color={css.palette.accent500} />
               </Pressable>
             </View>
           );
@@ -132,11 +128,7 @@ export default function SelectedChips({
               hitSlop={6}
               style={styles.closeBtn}
             >
-              <FontAwesome
-                name="times-circle"
-                size={16}
-                color={css.palette.accent500}
-              />
+              <FontAwesome name="times-circle" size={16} color={css.palette.accent500} />
             </Pressable>
           </View>
         ))}

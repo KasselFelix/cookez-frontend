@@ -4,7 +4,13 @@ export const TARGET_LONG_SIDE = 1024;
 
 const parseSize = (size) => {
   const match = /^(\d+)\s*x\s*(\d+)$/i.exec(String(size).trim());
-  return match ? { size, long: Math.max(Number(match[1]), Number(match[2])), area: Number(match[1]) * Number(match[2]) } : null;
+  return match
+    ? {
+        size,
+        long: Math.max(Number(match[1]), Number(match[2])),
+        area: Number(match[1]) * Number(match[2]),
+      }
+    : null;
 };
 
 /**

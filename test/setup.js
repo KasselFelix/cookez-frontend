@@ -181,8 +181,9 @@ jest.mock('@gorhom/bottom-sheet', () => ({
 // react-native-safe-area-context — official mock: zero insets on a 320×640
 // frame, so useSafeAreaInsets works without a SafeAreaProvider (App.js has one).
 // ---------------------------------------------------------------------------
-jest.mock('react-native-safe-area-context', () =>
-  require('react-native-safe-area-context/jest/mock').default,
+jest.mock(
+  'react-native-safe-area-context',
+  () => require('react-native-safe-area-context/jest/mock').default,
 );
 
 // ---------------------------------------------------------------------------

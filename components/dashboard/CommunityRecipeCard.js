@@ -39,11 +39,7 @@ export default function CommunityRecipeCard({ recipe, onOpen }) {
       accessibilityRole="button"
       accessibilityLabel={t('userDashboard.viewRecipeA11y', { name: recipe.name })}
     >
-      <RecipeImage
-        source={resolveRecipeImageSource(recipe)}
-        style={styles.image}
-        iconSize={22}
-      />
+      <RecipeImage source={resolveRecipeImageSource(recipe)} style={styles.image} iconSize={22} />
       <View
         style={[
           styles.content,
@@ -62,11 +58,15 @@ export default function CommunityRecipeCard({ recipe, onOpen }) {
         </Text>
         <View style={[styles.meta, { marginTop: css.spacing.xs }]}>
           <Text style={metaStyle}>
-            {recipe.preparationTime ? `${recipe.preparationTime} ${t('userDashboard.meta.minutesShort')}` : '–'}
+            {recipe.preparationTime
+              ? `${recipe.preparationTime} ${t('userDashboard.meta.minutesShort')}`
+              : '–'}
           </Text>
           <Text style={metaStyle}>{' · '}</Text>
           <Text style={metaStyle}>
-            {recipe.difficulty ? t('userDashboard.meta.difficulty', { value: recipe.difficulty }) : '–'}
+            {recipe.difficulty
+              ? t('userDashboard.meta.difficulty', { value: recipe.difficulty })
+              : '–'}
           </Text>
         </View>
         <StarRating votes={recipe.votes} size={13} style={{ marginTop: css.spacing.xs }} />

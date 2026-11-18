@@ -29,9 +29,17 @@ const nav = { navigate: jest.fn(), goBack: jest.fn() };
 const mockApi = () =>
   global.fetch.mockImplementation((url, init = {}) => {
     if (!init.method) {
-      return Promise.resolve(makeResponse({ result: true, commentsByAuthor: [comment], stats: { totalComments: 1, totalLikesReceived: 0 } }));
+      return Promise.resolve(
+        makeResponse({
+          result: true,
+          commentsByAuthor: [comment],
+          stats: { totalComments: 1, totalLikesReceived: 0 },
+        }),
+      );
     }
-    return Promise.resolve(makeResponse({ result: true, comment: { ...comment, message: 'Even better' } }));
+    return Promise.resolve(
+      makeResponse({ result: true, comment: { ...comment, message: 'Even better' } }),
+    );
   });
 
 const writeCalls = () => global.fetch.mock.calls.filter(([, init]) => init?.method);
@@ -40,7 +48,10 @@ const renderScreen = async () => {
   mockApi();
   renderWithProviders(<CommentScreen navigation={nav} />, {
     withNavigation: false,
-    preloadedState: { user: makeUserState({ username: 'testuser' }), locale: { value: { lang: 'en' } } },
+    preloadedState: {
+      user: makeUserState({ username: 'testuser' }),
+      locale: { value: { lang: 'en' } },
+    },
   });
   await screen.findByText('Tasty bowl');
 };
@@ -84,7 +95,9 @@ describe('CommentScreen writes', () => {
   it('edit: shows a failed save inside the modal, cleared by typing', async () => {
     await renderScreen();
     global.fetch.mockImplementation((url, init = {}) =>
-      init.method ? Promise.reject(new Error('Network request failed')) : Promise.resolve(makeResponse({ result: true })),
+      init.method
+        ? Promise.reject(new Error('Network request failed'))
+        : Promise.resolve(makeResponse({ result: true })),
     );
     jest.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -102,7 +115,9 @@ describe('CommentScreen writes', () => {
       buttons?.find((b) => b.text === 'Delete')?.onPress?.();
     });
     await renderScreen();
-    global.fetch.mockImplementation(() => Promise.resolve(makeResponse({ result: false, error: 'Not your comment' })));
+    global.fetch.mockImplementation(() =>
+      Promise.resolve(makeResponse({ result: false, error: 'Not your comment' })),
+    );
 
     fireEvent.press(screen.getByRole('button', { name: 'Delete comment' }));
 

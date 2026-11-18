@@ -27,42 +27,41 @@ const PURE_COUNT = new Set(['unit', 'units', 'unite', 'piece', 'pieces', 'entier
 // déjà accent-stripped (cf. normalizeUnit qui supprime les accents via NFD).
 const NON_METRIC_BASE_UNIT = {
   // Cuillères → ml
-  tbsp:                 'ml',
-  tablespoon:           'ml',
-  cs:                   'ml',
-  'cuillere a soupe':   'ml',
-  tsp:                  'ml',
-  teaspoon:             'ml',
-  cc:                   'ml',
-  'cuillere a cafe':    'ml',
-  'c.a.c':              'ml',
+  tbsp: 'ml',
+  tablespoon: 'ml',
+  cs: 'ml',
+  'cuillere a soupe': 'ml',
+  tsp: 'ml',
+  teaspoon: 'ml',
+  cc: 'ml',
+  'cuillere a cafe': 'ml',
+  'c.a.c': 'ml',
   // Contenants → ml
-  cup:                  'ml',
-  tasse:                'ml',
-  glass:                'ml',
-  verre:                'ml',
-  bowl:                 'ml',
-  bol:                  'ml',
+  cup: 'ml',
+  tasse: 'ml',
+  glass: 'ml',
+  verre: 'ml',
+  bowl: 'ml',
+  bol: 'ml',
   // Petites quantités
-  pinch:                'g',
-  pincee:               'g',
-  drop:                 'ml',
-  goutte:               'ml',
+  pinch: 'g',
+  pincee: 'g',
+  drop: 'ml',
+  goutte: 'ml',
   // Anglo-saxonnes → g
-  oz:                   'g',
-  ounce:                'g',
-  once:                 'g',
-  lb:                   'g',
-  pound:                'g',
-  livre:                'g',
+  oz: 'g',
+  ounce: 'g',
+  once: 'g',
+  lb: 'g',
+  pound: 'g',
+  livre: 'g',
 };
 
 // Lowercase + trim + strip accents (NFD). Mirror exact du backend pour
 // que 'pincée' / 'pincee' / 'PINCÉE' matchent la même entrée.
 function normalizeUnit(unit) {
   if (!unit) return '';
-  return String(unit).toLowerCase().trim()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '');
+  return String(unit).toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
 // 2 décimales max, trim des zéros trailing : 1 → "1", 1.5 → "1.5", 1.50 → "1.5"
@@ -124,9 +123,8 @@ export function formatQuantity(quantity, unit, defaultUnit = null) {
       return { value: String(Math.ceil(q)), unit: unit };
     }
     const qMetric = convertToBaseUnit(q, u, 1);
-    const baseUnit = (defaultUnit === 'g' || defaultUnit === 'ml')
-      ? defaultUnit
-      : NON_METRIC_BASE_UNIT[u];
+    const baseUnit =
+      defaultUnit === 'g' || defaultUnit === 'ml' ? defaultUnit : NON_METRIC_BASE_UNIT[u];
     return formatMetric(qMetric, baseUnit);
   }
 

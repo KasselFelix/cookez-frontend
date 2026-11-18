@@ -9,7 +9,16 @@
 // Reanimated.
 
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Keyboard, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Dimensions,
+  Keyboard,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
@@ -29,7 +38,15 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
  *   testID?: string,
  * }} props
  */
-export default function OptionPicker({ value, options, onChange, placeholder, title, accessibilityLabel, testID }) {
+export default function OptionPicker({
+  value,
+  options,
+  onChange,
+  placeholder,
+  title,
+  accessibilityLabel,
+  testID,
+}) {
   const css = useTheme();
   const t = useT();
   // `open` is the intent; `rendered` keeps the Modal mounted while the
@@ -112,7 +129,9 @@ export default function OptionPicker({ value, options, onChange, placeholder, ti
         navigationBarTranslucent
         onRequestClose={close}
       >
-        <Animated.View style={[styles.modal, { backgroundColor: css.palette.overlayDark }, backdropStyle]}>
+        <Animated.View
+          style={[styles.modal, { backgroundColor: css.palette.overlayDark }, backdropStyle]}
+        >
           <Pressable
             onPress={close}
             style={styles.backdropTouchable}

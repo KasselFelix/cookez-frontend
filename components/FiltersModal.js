@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -10,17 +10,17 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import { Check, SlidersHorizontal, X } from "lucide-react-native";
+} from 'react-native';
+import { Check, SlidersHorizontal, X } from 'lucide-react-native';
 
 const DRAG_DISMISS_THRESHOLD = 100;
 const DRAG_VELOCITY_THRESHOLD = 0.5;
 
-import useT from "../i18n/useT";
-import { TAG_VOCABULARY, getTagLabel } from "../modules/tagVocabulary";
-import { useTheme } from "../contexts/ThemeProvider";
+import useT from '../i18n/useT';
+import { TAG_VOCABULARY, getTagLabel } from '../modules/tagVocabulary';
+import { useTheme } from '../contexts/ThemeProvider';
 
-const SCREEN_HEIGHT = Dimensions.get("window").height;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 // 3-state cycle: Neutral → Required → Excluded → Neutral
 function cycleFilter(item, required, excluded, setRequired, setExcluded) {
@@ -39,8 +39,8 @@ function capitalize(str) {
 }
 
 function TriStateChip({ css, label, state, onPress, accessibilityLabel }) {
-  const isRequired = state === "required";
-  const isExcluded = state === "excluded";
+  const isRequired = state === 'required';
+  const isExcluded = state === 'excluded';
   const isNeutral = !isRequired && !isExcluded;
 
   const containerStyle = [
@@ -65,12 +65,8 @@ function TriStateChip({ css, label, state, onPress, accessibilityLabel }) {
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ selected: !isNeutral }}
     >
-      {isRequired && (
-        <Check size={12} color={css.palette.white} strokeWidth={3} />
-      )}
-      {isExcluded && (
-        <X size={12} color={css.palette.white} strokeWidth={3} />
-      )}
+      {isRequired && <Check size={12} color={css.palette.white} strokeWidth={3} />}
+      {isExcluded && <X size={12} color={css.palette.white} strokeWidth={3} />}
       <Text style={textStyle}>{label}</Text>
     </TouchableOpacity>
   );
@@ -79,8 +75,8 @@ function TriStateChip({ css, label, state, onPress, accessibilityLabel }) {
 const chipStyles = (css) =>
   StyleSheet.create({
     base: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       gap: css.spacing.xs,
       paddingVertical: css.spacing.sm,
       paddingHorizontal: css.spacing.md,
@@ -104,7 +100,7 @@ const chipStyles = (css) =>
     text: {
       fontFamily: css.typography.fontUI,
       fontSize: css.typography.h5Size,
-      fontWeight: "500",
+      fontWeight: '500',
     },
     textNeutral: {
       color: css.palette.neutral800 ?? css.palette.neutral900,
@@ -220,7 +216,7 @@ export default function FiltersModal({
           }).start();
         },
       }),
-    [onClose, sheetTranslateY]
+    [onClose, sheetTranslateY],
   );
 
   const handleClearAll = () => {
@@ -231,19 +227,18 @@ export default function FiltersModal({
   };
 
   const tagState = (tag) => {
-    if (requiredTags.includes(tag)) return "required";
-    if (excludedTags.includes(tag)) return "excluded";
-    return "neutral";
+    if (requiredTags.includes(tag)) return 'required';
+    if (excludedTags.includes(tag)) return 'excluded';
+    return 'neutral';
   };
 
   const originState = (origin) => {
-    if (requiredOrigins.includes(origin)) return "required";
-    if (excludedOrigins.includes(origin)) return "excluded";
-    return "neutral";
+    if (requiredOrigins.includes(origin)) return 'required';
+    if (excludedOrigins.includes(origin)) return 'excluded';
+    return 'neutral';
   };
 
-  const stateLabel = (state) =>
-    t(`userDashboard.filtersModal.state${capitalize(state)}`);
+  const stateLabel = (state) => t(`userDashboard.filtersModal.state${capitalize(state)}`);
 
   return (
     <Modal
@@ -271,20 +266,17 @@ export default function FiltersModal({
           onPress={onClose}
           style={styles.backdropTouchable}
           accessibilityRole="button"
-          accessibilityLabel={t("userDashboard.filtersModal.closeA11y")}
+          accessibilityLabel={t('userDashboard.filtersModal.closeA11y')}
         />
         <Animated.View
-          style={[
-            styles.sheet,
-            { transform: [{ translateY: sheetTranslateY }] },
-          ]}
+          style={[styles.sheet, { transform: [{ translateY: sheetTranslateY }] }]}
           onStartShouldSetResponder={() => true}
         >
           <View
             {...panResponder.panHandlers}
             style={styles.dragHandleArea}
             accessibilityRole="adjustable"
-            accessibilityLabel={t("userDashboard.filtersModal.closeA11y")}
+            accessibilityLabel={t('userDashboard.filtersModal.closeA11y')}
             accessibilityHint="Drag down to close"
           >
             <View style={styles.dragHandle} />
@@ -292,13 +284,8 @@ export default function FiltersModal({
 
           <View style={styles.header}>
             <View style={styles.headerTitleRow}>
-              <SlidersHorizontal
-                size={18}
-                color={css.palette.primary800}
-              />
-              <Text style={styles.title}>
-                {t("userDashboard.filtersModal.title")}
-              </Text>
+              <SlidersHorizontal size={18} color={css.palette.primary800} />
+              <Text style={styles.title}>{t('userDashboard.filtersModal.title')}</Text>
             </View>
           </View>
 
@@ -308,9 +295,7 @@ export default function FiltersModal({
             showsVerticalScrollIndicator={false}
           >
             {/* ─── Tags ─── */}
-            <Text style={styles.sectionTitle}>
-              {t("userDashboard.filtersModal.sectionTags")}
-            </Text>
+            <Text style={styles.sectionTitle}>{t('userDashboard.filtersModal.sectionTags')}</Text>
             <View style={styles.chipGrid}>
               {TAG_VOCABULARY.map((tag) => {
                 const state = tagState(tag);
@@ -322,18 +307,12 @@ export default function FiltersModal({
                     label={label}
                     state={state}
                     onPress={() =>
-                      cycleFilter(
-                        tag,
-                        requiredTags,
-                        excludedTags,
-                        setRequiredTags,
-                        setExcludedTags
-                      )
+                      cycleFilter(tag, requiredTags, excludedTags, setRequiredTags, setExcludedTags)
                     }
-                    accessibilityLabel={t(
-                      "userDashboard.filtersModal.tagA11y",
-                      { name: label, state: stateLabel(state) }
-                    )}
+                    accessibilityLabel={t('userDashboard.filtersModal.tagA11y', {
+                      name: label,
+                      state: stateLabel(state),
+                    })}
                   />
                 );
               })}
@@ -341,11 +320,11 @@ export default function FiltersModal({
 
             {/* ─── Origins ─── */}
             <Text style={[styles.sectionTitle, styles.sectionTitleSpaced]}>
-              {t("userDashboard.filtersModal.sectionOrigins")}
+              {t('userDashboard.filtersModal.sectionOrigins')}
             </Text>
             {availableOrigins.length === 0 ? (
               <Text style={styles.emptyOrigins}>
-                {t("userDashboard.filtersModal.emptyOrigins")}
+                {t('userDashboard.filtersModal.emptyOrigins')}
               </Text>
             ) : (
               <View style={styles.chipGrid}>
@@ -363,13 +342,13 @@ export default function FiltersModal({
                           requiredOrigins,
                           excludedOrigins,
                           setRequiredOrigins,
-                          setExcludedOrigins
+                          setExcludedOrigins,
                         )
                       }
-                      accessibilityLabel={t(
-                        "userDashboard.filtersModal.originA11y",
-                        { name: origin, state: stateLabel(state) }
-                      )}
+                      accessibilityLabel={t('userDashboard.filtersModal.originA11y', {
+                        name: origin,
+                        state: stateLabel(state),
+                      })}
                     />
                   );
                 })}
@@ -381,11 +360,9 @@ export default function FiltersModal({
               style={styles.clearAllButton}
               onPress={handleClearAll}
               accessibilityRole="button"
-              accessibilityLabel={t("userDashboard.filtersModal.clearAll")}
+              accessibilityLabel={t('userDashboard.filtersModal.clearAll')}
             >
-              <Text style={styles.clearAllText}>
-                {t("userDashboard.filtersModal.clearAll")}
-              </Text>
+              <Text style={styles.clearAllText}>{t('userDashboard.filtersModal.clearAll')}</Text>
             </TouchableOpacity>
           </ScrollView>
         </Animated.View>
@@ -398,7 +375,7 @@ const makeStyles = (css) =>
   StyleSheet.create({
     modal: {
       flex: 1,
-      justifyContent: "flex-end",
+      justifyContent: 'flex-end',
     },
     backdropTouchable: {
       ...StyleSheet.absoluteFillObject,
@@ -409,12 +386,12 @@ const makeStyles = (css) =>
       borderTopRightRadius: css.radius.xl,
       paddingHorizontal: css.spacing.md,
       paddingBottom: css.spacing.xl,
-      maxHeight: "85%",
+      maxHeight: '85%',
       ...css.shadow.lg,
     },
     dragHandleArea: {
-      alignSelf: "stretch",
-      alignItems: "center",
+      alignSelf: 'stretch',
+      alignItems: 'center',
       paddingVertical: css.spacing.sm,
       marginBottom: css.spacing.sm,
     },
@@ -425,13 +402,13 @@ const makeStyles = (css) =>
       backgroundColor: css.palette.neutral300,
     },
     header: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       marginBottom: css.spacing.md,
     },
     headerTitleRow: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       gap: css.spacing.sm,
     },
     title: {
@@ -449,7 +426,7 @@ const makeStyles = (css) =>
       fontFamily: css.typography.fontHeading,
       fontSize: css.typography.h5Size,
       color: css.palette.neutral700,
-      textTransform: "uppercase",
+      textTransform: 'uppercase',
       letterSpacing: css.typography.overlineSpacing,
       marginBottom: css.spacing.sm,
     },
@@ -457,18 +434,18 @@ const makeStyles = (css) =>
       marginTop: css.spacing.md,
     },
     chipGrid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
+      flexDirection: 'row',
+      flexWrap: 'wrap',
     },
     emptyOrigins: {
       fontFamily: css.typography.fontBody,
       fontSize: css.typography.bodySize,
       color: css.palette.neutral500,
-      fontStyle: "italic",
+      fontStyle: 'italic',
       paddingVertical: css.spacing.sm,
     },
     clearAllButton: {
-      alignSelf: "center",
+      alignSelf: 'center',
       marginTop: css.spacing.lg,
       paddingVertical: css.spacing.sm,
       paddingHorizontal: css.spacing.lg,
@@ -476,8 +453,8 @@ const makeStyles = (css) =>
     clearAllText: {
       fontFamily: css.typography.fontUI,
       fontSize: css.typography.bodySize,
-      fontWeight: "600",
+      fontWeight: '600',
       color: css.palette.primary800,
-      textDecorationLine: "underline",
+      textDecorationLine: 'underline',
     },
   });

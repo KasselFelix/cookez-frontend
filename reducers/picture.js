@@ -1,20 +1,20 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-    value: null,
+  value: null,
 };
 
 export const pictureSlice = createSlice({
-    name: 'picture',
-    initialState,
-    reducers: {
-        setPicture: (state, action) => {
-            state.value = action.payload;
-        },
-        clearPicture: (state) => {
-            state.value = null;
-        },
+  name: 'picture',
+  initialState,
+  reducers: {
+    setPicture: (state, action) => {
+      state.value = action.payload;
     },
+    clearPicture: (state) => {
+      state.value = null;
+    },
+  },
 });
 
 export const { setPicture, clearPicture } = pictureSlice.actions;

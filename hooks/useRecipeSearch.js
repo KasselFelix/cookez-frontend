@@ -28,7 +28,7 @@ export default function useRecipeSearch(query) {
       try {
         const response = await fetch(
           `${addressIp}/recipes/search?q=${encodeURIComponent(trimmedQuery)}&limit=50`,
-          { signal: controller.signal }
+          { signal: controller.signal },
         );
         const data = await response.json();
         if (!controller.signal.aborted) {

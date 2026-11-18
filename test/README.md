@@ -70,11 +70,11 @@ expect(screen.getByText('alex')).toBeTruthy();
 
 `renderWithProviders(ui, options)` options:
 
-| option | default | meaning |
-| --- | --- | --- |
-| `preloadedState` | `undefined` | partial state keyed by slice name (`{ value: ... }`) |
-| `store` | built from `preloadedState` | pass an existing store to dispatch + assert re-renders |
-| `withNavigation` | `true` | wrap in `NavigationContainer`; set `false` for pure presentational components |
+| option           | default                     | meaning                                                                       |
+| ---------------- | --------------------------- | ----------------------------------------------------------------------------- |
+| `preloadedState` | `undefined`                 | partial state keyed by slice name (`{ value: ... }`)                          |
+| `store`          | built from `preloadedState` | pass an existing store to dispatch + assert re-renders                        |
+| `withNavigation` | `true`                      | wrap in `NavigationContainer`; set `false` for pure presentational components |
 
 It returns RTL's render result plus the `store`, so you can
 `store.dispatch(...)` and `store.getState()` in assertions.
@@ -90,7 +90,10 @@ Provider), seed `locale` via `preloadedState`, and read the output from the
 tree.
 
 ```js
-function Probe({ k }) { const t = useT(); return <Text testID="out">{t(k)}</Text>; }
+function Probe({ k }) {
+  const t = useT();
+  return <Text testID="out">{t(k)}</Text>;
+}
 
 renderWithProviders(<Probe k="common.save" />, {
   withNavigation: false,
@@ -130,10 +133,10 @@ animation (a tap during a fade-out), hold the end callbacks with
 ```js
 import { finishAnimations, holdAnimations } from '../helpers/animations';
 
-holdAnimations();               // end callbacks wait
-fireEvent.press(closeButton);   // the fade-out stays running
+holdAnimations(); // end callbacks wait
+fireEvent.press(closeButton); // the fade-out stays running
 // ...act and assert while it runs...
-act(() => finishAnimations());  // the end callbacks run now
+act(() => finishAnimations()); // the end callbacks run now
 ```
 
 The hold is cleared after each test. Example: `test/contexts/ToastProvider.test.js`.

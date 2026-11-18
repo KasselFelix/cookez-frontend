@@ -121,9 +121,7 @@ export default function LocationToggle() {
       try {
         pos = await Promise.race([
           Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('TIMEOUT')), 10000),
-          ),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000)),
         ]);
       } catch (err) {
         // 3) Fallback on timeout — try the OS cache. If we get something
@@ -165,9 +163,7 @@ export default function LocationToggle() {
 
   return (
     <View style={styles.wrap}>
-      {isWorking ? (
-        <ActivityIndicator size="small" color={css.palette.neutral900} />
-      ) : null}
+      {isWorking ? <ActivityIndicator size="small" color={css.palette.neutral900} /> : null}
       <Switch
         value={consent}
         onValueChange={handleToggle}

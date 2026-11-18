@@ -30,13 +30,16 @@ export default function useT() {
     applyLocale(mode);
   }
 
-  return useCallback((key, vars) => {
-    if (!key) return '';
-    const opts = vars
-      ? { ...vars, defaultValue: vars.defaultValue ?? key }
-      : { defaultValue: key };
-    return i18n.t(key, opts);
-  }, [effective]);
+  return useCallback(
+    (key, vars) => {
+      if (!key) return '';
+      const opts = vars
+        ? { ...vars, defaultValue: vars.defaultValue ?? key }
+        : { defaultValue: key };
+      return i18n.t(key, opts);
+    },
+    [effective],
+  );
 }
 
 export { useT };

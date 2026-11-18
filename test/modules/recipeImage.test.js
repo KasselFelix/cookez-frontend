@@ -15,8 +15,7 @@ import {
   PLACEHOLDER_IMAGE_KEY,
 } from '../../modules/recipeImage';
 
-const CLOUDINARY_BASE =
-  'https://res.cloudinary.com/dnym6kt4p/image/upload';
+const CLOUDINARY_BASE = 'https://res.cloudinary.com/dnym6kt4p/image/upload';
 
 describe('resolveRecipeImageSource', () => {
   it('uses imageUrl as-is when it is an absolute http(s) URL', () => {
@@ -59,31 +58,19 @@ describe('resolveRecipeImageSource', () => {
   });
 
   it('falls back to the placeholder when both fields are missing/empty', () => {
-    expect(resolveRecipeImageSource({})).toBe(
-      imageRecipe[PLACEHOLDER_IMAGE_KEY],
-    );
+    expect(resolveRecipeImageSource({})).toBe(imageRecipe[PLACEHOLDER_IMAGE_KEY]);
     expect(resolveRecipeImageSource({ imageUrl: '', picture: '   ' })).toBe(
       imageRecipe[PLACEHOLDER_IMAGE_KEY],
     );
   });
 
   it('falls back to the placeholder for a null/undefined recipe', () => {
-    expect(resolveRecipeImageSource(null)).toBe(
-      imageRecipe[PLACEHOLDER_IMAGE_KEY],
-    );
-    expect(resolveRecipeImageSource(undefined)).toBe(
-      imageRecipe[PLACEHOLDER_IMAGE_KEY],
-    );
+    expect(resolveRecipeImageSource(null)).toBe(imageRecipe[PLACEHOLDER_IMAGE_KEY]);
+    expect(resolveRecipeImageSource(undefined)).toBe(imageRecipe[PLACEHOLDER_IMAGE_KEY]);
   });
 
   it('never returns a source with an empty or undefined uri', () => {
-    const cases = [
-      {},
-      { imageUrl: '' },
-      { picture: '' },
-      { imageUrl: null, picture: null },
-      null,
-    ];
+    const cases = [{}, { imageUrl: '' }, { picture: '' }, { imageUrl: null, picture: null }, null];
     cases.forEach((recipe) => {
       const src = resolveRecipeImageSource(recipe);
       if (src && typeof src === 'object' && 'uri' in src) {
@@ -100,8 +87,14 @@ describe('resolveRecipeImageSource', () => {
   });
 
   it('tells the placeholder apart from a real image', () => {
-    expect(isPlaceholderSource(resolveRecipeImageSource({ picture: null, imageUrl: null }))).toBe(true);
-    expect(isPlaceholderSource(resolveRecipeImageSource({ imageUrl: 'https://images.pexels.com/p/1.jpg' }))).toBe(false);
+    expect(isPlaceholderSource(resolveRecipeImageSource({ picture: null, imageUrl: null }))).toBe(
+      true,
+    );
+    expect(
+      isPlaceholderSource(
+        resolveRecipeImageSource({ imageUrl: 'https://images.pexels.com/p/1.jpg' }),
+      ),
+    ).toBe(false);
     expect(isPlaceholderSource(resolveRecipeImageSource({ picture: 'abc123' }))).toBe(false);
   });
 });

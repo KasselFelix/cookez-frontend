@@ -20,8 +20,18 @@ const asRoot = (recipe) => ({ recipe });
 const names = (recipes) => recipes.map((r) => r.name);
 
 const catalog = [
-  { _id: 'c1', name: 'Golompke', ingredients: [{ ingredient: 'i1', quantity: 1 }], imageUrl: 'c1.jpg' },
-  { _id: 'c2', name: 'Tarte Tatin', ingredients: [{ ingredient: 'i2', quantity: 1 }], imageUrl: 'c2.jpg' },
+  {
+    _id: 'c1',
+    name: 'Golompke',
+    ingredients: [{ ingredient: 'i1', quantity: 1 }],
+    imageUrl: 'c1.jpg',
+  },
+  {
+    _id: 'c2',
+    name: 'Tarte Tatin',
+    ingredients: [{ ingredient: 'i2', quantity: 1 }],
+    imageUrl: 'c2.jpg',
+  },
 ];
 
 describe('recipe slice', () => {
@@ -35,7 +45,13 @@ describe('recipe slice', () => {
     expect(names(selectCatalogRecipes(asRoot(state)))).toEqual(['Golompke', 'Tarte Tatin']);
     expect(selectResultRecipes(asRoot(state))).toEqual([]);
 
-    state = reducer(state, setResultRecipes([{ _id: 'r1', name: 'Apple Salad' }, { _id: 'c2', name: 'Tarte Tatin' }]));
+    state = reducer(
+      state,
+      setResultRecipes([
+        { _id: 'r1', name: 'Apple Salad' },
+        { _id: 'c2', name: 'Tarte Tatin' },
+      ]),
+    );
     expect(names(selectCatalogRecipes(asRoot(state)))).toEqual(['Golompke', 'Tarte Tatin']);
     expect(names(selectResultRecipes(asRoot(state)))).toEqual(['Apple Salad', 'Tarte Tatin']);
   });
@@ -60,15 +76,24 @@ describe('recipe slice', () => {
   it('merges a recipe met twice into one entry, without duplicates', () => {
     let state = reducer(initial, setCatalogRecipes([...catalog, catalog[0]]));
     expect(state.catalogIds).toEqual(['c1', 'c2']);
-    state = reducer(state, setResultRecipes([{ _id: 'c1', name: 'Golompke', missingIngredients: ['x'] }]));
+    state = reducer(
+      state,
+      setResultRecipes([{ _id: 'c1', name: 'Golompke', missingIngredients: ['x'] }]),
+    );
     expect(state.value.filter((r) => r._id === 'c1')).toHaveLength(1);
     // The catalog field and the search field live side by side.
-    expect(state.value.find((r) => r._id === 'c1')).toMatchObject({ imageUrl: 'c1.jpg', missingIngredients: ['x'] });
+    expect(state.value.find((r) => r._id === 'c1')).toMatchObject({
+      imageUrl: 'c1.jpg',
+      missingIngredients: ['x'],
+    });
   });
 
   it('a catalog copy with bare ingredient ids keeps the populated rows', () => {
     const populated = [{ ingredient: { _id: 'i1', display_name: 'cabbage' }, quantity: 1 }];
-    let state = reducer(initial, setRecipeDetail({ _id: 'c1', name: 'Golompke', ingredients: populated }));
+    let state = reducer(
+      initial,
+      setRecipeDetail({ _id: 'c1', name: 'Golompke', ingredients: populated }),
+    );
     state = reducer(state, setCatalogRecipes(catalog));
     expect(state.value.find((r) => r._id === 'c1').ingredients).toEqual(populated);
   });
@@ -81,7 +106,10 @@ describe('recipe slice', () => {
   });
 
   it('addRecipe leaves a recipe already in the table untouched', () => {
-    let state = reducer(initial, setCatalogRecipes([{ _id: 'c1', name: 'Golompke', votes: [{ note: 5 }] }]));
+    let state = reducer(
+      initial,
+      setCatalogRecipes([{ _id: 'c1', name: 'Golompke', votes: [{ note: 5 }] }]),
+    );
     state = reducer(state, addRecipe({ _id: 'c1', name: 'Golompke', votes: [] }));
     expect(state.value).toEqual([{ _id: 'c1', name: 'Golompke', votes: [{ note: 5 }] }]);
   });

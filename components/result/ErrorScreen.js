@@ -12,18 +12,28 @@ export default function ErrorScreen({ onRetry }) {
   const t = useT();
 
   return (
-    <View testID="result-error-screen" style={[styles.root, { backgroundColor: css.palette.background }]}>
+    <View
+      testID="result-error-screen"
+      style={[styles.root, { backgroundColor: css.palette.background }]}
+    >
       <FontAwesome name="exclamation-triangle" size={64} color={css.palette.error} />
       <Text
         style={[
           styles.title,
-          { color: css.palette.neutral900, fontFamily: css.typography.fontHeading, fontSize: css.typography.h2Size },
+          {
+            color: css.palette.neutral900,
+            fontFamily: css.typography.fontHeading,
+            fontSize: css.typography.h2Size,
+          },
         ]}
       >
         {t('result.error.title')}
       </Text>
       <Text
-        style={[styles.body, { color: css.palette.neutral700, fontFamily: css.typography.fontBody }]}
+        style={[
+          styles.body,
+          { color: css.palette.neutral700, fontFamily: css.typography.fontBody },
+        ]}
       >
         {t('result.error.body')}
       </Text>
@@ -31,7 +41,10 @@ export default function ErrorScreen({ onRetry }) {
         onPress={onRetry}
         accessibilityRole="button"
         accessibilityLabel={t('result.error.retry')}
-        style={({ pressed }) => [styles.btn, { backgroundColor: css.palette.primary500, opacity: pressed ? 0.7 : 1 }]}
+        style={({ pressed }) => [
+          styles.btn,
+          { backgroundColor: css.palette.primary500, opacity: pressed ? 0.7 : 1 },
+        ]}
       >
         <Text style={styles.btnText}>{t('result.error.retry')}</Text>
       </Pressable>

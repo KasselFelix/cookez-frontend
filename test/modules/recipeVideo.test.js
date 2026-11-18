@@ -8,9 +8,7 @@ import { resolveVideoUrl, isYouTubeUrl } from '../../modules/recipeVideo';
 
 describe('resolveVideoUrl', () => {
   it('returns a valid http(s) video URL untouched', () => {
-    expect(resolveVideoUrl({ videoUrl: 'https://youtu.be/abc' })).toBe(
-      'https://youtu.be/abc',
-    );
+    expect(resolveVideoUrl({ videoUrl: 'https://youtu.be/abc' })).toBe('https://youtu.be/abc');
   });
 
   it('trims surrounding whitespace', () => {

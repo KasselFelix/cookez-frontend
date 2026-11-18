@@ -49,12 +49,7 @@ import { authHeaders, jsonAuthHeaders } from '../modules/authHeaders';
 import { availableImages } from '../modules/avatars';
 import { resolveRecipeImageSource } from '../modules/recipeImage';
 import RecipeImage from '../components/recipe/RecipeImage';
-import {
-  addPantryItem,
-  getPantry,
-  removePantryItem,
-  updatePantryItem,
-} from '../modules/pantryApi';
+import { addPantryItem, getPantry, removePantryItem, updatePantryItem } from '../modules/pantryApi';
 import {
   addItem,
   removeItem,
@@ -93,7 +88,6 @@ const TAB_ICONS = {
 function RecipeTile({ item, css, navigation }) {
   const imageSource = resolveRecipeImageSource(item);
 
-
   // Shadow has to live on the outer wrapper because the TouchableOpacity
   // uses overflow:'hidden' to clip the top-corner of the image — and on iOS,
   // shadow + overflow:'hidden' on the same node makes the shadow disappear.
@@ -109,93 +103,91 @@ function RecipeTile({ item, css, navigation }) {
         },
       ]}
     >
-    <TouchableOpacity
-      style={[
-        styles.tile,
-        {
-          backgroundColor: css.palette.surfaceCard,
-          borderRadius: css.radius.md,
-        },
-      ]}
-      onPress={() => {
-        navigation.navigate('Recipe', {
-          recipe: {
-            _id: item._id,
-            name: item.name,
-            description: item.description,
-            ingredients: item.ingredients,
-            steps: item.steps,
-            votes: item.votes,
-            origin: item.origin,
-            picture: item.picture,
-            date: item.date,
-            preparationTime: item.preparationTime,
-            difficulty: item.difficulty,
+      <TouchableOpacity
+        style={[
+          styles.tile,
+          {
+            backgroundColor: css.palette.surfaceCard,
+            borderRadius: css.radius.md,
           },
-        });
-      }}
-    >
-      <RecipeImage
-        source={imageSource}
-        style={styles.tileImage}
-        iconSize={20}
-        accessibilityLabel={item?.name}
-      />
-      <View style={[styles.tileBody, { padding: css.spacing.sm }]}>
-        <Text
-          style={[
-            styles.tileTitle,
-            {
-              fontFamily: css.typography.fontUI,
-              fontSize: css.typography.h6Size,
-              lineHeight: css.typography.h6Line,
-              color: css.palette.neutral900,
+        ]}
+        onPress={() => {
+          navigation.navigate('Recipe', {
+            recipe: {
+              _id: item._id,
+              name: item.name,
+              description: item.description,
+              ingredients: item.ingredients,
+              steps: item.steps,
+              votes: item.votes,
+              origin: item.origin,
+              picture: item.picture,
+              date: item.date,
+              preparationTime: item.preparationTime,
+              difficulty: item.difficulty,
             },
-          ]}
-          numberOfLines={2}
-        >
-          {item?.name || 'Untitled'}
-        </Text>
-        <View style={styles.tileMetaRow}>
-          <Clock size={12} color={css.palette.neutral500} />
+          });
+        }}
+      >
+        <RecipeImage
+          source={imageSource}
+          style={styles.tileImage}
+          iconSize={20}
+          accessibilityLabel={item?.name}
+        />
+        <View style={[styles.tileBody, { padding: css.spacing.sm }]}>
           <Text
             style={[
-              styles.tileMeta,
+              styles.tileTitle,
               {
                 fontFamily: css.typography.fontUI,
                 fontSize: css.typography.h6Size,
                 lineHeight: css.typography.h6Line,
-                color: css.palette.neutral500,
-                marginLeft: css.spacing.xs,
+                color: css.palette.neutral900,
               },
             ]}
+            numberOfLines={2}
           >
-            {item?.preparationTime ? `${item.preparationTime} min` : '25 min'}
+            {item?.name || 'Untitled'}
           </Text>
-          <Star
-            size={12}
-            color={css.palette.neutral500}
-            style={{ marginLeft: css.spacing.sm }}
-          />
-          <Text
-            style={[
-              styles.tileMeta,
-              {
-                fontFamily: css.typography.fontUI,
-                fontSize: css.typography.h6Size,
-                lineHeight: css.typography.h6Line,
-                color: css.palette.neutral500,
-                marginLeft: css.spacing.xs,
-              },
-            ]}
-          >
-            {Array.isArray(item?.votes) && item.votes.length > 0
-              ? (item.votes.reduce((som, vote) => som + (vote?.note ?? 0), 0) / item.votes.length).toFixed(1)
-              : '0.0'}
-          </Text>
+          <View style={styles.tileMetaRow}>
+            <Clock size={12} color={css.palette.neutral500} />
+            <Text
+              style={[
+                styles.tileMeta,
+                {
+                  fontFamily: css.typography.fontUI,
+                  fontSize: css.typography.h6Size,
+                  lineHeight: css.typography.h6Line,
+                  color: css.palette.neutral500,
+                  marginLeft: css.spacing.xs,
+                },
+              ]}
+            >
+              {item?.preparationTime ? `${item.preparationTime} min` : '25 min'}
+            </Text>
+            <Star size={12} color={css.palette.neutral500} style={{ marginLeft: css.spacing.sm }} />
+            <Text
+              style={[
+                styles.tileMeta,
+                {
+                  fontFamily: css.typography.fontUI,
+                  fontSize: css.typography.h6Size,
+                  lineHeight: css.typography.h6Line,
+                  color: css.palette.neutral500,
+                  marginLeft: css.spacing.xs,
+                },
+              ]}
+            >
+              {Array.isArray(item?.votes) && item.votes.length > 0
+                ? (
+                    item.votes.reduce((som, vote) => som + (vote?.note ?? 0), 0) / item.votes.length
+                  ).toFixed(1)
+                : '0.0'}
+            </Text>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -473,10 +465,7 @@ export default function ProfileScreen({ navigation, route }) {
   const filteredItems = useMemo(() => {
     return pantryItems.filter((it) => {
       if (categoryFilter && it.storageLocation !== categoryFilter) return false;
-      if (
-        debouncedSearch &&
-        !it.ingredient?.name?.toLowerCase().includes(debouncedSearch)
-      ) {
+      if (debouncedSearch && !it.ingredient?.name?.toLowerCase().includes(debouncedSearch)) {
         return false;
       }
       return true;
@@ -833,11 +822,7 @@ export default function ProfileScreen({ navigation, route }) {
   );
 
   const addSheet = (
-    <InventoryAddSheet
-      bottomSheetRef={addSheetRef}
-      initial={editing}
-      onSubmit={handleSubmit}
-    />
+    <InventoryAddSheet bottomSheetRef={addSheetRef} initial={editing} onSubmit={handleSubmit} />
   );
 
   // ---- Unified render -----------------------------------------------------
@@ -866,11 +851,7 @@ export default function ProfileScreen({ navigation, route }) {
           data={isInventory ? filteredItems : []}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
-            <InventoryItemCard
-              item={item}
-              onEdit={openEdit}
-              onDelete={handleDelete}
-            />
+            <InventoryItemCard item={item} onEdit={openEdit} onDelete={handleDelete} />
           )}
           ItemSeparatorComponent={() => <View style={{ height: css.spacing.sm }} />}
           ListHeaderComponent={
@@ -883,11 +864,7 @@ export default function ProfileScreen({ navigation, route }) {
                 <View style={{ paddingTop: css.spacing.md }}>
                   <InventorySummaryRow summary={summary} />
                   <View style={{ height: css.spacing.sm }} />
-                  <InventorySearchBar
-                    value={search}
-                    onChange={setSearch}
-                    onAddPress={openAdd}
-                  />
+                  <InventorySearchBar value={search} onChange={setSearch} onAddPress={openAdd} />
                   <View style={{ height: css.spacing.xs }} />
                   <InventoryFilterChips
                     active={categoryFilter}

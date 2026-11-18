@@ -13,21 +13,10 @@
 // "flash of light theme" only after a noticeable delay — an acceptable
 // trade-off for a 3-screen pilot.
 
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import {
-  DEFAULT_THEME_KEY,
-  THEME_KEYS,
-  resolveTheme,
-} from '../styles/themes';
+import { DEFAULT_THEME_KEY, THEME_KEYS, resolveTheme } from '../styles/themes';
 
 const STORAGE_KEY = 'userTheme';
 

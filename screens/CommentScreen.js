@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -76,7 +70,7 @@ export default function CommentScreen({ navigation }) {
   const [sort, setSort] = useState(SORT_RECENT);
 
   // Edit modal state
-  const [editing, setEditing] = useState(null);          // the comment being edited
+  const [editing, setEditing] = useState(null); // the comment being edited
   const [editDraft, setEditDraft] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
   // Shown inside the edit modal: a toast would stay hidden under it (plan 020).
@@ -104,9 +98,7 @@ export default function CommentScreen({ navigation }) {
       const data = await res.json();
       if (data.result) {
         setComments(Array.isArray(data.commentsByAuthor) ? data.commentsByAuthor : []);
-        setStats(
-          data.stats || { totalComments: 0, totalLikesReceived: 0 }
-        );
+        setStats(data.stats || { totalComments: 0, totalLikesReceived: 0 });
       } else {
         setError(data.error || 'Could not load your comments.');
       }
@@ -154,7 +146,7 @@ export default function CommentScreen({ navigation }) {
       const recipe = fullRecipe || comment?.recipe || {};
       navigation.navigate('Recipe', { recipe });
     },
-    [navigation, recipesById]
+    [navigation, recipesById],
   );
 
   const handleStartEdit = useCallback((comment) => {
@@ -189,23 +181,18 @@ export default function CommentScreen({ navigation }) {
     setSavingEdit(true);
     setEditError('');
     try {
-      const res = await fetch(
-        `${addressIp}/comments/update/${editing._id}`,
-        {
-          method: 'PUT',
-          headers: jsonAuthHeaders(user.token),
-          body: JSON.stringify({ message: trimmed }),
-        }
-      );
+      const res = await fetch(`${addressIp}/comments/update/${editing._id}`, {
+        method: 'PUT',
+        headers: jsonAuthHeaders(user.token),
+        body: JSON.stringify({ message: trimmed }),
+      });
       const data = await res.json();
       if (data.result) {
         // Local list (this screen's state)
         setComments((prev) =>
           prev.map((c) =>
-            c._id === editing._id
-              ? { ...c, message: data.comment?.message ?? trimmed }
-              : c
-          )
+            c._id === editing._id ? { ...c, message: data.comment?.message ?? trimmed } : c,
+          ),
         );
         // Redux (so RecipeScreen reflects the change)
         dispatch(
@@ -213,11 +200,9 @@ export default function CommentScreen({ navigation }) {
             recipeId: editing.recipe?._id,
             commentId: editing._id,
             message: data.comment?.message ?? trimmed,
-          })
+          }),
         );
-        Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Success
-        ).catch(() => {});
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
         handleCancelEdit();
       } else {
         setEditError(data.error || t('commentScreen.updateFailed'));
@@ -234,13 +219,10 @@ export default function CommentScreen({ navigation }) {
     async (comment) => {
       if (!comment?._id) return;
       try {
-        const res = await fetch(
-          `${addressIp}/comments/delete/${comment._id}`,
-          {
-            method: 'DELETE',
-            headers: authHeaders(user.token),
-          }
-        );
+        const res = await fetch(`${addressIp}/comments/delete/${comment._id}`, {
+          method: 'DELETE',
+          headers: authHeaders(user.token),
+        });
         const data = await res.json();
         if (data.result) {
           // Optimistic local removal
@@ -249,18 +231,16 @@ export default function CommentScreen({ navigation }) {
             totalComments: Math.max(0, (prev.totalComments ?? 0) - 1),
             totalLikesReceived: Math.max(
               0,
-              (prev.totalLikesReceived ?? 0) - (comment.up?.length ?? 0)
+              (prev.totalLikesReceived ?? 0) - (comment.up?.length ?? 0),
             ),
           }));
           dispatch(
             deleteCommentAction({
               recipeId: comment.recipe?._id,
               commentId: comment._id,
-            })
+            }),
           );
-          Haptics.notificationAsync(
-            Haptics.NotificationFeedbackType.Success
-          ).catch(() => {});
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
         } else {
           showToast({ type: 'error', message: data.error || t('commentScreen.deleteFailed') });
         }
@@ -269,26 +249,22 @@ export default function CommentScreen({ navigation }) {
         showToast({ type: 'error', message: t('commentScreen.deleteNetworkError') });
       }
     },
-    [user?.token, dispatch, showToast, t]
+    [user?.token, dispatch, showToast, t],
   );
 
   const handleRequestDelete = useCallback(
     (comment) => {
       // A real choice: the one dialog kept on this screen (plan 020).
-      Alert.alert(
-        t('commentScreen.deleteTitle'),
-        t('commentScreen.deleteMessage'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          {
-            text: t('commentScreen.delete'),
-            style: 'destructive',
-            onPress: () => performDelete(comment),
-          },
-        ]
-      );
+      Alert.alert(t('commentScreen.deleteTitle'), t('commentScreen.deleteMessage'), [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('commentScreen.delete'),
+          style: 'destructive',
+          onPress: () => performDelete(comment),
+        },
+      ]);
     },
-    [performDelete, t]
+    [performDelete, t],
   );
 
   const renderItem = useCallback(
@@ -300,12 +276,12 @@ export default function CommentScreen({ navigation }) {
         onDelete={() => handleRequestDelete(item)}
       />
     ),
-    [handleOpenRecipe, handleStartEdit, handleRequestDelete]
+    [handleOpenRecipe, handleStartEdit, handleRequestDelete],
   );
 
   const keyExtractor = useCallback(
     (item, i) => (item?._id ? String(item._id) : `fallback-${i}`),
-    []
+    [],
   );
 
   return (
@@ -326,18 +302,13 @@ export default function CommentScreen({ navigation }) {
             accessibilityLabel="Go back"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <FontAwesome
-              name="angle-left"
-              size={28}
-              color={css.palette.white}
-            />
+            <FontAwesome name="angle-left" size={28} color={css.palette.white} />
           </TouchableOpacity>
           <Text style={styles.heroEyebrow}>Contribution Hub</Text>
           <View style={styles.backButton} />
         </View>
         <Text style={styles.heroTitle}>
-          You shared {stats.totalComments ?? 0}{' '}
-          {stats.totalComments === 1 ? 'review' : 'reviews'}
+          You shared {stats.totalComments ?? 0} {stats.totalComments === 1 ? 'review' : 'reviews'}
         </Text>
         <Text style={styles.heroSubtitle}>
           and earned {stats.totalLikesReceived ?? 0}{' '}
@@ -364,11 +335,7 @@ export default function CommentScreen({ navigation }) {
         <SkeletonList />
       ) : error ? (
         <View style={styles.centeredState}>
-          <FontAwesome
-            name="exclamation-circle"
-            size={32}
-            color={css.palette.error}
-          />
+          <FontAwesome name="exclamation-circle" size={32} color={css.palette.error} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             onPress={() => {
@@ -408,12 +375,7 @@ export default function CommentScreen({ navigation }) {
       )}
 
       {/* EDIT MODAL ------------------------------------------------ */}
-      <Modal
-        visible={!!editing}
-        transparent
-        animationType="fade"
-        onRequestClose={handleCancelEdit}
-      >
+      <Modal visible={!!editing} transparent animationType="fade" onRequestClose={handleCancelEdit}>
         <TouchableWithoutFeedback onPress={handleCancelEdit}>
           <View style={styles.modalBackdrop}>
             <TouchableWithoutFeedback>
@@ -467,10 +429,7 @@ export default function CommentScreen({ navigation }) {
                       accessibilityLabel="Save edited comment"
                     >
                       {savingEdit ? (
-                        <ActivityIndicator
-                          size="small"
-                          color={css.palette.white}
-                        />
+                        <ActivityIndicator size="small" color={css.palette.white} />
                       ) : (
                         <Text style={styles.modalSaveText}>Save</Text>
                       )}
@@ -499,14 +458,7 @@ function SortPill({ label, active, onPress }) {
       accessibilityLabel={`Sort by ${label}`}
       hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
     >
-      <Text
-        style={[
-          styles.sortPillText,
-          active && styles.sortPillTextActive,
-        ]}
-      >
-        {label}
-      </Text>
+      <Text style={[styles.sortPillText, active && styles.sortPillTextActive]}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -518,11 +470,7 @@ function SortPill({ label, active, onPress }) {
 function SkeletonList() {
   const opacity = useSharedValue(0.4);
   useEffect(() => {
-    opacity.value = withRepeat(
-      withTiming(0.85, { duration: 800 }),
-      -1,
-      true
-    );
+    opacity.value = withRepeat(withTiming(0.85, { duration: 800 }), -1, true);
   }, [opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
@@ -549,11 +497,7 @@ function SkeletonList() {
 function EmptyState({ onCta }) {
   return (
     <View style={styles.centeredState}>
-      <FontAwesome
-        name="comment-o"
-        size={56}
-        color={css.palette.neutral300}
-      />
+      <FontAwesome name="comment-o" size={56} color={css.palette.neutral300} />
       <Text style={styles.emptyTitle}>No reviews yet</Text>
       <Text style={styles.emptyBody}>
         Cook something, share what you thought — your reviews live here.

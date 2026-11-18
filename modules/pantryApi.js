@@ -97,10 +97,9 @@ export const removePantryItem = async (token, itemId) => {
 export const searchIngredients = async (token, query) => {
   try {
     const q = encodeURIComponent(query || '');
-    const res = await fetch(
-      `${addressIp}/ingredients/search?q=${q}&limit=20`,
-      { headers: jsonAuthHeaders(token) },
-    );
+    const res = await fetch(`${addressIp}/ingredients/search?q=${q}&limit=20`, {
+      headers: jsonAuthHeaders(token),
+    });
     return handle(res);
   } catch (e) {
     return { ok: false, data: null, error: e.message };

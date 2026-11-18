@@ -21,13 +21,7 @@
 
 import { formatQuantityForAmazon } from './units';
 
-export function buildAmazonUrl({
-  ingredientName,
-  quantity,
-  unit,
-  locale,
-  amazonConfig,
-}) {
+export function buildAmazonUrl({ ingredientName, quantity, unit, locale, amazonConfig }) {
   const isFR = locale === 'fr';
   const tld = isFR ? 'fr' : 'com';
   const tag = isFR ? amazonConfig?.tag_fr : amazonConfig?.tag_com;
