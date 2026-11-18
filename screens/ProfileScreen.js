@@ -45,11 +45,12 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
-import { authHeaders, jsonAuthHeaders } from '../modules/authHeaders';
+import { authHeaders } from '../modules/authHeaders';
 import { availableImages } from '../modules/avatars';
 import { resolveRecipeImageSource } from '../modules/recipeImage';
 import RecipeImage from '../components/recipe/RecipeImage';
 import { addPantryItem, getPantry, removePantryItem, updatePantryItem } from '../modules/pantryApi';
+import { putUserProfile } from '../modules/recipesApi';
 import {
   addItem,
   removeItem,
@@ -432,12 +433,7 @@ export default function ProfileScreen({ navigation, route }) {
   const handleImageChange = async (newImage) => {
     setAvatarModalVisible(false);
     try {
-      const res = await fetch(`${addressIp}/users/profile`, {
-        method: 'PUT',
-        headers: jsonAuthHeaders(user.token),
-        body: JSON.stringify({ image: newImage }),
-      });
-      const data = await res.json();
+      const data = await putUserProfile({ token: user.token, updates: { image: newImage } });
       if (data.result) {
         // Backend now returns `{ result, updated }` with only the changed
         // fields (post-normalisation), so we can dispatch it as-is.

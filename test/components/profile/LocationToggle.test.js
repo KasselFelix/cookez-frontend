@@ -1,7 +1,7 @@
 // LocationToggle (plan 020): its messages are toasts, not alerts — an info
 // when location is off or refused, an error when saving fails.
 import React from 'react';
-import { fireEvent, screen } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 import { renderWithProviders } from '../../helpers/renderWithProviders';
 import { mockFetchError, mockFetchJsonAlways } from '../../mocks/api';
@@ -56,6 +56,23 @@ describe('LocationToggle', () => {
     fireEvent(screen.getByRole('switch'), 'valueChange', false);
 
     expect(await screen.findByText('Network error. Please try again.')).toBeTruthy();
+  });
+});
+
+// Plan 019: the save goes through putUserProfile (modules/recipesApi.js).
+describe('LocationToggle, saved', () => {
+  it('sends consent=false by PUT /users/profile and stores the diff', async () => {
+    mockFetchJsonAlways({ result: true, updated: { location: { consent: false } } });
+    const { store } = render(true);
+
+    fireEvent(screen.getByRole('switch'), 'valueChange', false);
+
+    await waitFor(() => expect(store.getState().user.value.location.consent).toBe(false));
+    const [url, init] = global.fetch.mock.calls[0];
+    expect(url).toBe('https://api.invalid/users/profile');
+    expect(init.method).toBe('PUT');
+    expect(init.headers.Authorization).toBe('Bearer tok');
+    expect(JSON.parse(init.body)).toEqual({ location: { consent: false } });
   });
 });
 

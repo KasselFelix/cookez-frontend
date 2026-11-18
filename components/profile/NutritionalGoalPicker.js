@@ -14,8 +14,7 @@ import {
 import { Check, X } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
-import addressIp from '../../modules/addressIp';
-import { jsonAuthHeaders } from '../../modules/authHeaders';
+import { putUserProfile } from '../../modules/recipesApi';
 import { updateUserInStore } from '../../reducers/user';
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
@@ -46,12 +45,7 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
     setIsSaving(true);
     setError('');
     try {
-      const res = await fetch(`${addressIp}/users/profile`, {
-        method: 'PUT',
-        headers: jsonAuthHeaders(user.token),
-        body: JSON.stringify({ nutritionalGoal: goal }),
-      });
-      const data = await res.json();
+      const data = await putUserProfile({ token: user.token, updates: { nutritionalGoal: goal } });
       if (data.result) {
         // Backend now returns `{ result, updated }` with only the changed
         // fields (post-normalisation), so we can dispatch it as-is.
