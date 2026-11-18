@@ -81,5 +81,3 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
-
-export { SettingsRow };

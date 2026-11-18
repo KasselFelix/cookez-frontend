@@ -19,7 +19,7 @@ import { Provider } from 'react-redux';
 import { NavigationContainer } from '@react-navigation/native';
 import { render } from '@testing-library/react-native';
 
-import ThemeProvider from '../../contexts/ThemeProvider';
+import { ThemeProvider } from '../../contexts/ThemeProvider';
 import ToastProvider from '../../contexts/ToastProvider';
 
 // Import the REAL reducers so the store under test matches App.js exactly.

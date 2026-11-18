@@ -233,5 +233,3 @@ const styles = StyleSheet.create({
     height: css.spacing.sm,
   },
 });
-
-export { ProfileIdentityBlock };

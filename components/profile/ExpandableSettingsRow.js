@@ -135,8 +135,6 @@ export default function ExpandableSettingsRow({
   );
 }
 
-export { ExpandableSettingsRow };
-
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',

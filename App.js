@@ -34,7 +34,7 @@ import { addUserToStore } from './reducers/user';
 import { setCatalogRecipes } from './reducers/recipe';
 import { setLocale } from './reducers/locale';
 import { setupI18n } from './i18n';
-import ThemeProvider from './contexts/ThemeProvider';
+import { ThemeProvider } from './contexts/ThemeProvider';
 import AuthGateProvider from './contexts/AuthGateProvider';
 import ToastProvider from './contexts/ToastProvider';
 

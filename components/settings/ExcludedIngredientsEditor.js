@@ -302,8 +302,6 @@ export default function ExcludedIngredientsEditor({ value = [], onChange, showHe
   );
 }
 
-export { ExcludedIngredientsEditor };
-
 const styles = StyleSheet.create({
   wrap: {},
   helper: { fontSize: 13, marginBottom: 8 },
