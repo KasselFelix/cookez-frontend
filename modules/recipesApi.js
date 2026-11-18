@@ -102,3 +102,15 @@ export async function patchUserSettings({ token, partial }) {
   });
   return res.json();
 }
+
+// PUT /users/profile — partial update of the profile fields and of
+// `settings`. Returns `{ result, updated, unrecognizedAllergies? }`, or
+// `{ result: false, error }`; callers dispatch `updated` as-is.
+export async function putUserProfile({ token, updates }) {
+  const res = await fetch(`${addressIp}/users/profile`, {
+    method: 'PUT',
+    headers: jsonAuthHeaders(token),
+    body: JSON.stringify(updates),
+  });
+  return res.json();
+}

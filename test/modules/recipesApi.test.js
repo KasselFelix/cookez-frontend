@@ -1,4 +1,4 @@
-import { fetchRecipeResult, ApiError } from '../../modules/recipesApi';
+import { fetchRecipeResult, ApiError, putUserProfile } from '../../modules/recipesApi';
 
 const ok = (body) => ({ ok: true, status: 200, json: async () => body });
 const err = (status, body) => ({ ok: false, status, json: async () => body });
@@ -37,5 +37,26 @@ describe('fetchRecipeResult session token (plan 016, PR 3)', () => {
     await fetchRecipeResult(args);
     const [, init] = global.fetch.mock.calls[0];
     expect(init.headers).toEqual({ 'Content-Type': 'application/json' });
+  });
+});
+
+describe('putUserProfile (plan 019)', () => {
+  it('PUTs the updates to /users/profile with the token in the header only', async () => {
+    const body = { result: true, updated: { firstname: 'Ana' } };
+    global.fetch = jest.fn().mockResolvedValue(ok(body));
+    await expect(putUserProfile({ token: 'session-token', updates: { firstname: 'Ana' } })).resolves.toEqual(body);
+    const [url, init] = global.fetch.mock.calls[0];
+    expect(url).toMatch(/\/users\/profile$/);
+    expect(init.method).toBe('PUT');
+    expect(init.headers).toEqual({ 'Content-Type': 'application/json', Authorization: 'Bearer session-token' });
+    expect(JSON.parse(init.body)).toEqual({ firstname: 'Ana' });
+  });
+
+  it('returns the error body of a refused update as is', async () => {
+    global.fetch = jest.fn().mockResolvedValue(err(400, { result: false, error: 'Invalid image' }));
+    await expect(putUserProfile({ token: 't', updates: { image: 'x' } })).resolves.toEqual({
+      result: false,
+      error: 'Invalid image',
+    });
   });
 });

@@ -52,10 +52,8 @@ import {
 } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
-import addressIp from '../modules/addressIp';
-import { jsonAuthHeaders } from '../modules/authHeaders';
 import { joinAllergies, splitAllergies } from '../modules/allergenOptions';
-import { patchUserSettings } from '../modules/recipesApi';
+import { patchUserSettings, putUserProfile } from '../modules/recipesApi';
 import { clearCache as clearRecipeCache } from '../modules/recipeCache';
 import { exitToHome } from '../modules/sessionNavigation';
 import { setComments } from '../reducers/comment';
@@ -175,12 +173,7 @@ export default function SettingsScreen({ navigation }) {
     setIsSaving(true);
     setModalMessage(null);
     try {
-      const res = await fetch(`${addressIp}/users/profile`, {
-        method: 'PUT',
-        headers: jsonAuthHeaders(user.token),
-        body: JSON.stringify(overrides),
-      });
-      const data = await res.json();
+      const data = await putUserProfile({ token: user.token, updates: overrides });
       if (data.result) {
         // Backend now returns `{ result, updated }` with only the changed
         // fields (post-normalisation), so we can dispatch it as-is.
