@@ -52,14 +52,10 @@ export function applyCategoryFilter(recipes, filter) {
  * }} options
  * @returns {object[]}
  */
-export function selectCommunityRecipes(recipes, {
-  activeFilter,
-  isSearching,
-  requiredTags,
-  excludedTags,
-  requiredOrigins,
-  excludedOrigins,
-}) {
+export function selectCommunityRecipes(
+  recipes,
+  { activeFilter, isSearching, requiredTags, excludedTags, requiredOrigins, excludedOrigins },
+) {
   let filtered = applyCategoryFilter(recipes, activeFilter);
   if (requiredTags.length > 0) {
     filtered = filtered.filter((r) => requiredTags.every((tag) => hasTag(r, tag)));
@@ -75,7 +71,12 @@ export function selectCommunityRecipes(recipes, {
     filtered = filtered.filter((r) => !r.origin?.some((o) => excludedOrigins.includes(o)));
   }
   // With a search, the name relevance wins over every filter's own order.
-  if (isSearching || activeFilter === 'All' || activeFilter === 'Vegan' || activeFilter === 'Dessert') {
+  if (
+    isSearching ||
+    activeFilter === 'All' ||
+    activeFilter === 'Vegan' ||
+    activeFilter === 'Dessert'
+  ) {
     return rankRecipes(filtered, { searching: isSearching }).slice(0, COMMUNITY_LIMIT);
   }
   if (activeFilter === 'Quick') {

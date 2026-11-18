@@ -8,13 +8,7 @@
 import React from 'react';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import {
-  AlertOctagon,
-  AlertTriangle,
-  ImageOff,
-  Pencil,
-  Trash2,
-} from 'lucide-react-native';
+import { AlertOctagon, AlertTriangle, ImageOff, Pencil, Trash2 } from 'lucide-react-native';
 import moment from 'moment';
 
 import { useTheme } from '../../contexts/ThemeProvider';
@@ -68,12 +62,7 @@ export default function InventoryItemCard({ item, onEdit, onDelete }) {
   const locationLabel = item.storageLocation
     ? t(`profile.inventory.location.${item.storageLocation}`)
     : '';
-  const subLine = [
-    `${item.quantity} ${item.unit}`,
-    locationLabel,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  const subLine = [`${item.quantity} ${item.unit}`, locationLabel].filter(Boolean).join(' · ');
 
   return (
     <View
@@ -140,9 +129,7 @@ export default function InventoryItemCard({ item, onEdit, onDelete }) {
         </Text>
         {expiryLabel ? (
           <View style={styles.expiryRow}>
-            {ExpiryIcon ? (
-              <ExpiryIcon size={12} color={expiryColor} strokeWidth={2.5} />
-            ) : null}
+            {ExpiryIcon ? <ExpiryIcon size={12} color={expiryColor} strokeWidth={2.5} /> : null}
             <Text
               numberOfLines={1}
               style={{

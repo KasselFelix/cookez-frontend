@@ -55,9 +55,7 @@ export default function CommentComposer({ recipeId, onClose }) {
       const data = await response.json();
       if (data.result && data.comment) {
         dispatch(addCommentToRecipe({ recipeId, comment: data.comment }));
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
-          () => {}
-        );
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
         setMessage('');
         onClose?.();
       } else {
@@ -108,11 +106,7 @@ export default function CommentComposer({ recipeId, onClose }) {
           <Text style={styles.buttonSecondaryText}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.button,
-            styles.buttonPrimary,
-            !canSubmit && styles.buttonDisabled,
-          ]}
+          style={[styles.button, styles.buttonPrimary, !canSubmit && styles.buttonDisabled]}
           onPress={handleSubmit}
           accessibilityRole="button"
           accessibilityLabel="Post comment"

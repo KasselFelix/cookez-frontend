@@ -76,7 +76,10 @@ export default function ResultScreen({ navigation }) {
     // A timeout abort is classified as a SERVER error, not "offline" — the
     // didTimeout flag lets the catch tell it apart from an unmount abort.
     let didTimeout = false;
-    const timeoutId = setTimeout(() => { didTimeout = true; controller.abort(); }, 15000);
+    const timeoutId = setTimeout(() => {
+      didTimeout = true;
+      controller.abort();
+    }, 15000);
     // Re-flag loading on every dep change so that any in-flight re-fetch
     // (filter change, retry, reconnect) suppresses the stale list until
     // the new response is dispatched. Idempotent on the first mount.
@@ -203,8 +206,19 @@ export default function ResultScreen({ navigation }) {
   // Hierarchy: the best match as a large photo, then compact rows; time,
   // difficulty and rating come after the name and the owned share.
   return (
-    <View testID="result-screen" style={[styles.container, { backgroundColor: css.result.background, paddingTop: insets.top + css.spacing.md }]}>
-      <View style={[styles.header, { gap: css.spacing.md, paddingHorizontal: css.spacing.md, paddingBottom: css.spacing.md }]}>
+    <View
+      testID="result-screen"
+      style={[
+        styles.container,
+        { backgroundColor: css.result.background, paddingTop: insets.top + css.spacing.md },
+      ]}
+    >
+      <View
+        style={[
+          styles.header,
+          { gap: css.spacing.md, paddingHorizontal: css.spacing.md, paddingBottom: css.spacing.md },
+        ]}
+      >
         <Pressable
           testID="result-back"
           onPress={() => navigation.navigate('Recap')}
@@ -212,18 +226,36 @@ export default function ResultScreen({ navigation }) {
           accessibilityLabel={t('common.back')}
           style={({ pressed }) => [
             styles.back,
-            { backgroundColor: css.flow.actionBg, borderRadius: css.radius.pill, opacity: pressed ? 0.8 : 1 },
+            {
+              backgroundColor: css.flow.actionBg,
+              borderRadius: css.radius.pill,
+              opacity: pressed ? 0.8 : 1,
+            },
             css.shadow.sm,
           ]}
         >
           <ChevronLeft size={22} strokeWidth={2.5} color={css.flow.actionIcon} />
         </Pressable>
         <View style={styles.flex}>
-          <Text accessibilityRole="header" style={{ fontFamily: css.typography.fontDisplay, fontSize: css.typography.h2Size, color: css.result.ink, fontWeight: '700' }}>
+          <Text
+            accessibilityRole="header"
+            style={{
+              fontFamily: css.typography.fontDisplay,
+              fontSize: css.typography.h2Size,
+              color: css.result.ink,
+              fontWeight: '700',
+            }}
+          >
             {t('result.title')}
           </Text>
           {!loading && recipes.length > 0 && (
-            <Text style={{ fontFamily: css.typography.fontBody, fontSize: css.typography.bodySmSize, color: css.result.muted }}>
+            <Text
+              style={{
+                fontFamily: css.typography.fontBody,
+                fontSize: css.typography.bodySmSize,
+                color: css.result.muted,
+              }}
+            >
               {t('result.subtitle', { count: recipes.length })}
             </Text>
           )}
@@ -234,7 +266,11 @@ export default function ResultScreen({ navigation }) {
         // While the fetch is in flight, suppress the recipes list entirely.
         // Reading `recipes.length` here would leak stale data from the
         // previous fetch (or App.js boot) for the duration of the request.
-        <View style={styles.center} accessibilityRole="progressbar" accessibilityLabel={t('result.title')}>
+        <View
+          style={styles.center}
+          accessibilityRole="progressbar"
+          accessibilityLabel={t('result.title')}
+        >
           <ActivityIndicator size="large" color={css.result.meterFill} />
         </View>
       ) : recipes.length > 0 ? (
@@ -243,15 +279,33 @@ export default function ResultScreen({ navigation }) {
           keyExtractor={(r, i) => r._id || String(i)}
           ListHeaderComponent={<ResultHero recipe={best} onPress={() => open(best)} />}
           renderItem={({ item }) => <ResultRow recipe={item} onPress={() => open(item)} />}
-          contentContainerStyle={{ paddingHorizontal: css.spacing.md, paddingBottom: insets.bottom + css.spacing.xl, gap: css.spacing.sm }}
+          contentContainerStyle={{
+            paddingHorizontal: css.spacing.md,
+            paddingBottom: insets.bottom + css.spacing.xl,
+            gap: css.spacing.sm,
+          }}
           showsVerticalScrollIndicator={false}
         />
       ) : (
         <View style={[styles.center, { paddingHorizontal: css.spacing.xl, gap: css.spacing.xs }]}>
-          <Text style={{ fontFamily: css.typography.fontHeading, fontSize: css.typography.h4Size, color: css.result.ink, textAlign: 'center' }}>
+          <Text
+            style={{
+              fontFamily: css.typography.fontHeading,
+              fontSize: css.typography.h4Size,
+              color: css.result.ink,
+              textAlign: 'center',
+            }}
+          >
             {t('result.empty.line1')}
           </Text>
-          <Text style={{ fontFamily: css.typography.fontBody, fontSize: css.typography.bodySize, color: css.result.muted, textAlign: 'center' }}>
+          <Text
+            style={{
+              fontFamily: css.typography.fontBody,
+              fontSize: css.typography.bodySize,
+              color: css.result.muted,
+              textAlign: 'center',
+            }}
+          >
             {t('result.empty.line2')}
           </Text>
         </View>

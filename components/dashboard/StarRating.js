@@ -10,9 +10,7 @@ import { useTheme } from '../../contexts/ThemeProvider';
  */
 export default function StarRating({ votes, size = 13, style }) {
   const css = useTheme();
-  const avg = votes?.length
-    ? votes.reduce((s, v) => s + v.note, 0) / votes.length
-    : 0;
+  const avg = votes?.length ? votes.reduce((s, v) => s + v.note, 0) / votes.length : 0;
   const rounded = Math.floor(avg);
 
   return (

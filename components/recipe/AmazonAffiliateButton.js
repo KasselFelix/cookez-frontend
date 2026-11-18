@@ -30,9 +30,7 @@ export default function AmazonAffiliateButton({ ingredientName, quantity, unit }
   // Resolve to a 2-letter code so the URL builder picks the right TLD.
   const localeMode = useSelector((s) => s?.locale?.value?.lang ?? 'system');
   const locale = resolveLocale(localeMode);
-  const amazonConfig = useSelector(
-    (s) => s?.appConfig?.value?.amazonConfig
-  );
+  const amazonConfig = useSelector((s) => s?.appConfig?.value?.amazonConfig);
 
   const handlePress = () => {
     const url = buildAmazonUrl({
@@ -43,7 +41,7 @@ export default function AmazonAffiliateButton({ ingredientName, quantity, unit }
       amazonConfig,
     });
     Linking.openURL(url).catch((err) =>
-      console.warn('[AmazonAffiliateButton] Failed to open:', err)
+      console.warn('[AmazonAffiliateButton] Failed to open:', err),
     );
   };
 
@@ -64,9 +62,7 @@ export default function AmazonAffiliateButton({ ingredientName, quantity, unit }
       ]}
     >
       <FontAwesome name="shopping-cart" size={14} color="white" />
-      <Text style={styles.text}>
-        {t('recipe.shopping.buyOnAmazon.label')}
-      </Text>
+      <Text style={styles.text}>{t('recipe.shopping.buyOnAmazon.label')}</Text>
     </Pressable>
   );
 }

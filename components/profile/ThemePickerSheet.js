@@ -116,7 +116,7 @@ export default function ThemePickerSheet({ visible, onClose }) {
           }).start();
         },
       }),
-    [onClose, sheetTranslateY]
+    [onClose, sheetTranslateY],
   );
 
   const handlePick = async (key) => {
@@ -247,9 +247,7 @@ export default function ThemePickerSheet({ visible, onClose }) {
                     >
                       {t(`settings.theme.${key}`)}
                     </Text>
-                    {isActive ? (
-                      <Check size={14} color={themeObj.palette.neutral900} />
-                    ) : null}
+                    {isActive ? <Check size={14} color={themeObj.palette.neutral900} /> : null}
                   </View>
                 </TouchableOpacity>
               );

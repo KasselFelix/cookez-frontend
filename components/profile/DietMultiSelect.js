@@ -71,9 +71,7 @@ export default function DietMultiSelect({ visible, onClose }) {
 
   const toggle = (key) => {
     setError('');
-    setSelected((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
-    );
+    setSelected((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   };
 
   const save = async () => {
@@ -213,7 +211,11 @@ export default function DietMultiSelect({ visible, onClose }) {
             })}
           </ScrollView>
 
-          <InlineMessage testID="diet-error" message={error} style={{ marginTop: css.spacing.sm }} />
+          <InlineMessage
+            testID="diet-error"
+            message={error}
+            style={{ marginTop: css.spacing.sm }}
+          />
 
           <View style={styles.actions}>
             <TouchableOpacity

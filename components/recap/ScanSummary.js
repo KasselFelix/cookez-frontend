@@ -21,7 +21,9 @@ export default function ScanSummary({ onSearch }) {
   const { photos, unmatched } = useSelector((state) => state.scan.value);
 
   const pending = photos.filter((photo) => photo.status === 'pending').length;
-  const failed = photos.filter((photo) => photo.status === 'error' || photo.status === 'quota' || photo.status === 'signedOut').length;
+  const failed = photos.filter(
+    (photo) => photo.status === 'error' || photo.status === 'quota' || photo.status === 'signedOut',
+  ).length;
   if (pending === 0 && failed === 0 && unmatched.length === 0) return null;
 
   const lineStyle = {
@@ -31,9 +33,15 @@ export default function ScanSummary({ onSearch }) {
   };
 
   return (
-    <View style={[styles.container, { gap: css.spacing.xs, marginBottom: css.spacing.sm }]} testID="scan-summary">
+    <View
+      style={[styles.container, { gap: css.spacing.xs, marginBottom: css.spacing.sm }]}
+      testID="scan-summary"
+    >
       {pending > 0 && (
-        <View style={[styles.line, { gap: css.spacing.sm, paddingHorizontal: css.spacing.md }]} accessibilityLiveRegion="polite">
+        <View
+          style={[styles.line, { gap: css.spacing.sm, paddingHorizontal: css.spacing.md }]}
+          accessibilityLiveRegion="polite"
+        >
           <ActivityIndicator size="small" color={css.palette.primary800} />
           <Text style={lineStyle}>{t('recap.scan.pending', { count: pending })}</Text>
         </View>

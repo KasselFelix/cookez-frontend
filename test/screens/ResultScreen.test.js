@@ -6,7 +6,11 @@ import { makeRecipeState } from '../factories/recipe';
 // Mock the three external collaborators so we drive each terminal state.
 jest.mock('../../modules/recipesApi', () => {
   class ApiError extends Error {
-    constructor(message, { status } = {}) { super(message); this.name = 'ApiError'; this.status = status; }
+    constructor(message, { status } = {}) {
+      super(message);
+      this.name = 'ApiError';
+      this.status = status;
+    }
   }
   return { __esModule: true, ApiError, fetchRecipeResult: jest.fn() };
 });
@@ -24,7 +28,9 @@ import { getCachedResult } from '../../modules/recipeCache';
 
 const preloadedState = {
   user: { value: {} },
-  ingredient: { value: [{ data: { _id: 'ing1', display_name: 'apple', g_per_serving: 100, unit: 'g' } }] },
+  ingredient: {
+    value: [{ data: { _id: 'ing1', display_name: 'apple', g_per_serving: 100, unit: 'g' } }],
+  },
   recipeFilters: { value: { selectedTags: [], selectedOrigins: [], currentServings: 1 } },
   recipe: makeRecipeState(),
 };
@@ -32,7 +38,9 @@ const nav = { navigate: jest.fn() };
 const renderScreen = () =>
   renderWithProviders(<ResultScreen navigation={nav} />, { preloadedState, withNavigation: false });
 
-beforeEach(() => { jest.clearAllMocks(); });
+beforeEach(() => {
+  jest.clearAllMocks();
+});
 
 describe('ResultScreen error states (Plan 006 B2)', () => {
   it('shows ErrorScreen (not OfflineScreen) on a server 500 while online', async () => {
@@ -54,7 +62,10 @@ describe('ResultScreen error states (Plan 006 B2)', () => {
   it('falls back to stale cache on a server error when a cache exists', async () => {
     useConnectivity.mockReturnValue({ isConnected: true, isInternetReachable: true });
     fetchRecipeResult.mockRejectedValue(new ApiError('boom', { status: 500 }));
-    getCachedResult.mockResolvedValue({ data: { recipes: [{ _id: 'r1', name: 'Cached Dish' }] }, stale: true });
+    getCachedResult.mockResolvedValue({
+      data: { recipes: [{ _id: 'r1', name: 'Cached Dish' }] },
+      stale: true,
+    });
     renderScreen();
     expect(await screen.findByText('Cached Dish')).toBeTruthy();
     expect(screen.queryByTestId('result-error-screen')).toBeNull();
@@ -65,11 +76,16 @@ describe('ResultScreen error states (Plan 006 B2)', () => {
     useConnectivity.mockReturnValue({ isConnected: true, isInternetReachable: true });
     getCachedResult.mockResolvedValue(null);
     // Hang until aborted, then reject as AbortError — faithful to a real fetch.
-    fetchRecipeResult.mockImplementation(({ signal }) => new Promise((_, reject) => {
-      signal.addEventListener('abort', () => {
-        const e = new Error('Aborted'); e.name = 'AbortError'; reject(e);
-      });
-    }));
+    fetchRecipeResult.mockImplementation(
+      ({ signal }) =>
+        new Promise((_, reject) => {
+          signal.addEventListener('abort', () => {
+            const e = new Error('Aborted');
+            e.name = 'AbortError';
+            reject(e);
+          });
+        }),
+    );
     renderScreen();
     await jest.advanceTimersByTimeAsync(15000);
     expect(await screen.findByTestId('result-error-screen')).toBeTruthy();

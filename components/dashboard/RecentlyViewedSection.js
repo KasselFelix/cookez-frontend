@@ -1,7 +1,14 @@
 // RecentlyViewedSection — horizontal cards of the last viewed recipes.
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';

@@ -68,12 +68,7 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable
         style={[styles.overlay, { backgroundColor: css.palette.overlayDark }]}
         onPress={onClose}
@@ -147,12 +142,7 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
                   ]}
                 >
                   {isOn ? (
-                    <View
-                      style={[
-                        styles.radioDot,
-                        { backgroundColor: css.palette.neutral900 },
-                      ]}
-                    />
+                    <View style={[styles.radioDot, { backgroundColor: css.palette.neutral900 }]} />
                   ) : null}
                 </View>
                 <Text
@@ -176,7 +166,11 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
               </TouchableOpacity>
             );
           })}
-          <InlineMessage testID="goal-error" message={error} style={{ marginTop: css.spacing.sm }} />
+          <InlineMessage
+            testID="goal-error"
+            message={error}
+            style={{ marginTop: css.spacing.sm }}
+          />
         </Pressable>
       </Pressable>
     </Modal>

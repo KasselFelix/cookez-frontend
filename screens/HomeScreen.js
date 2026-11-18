@@ -1,12 +1,10 @@
-import LottieView from "lottie-react-native";
-import { Image, StyleSheet, View } from "react-native";
-import MyButton from "../components/MyButton";
-import buttonStyles from "../styles/Button";
-import css from "../styles/Global";
-import { useSelector } from "react-redux";
-import { enterApp } from "../modules/sessionNavigation";
-
-
+import LottieView from 'lottie-react-native';
+import { Image, StyleSheet, View } from 'react-native';
+import MyButton from '../components/MyButton';
+import buttonStyles from '../styles/Button';
+import css from '../styles/Global';
+import { useSelector } from 'react-redux';
+import { enterApp } from '../modules/sessionNavigation';
 
 export default function HomeScreen({ navigation }) {
   const user = useSelector((state) => state.user.value);
@@ -17,22 +15,25 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.logoContainer}>
         <Image
           style={styles.logo}
-          source={require("../assets/logo/cookez_logo.png")}
+          source={require('../assets/logo/cookez_logo.png')}
           alt="logo"
           accessibilityLabel="logo"
         />
       </View>
-      <LottieView style={styles.lottieAnim} source={require("../assets/animation/Animation - 1723436591199.json")}
-      autoPlay
-      loop
+      <LottieView
+        style={styles.lottieAnim}
+        source={require('../assets/animation/Animation - 1723436591199.json')}
+        autoPlay
+        loop
       />
-      
-      <View style={styles.buttonsContainer}>
 
+      <View style={styles.buttonsContainer}>
         <View style={styles.buttons}>
           <MyButton
-            dataFlow={() => user.token ? enterApp(navigation, "Kickoff") : navigation.navigate("Kickoff")}
-            text={"SNAP"}
+            dataFlow={() =>
+              user.token ? enterApp(navigation, 'Kickoff') : navigation.navigate('Kickoff')
+            }
+            text={'SNAP'}
             testID="home-snap"
             buttonType={buttonStyles.buttonTwo}
           />
@@ -40,8 +41,8 @@ export default function HomeScreen({ navigation }) {
 
         <View style={styles.buttons}>
           <MyButton
-            dataFlow={() => user.token ? enterApp(navigation) : navigation.navigate("Login")}
-            text={"CONNECT"}
+            dataFlow={() => (user.token ? enterApp(navigation) : navigation.navigate('Login'))}
+            text={'CONNECT'}
             testID="home-connect"
             buttonType={buttonStyles.buttonOne}
           />
@@ -50,8 +51,8 @@ export default function HomeScreen({ navigation }) {
         {__DEV__ && (
           <View style={styles.buttons}>
             <MyButton
-              dataFlow={() => navigation.navigate("DevGallery")}
-              text={"TEST"}
+              dataFlow={() => navigation.navigate('DevGallery')}
+              text={'TEST'}
               testID="home-gallery"
               buttonType={buttonStyles.buttonTwo}
             />
@@ -69,36 +70,36 @@ const styles = StyleSheet.create({
   },
 
   backgroundLeft: {
-    width: "50%",
-    height: "100%",
+    width: '50%',
+    height: '100%',
     backgroundColor: css.palette.secondary500,
-    position: "absolute",
+    position: 'absolute',
   },
 
   logoContainer: {
     flex: 0,
-    height: "54%",
+    height: '54%',
     backgroundColor: css.palette.accent500,
     borderBottomLeftRadius: 180,
   },
 
   logo: {
-    marginTop:90,
+    marginTop: 90,
     marginLeft: 40,
     width: 320,
     height: 80,
   },
 
-  lottieAnim:{
-    height:'80%',
-    width:'95%',
-    position:'absolute',
+  lottieAnim: {
+    height: '80%',
+    width: '95%',
+    position: 'absolute',
   },
 
   buttonsContainer: {
     flex: 0,
     paddingTop: 20,
-    height: "100%",
+    height: '100%',
     backgroundColor: css.palette.secondary500,
     borderTopRightRadius: 180,
     //borderTopLeftRadius: 180,

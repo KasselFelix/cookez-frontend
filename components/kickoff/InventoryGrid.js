@@ -40,8 +40,14 @@ export default function InventoryGrid() {
   // Membership lookup by id-string so toggle stays O(1) per tile and the
   // memoised Set only rebuilds when the selected list actually changes.
   const selectedIds = useMemo(
-    () => new Set(selected.map((i) => i.data?._id).filter(Boolean).map(String)),
-    [selected]
+    () =>
+      new Set(
+        selected
+          .map((i) => i.data?._id)
+          .filter(Boolean)
+          .map(String),
+      ),
+    [selected],
   );
 
   // Responsive density: 3 cols on phones < 380 dp, 4 cols on wider devices.
@@ -58,8 +64,7 @@ export default function InventoryGrid() {
     if (!rawId) return; // can't add to a slice that requires _id
 
     const _id = String(rawId);
-    const display_name =
-      item.ingredient?.name || item.name || 'unknown';
+    const display_name = item.ingredient?.name || item.name || 'unknown';
     // Catalog photo only when loadable; otherwise useIngredientPhotos fills it.
     const photo = loadableImage(item.ingredient?.photoUrl) || loadableImage(item.ingredient?.image);
     // Pantry items carry both the BDD reference unit (`ingredient.defaultUnit`)
@@ -101,8 +106,7 @@ export default function InventoryGrid() {
         const rawId = item.ingredient?._id || item.ingredient;
         const idStr = rawId ? String(rawId) : null;
         const isSelected = idStr ? selectedIds.has(idStr) : false;
-        const display_name =
-          item.ingredient?.name || item.name || '—';
+        const display_name = item.ingredient?.name || item.name || '—';
         const photoUrl =
           loadableImage(item.ingredient?.photoUrl) || loadableImage(item.ingredient?.image);
         // Reserve ~2% for gap; width is a string % to play well with flexWrap.
@@ -120,15 +124,11 @@ export default function InventoryGrid() {
               styles.cell,
               {
                 width: cellWidth,
-                backgroundColor: isSelected
-                  ? css.palette.primary500
-                  : css.palette.surfaceCard,
+                backgroundColor: isSelected ? css.palette.primary500 : css.palette.surfaceCard,
                 opacity: pressed ? 0.7 : 1,
-                borderColor: isSelected
-                  ? css.palette.primary800
-                  : 'transparent',
-                  // transform: isSelected ? [{ scale: 1.02 }] : [{ scale: 1 }],
-                  // ...(isSelected ? css.shadow.md : {}), 
+                borderColor: isSelected ? css.palette.primary800 : 'transparent',
+                // transform: isSelected ? [{ scale: 1.02 }] : [{ scale: 1 }],
+                // ...(isSelected ? css.shadow.md : {}),
               },
             ]}
           >
@@ -150,11 +150,7 @@ export default function InventoryGrid() {
                   },
                 ]}
               >
-                <FontAwesome
-                  name="cutlery"
-                  size={24}
-                  color={css.palette.neutral500}
-                />
+                <FontAwesome name="cutlery" size={24} color={css.palette.neutral500} />
               </View>
             )}
             <Text
@@ -183,12 +179,7 @@ export default function InventoryGrid() {
               {item.unit || ''}
             </Text>
             {isSelected && (
-              <View
-                style={[
-                  styles.check,
-                  { backgroundColor: css.palette.primary800 },
-                ]}
-              >
+              <View style={[styles.check, { backgroundColor: css.palette.primary800 }]}>
                 <FontAwesome name="check" size={10} color="white" />
               </View>
             )}

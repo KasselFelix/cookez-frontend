@@ -37,10 +37,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
 import { authHeaders } from '../modules/authHeaders';
-import {
-  commitFollow,
-  setFollowOptimistic,
-} from '../reducers/follow';
+import { commitFollow, setFollowOptimistic } from '../reducers/follow';
 import BadgeCircle from '../components/profile/BadgeCircle';
 import PillChip from '../components/profile/PillChip';
 import ProfileIdentityBlock from '../components/profile/ProfileIdentityBlock';
@@ -95,10 +92,7 @@ function PublicHeader({ navigation, title, t, css }) {
         },
       ]}
     >
-      <HeaderIconButton
-        label={t('publicProfile.headerBack')}
-        onPress={() => navigation.goBack()}
-      >
+      <HeaderIconButton label={t('publicProfile.headerBack')} onPress={() => navigation.goBack()}>
         <ChevronLeft size={22} color={css.palette.neutral900} />
       </HeaderIconButton>
       <Text
@@ -127,9 +121,7 @@ function PublicHeader({ navigation, title, t, css }) {
 
 function RecipeGridItem({ item, css }) {
   const imageSource =
-    typeof item?.image === 'string' && item.image.startsWith('http')
-      ? { uri: item.image }
-      : null;
+    typeof item?.image === 'string' && item.image.startsWith('http') ? { uri: item.image } : null;
   return (
     <View style={[styles.gridItem, { marginHorizontal: css.spacing.xs }]}>
       <RecipeImage
@@ -209,8 +201,7 @@ export default function PublicProfileScreen({ navigation, route }) {
         } else {
           setRecipes(next);
         }
-        const more =
-          typeof data.hasMore === 'boolean' ? data.hasMore : next.length >= PAGE_LIMIT;
+        const more = typeof data.hasMore === 'boolean' ? data.hasMore : next.length >= PAGE_LIMIT;
         setRecipesHasMore(more);
       } catch {
         // Soft failure: keep whatever recipes we already had.
@@ -292,12 +283,7 @@ export default function PublicProfileScreen({ navigation, route }) {
       <ProfileScreenContainer
         scroll={false}
         header={
-          <PublicHeader
-            navigation={navigation}
-            title={`@${username || ''}`}
-            t={t}
-            css={css}
-          />
+          <PublicHeader navigation={navigation} title={`@${username || ''}`} t={t} css={css} />
         }
       >
         <View style={[styles.centered, { padding: css.spacing.lg }]}>
@@ -342,7 +328,8 @@ export default function PublicProfileScreen({ navigation, route }) {
     );
   }
 
-  const region = profile.location?.region || (typeof profile.location === 'string' ? profile.location : '');
+  const region =
+    profile.location?.region || (typeof profile.location === 'string' ? profile.location : '');
   const subtitle =
     profile.cuisineSpecialty || region
       ? `${profile.cuisineSpecialty || 'Home cook'}${region ? ` · ${region}` : ''}`
@@ -360,7 +347,10 @@ export default function PublicProfileScreen({ navigation, route }) {
       : profile.following?.length || 0;
 
   const stats = [
-    { value: recipes.length || profile.recipes?.length || 0, label: t('publicProfile.stats.recipes') },
+    {
+      value: recipes.length || profile.recipes?.length || 0,
+      label: t('publicProfile.stats.recipes'),
+    },
     { value: followersCount, label: t('publicProfile.stats.followers') },
     { value: followingCount, label: t('publicProfile.stats.following') },
   ];
@@ -495,7 +485,12 @@ export default function PublicProfileScreen({ navigation, route }) {
 
       <ProfileStatsRow stats={stats} />
 
-      <View style={[styles.searchRow, { paddingHorizontal: css.spacing.md, paddingTop: css.spacing.md }]}>
+      <View
+        style={[
+          styles.searchRow,
+          { paddingHorizontal: css.spacing.md, paddingTop: css.spacing.md },
+        ]}
+      >
         <View
           style={[
             styles.searchInputWrap,
@@ -532,7 +527,11 @@ export default function PublicProfileScreen({ navigation, route }) {
           onPress={() => showToast({ type: 'info', message: t('common.comingSoon') })}
           style={[
             styles.filterBtn,
-            { backgroundColor: css.palette.neutral900, borderRadius: css.radius.pill, marginLeft: css.spacing.sm },
+            {
+              backgroundColor: css.palette.neutral900,
+              borderRadius: css.radius.pill,
+              marginLeft: css.spacing.sm,
+            },
           ]}
           accessibilityRole="button"
           accessibilityLabel={t('publicProfile.filters')}
@@ -544,7 +543,11 @@ export default function PublicProfileScreen({ navigation, route }) {
       <View
         style={[
           styles.tagRow,
-          { paddingHorizontal: css.spacing.md, paddingTop: css.spacing.cardGap, paddingBottom: css.spacing.xs },
+          {
+            paddingHorizontal: css.spacing.md,
+            paddingTop: css.spacing.cardGap,
+            paddingBottom: css.spacing.xs,
+          },
         ]}
       >
         {TAGS.map((tag) => {
@@ -553,12 +556,12 @@ export default function PublicProfileScreen({ navigation, route }) {
           return (
             <View
               key={tag}
-              style={[styles.tagSpacer, { marginRight: css.spacing.sm, marginBottom: css.spacing.sm }]}
+              style={[
+                styles.tagSpacer,
+                { marginRight: css.spacing.sm, marginBottom: css.spacing.sm },
+              ]}
             >
-              <PillChip
-                active={isActive}
-                onPress={() => setActiveTag(isActive ? null : tag)}
-              >
+              <PillChip active={isActive} onPress={() => setActiveTag(isActive ? null : tag)}>
                 {label}
               </PillChip>
             </View>
@@ -566,7 +569,9 @@ export default function PublicProfileScreen({ navigation, route }) {
         })}
       </View>
 
-      <View style={[styles.gridWrap, { paddingHorizontal: css.spacing.md, paddingTop: css.spacing.sm }]}>
+      <View
+        style={[styles.gridWrap, { paddingHorizontal: css.spacing.md, paddingTop: css.spacing.sm }]}
+      >
         {filteredRecipes.length === 0 ? (
           <View style={[styles.gridEmpty, { paddingVertical: css.spacing.xl }]}>
             <Text

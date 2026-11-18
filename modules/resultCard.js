@@ -18,7 +18,11 @@ export function toResultCard(recipe, locale) {
   const notes = votes.map((v) => Number(v?.note)).filter((n) => Number.isFinite(n));
   const rating = notes.length ? (notes.reduce((a, n) => a + n, 0) / notes.length).toFixed(1) : null;
 
-  const rawOrigins = Array.isArray(recipe?.origin) ? recipe.origin : recipe?.origin ? [recipe.origin] : [];
+  const rawOrigins = Array.isArray(recipe?.origin)
+    ? recipe.origin
+    : recipe?.origin
+      ? [recipe.origin]
+      : [];
   const origins = rawOrigins
     .filter((name) => typeof name === 'string' && name.trim())
     .slice(0, 2)

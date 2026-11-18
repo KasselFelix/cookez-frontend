@@ -29,22 +29,14 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/test/setup.js'],
 
   // Where to find tests. Co-located `__tests__` folders and `*.test.js`.
-  testMatch: [
-    '<rootDir>/test/**/*.test.js',
-    '<rootDir>/**/__tests__/**/*.test.js',
-  ],
+  testMatch: ['<rootDir>/test/**/*.test.js', '<rootDir>/**/__tests__/**/*.test.js'],
 
   // testEnvironment is intentionally NOT overridden — `jest-expo` provides the
   // correct RN environment. Network safety comes from the global `fetch` mock
   // in test/setup.js, not from the environment.
 
   // Speed: ignore the heavy dirs.
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/.expo/',
-    '/android/',
-    '/ios/',
-  ],
+  testPathIgnorePatterns: ['/node_modules/', '/.expo/', '/android/', '/ios/'],
 
   // Transform node_modules that ship untranspiled ESM / Flow / JSX.
   // The negative lookahead lists every package the suite imports (directly

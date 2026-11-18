@@ -1,22 +1,26 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { useCallback, useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
+import { LinearGradient } from 'expo-linear-gradient';
+import { useCallback, useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 
-import CategoryFilterBar from "../components/dashboard/CategoryFilterBar";
-import CommunityRecipeCard from "../components/dashboard/CommunityRecipeCard";
-import DashboardSearchBar from "../components/dashboard/DashboardSearchBar";
-import { DashboardEmpty, DashboardLoadError, DashboardLoading } from "../components/dashboard/DashboardStatus";
-import RecentlyViewedSection from "../components/dashboard/RecentlyViewedSection";
-import FiltersModal from "../components/FiltersModal";
-import { useTheme } from "../contexts/ThemeProvider";
-import useCatalogRecipes from "../hooks/useCatalogRecipes";
-import useRecentlyViewed from "../hooks/useRecentlyViewed";
-import useRecipeSearch from "../hooks/useRecipeSearch";
-import useTabBarHeight from "../hooks/useTabBarHeight";
-import useT from "../i18n/useT";
-import { selectCommunityRecipes } from "../modules/dashboardFilters";
-import { addRecipe } from "../reducers/recipe";
+import CategoryFilterBar from '../components/dashboard/CategoryFilterBar';
+import CommunityRecipeCard from '../components/dashboard/CommunityRecipeCard';
+import DashboardSearchBar from '../components/dashboard/DashboardSearchBar';
+import {
+  DashboardEmpty,
+  DashboardLoadError,
+  DashboardLoading,
+} from '../components/dashboard/DashboardStatus';
+import RecentlyViewedSection from '../components/dashboard/RecentlyViewedSection';
+import FiltersModal from '../components/FiltersModal';
+import { useTheme } from '../contexts/ThemeProvider';
+import useCatalogRecipes from '../hooks/useCatalogRecipes';
+import useRecentlyViewed from '../hooks/useRecentlyViewed';
+import useRecipeSearch from '../hooks/useRecipeSearch';
+import useTabBarHeight from '../hooks/useTabBarHeight';
+import useT from '../i18n/useT';
+import { selectCommunityRecipes } from '../modules/dashboardFilters';
+import { addRecipe } from '../reducers/recipe';
 
 export default function UserDashboardScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -30,8 +34,8 @@ export default function UserDashboardScreen({ navigation }) {
   const { recipes, isLoading, loadError, reload } = useCatalogRecipes();
   const recentlyViewed = useRecentlyViewed(user?.token);
 
-  const [activeFilter, setActiveFilter] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const [requiredTags, setRequiredTags] = useState([]);
   const [excludedTags, setExcludedTags] = useState([]);
   const [requiredOrigins, setRequiredOrigins] = useState([]);
@@ -42,14 +46,11 @@ export default function UserDashboardScreen({ navigation }) {
 
   const availableOrigins = useMemo(
     () => Array.from(new Set(recipes.flatMap((r) => r.origin ?? []))).sort(),
-    [recipes]
+    [recipes],
   );
 
   const activeFiltersCount =
-    requiredTags.length +
-    excludedTags.length +
-    requiredOrigins.length +
-    excludedOrigins.length;
+    requiredTags.length + excludedTags.length + requiredOrigins.length + excludedOrigins.length;
 
   const communityRecipes = useMemo(
     () =>
@@ -70,7 +71,7 @@ export default function UserDashboardScreen({ navigation }) {
       excludedTags,
       requiredOrigins,
       excludedOrigins,
-    ]
+    ],
   );
 
   const navigateToRecipe = useCallback(
@@ -80,9 +81,9 @@ export default function UserDashboardScreen({ navigation }) {
       // stores it without adding it to the catalog list.
       const { matchRank, ...stored } = recipe;
       dispatch(addRecipe(stored));
-      navigation.navigate("Recipe", { recipe });
+      navigation.navigate('Recipe', { recipe });
     },
-    [dispatch, navigation]
+    [dispatch, navigation],
   );
 
   const greeting = useMemo(() => {
@@ -97,11 +98,14 @@ export default function UserDashboardScreen({ navigation }) {
     // Cache cold AND fetch failed.
     if (loadError) return <DashboardLoadError onRetry={reload} />;
     // Loaded, and the database really has no recipe.
-    return <DashboardEmpty onAddRecipe={() => navigation.navigate("AddRecipe")} />;
+    return <DashboardEmpty onAddRecipe={() => navigation.navigate('AddRecipe')} />;
   }
 
   return (
-    <View testID="dashboard-screen" style={[styles.container, { backgroundColor: css.palette.surface }]}>
+    <View
+      testID="dashboard-screen"
+      style={[styles.container, { backgroundColor: css.palette.surface }]}
+    >
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: tabBarHeight + css.spacing.lg }}
@@ -210,6 +214,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   filterEmpty: {
-    alignItems: "center",
+    alignItems: 'center',
   },
 });

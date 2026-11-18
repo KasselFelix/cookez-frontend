@@ -16,7 +16,14 @@ const TOMATO = {
   confidence: 'high',
   confirm: false,
 };
-const CHEDDAR = { ...TOMATO, _id: 'b'.repeat(24), name: 'cheddar cheese', photoUrl: null, defaultUnit: 'g', confirm: true };
+const CHEDDAR = {
+  ...TOMATO,
+  _id: 'b'.repeat(24),
+  name: 'cheddar cheese',
+  photoUrl: null,
+  defaultUnit: 'g',
+  confirm: true,
+};
 const GARLIC = { ...TOMATO, _id: 'c'.repeat(24), name: 'garlic', confidence: 'low' };
 
 const deferred = () => {
@@ -67,7 +74,9 @@ describe('scanPhoto', () => {
     const done = store.dispatch(scanPhoto({ uri: 'file:///1.jpg', token: 'tok' }, { analyze }));
 
     expect(analyze).toHaveBeenCalledWith('file:///1.jpg', 'tok');
-    expect(store.getState().scan.value.photos).toEqual([expect.objectContaining({ uri: 'file:///1.jpg', status: 'pending' })]);
+    expect(store.getState().scan.value.photos).toEqual([
+      expect.objectContaining({ uri: 'file:///1.jpg', status: 'pending' }),
+    ]);
 
     answer.resolve({ status: 'ok', ingredients: [TOMATO, CHEDDAR], unmatched: ['yuzu kosho'] });
     await done;
@@ -75,7 +84,9 @@ describe('scanPhoto', () => {
     const state = store.getState();
     expect(state.scan.value.photos).toEqual([]);
     expect(state.scan.value.unmatched).toEqual(['yuzu kosho']);
-    expect(state.ingredient.value.map((i) => [i.data._id, i.data.display_name, i.data.toConfirm])).toEqual([
+    expect(
+      state.ingredient.value.map((i) => [i.data._id, i.data.display_name, i.data.toConfirm]),
+    ).toEqual([
       [TOMATO._id, 'tomato', false],
       [CHEDDAR._id, 'cheddar cheese', true],
     ]);
@@ -84,7 +95,9 @@ describe('scanPhoto', () => {
   it('ignores the answer of a photo deleted before it came', async () => {
     const store = makeStore();
     const answer = deferred();
-    const done = store.dispatch(scanPhoto({ uri: 'file:///2.jpg', token: 't' }, { analyze: () => answer.promise }));
+    const done = store.dispatch(
+      scanPhoto({ uri: 'file:///2.jpg', token: 't' }, { analyze: () => answer.promise }),
+    );
     const { id } = store.getState().scan.value.photos[0];
     store.dispatch(removeScanPhoto(id));
 
@@ -101,16 +114,25 @@ describe('scanPhoto', () => {
     ['unauthorized', 'signedOut'],
   ])('keeps the photo with status %s → %s', async (status, expected) => {
     const store = makeStore();
-    await store.dispatch(scanPhoto({ uri: 'file:///3.jpg', token: 't' }, { analyze: async () => ({ status }) }));
-    expect(store.getState().scan.value.photos).toEqual([expect.objectContaining({ status: expected })]);
+    await store.dispatch(
+      scanPhoto({ uri: 'file:///3.jpg', token: 't' }, { analyze: async () => ({ status }) }),
+    );
+    expect(store.getState().scan.value.photos).toEqual([
+      expect.objectContaining({ status: expected }),
+    ]);
   });
 
   it('marks a photo without food as empty', async () => {
     const store = makeStore();
     await store.dispatch(
-      scanPhoto({ uri: 'file:///4.jpg', token: 't' }, { analyze: async () => ({ status: 'ok', ingredients: [], unmatched: [] }) })
+      scanPhoto(
+        { uri: 'file:///4.jpg', token: 't' },
+        { analyze: async () => ({ status: 'ok', ingredients: [], unmatched: [] }) },
+      ),
     );
-    expect(store.getState().scan.value.photos).toEqual([expect.objectContaining({ status: 'empty' })]);
+    expect(store.getState().scan.value.photos).toEqual([
+      expect.objectContaining({ status: 'empty' }),
+    ]);
   });
 
   it('runs several photos at once, each with its own answer', async () => {
@@ -129,7 +151,9 @@ describe('scanPhoto', () => {
 
     first.resolve({ status: 'quota' });
     await a;
-    expect(store.getState().scan.value.photos).toEqual([expect.objectContaining({ uri: 'file:///a.jpg', status: 'quota' })]);
+    expect(store.getState().scan.value.photos).toEqual([
+      expect.objectContaining({ uri: 'file:///a.jpg', status: 'quota' }),
+    ]);
     expect(store.getState().ingredient.value.map((i) => i.data.display_name)).toEqual(['garlic']);
   });
 });

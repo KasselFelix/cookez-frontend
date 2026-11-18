@@ -47,9 +47,7 @@ export default function ProfileIdentityBlock({
   const avatarSource = useMemo(() => getAvatarSource(user?.image), [user?.image]);
 
   const displayName =
-    `${user?.firstname || ''} ${user?.lastname || ''}`.trim() ||
-    user?.username ||
-    'Chef';
+    `${user?.firstname || ''} ${user?.lastname || ''}`.trim() || user?.username || 'Chef';
 
   const householdValue = user?.settings?.householdComposition || 0;
   // Reads `dietRestrictions[]` (written by DietMultiSelect) and falls back
@@ -71,8 +69,7 @@ export default function ProfileIdentityBlock({
       ? 'No allergies'
       : `${allergyCount} ${allergyCount === 1 ? 'allergy' : 'allergies'}`;
 
-  const subtitle =
-    subtitleOverride ?? `${cuisineSpecialty || 'Home cook'} · ${householdLabel}`;
+  const subtitle = subtitleOverride ?? `${cuisineSpecialty || 'Home cook'} · ${householdLabel}`;
 
   const avatarStyle = {
     width: avatarSize,
@@ -120,14 +117,18 @@ export default function ProfileIdentityBlock({
   const NameAndSubtitle = (
     <>
       <Text
-        style={[styles.name, centered && styles.nameCentered,{color: css.palette.neutral900}]}
+        style={[styles.name, centered && styles.nameCentered, { color: css.palette.neutral900 }]}
         numberOfLines={1}
         accessibilityRole="header"
       >
         {displayName}
       </Text>
       <Text
-        style={[styles.subtitle, centered && styles.subtitleCentered,{color: css.palette.neutral500}]}
+        style={[
+          styles.subtitle,
+          centered && styles.subtitleCentered,
+          { color: css.palette.neutral500 },
+        ]}
         numberOfLines={1}
       >
         {subtitle}
@@ -135,19 +136,13 @@ export default function ProfileIdentityBlock({
     </>
   );
 
-  const Chips =
-    showChips ? (
-      <View
-        style={[styles.chipsRow, centered && styles.chipsRowCentered]}
-        accessibilityRole="list"
-      >
-        <PillChip icon={<Leaf size={12} color={css.palette.neutral900} />}>
-          {dietLabel}
-        </PillChip>
-        <View style={styles.chipSpacer} />
-        <PillChip>{allergyLabel}</PillChip>
-      </View>
-    ) : null;
+  const Chips = showChips ? (
+    <View style={[styles.chipsRow, centered && styles.chipsRowCentered]} accessibilityRole="list">
+      <PillChip icon={<Leaf size={12} color={css.palette.neutral900} />}>{dietLabel}</PillChip>
+      <View style={styles.chipSpacer} />
+      <PillChip>{allergyLabel}</PillChip>
+    </View>
+  ) : null;
 
   if (centered) {
     return (
@@ -162,7 +157,7 @@ export default function ProfileIdentityBlock({
   }
 
   return (
-    <View style={[styles.container, { backgroundColor:   css.palette.surfaceCard }]}>
+    <View style={[styles.container, { backgroundColor: css.palette.surfaceCard }]}>
       {AvatarTouchable}
       <View style={styles.right}>
         {NameAndSubtitle}

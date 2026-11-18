@@ -1,11 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
@@ -39,15 +35,7 @@ const AVATAR_SIZE = 56;
  *  - following  : number              — count
  *  - onPress?   : () => void          — tap handler (no-op if omitted)
  */
-function ProfileStatsCard({
-  name,
-  bio,
-  avatarUri,
-  recipes,
-  followers,
-  following,
-  onPress,
-}) {
+function ProfileStatsCard({ name, bio, avatarUri, recipes, followers, following, onPress }) {
   const css = useTheme();
   const t = useT();
 
@@ -69,7 +57,7 @@ function ProfileStatsCard({
       followers: t('profile.statsCard.followers'),
       following: t('profile.statsCard.following'),
     }),
-    [t]
+    [t],
   );
 
   // Accessibility label: collapses the whole card into one screen-reader
@@ -115,12 +103,7 @@ function ProfileStatsCard({
         ]}
       >
         {/* Avatar */}
-        <View
-          style={[
-            styles.avatarWrap,
-            { backgroundColor: css.palette.neutral200 },
-          ]}
-        >
+        <View style={[styles.avatarWrap, { backgroundColor: css.palette.neutral200 }]}>
           <Image
             source={avatarUri ? { uri: avatarUri } : undefined}
             style={styles.avatar}
@@ -167,13 +150,7 @@ function ProfileStatsCard({
           importantForAccessibility="no-hide-descendants"
         >
           {stats.map((s, i) => (
-            <View
-              key={s.key}
-              style={[
-                styles.statCell,
-                i > 0 && { marginLeft: css.spacing.sm },
-              ]}
-            >
+            <View key={s.key} style={[styles.statCell, i > 0 && { marginLeft: css.spacing.sm }]}>
               <Text
                 numberOfLines={1}
                 style={{

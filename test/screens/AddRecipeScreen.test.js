@@ -34,8 +34,12 @@ const nav = { navigate: jest.fn(), goBack: jest.fn() };
 
 describe('AddRecipeScreen publish', () => {
   const originalAlert = global.alert;
-  beforeEach(() => { global.alert = jest.fn(); });
-  afterEach(() => { global.alert = originalAlert; });
+  beforeEach(() => {
+    global.alert = jest.fn();
+  });
+  afterEach(() => {
+    global.alert = originalAlert;
+  });
 
   it('encodes the upload name and publishes with the picture id the server gave', async () => {
     mockFetchSequence([
@@ -77,8 +81,12 @@ describe('AddRecipeScreen publish', () => {
 // are now OptionPicker fields: a button that opens a list in a modal.
 describe('AddRecipeScreen pickers', () => {
   const originalAlert = global.alert;
-  beforeEach(() => { global.alert = jest.fn(); });
-  afterEach(() => { global.alert = originalAlert; });
+  beforeEach(() => {
+    global.alert = jest.fn();
+  });
+  afterEach(() => {
+    global.alert = originalAlert;
+  });
 
   const pick = (field, option) => {
     fireEvent.press(screen.getByRole('button', { name: field }));
@@ -97,11 +105,17 @@ describe('AddRecipeScreen pickers', () => {
 
     fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
     // Nothing chosen yet: the "0" placeholder is not announced as a value.
-    expect(screen.getByRole('button', { name: 'Servings' }).props.accessibilityValue?.text).toBeUndefined();
+    expect(
+      screen.getByRole('button', { name: 'Servings' }).props.accessibilityValue?.text,
+    ).toBeUndefined();
     pick('Servings', '4');
     pick('Difficulty', '2');
-    expect(screen.getByRole('button', { name: 'Servings' })).toHaveAccessibilityValue({ text: '4' });
-    expect(screen.getByRole('button', { name: 'Difficulty' })).toHaveAccessibilityValue({ text: '2' });
+    expect(screen.getByRole('button', { name: 'Servings' })).toHaveAccessibilityValue({
+      text: '4',
+    });
+    expect(screen.getByRole('button', { name: 'Difficulty' })).toHaveAccessibilityValue({
+      text: '2',
+    });
 
     fireEvent.changeText(screen.getByPlaceholderText('Qty'), '200');
     pick('Unit', 'g');
@@ -159,8 +173,12 @@ describe('AddRecipeScreen above the floating tab bar', () => {
 // TouchableOpacity, and no recipe could get its picture.
 describe('AddRecipeScreen photo buttons', () => {
   const originalAlert = global.alert;
-  beforeEach(() => { global.alert = jest.fn(); });
-  afterEach(() => { global.alert = originalAlert; });
+  beforeEach(() => {
+    global.alert = jest.fn();
+  });
+  afterEach(() => {
+    global.alert = originalAlert;
+  });
 
   function renderForm() {
     return renderWithProviders(<AddRecipeScreen navigation={nav} />, {
@@ -172,15 +190,19 @@ describe('AddRecipeScreen photo buttons', () => {
   it.each([
     ['Choose a photo from the gallery', ImagePicker.launchImageLibraryAsync, 'file:///gallery.jpg'],
     ['Take a photo of the recipe', ImagePicker.launchCameraAsync, 'file:///camera.jpg'],
-  ])('"%s" opens its picker and shows the photo', async (label, launcher, uri) => {
-    renderForm();
-    fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
-    fireEvent.press(screen.getByRole('button', { name: label }));
+  ])(
+    '"%s" opens its picker and shows the photo',
+    async (label, launcher, uri) => {
+      renderForm();
+      fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
+      fireEvent.press(screen.getByRole('button', { name: label }));
 
-    await waitFor(() => expect(launcher).toHaveBeenCalledTimes(1));
-    const photo = await screen.findByLabelText('photo');
-    expect(photo.props.source).toEqual({ uri });
-  }, 15000);
+      await waitFor(() => expect(launcher).toHaveBeenCalledTimes(1));
+      const photo = await screen.findByLabelText('photo');
+      expect(photo.props.source).toEqual({ uri });
+    },
+    15000,
+  );
 
   it('tells the user when the picker fails, without an unhandled rejection', async () => {
     ImagePicker.launchCameraAsync.mockRejectedValueOnce(new Error('camera busy'));
@@ -188,7 +210,9 @@ describe('AddRecipeScreen photo buttons', () => {
     fireEvent.changeText(screen.getByPlaceholderText('name*'), 'Tarte Tatin');
     fireEvent.press(screen.getByRole('button', { name: 'Take a photo of the recipe' }));
 
-    expect(await screen.findByTestId('toast')).toHaveTextContent('The photo could not be opened. Try again.');
+    expect(await screen.findByTestId('toast')).toHaveTextContent(
+      'The photo could not be opened. Try again.',
+    );
     expect(global.alert).not.toHaveBeenCalled();
     expect(screen.queryByLabelText('photo')).toBeNull();
   }, 15000);
@@ -199,7 +223,9 @@ describe('AddRecipeScreen photo buttons', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Take a photo of the recipe' }));
 
     // Plan 020: under the photo buttons, where the user just touched.
-    expect(screen.getByTestId('addRecipe-photo-message')).toHaveTextContent(/^Fill in the fields above first/);
+    expect(screen.getByTestId('addRecipe-photo-message')).toHaveTextContent(
+      /^Fill in the fields above first/,
+    );
     expect(global.alert).not.toHaveBeenCalled();
     expect(ImagePicker.launchImageLibraryAsync).not.toHaveBeenCalled();
     expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled();
@@ -215,7 +241,9 @@ describe('AddRecipeScreen photo buttons', () => {
     fireEvent(screen.getByRole('button', { name: 'Add Recipe' }), 'pressOut');
 
     return waitFor(() =>
-      expect(screen.getByTestId('addRecipe-photo-message')).toHaveTextContent('Take or choose a photo of the recipe first.'),
+      expect(screen.getByTestId('addRecipe-photo-message')).toHaveTextContent(
+        'Take or choose a photo of the recipe first.',
+      ),
     ).then(() => expect(global.fetch).not.toHaveBeenCalled());
   }, 15000);
 });
@@ -224,8 +252,12 @@ describe('AddRecipeScreen photo buttons', () => {
 // upload that used to fail silently.
 describe('AddRecipeScreen publish failures', () => {
   const originalAlert = global.alert;
-  beforeEach(() => { global.alert = jest.fn(); });
-  afterEach(() => { global.alert = originalAlert; });
+  beforeEach(() => {
+    global.alert = jest.fn();
+  });
+  afterEach(() => {
+    global.alert = originalAlert;
+  });
 
   const publish = () => {
     renderWithProviders(<AddRecipeScreen navigation={nav} />, {
@@ -249,11 +281,16 @@ describe('AddRecipeScreen publish failures', () => {
 
   it('shows why the upload route refused the photo (error status with a JSON body)', async () => {
     mockFetchSequence([
-      { body: { result: false, error: 'Upload service limit reached for today' }, init: { status: 429, ok: false } },
+      {
+        body: { result: false, error: 'Upload service limit reached for today' },
+        init: { status: 429, ok: false },
+      },
     ]);
     publish();
 
-    expect(await screen.findByTestId('toast')).toHaveTextContent(/Upload service limit reached for today/);
+    expect(await screen.findByTestId('toast')).toHaveTextContent(
+      /Upload service limit reached for today/,
+    );
     expect(global.fetch).toHaveBeenCalledTimes(1);
   }, 15000);
 
@@ -283,7 +320,11 @@ describe('AddRecipeScreen in French', () => {
   it('translates the form and the unit labels', () => {
     renderWithProviders(<AddRecipeScreen navigation={nav} />, {
       withNavigation: false,
-      preloadedState: { user: makeUserState(), picture: { value: null }, locale: { value: { lang: 'fr' } } },
+      preloadedState: {
+        user: makeUserState(),
+        picture: { value: null },
+        locale: { value: { lang: 'fr' } },
+      },
     });
 
     expect(screen.getByText('Ajoutez votre recette')).toBeTruthy();
@@ -293,7 +334,9 @@ describe('AddRecipeScreen in French', () => {
 
     fireEvent.press(screen.getByRole('button', { name: 'Unité' }));
     fireEvent.press(screen.getByRole('button', { name: 'c. à s.' }));
-    expect(screen.getByRole('button', { name: 'Unité' })).toHaveAccessibilityValue({ text: 'c. à s.' });
+    expect(screen.getByRole('button', { name: 'Unité' })).toHaveAccessibilityValue({
+      text: 'c. à s.',
+    });
   }, 15000);
 });
 
@@ -301,8 +344,16 @@ describe('AddRecipeScreen, a response that is not JSON', () => {
   it('says something went wrong, not that the network failed', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     global.fetch
-      .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve({ result: true, picture: STORED_ID }) })
-      .mockResolvedValueOnce({ ok: false, status: 502, json: () => Promise.reject(new SyntaxError('Unexpected token <')) });
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ result: true, picture: STORED_ID }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 502,
+        json: () => Promise.reject(new SyntaxError('Unexpected token <')),
+      });
     renderWithProviders(<AddRecipeScreen navigation={nav} />, {
       withNavigation: false,
       preloadedState: { user: makeUserState(), picture: { value: 'file:///photo.jpg' } },

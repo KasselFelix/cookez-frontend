@@ -1,6 +1,6 @@
-import { Platform, Dimensions } from "react-native";
+import { Platform, Dimensions } from 'react-native';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // ─────────────────────────────────────────────
 // HELPER — hex to rgba (for derived semi-transparent colors)
@@ -22,56 +22,56 @@ const rgba = (hex, alpha) => {
 
 const palette = {
   // Primary — Deep Forest Teal: authority, freshness, trust
-  primary900: "#002a29",
-  primary800: "#004643",   // ← legacy inactiveButtonColor, now the anchor
-  primary700: "#005f5b",
-  primary600: "#007a74",
-  primary500: "#009e97",
-  primary400: "#33b5af",
+  primary900: '#002a29',
+  primary800: '#004643', // ← legacy inactiveButtonColor, now the anchor
+  primary700: '#005f5b',
+  primary600: '#007a74',
+  primary500: '#009e97',
+  primary400: '#33b5af',
 
   // Secondary — Sage Mist: soothing, organic, breathable
-  secondary500: "#abd1c6",  // ← legacy backgroundColorTwo
-  secondary400: "#c3dfd9",
-  secondary300: "#d9ece8",
-  secondary200: "#edf6f4",
-  secondary100: "#f5faf9",
+  secondary500: '#abd1c6', // ← legacy backgroundColorTwo
+  secondary400: '#c3dfd9',
+  secondary300: '#d9ece8',
+  secondary200: '#edf6f4',
+  secondary100: '#f5faf9',
 
   // Accent — Amber Zest: warmth, appetite, energy
-  accent500: "#f9bc60",    // ← legacy gradientColor start / backgroundColorOne approx
-  accent400: "#fbcf84",
-  accent300: "#fde3b0",
-  accent200: "#fef3db",
+  accent500: '#f9bc60', // ← legacy gradientColor start / backgroundColorOne approx
+  accent400: '#fbcf84',
+  accent300: '#fde3b0',
+  accent200: '#fef3db',
 
   // Surface & Background
-  surface:    "#faf7f2",   // warm cream — photography-friendly
-  surfaceCard:"#ffffff",
-  background: "#f2ede7",   // slightly deeper cream for screens
-  overlay:    "rgba(0,70,67,0.55)",  // primary800 at 55% for modals/glassmorphism
-  overlayLight: "rgba(255,255,255,0.4)",   // semi-transparent white (KickoffScreen borders/text)
-  overlayDark:  "rgba(0,0,0,0.5)",         // semi-transparent black (key backgrounds)
-  flashActive:  "#e8be4b",                 // camera flash-on icon color
+  surface: '#faf7f2', // warm cream — photography-friendly
+  surfaceCard: '#ffffff',
+  background: '#f2ede7', // slightly deeper cream for screens
+  overlay: 'rgba(0,70,67,0.55)', // primary800 at 55% for modals/glassmorphism
+  overlayLight: 'rgba(255,255,255,0.4)', // semi-transparent white (KickoffScreen borders/text)
+  overlayDark: 'rgba(0,0,0,0.5)', // semi-transparent black (key backgrounds)
+  flashActive: '#e8be4b', // camera flash-on icon color
 
   // Neutrals
-  neutral900: "#1c1c1e",
-  neutral700: "#3a3a3c",
-  neutral500: "#6b7280",
-  neutral300: "#d1d5db",
-  neutral200: "#e5e7eb",
-  neutral100: "#f9fafb",
+  neutral900: '#1c1c1e',
+  neutral700: '#3a3a3c',
+  neutral500: '#6b7280',
+  neutral300: '#d1d5db',
+  neutral200: '#e5e7eb',
+  neutral100: '#f9fafb',
 
   // Semantic
-  success:    "#22c55e",
-  successBg:  "#dcfce7",
-  error:      "#ef4444",
-  errorBg:    "#fee2e2",
-  warning:    "#f59e0b",
-  warningBg:  "#fef3c7",
-  favorite:   "#c0392b",      // saved/loved semantic — distinct from error red
+  success: '#22c55e',
+  successBg: '#dcfce7',
+  error: '#ef4444',
+  errorBg: '#fee2e2',
+  warning: '#f59e0b',
+  warningBg: '#fef3c7',
+  favorite: '#c0392b', // saved/loved semantic — distinct from error red
 
   // Always
-  white: "#ffffff",
-  black: "#000000",
-  transparent: "transparent",
+  white: '#ffffff',
+  black: '#000000',
+  transparent: 'transparent',
 };
 
 // ─────────────────────────────────────────────
@@ -81,64 +81,64 @@ const palette = {
 // ─────────────────────────────────────────────
 
 // Font family names must match keys used in useFonts() in App.js exactly.
-const _fira  = "FiraSans_400Regular";
-const _firaB = "FiraSans_700Bold";
-const _firaS = "FiraSans_600SemiBold";
-const _varela  = "Varela_400Regular";
-const _varelaR = "VarelaRound_400Regular";
+const _fira = 'FiraSans_400Regular';
+const _firaB = 'FiraSans_700Bold';
+const _firaS = 'FiraSans_600SemiBold';
+const _varela = 'Varela_400Regular';
+const _varelaR = 'VarelaRound_400Regular';
 
 const typography = {
   // Font families
-  fontDisplay:  _firaB,    // Hero / splash text
-  fontHeading:  _firaS,    // H1–H3 section titles
-  fontBody:     _varelaR,  // Paragraphs, descriptions
-  fontUI:       _varela,   // Labels, buttons, nav
+  fontDisplay: _firaB, // Hero / splash text
+  fontHeading: _firaS, // H1–H3 section titles
+  fontBody: _varelaR, // Paragraphs, descriptions
+  fontUI: _varela, // Labels, buttons, nav
 
   // ─── Scale — optimised for 375px viewport (scales well to 430px)
   // The scale follows a clear hierarchy: each step is visually distinct.
 
   // H1 — Screen hero titles (e.g., app name, welcome header)
-  h1Size:   32,
-  h1Line:   40,
-  h1Weight: "700",
+  h1Size: 32,
+  h1Line: 40,
+  h1Weight: '700',
   h1Family: _firaB,
 
   // H2 — Section headers (e.g., "Trending Recipes")
-  h2Size:   24,
-  h2Line:   32,
-  h2Weight: "600",
+  h2Size: 24,
+  h2Line: 32,
+  h2Weight: '600',
   h2Family: _firaS,
 
   // H3 — Card / panel titles (e.g., recipe name in ResultScreen)
-  h3Size:   20,
-  h3Line:   28,
-  h3Weight: "600",
+  h3Size: 20,
+  h3Line: 28,
+  h3Weight: '600',
   h3Family: _firaS,
 
   // H4 — Subtitles / emphasized labels
   // FIXED: was 20 (same as h3) — now 17 for proper hierarchy
-  h4Size:   17,
-  h4Line:   24,
-  h4Weight: "500",
+  h4Size: 17,
+  h4Line: 24,
+  h4Weight: '500',
   h4Family: _fira,
 
   // H5 — Metadata / timestamps / tags
-  h5Size:   14,
-  h5Line:   20,
-  h5Weight: "500",
+  h5Size: 14,
+  h5Line: 20,
+  h5Weight: '500',
   h5Family: _fira,
 
   // H6 — Micro labels (badge captions, stat labels, tab pills, tag captions)
   // FIXED: was 15 (larger than h5) — now 12 as originally intended in the
   // 9-12 px micro-label tier documented in the inline comment.
-  h6Size:   12,
-  h6Line:   16,
-  h6Weight: "500",
+  h6Size: 12,
+  h6Line: 16,
+  h6Weight: '500',
   h6Family: _varelaR,
 
   // Body — Primary readable text
-  bodySize:   16,
-  bodyLine:   24,
+  bodySize: 16,
+  bodyLine: 24,
   bodyFamily: _varelaR,
 
   // Body Small — Secondary descriptions
@@ -150,13 +150,13 @@ const typography = {
   captionLine: 16,
 
   // Overline — Tags, category pills (uppercase)
-  overlineSize:    11,
+  overlineSize: 11,
   overlineSpacing: 1.2,
 
   // Metadata — small descriptors (now derived from palette/families)
-  metadataSize:   12,
-  metadataColor:  palette.neutral500,  // FIXED: was hardcoded "#6b7280"
-  metadataFamily: _varelaR,            // FIXED: was hardcoded "VarelaRound_400Regular"
+  metadataSize: 12,
+  metadataColor: palette.neutral500, // FIXED: was hardcoded "#6b7280"
+  metadataFamily: _varelaR, // FIXED: was hardcoded "VarelaRound_400Regular"
 };
 
 // ─────────────────────────────────────────────
@@ -164,14 +164,14 @@ const typography = {
 // ─────────────────────────────────────────────
 
 const spacing = {
-  xs:   4,
-  sm:   8,
-  md:  16,
-  lg:  24,
-  xl:  32,
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
   xxl: 48,
-  xxxl:64,
-  cardGap: 12,   // deliberate half-step between sm and md for card lists
+  xxxl: 64,
+  cardGap: 12, // deliberate half-step between sm and md for card lists
 };
 
 // ─────────────────────────────────────────────
@@ -179,14 +179,14 @@ const spacing = {
 // ─────────────────────────────────────────────
 
 const radius = {
-  xs:   4,
-  sm:   8,
-  md:  12,
-  lg:  16,
-  xl:  24,
-  camera:70, //camera preview on KickoffScreen
-  pill:99,   // fully rounded buttons / tags
-  card:20,   // recipe cards
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  camera: 70, //camera preview on KickoffScreen
+  pill: 99, // fully rounded buttons / tags
+  card: 20, // recipe cards
 };
 
 // ─────────────────────────────────────────────
@@ -197,7 +197,7 @@ const radius = {
 
 const shadow = {
   none: {
-    shadowColor: "transparent",
+    shadowColor: 'transparent',
     elevation: 0,
   },
   sm: {
@@ -224,7 +224,7 @@ const shadow = {
   card: {
     shadowColor: palette.primary800,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.10,
+    shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 6,
   },
@@ -248,61 +248,61 @@ const shadow = {
 // --- BUTTONS ---
 const button = {
   // Primary — filled, high emphasis
-  primaryBg:          palette.primary800,
-  primaryText:        palette.white,
+  primaryBg: palette.primary800,
+  primaryText: palette.white,
   primaryBorderColor: palette.primary800,
-  primaryBorderRadius:radius.pill,
-  primaryPaddingV:    14,
-  primaryPaddingH:    32,
-  primaryFontSize:    typography.bodySize,
-  primaryFontFamily:  typography.fontUI,
-  primaryFontWeight:  "600",
+  primaryBorderRadius: radius.pill,
+  primaryPaddingV: 14,
+  primaryPaddingH: 32,
+  primaryFontSize: typography.bodySize,
+  primaryFontFamily: typography.fontUI,
+  primaryFontWeight: '600',
 
   // Ghost — outlined, medium emphasis
-  ghostBg:            palette.transparent,
-  ghostText:          palette.primary800,
-  ghostBorderColor:   palette.primary800,
-  ghostBorderWidth:   1.5,
+  ghostBg: palette.transparent,
+  ghostText: palette.primary800,
+  ghostBorderColor: palette.primary800,
+  ghostBorderWidth: 1.5,
 
   // Accent — warm CTA (e.g. "Find Recipes")
-  accentBg:           palette.accent500,
-  accentText:         palette.primary800,
-  accentBorderColor:  palette.accent500,
+  accentBg: palette.accent500,
+  accentText: palette.primary800,
+  accentBorderColor: palette.accent500,
 
   // Disabled
-  disabledBg:         palette.neutral200,
-  disabledText:       palette.neutral500,
-  disabledBorderColor:palette.neutral200,
+  disabledBg: palette.neutral200,
+  disabledText: palette.neutral500,
+  disabledBorderColor: palette.neutral200,
 
   // Destructive
-  destructiveBg:      palette.error,
-  destructiveText:    palette.white,
+  destructiveBg: palette.error,
+  destructiveText: palette.white,
 
   // Size — small variant
-  smPaddingV:   8,
-  smPaddingH:   20,
-  smFontSize:   13,
-  smBorderRadius:radius.pill,
+  smPaddingV: 8,
+  smPaddingH: 20,
+  smFontSize: 13,
+  smBorderRadius: radius.pill,
 };
 
 // --- CARDS (Recipe cards in ResultScreen) ---
 const card = {
-  bg:           palette.surfaceCard,
+  bg: palette.surfaceCard,
   borderRadius: radius.card,
-  padding:      spacing.md,
+  padding: spacing.md,
   ...shadow.card,
 
   // Image area
-  imageRadius:  radius.lg,
-  imageHeight:  200,
+  imageRadius: radius.lg,
+  imageHeight: 200,
 
   // Tag pill on card
-  tagBg:        palette.secondary200,
-  tagText:      palette.primary800,
-  tagRadius:    radius.pill,
-  tagPaddingV:  4,
-  tagPaddingH:  10,
-  tagFontSize:  typography.overlineSize,
+  tagBg: palette.secondary200,
+  tagText: palette.primary800,
+  tagRadius: radius.pill,
+  tagPaddingV: 4,
+  tagPaddingH: 10,
+  tagFontSize: typography.overlineSize,
 };
 
 // --- PILLS (filter chips, origin pills, tag chips, any rounded selectable)
@@ -311,114 +311,114 @@ const card = {
 // selected states. Theme-aware: light keeps the brand mint; dark/pastels
 // override to stay on-brand without dropping back to a generic surface.
 const pill = {
-  bgNeutral:    palette.secondary200, // #edf6f4 mint
-  bgSelected:   palette.primary800,   // #004643 deep teal
-  textNeutral:  palette.primary800,   // teal text on mint
-  textSelected: palette.white,        // white text on selected teal
+  bgNeutral: palette.secondary200, // #edf6f4 mint
+  bgSelected: palette.primary800, // #004643 deep teal
+  textNeutral: palette.primary800, // teal text on mint
+  textSelected: palette.white, // white text on selected teal
 };
 
 // --- RESULT SCREEN ---
 // Cream page in light; the other themes take the Home tab color (surface).
 const result = {
-  background: palette.background,          // #f2ede7 cream
-  card:       palette.surfaceCard,
-  ink:        palette.neutral900,
-  muted:      palette.neutral700,
-  meterFill:  palette.primary500,          // owned share of a recipe
+  background: palette.background, // #f2ede7 cream
+  card: palette.surfaceCard,
+  ink: palette.neutral900,
+  muted: palette.neutral700,
+  meterFill: palette.primary500, // owned share of a recipe
   meterTrack: palette.secondary200,
-  ribbonBg:   palette.accent500,           // "Best match" on the hero photo
-  ribbonInk:  palette.primary900,
-  seasonBg:   palette.successBg,           // seasonal leaf badge (14:1)
-  seasonInk:  palette.primary900,
+  ribbonBg: palette.accent500, // "Best match" on the hero photo
+  ribbonInk: palette.primary900,
+  seasonBg: palette.successBg, // seasonal leaf badge (14:1)
+  seasonInk: palette.primary900,
 };
 
 // --- INGREDIENT FLOW (KickoffScreen, RecapScreen) ---
 // The light theme keeps the historical sage look; every other theme takes
 // the background of the Home tab (surface) and its own inks.
 const flow = {
-  background:   palette.secondary500,        // sage
-  label:        palette.primary700,          // "SELECTED · N", "NOT RECOGNIZED · N"
-  chipText:     palette.primary800,          // dashed chips (unmatched names, + Add)
-  chipBorder:   palette.primary400,
-  placeholder:  "rgba(255,255,255,0.4)",     // empty photo slot: frame, icon, word
-  cardIcon:     palette.white,               // info icon on the amber Recap card
-  actionBg:     palette.primary800,          // + / » / Recipes / Recap header buttons
-  actionIcon:   palette.accent500,
-  actionText:   palette.white,               // count next to » on Kickoff
-  clearIcon:    palette.error,               // "clear all" cross in the Recap header
-  shutterBg:    palette.primary800,          // Kickoff shutter, same family as the actions
-  shutterRing:  palette.white,
-  confirmBg:    palette.warningBg,           // "To confirm" pill over a photo
-  confirmBorder:palette.warning,
-  confirmText:  palette.black,
+  background: palette.secondary500, // sage
+  label: palette.primary700, // "SELECTED · N", "NOT RECOGNIZED · N"
+  chipText: palette.primary800, // dashed chips (unmatched names, + Add)
+  chipBorder: palette.primary400,
+  placeholder: 'rgba(255,255,255,0.4)', // empty photo slot: frame, icon, word
+  cardIcon: palette.white, // info icon on the amber Recap card
+  actionBg: palette.primary800, // + / » / Recipes / Recap header buttons
+  actionIcon: palette.accent500,
+  actionText: palette.white, // count next to » on Kickoff
+  clearIcon: palette.error, // "clear all" cross in the Recap header
+  shutterBg: palette.primary800, // Kickoff shutter, same family as the actions
+  shutterRing: palette.white,
+  confirmBg: palette.warningBg, // "To confirm" pill over a photo
+  confirmBorder: palette.warning,
+  confirmText: palette.black,
   // Ingredient search modal of Kickoff (button "+").
-  modalBg:          palette.accent500,
-  modalField:       palette.white,           // search bar and result rows
-  modalInk:         palette.black,           // names, search icon, row rule
-  modalMuted:       palette.neutral500,      // placeholder
-  modalClear:       palette.primary800,      // clear-the-search icon
-  modalSelectedBg:  palette.secondary500,
-  modalSelectedInk: palette.white,           // check mark of a picked row
-  modalSelectedText:palette.black,           // name and rule of a picked row
+  modalBg: palette.accent500,
+  modalField: palette.white, // search bar and result rows
+  modalInk: palette.black, // names, search icon, row rule
+  modalMuted: palette.neutral500, // placeholder
+  modalClear: palette.primary800, // clear-the-search icon
+  modalSelectedBg: palette.secondary500,
+  modalSelectedInk: palette.white, // check mark of a picked row
+  modalSelectedText: palette.black, // name and rule of a picked row
   // Recap filters: servings stepper and tags (+, picked chips, idle chips).
-  stepperBg:        palette.secondary500,
-  stepperInk:       palette.primary900,
-  tagBg:            palette.primary500,
-  tagInk:           palette.white,
-  tagIdleBg:        palette.secondary200,
-  tagIdleInk:       palette.primary900,
-  selectedBg:   palette.secondary500,        // active row of the Recap unit sheet
+  stepperBg: palette.secondary500,
+  stepperInk: palette.primary900,
+  tagBg: palette.primary500,
+  tagInk: palette.white,
+  tagIdleBg: palette.secondary200,
+  tagIdleInk: palette.primary900,
+  selectedBg: palette.secondary500, // active row of the Recap unit sheet
   selectedText: palette.white,
 };
 
 // --- INPUTS (AddRecipeScreen, LoginScreen) ---
 const input = {
-  bg:              palette.surface,
-  borderColor:     palette.neutral300,
-  borderColorFocus:palette.primary500,
-  borderWidth:     1.5,
-  borderRadius:    radius.md,
-  paddingV:        14,
-  paddingH:        16,
-  fontSize:        typography.bodySize,
-  fontFamily:      typography.fontBody,
-  textColor:       palette.neutral900,
-  placeholderColor:palette.neutral500,
+  bg: palette.surface,
+  borderColor: palette.neutral300,
+  borderColorFocus: palette.primary500,
+  borderWidth: 1.5,
+  borderRadius: radius.md,
+  paddingV: 14,
+  paddingH: 16,
+  fontSize: typography.bodySize,
+  fontFamily: typography.fontBody,
+  textColor: palette.neutral900,
+  placeholderColor: palette.neutral500,
 
   // Label above input
-  labelColor:      palette.neutral700,
-  labelFontSize:   typography.h5Size,
+  labelColor: palette.neutral700,
+  labelFontSize: typography.h5Size,
   labelFontFamily: typography.fontUI,
-  labelFontWeight: "500",
+  labelFontWeight: '500',
 
   // Error state
-  borderColorError:palette.error,
-  errorTextColor:  palette.error,
-  errorFontSize:   typography.captionSize,
+  borderColorError: palette.error,
+  errorTextColor: palette.error,
+  errorFontSize: typography.captionSize,
 };
 
 // --- TAB BAR (semi-transparent glassmorphism) ---
 const tabBar = {
   // Height & layout
-  height:          64,
-  paddingBottom:   Platform.OS === "ios" ? 12 : 8,
-  paddingTop:      8,
+  height: 64,
+  paddingBottom: Platform.OS === 'ios' ? 12 : 8,
+  paddingTop: 8,
 
   // Glass effect — pair with BlurView if available, else fallback
   // Derived from palette.surface at 88% opacity
   backgroundColor: rgba(palette.surface, 0.88),
-  borderTopWidth:  0,
-  elevation:       0,
+  borderTopWidth: 0,
+  elevation: 0,
 
   // Tint colors
-  activeTintColor:   palette.primary800,
+  activeTintColor: palette.primary800,
   inactiveTintColor: palette.neutral500,
 
   // Active indicator pill behind icon
-  indicatorBg:     palette.secondary200,
+  indicatorBg: palette.secondary200,
   indicatorRadius: radius.sm,
-  indicatorPaddingV:  4,
-  indicatorPaddingH:  16,
+  indicatorPaddingV: 4,
+  indicatorPaddingH: 16,
 
   showLabel: false,
 };
@@ -428,15 +428,15 @@ const tabBar = {
 // ─────────────────────────────────────────────
 
 const layout = {
-  screenWidth:    SCREEN_WIDTH,
-  screenHeight:   SCREEN_HEIGHT,
-  paddingTop:     "15%",
+  screenWidth: SCREEN_WIDTH,
+  screenHeight: SCREEN_HEIGHT,
+  paddingTop: '15%',
   screenPaddingH: spacing.md,
   // `legacyMaxContentWidth` preserves the 428-px cap that older screens
   // depend on for narrow centering. New profile/settings screens should
   // use `maxContentWidth` (720 px) so tablet layouts breathe.
   legacyMaxContentWidth: 428,
-  maxContentWidth:       720,
+  maxContentWidth: 720,
 };
 
 // ─────────────────────────────────────────────
@@ -444,9 +444,9 @@ const layout = {
 // ─────────────────────────────────────────────
 
 const animation = {
-  fast:   150,
+  fast: 150,
   normal: 250,
-  slow:   400,
+  slow: 400,
   spring: { damping: 18, stiffness: 200 },
 };
 
@@ -497,45 +497,45 @@ const glassmorphism = {
 // ─────────────────────────────────────────────
 
 const text = {
-  primary:   palette.neutral900,  // body text, default
-  secondary: palette.neutral700,  // descriptions, labels
-  muted:     palette.neutral500,  // metadata, captions, placeholders
-  inverse:   palette.white,       // text on dark or accent backgrounds
-  accent:    palette.primary800,  // links, emphasized text, brand text
-  success:   palette.success,
-  error:     palette.error,
-  warning:   palette.warning,
+  primary: palette.neutral900, // body text, default
+  secondary: palette.neutral700, // descriptions, labels
+  muted: palette.neutral500, // metadata, captions, placeholders
+  inverse: palette.white, // text on dark or accent backgrounds
+  accent: palette.primary800, // links, emphasized text, brand text
+  success: palette.success,
+  error: palette.error,
+  warning: palette.warning,
 };
 
 const border = {
-  subtle:    palette.neutral200,  // dividers, light card borders
-  default:   palette.neutral300,  // input borders, visible separators
-  focus:     palette.primary500,  // focused input state
-  error:     palette.error,
+  subtle: palette.neutral200, // dividers, light card borders
+  default: palette.neutral300, // input borders, visible separators
+  focus: palette.primary500, // focused input state
+  error: palette.error,
 };
 
 const surface = {
-  base:      palette.background,  // screen background (deeper cream)
-  raised:    palette.surface,     // section backgrounds (lighter cream)
-  card:      palette.surfaceCard, // cards, modals, sheets (white)
-  overlay:   palette.overlay,     // modal overlay (primary800 @ 55%)
-  glass:     rgba(palette.surface, 0.88), // glassmorphism panels
+  base: palette.background, // screen background (deeper cream)
+  raised: palette.surface, // section backgrounds (lighter cream)
+  card: palette.surfaceCard, // cards, modals, sheets (white)
+  overlay: palette.overlay, // modal overlay (primary800 @ 55%)
+  glass: rgba(palette.surface, 0.88), // glassmorphism panels
 };
 
 const elevation = {
-  flat:      shadow.none,
-  raised:    shadow.sm,    // chips, small interactive elements
-  card:      shadow.card,  // recipe cards, list items
-  floating:  shadow.md,    // FAB, dropdowns
-  modal:     shadow.lg,    // modals, bottom sheets
+  flat: shadow.none,
+  raised: shadow.sm, // chips, small interactive elements
+  card: shadow.card, // recipe cards, list items
+  floating: shadow.md, // FAB, dropdowns
+  modal: shadow.lg, // modals, bottom sheets
 };
 
 const motion = {
   // Named transitions — pick by intent, not by duration
-  microInteraction: animation.fast,    // 150ms — press feedback, ripple
-  uiTransition:     animation.normal,  // 250ms — state changes, fade-in
-  pageTransition:   animation.slow,    // 400ms — screen entry, hero reveal
-  spring:           animation.spring,  // physics-based, for interactive gestures
+  microInteraction: animation.fast, // 150ms — press feedback, ripple
+  uiTransition: animation.normal, // 250ms — state changes, fade-in
+  pageTransition: animation.slow, // 400ms — screen entry, hero reveal
+  spring: animation.spring, // physics-based, for interactive gestures
 };
 
 // ─────────────────────────────────────────────

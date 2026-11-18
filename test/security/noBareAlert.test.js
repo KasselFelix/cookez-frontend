@@ -9,7 +9,16 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..', '..');
 // Every top-level folder of the app, so a new one (navigation/, utils/...) is
 // scanned too; only tooling, tests and generated code are left out.
-const NOT_APP = new Set(['node_modules', 'test', 'android', 'ios', 'scripts', 'assets', 'coverage', 'dist']);
+const NOT_APP = new Set([
+  'node_modules',
+  'test',
+  'android',
+  'ios',
+  'scripts',
+  'assets',
+  'coverage',
+  'dist',
+]);
 const SOURCE_DIRS = fs
   .readdirSync(ROOT, { withFileTypes: true })
   .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.') && !NOT_APP.has(entry.name))
@@ -53,7 +62,9 @@ describe('no bare alert, and dialogs only for choices', () => {
   });
 
   it('finds no bare alert()', () => {
-    const found = files.filter(({ source }) => count(source, BARE_ALERT) > 0).map(({ file }) => file);
+    const found = files
+      .filter(({ source }) => count(source, BARE_ALERT) > 0)
+      .map(({ file }) => file);
     expect(found).toEqual([]);
   });
 

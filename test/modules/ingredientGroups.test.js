@@ -74,11 +74,11 @@ describe('groupIngredients', () => {
     result.forEach((row) => expect(row.isAltGroup).toBe(false));
   });
 
-  it('places the grouped row at the first member\'s position', () => {
+  it("places the grouped row at the first member's position", () => {
     const input = [
       makeIng('flour', null, '200', 'g'),
-      makeIng('butter', 1, '100', 'g'),       // first member of group
-      makeIng('margarine', 1, null, null),     // second member of group
+      makeIng('butter', 1, '100', 'g'), // first member of group
+      makeIng('margarine', 1, null, null), // second member of group
       makeIng('sugar', null, '50', 'g'),
     ];
     const result = groupIngredients(input, CONNECTOR);
@@ -133,10 +133,7 @@ describe('groupIngredients', () => {
   });
 
   it('uses the provided connector (fr: "ou")', () => {
-    const input = [
-      makeIng('beurre', 1, '100', 'g'),
-      makeIng('margarine', 1, null, null),
-    ];
+    const input = [makeIng('beurre', 1, '100', 'g'), makeIng('margarine', 1, null, null)];
     const result = groupIngredients(input, 'ou');
 
     expect(result[0].displayName).toBe('beurre ou margarine');

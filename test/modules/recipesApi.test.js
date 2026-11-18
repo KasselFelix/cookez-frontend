@@ -11,7 +11,9 @@ describe('fetchRecipeResult error handling (Plan 006 B1)', () => {
   it('throws ApiError carrying .status on a 500 (no silent {result:false})', async () => {
     global.fetch = jest.fn().mockResolvedValue(err(500, { result: false, error: 'boom' }));
     await expect(fetchRecipeResult(args)).rejects.toMatchObject({
-      name: 'ApiError', status: 500, message: 'boom',
+      name: 'ApiError',
+      status: 500,
+      message: 'boom',
     });
     expect(ApiError).toBeDefined();
   });
@@ -28,7 +30,10 @@ describe('fetchRecipeResult session token (plan 016, PR 3)', () => {
     global.fetch = jest.fn().mockResolvedValue(ok({ result: true, recipes: [] }));
     await fetchRecipeResult({ ...args, token: 'session-token' });
     const [, init] = global.fetch.mock.calls[0];
-    expect(init.headers).toEqual({ 'Content-Type': 'application/json', Authorization: 'Bearer session-token' });
+    expect(init.headers).toEqual({
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer session-token',
+    });
     expect(JSON.parse(init.body)).not.toHaveProperty('token');
   });
 
@@ -44,11 +49,16 @@ describe('putUserProfile (plan 019)', () => {
   it('PUTs the updates to /users/profile with the token in the header only', async () => {
     const body = { result: true, updated: { firstname: 'Ana' } };
     global.fetch = jest.fn().mockResolvedValue(ok(body));
-    await expect(putUserProfile({ token: 'session-token', updates: { firstname: 'Ana' } })).resolves.toEqual(body);
+    await expect(
+      putUserProfile({ token: 'session-token', updates: { firstname: 'Ana' } }),
+    ).resolves.toEqual(body);
     const [url, init] = global.fetch.mock.calls[0];
     expect(url).toMatch(/\/users\/profile$/);
     expect(init.method).toBe('PUT');
-    expect(init.headers).toEqual({ 'Content-Type': 'application/json', Authorization: 'Bearer session-token' });
+    expect(init.headers).toEqual({
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer session-token',
+    });
     expect(JSON.parse(init.body)).toEqual({ firstname: 'Ana' });
   });
 

@@ -39,7 +39,10 @@ describe('ScanSummary', () => {
     });
     fireEvent.press(screen.getByLabelText('Search for yuzu kosho'));
     expect(onSearch).toHaveBeenCalled();
-    expect(store.getState().scan.value).toMatchObject({ unmatched: ['pitaya'], pendingSearch: 'yuzu kosho' });
+    expect(store.getState().scan.value).toMatchObject({
+      unmatched: ['pitaya'],
+      pendingSearch: 'yuzu kosho',
+    });
 
     fireEvent.press(screen.getByLabelText('Dismiss pitaya'));
     expect(store.getState().scan.value.unmatched).toEqual([]);

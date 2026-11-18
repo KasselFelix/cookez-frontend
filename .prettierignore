@@ -1,0 +1,4 @@
+# Minified Lottie animations: formatting them would grow the bundle.
+assets/
+# Maestro E2E flows (YAML), outside the app code.
+.maestro/

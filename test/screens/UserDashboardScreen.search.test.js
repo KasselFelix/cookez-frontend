@@ -42,7 +42,10 @@ beforeEach(() => {
       const q = new URL(url).searchParams.get('q');
       searchCalls.push(q);
       const body = { result: true, recipes: answers[q] || [] };
-      if (held[q]) return new Promise((resolve) => { held[q] = () => resolve({ json: () => Promise.resolve(body) }); });
+      if (held[q])
+        return new Promise((resolve) => {
+          held[q] = () => resolve({ json: () => Promise.resolve(body) });
+        });
       return json(body);
     }
     return json({ result: false });
@@ -61,7 +64,9 @@ const renderScreen = () =>
 const typeSearch = (text) => fireEvent.changeText(screen.getByLabelText('Search recipes...'), text);
 
 const shownRecipes = () =>
-  screen.queryAllByLabelText(/^View recipe: /).map((node) => node.props.accessibilityLabel.replace('View recipe: ', ''));
+  screen
+    .queryAllByLabelText(/^View recipe: /)
+    .map((node) => node.props.accessibilityLabel.replace('View recipe: ', ''));
 
 describe('UserDashboardScreen search (plan 013)', () => {
   it('finds a recipe the dashboard did not load, exact name first', async () => {
@@ -74,7 +79,10 @@ describe('UserDashboardScreen search (plan 013)', () => {
 
     expect(await screen.findByText('Search results')).toBeTruthy();
     await screen.findByLabelText('View recipe: Japchae');
-    expect(shownRecipes().filter((n) => n.includes('Japchae'))).toEqual(['Japchae', 'Easy Japchae']);
+    expect(shownRecipes().filter((n) => n.includes('Japchae'))).toEqual([
+      'Japchae',
+      'Easy Japchae',
+    ]);
     expect(shownRecipes()).not.toContain('Golompke');
   });
 
@@ -83,7 +91,9 @@ describe('UserDashboardScreen search (plan 013)', () => {
     typeSearch('ja');
     typeSearch('jap');
     typeSearch('japc');
-    await act(async () => { await new Promise((r) => setTimeout(r, 400)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 400));
+    });
     expect(searchCalls).toEqual(['japc']);
   });
 
@@ -94,20 +104,30 @@ describe('UserDashboardScreen search (plan 013)', () => {
     renderScreen();
 
     typeSearch('jap');
-    await act(async () => { await new Promise((r) => setTimeout(r, 300)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 300));
+    });
     typeSearch('japchae');
     await screen.findByLabelText('View recipe: Japchae');
 
-    await act(async () => { held.jap(); await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      held.jap();
+      await new Promise((r) => setTimeout(r, 50));
+    });
     expect(shownRecipes()).not.toContain('Old Jap Answer');
     expect(shownRecipes()).toContain('Japchae');
   });
 
   it('loads the recently viewed recipes with the token in the header, not the URL (plan 010)', async () => {
     renderWithProviders(<UserDashboardScreen navigation={{ navigate: jest.fn() }} />, {
-      preloadedState: { user: { value: { token: 'session-token' } }, recipe: makeRecipeState(LOADED) },
+      preloadedState: {
+        user: { value: { token: 'session-token' } },
+        recipe: makeRecipeState(LOADED),
+      },
     });
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
     const call = global.fetch.mock.calls.find(([url]) => url.includes('/users/me/last-viewed'));
     expect(call).toBeTruthy();
     expect(call[0]).not.toContain('session-token');
@@ -117,7 +137,9 @@ describe('UserDashboardScreen search (plan 013)', () => {
   it('does not search with one letter', async () => {
     renderScreen();
     typeSearch('j');
-    await act(async () => { await new Promise((r) => setTimeout(r, 400)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 400));
+    });
     expect(searchCalls).toEqual([]);
   });
 });

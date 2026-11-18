@@ -1,0 +1,4 @@
+# Formatting-only commits, skipped by git blame:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# style: format the whole app with Prettier
+0b6ac020c13e0fe0f1f2e8493e9cfac859be7d67

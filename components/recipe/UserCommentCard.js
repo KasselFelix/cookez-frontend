@@ -1,11 +1,5 @@
 import React, { useRef, useCallback } from 'react';
-import {
-  Animated,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 import RecipeImage from './RecipeImage';
@@ -53,9 +47,7 @@ function UserCommentCard({ comment, onPress, onEdit, onDelete }) {
         extrapolate: 'clamp',
       });
       return (
-        <Animated.View
-          style={[styles.actionsRow, { transform: [{ translateX }] }]}
-        >
+        <Animated.View style={[styles.actionsRow, { transform: [{ translateX }] }]}>
           <TouchableOpacity
             style={[styles.actionButton, styles.editAction]}
             onPress={() => {
@@ -85,7 +77,7 @@ function UserCommentCard({ comment, onPress, onEdit, onDelete }) {
         </Animated.View>
       );
     },
-    [onEdit, onDelete]
+    [onEdit, onDelete],
   );
 
   return (
@@ -116,15 +108,8 @@ function UserCommentCard({ comment, onPress, onEdit, onDelete }) {
           </Text>
         </View>
 
-        <View
-          style={styles.scorePill}
-          accessibilityLabel={`${upCount} upvotes`}
-        >
-          <FontAwesome
-            name="thumbs-up"
-            size={12}
-            color={css.palette.primary800}
-          />
+        <View style={styles.scorePill} accessibilityLabel={`${upCount} upvotes`}>
+          <FontAwesome name="thumbs-up" size={12} color={css.palette.primary800} />
           <Text style={styles.scoreText}>{upCount}</Text>
         </View>
       </TouchableOpacity>

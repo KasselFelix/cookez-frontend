@@ -93,7 +93,7 @@ function useOrbCoords(path) {
         withTiming(path.x[0], { duration: seg, easing: ease }),
       ),
       -1,
-      false
+      false,
     );
     cy.value = withRepeat(
       withSequence(
@@ -102,7 +102,7 @@ function useOrbCoords(path) {
         withTiming(path.y[0], { duration: seg, easing: ease }),
       ),
       -1,
-      false
+      false,
     );
   }, [cx, cy, path]);
 
@@ -153,7 +153,7 @@ export default function NutritionPill({ caloriesPerServing, onPress }) {
     >
       <Canvas style={[styles.canvas, { pointerEvents: 'none' }]}>
         <RoundedRect x={PILL_X} y={PILL_Y} width={PILL_W} height={PILL_H} r={PILL_R}>
-          <Shadow dx={0} dy={0} blur={4}  color={withAlpha(colors.glowNear, 0.9)} />
+          <Shadow dx={0} dy={0} blur={4} color={withAlpha(colors.glowNear, 0.9)} />
           <Shadow dx={0} dy={0} blur={14} color={withAlpha(colors.glowFar, 0.4)} />
           <RadialGradient
             c={vec(CANVAS_W / 2, CANVAS_H / 2)}

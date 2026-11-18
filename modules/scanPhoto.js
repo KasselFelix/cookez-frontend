@@ -58,7 +58,12 @@ export const scanPhoto =
 
     if (result.status !== 'ok') {
       // An expired session asks the user to sign in again, not to retry.
-      const status = result.status === 'quota' ? 'quota' : result.status === 'unauthorized' ? 'signedOut' : 'error';
+      const status =
+        result.status === 'quota'
+          ? 'quota'
+          : result.status === 'unauthorized'
+            ? 'signedOut'
+            : 'error';
       dispatch(setScanPhotoStatus({ id, status }));
       return;
     }

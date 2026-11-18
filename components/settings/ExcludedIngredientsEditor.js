@@ -35,11 +35,7 @@ import useT from '../../i18n/useT';
 const SEARCH_DEBOUNCE_MS = 300;
 const RESULTS_LIMIT = 8;
 
-export default function ExcludedIngredientsEditor({
-  value = [],
-  onChange,
-  showHelper = true,
-}) {
+export default function ExcludedIngredientsEditor({ value = [], onChange, showHelper = true }) {
   const css = useTheme();
   const t = useT();
 
@@ -54,9 +50,11 @@ export default function ExcludedIngredientsEditor({
   const sortedIds = useMemo(
     () =>
       [...value].sort((a, b) =>
-        (resolvedNames[a] || a).localeCompare(resolvedNames[b] || b, undefined, { sensitivity: 'base' })
+        (resolvedNames[a] || a).localeCompare(resolvedNames[b] || b, undefined, {
+          sensitivity: 'base',
+        }),
       ),
-    [value, resolvedNames]
+    [value, resolvedNames],
   );
 
   // Resolve unknown ids → names. Re-runs whenever `value` changes (after
@@ -107,18 +105,16 @@ export default function ExcludedIngredientsEditor({
     const controller = new AbortController();
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `${addressIp}/ingredients/${encodeURIComponent(term)}`,
-          { signal: controller.signal },
-        );
+        const res = await fetch(`${addressIp}/ingredients/${encodeURIComponent(term)}`, {
+          signal: controller.signal,
+        });
         const data = await res.json();
         if (controller.signal.aborted) return;
         if (data?.result && Array.isArray(data.ingredients)) {
           // De-dupe by name (same logic as KickoffScreen) and cap results
           // so a tap-target list doesn't blow up the layout.
           const unique = data.ingredients.filter(
-            (ing, i, self) =>
-              i === self.findIndex((x) => x.name === ing.name),
+            (ing, i, self) => i === self.findIndex((x) => x.name === ing.name),
           );
           setResults(unique.slice(0, RESULTS_LIMIT));
         } else {
@@ -196,10 +192,7 @@ export default function ExcludedIngredientsEditor({
               name: resolvedNames[id] || id,
             })}
             hitSlop={6}
-            style={[
-              styles.chip,
-              { backgroundColor: css.palette.error || '#D32F2F' },
-            ]}
+            style={[styles.chip, { backgroundColor: css.palette.error || '#D32F2F' }]}
           >
             <FontAwesome name="times" size={12} color="white" />
             <Text style={styles.chipText}>{resolvedNames[id] || '…'}</Text>
@@ -211,14 +204,8 @@ export default function ExcludedIngredientsEditor({
           accessibilityLabel={t('settings.excludedIngredients.addA11y')}
           style={[styles.chip, { backgroundColor: css.palette.primary500 }]}
         >
-          <FontAwesome
-            name={showSearch ? 'minus' : 'plus'}
-            size={12}
-            color="white"
-          />
-          <Text style={styles.chipText}>
-            {t('settings.excludedIngredients.add')}
-          </Text>
+          <FontAwesome name={showSearch ? 'minus' : 'plus'} size={12} color="white" />
+          <Text style={styles.chipText}>{t('settings.excludedIngredients.add')}</Text>
         </Pressable>
       </ScrollView>
 
@@ -304,11 +291,7 @@ export default function ExcludedIngredientsEditor({
                     {t('settings.excludedIngredients.alreadyExcluded')}
                   </Text>
                 ) : (
-                  <FontAwesome
-                    name="plus"
-                    size={12}
-                    color={css.palette.primary500}
-                  />
+                  <FontAwesome name="plus" size={12} color={css.palette.primary500} />
                 )}
               </Pressable>
             );

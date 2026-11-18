@@ -22,14 +22,20 @@ const recipe = {
   origin: [],
   comments: [],
   ingredients: [
-    { ingredient: { _id: 'i1', name: 'rice', quantity: 1, defaultUnit: 'g' }, name: 'rice', quantity: 200, unit: 'g' },
+    {
+      ingredient: { _id: 'i1', name: 'rice', quantity: 1, defaultUnit: 'g' },
+      name: 'rice',
+      quantity: 200,
+      unit: 'g',
+    },
   ],
   nutritionPerServing: { calories: 130 },
 };
 
 const nav = { navigate: jest.fn(), goBack: jest.fn(), setOptions: jest.fn() };
 
-const voteCalls = () => global.fetch.mock.calls.filter(([url]) => String(url).includes('/recipes/vote/'));
+const voteCalls = () =>
+  global.fetch.mock.calls.filter(([url]) => String(url).includes('/recipes/vote/'));
 
 describe('RecipeScreen vote', () => {
   it('sends the note, no username, with the token in the header', async () => {

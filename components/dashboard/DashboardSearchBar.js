@@ -15,7 +15,12 @@ import useT from '../../i18n/useT';
  *   onOpenFilters: () => void,
  * }} props
  */
-export default function DashboardSearchBar({ query, onChangeQuery, activeFiltersCount, onOpenFilters }) {
+export default function DashboardSearchBar({
+  query,
+  onChangeQuery,
+  activeFiltersCount,
+  onOpenFilters,
+}) {
   const css = useTheme();
   const t = useT();
   const hasFilters = activeFiltersCount > 0;

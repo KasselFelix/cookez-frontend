@@ -6,7 +6,17 @@ import { renderWithProviders } from '../helpers/renderWithProviders';
 import { THEMES, THEME_KEYS } from '../../styles/themes';
 import DevGalleryScreen from '../../screens/DevGalleryScreen';
 
-const SECTIONS = ['tokens', 'buttons', 'chips', 'cards', 'fields', 'states', 'nutrition', 'sheets', 'sandbox'];
+const SECTIONS = [
+  'tokens',
+  'buttons',
+  'chips',
+  'cards',
+  'fields',
+  'states',
+  'nutrition',
+  'sheets',
+  'sandbox',
+];
 
 describe('DevGalleryScreen', () => {
   beforeEach(async () => {

@@ -36,7 +36,9 @@ describe('SettingsScreen, logout', () => {
       fireEvent.press(screen.getByText('Log out'));
     });
 
-    await waitFor(() => expect(navigation.reset).toHaveBeenCalledWith({ index: 0, routes: [{ name: 'Home' }] }));
+    await waitFor(() =>
+      expect(navigation.reset).toHaveBeenCalledWith({ index: 0, routes: [{ name: 'Home' }] }),
+    );
     expect(store.getState().recipeFilters.value).toEqual({
       selectedOrigins: [],
       selectedTags: [],

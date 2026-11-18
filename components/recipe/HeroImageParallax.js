@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, {
-  useAnimatedStyle,
-  interpolate,
-  Extrapolation,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 import css from '../../styles/Global';
 import { isPlaceholderSource } from '../../modules/recipeImage';
 import RecipeImagePlaceholder from './RecipeImagePlaceholder';
@@ -31,14 +27,9 @@ export default function HeroImageParallax({ scrollY, source, uri, localSource })
       scrollY.value,
       [-HERO_HEIGHT, 0, HERO_HEIGHT],
       [-HERO_HEIGHT / 2, 0, HERO_HEIGHT / 3],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
-    const scale = interpolate(
-      scrollY.value,
-      [-HERO_HEIGHT, 0],
-      [2, 1],
-      Extrapolation.CLAMP
-    );
+    const scale = interpolate(scrollY.value, [-HERO_HEIGHT, 0], [2, 1], Extrapolation.CLAMP);
     return {
       transform: [{ translateY }, { scale }],
     };

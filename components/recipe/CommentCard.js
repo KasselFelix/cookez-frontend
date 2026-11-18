@@ -4,11 +4,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import addressIp from '../../modules/addressIp';
 import { jsonAuthHeaders } from '../../modules/authHeaders';
 import { updateCommentVotes } from '../../reducers/recipe';
@@ -43,11 +39,11 @@ export default function CommentCard({
   // Derived vote state — pure projection of props
   const alreadyUp = useMemo(
     () => usersAlreadyUpVoted.includes(user.username),
-    [usersAlreadyUpVoted, user.username]
+    [usersAlreadyUpVoted, user.username],
   );
   const alreadyDown = useMemo(
     () => usersAlreadyDownVoted.includes(user.username),
-    [usersAlreadyDownVoted, user.username]
+    [usersAlreadyDownVoted, user.username],
   );
   const score = (up?.length ?? 0) - (down?.length ?? 0);
 
@@ -84,7 +80,7 @@ export default function CommentCard({
         down: data.comment.down,
         usersAlreadyUpVoted: data.comment.usersAlreadyUpVoted,
         usersAlreadyDownVoted: data.comment.usersAlreadyDownVoted,
-      })
+      }),
     );
   };
 
@@ -152,12 +148,7 @@ export default function CommentCard({
             size={14}
             color={alreadyUp ? css.palette.success : css.palette.neutral500}
           />
-          <Text
-            style={[
-              styles.votePillText,
-              alreadyUp && styles.votePillTextActiveUp,
-            ]}
-          >
+          <Text style={[styles.votePillText, alreadyUp && styles.votePillTextActiveUp]}>
             {up?.length ?? 0}
           </Text>
         </AnimatedTouchable>
@@ -175,20 +166,13 @@ export default function CommentCard({
             size={14}
             color={alreadyDown ? css.palette.error : css.palette.neutral500}
           />
-          <Text
-            style={[
-              styles.votePillText,
-              alreadyDown && styles.votePillTextActiveDown,
-            ]}
-          >
+          <Text style={[styles.votePillText, alreadyDown && styles.votePillTextActiveDown]}>
             {down?.length ?? 0}
           </Text>
         </AnimatedTouchable>
 
         <View style={styles.scorePill}>
-          <Text style={styles.scoreText}>
-            {score >= 0 ? `+${score}` : score}
-          </Text>
+          <Text style={styles.scoreText}>{score >= 0 ? `+${score}` : score}</Text>
         </View>
       </View>
     </View>

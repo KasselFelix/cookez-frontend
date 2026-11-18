@@ -59,7 +59,9 @@ export default function ActionRow({
             />
           ))}
         </View>
-        <Text style={styles.label}>{nbVotes} {nbVotes === 1 ? 'vote' : 'votes'}</Text>
+        <Text style={styles.label}>
+          {nbVotes} {nbVotes === 1 ? 'vote' : 'votes'}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity

@@ -23,7 +23,10 @@ const TOKEN_IN_CONCAT = /\baddressIp\s*\+[^;\n]*\btoken\b/i;
 const hasTokenInUrl = (source) => TOKEN_IN_TEMPLATE.test(source) || TOKEN_IN_CONCAT.test(source);
 
 describe('session token never in an API URL', () => {
-  const files = [path.join(ROOT, 'App.js'), ...SOURCE_DIRS.flatMap((d) => sourceFiles(path.join(ROOT, d)))];
+  const files = [
+    path.join(ROOT, 'App.js'),
+    ...SOURCE_DIRS.flatMap((d) => sourceFiles(path.join(ROOT, d))),
+  ];
 
   it('scans the app sources', () => {
     expect(files.length).toBeGreaterThan(20);
@@ -38,6 +41,10 @@ describe('session token never in an API URL', () => {
     expect(hasTokenInUrl('fetch(`${addressIp}/users/profile/${token}`)')).toBe(true);
     expect(hasTokenInUrl('fetch(`${addressIp}/users/lastViewed/${user.token}`)')).toBe(true);
     expect(hasTokenInUrl("fetch(addressIp + '/users/badges/' + user.token)")).toBe(true);
-    expect(hasTokenInUrl('fetch(`${addressIp}/users/me`, { headers: { Authorization: `Bearer ${token}` } })')).toBe(false);
+    expect(
+      hasTokenInUrl(
+        'fetch(`${addressIp}/users/me`, { headers: { Authorization: `Bearer ${token}` } })',
+      ),
+    ).toBe(false);
   });
 });

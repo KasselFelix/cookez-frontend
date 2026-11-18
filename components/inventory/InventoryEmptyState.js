@@ -23,11 +23,7 @@ export default function InventoryEmptyState({ onAdd }) {
       ]}
       accessibilityLabel={t('profile.inventory.empty.title')}
     >
-      <BadgeCircle
-        icon={<Package size={32} color={css.button.primaryBg} />}
-        label=""
-        size={72}
-      />
+      <BadgeCircle icon={<Package size={32} color={css.button.primaryBg} />} label="" size={72} />
       <Text
         style={{
           fontFamily: css.typography.fontHeading,

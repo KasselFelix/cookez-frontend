@@ -21,24 +21,15 @@ import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
 import TagsMultiSelect from '../recipeFilters/TagsMultiSelect';
 
-export default function TagPreferencesEditor({
-  variant,
-  value = [],
-  onChange,
-  showHelper = true,
-}) {
+export default function TagPreferencesEditor({ variant, value = [], onChange, showHelper = true }) {
   const css = useTheme();
   const t = useT();
 
   const helperKey =
-    variant === 'preferred'
-      ? 'settings.preferredTags.helper'
-      : 'settings.excludedTags.helper';
+    variant === 'preferred' ? 'settings.preferredTags.helper' : 'settings.excludedTags.helper';
 
   const handleToggle = (tag) => {
-    const next = value.includes(tag)
-      ? value.filter((x) => x !== tag)
-      : [...value, tag];
+    const next = value.includes(tag) ? value.filter((x) => x !== tag) : [...value, tag];
     onChange?.(next);
   };
 

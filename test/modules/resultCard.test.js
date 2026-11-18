@@ -17,7 +17,15 @@ describe('toResultCard', () => {
       },
       'fr',
     );
-    expect(card).toMatchObject({ minutes: 45, difficulty: 2, rating: '4.5', votes: 2, match: 75, missing: 2, seasonal: true });
+    expect(card).toMatchObject({
+      minutes: 45,
+      difficulty: 2,
+      rating: '4.5',
+      votes: 2,
+      match: 75,
+      missing: 2,
+      seasonal: true,
+    });
     expect(card.origins).toEqual([{ flag: '🇫🇷', name: 'France' }]);
   });
 
@@ -35,6 +43,8 @@ describe('toResultCard', () => {
   });
 
   it('shows an unknown origin without a flag', () => {
-    expect(toResultCard({ origin: 'Atlantis' }).origins).toEqual([{ flag: null, name: 'Atlantis' }]);
+    expect(toResultCard({ origin: 'Atlantis' }).origins).toEqual([
+      { flag: null, name: 'Atlantis' },
+    ]);
   });
 });

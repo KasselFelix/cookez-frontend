@@ -82,9 +82,7 @@ export default function ServingsStepper({
         }}
         accessibilityLiveRegion="polite"
         accessibilityLabel={
-          value == null
-            ? t('recipe.servings.label')
-            : `${t('recipe.servings.label')}: ${value}`
+          value == null ? t('recipe.servings.label') : `${t('recipe.servings.label')}: ${value}`
         }
       >
         {display}
