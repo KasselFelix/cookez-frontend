@@ -34,7 +34,13 @@ test/
   reducers/pantry.test.js        # reference: pure reducer unit test
   components/renderWithProviders.test.js  # reference: component render via harness
   hooks/useT.test.js             # reference: hook test with preloaded locale
+  security/authHeader.test.js    # static guard: token and username out of request bodies
+  security/helpers/bodyAnalysis.js  # its analysis (AST), apart from the tests
 ```
+
+A new guard case is seen red on the previous analysis by stashing the helper
+alone: `git stash push -- test/security/helpers/bodyAnalysis.js`, run the test,
+then `git stash pop`.
 
 ## Writing a reducer test (cheapest, most stable)
 
