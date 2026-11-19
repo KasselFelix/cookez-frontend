@@ -53,7 +53,12 @@ const PUBLIC_ROUTES = [
 
 const HELPERS = ['jsonAuthHeaders', 'authHeaders'];
 // token, authToken, sessionToken…, or a whole user object spread into the body.
-const isTokenKey = (key) => /token/i.test(key) || /^\.\.\..*user$/i.test(key);
+// `token`, `...user`, or a key labelled with its value: `auth: user.token`,
+// `profile: user` (the whole user carries the token).
+const isTokenKey = (key) =>
+  /token/i.test(key) || /^\.\.\..*user$/i.test(key) || /^[^:]+: [\w.]*user$/i.test(key);
+// `username`, or a key labelled with its value: `author: user.username`.
+const isUsernameKey = (key) => key === 'username' || /^[^:]+: [\w.]*username$/i.test(key);
 const MAX_DEPTH = 15;
 
 const posix = (p) => p.split(path.sep).join('/');
@@ -529,14 +534,32 @@ function analyze(sources) {
     if (!value?.isIdentifier({ name })) return null;
     return { init: init.get('arguments')[0], setter: setter?.isIdentifier() ? setter : null };
   };
-  // First argument of every call to the setter.
-  const setterArguments = (setter) => {
-    if (!setter) return [];
+  // First argument of every call to the setter, through aliases and JSX props
+  // (`<IngredientsList setIngredientsList={setIngredientsList} />`), as for a
+  // function; a setter handed elsewhere (`onChangeText={setX}`) is a problem.
+  const setterUses = (setter, depth) => {
+    if (!setter) return { values: [], problems: [] };
     const binding = setter.scope.getBinding(setter.node.name);
-    return (binding?.referencePaths ?? [])
-      .filter((r) => r.parentPath.isCallExpression() && r.key === 'callee')
-      .map((r) => r.parentPath.get('arguments')[0]);
+    const { calls, problems } = callsOfRefs(binding.referencePaths, depth, new Set());
+    return { values: calls.map((call) => call.get('arguments')[0]), problems };
   };
+  // What a function returns: its expression body, or each `return` of its own.
+  const returnsOf = (fn) => {
+    const body = fn.get('body');
+    if (!body.isBlockStatement()) return [body];
+    const out = [];
+    body.traverse({
+      Function(p) {
+        p.skip();
+      },
+      ReturnStatement(p) {
+        out.push(p.get('argument'));
+      },
+    });
+    return out;
+  };
+  // The `prev` of an updater `setX((prev) => …)`: the state itself, followed already.
+  const previousStates = new Set();
 
   /** Keys a value can carry (nested ones too), and what could not be followed. */
   const keysOf = (expr, depth = 0, seen = new Set()) => {
@@ -554,8 +577,25 @@ function analyze(sources) {
       out.problems.push(...r.problems);
     };
     const fail = (why) => out.problems.push(`${loc(expr)}: ${why}`);
-    const followLiteral = (p) => {
+    // A value inside a body: its literals, on each side of `??` or `? :`.
+    // A value held in a variable can carry keys too: `{ location: payload }`
+    // (a parameter, a constant, a state). It is followed as far as it goes,
+    // and every key found on the way is checked. What it cannot follow stays
+    // a leaf, as any nested value did before: a field or a call result (text
+    // or numbers here), but also a setter handed to a prop (`onChangeText`)
+    // or a handler passed as a value. Failing on those would flag some thirty
+    // text inputs and callbacks; only the body itself is followed to the end.
+    // Its own `seen` keeps that visit from hiding the variable from another path.
+    const followNested = (p) => {
       if (p.isObjectExpression() || p.isArrayExpression()) follow(p);
+      else if (p.isIdentifier()) out.keys.push(...keysOf(p, depth + 1, new Set(seen)).keys);
+      else if (p.isLogicalExpression()) {
+        followNested(p.get('left'));
+        followNested(p.get('right'));
+      } else if (p.isConditionalExpression()) {
+        followNested(p.get('consequent'));
+        followNested(p.get('alternate'));
+      }
     };
 
     if (expr.isObjectExpression()) {
@@ -575,22 +615,20 @@ function analyze(sources) {
         out.keys.push({ key, at: loc(prop) });
         if (!prop.isObjectProperty()) continue;
         const value = prop.get('value');
-        // A value held in a variable can carry keys too: `{ location: payload }`
-        // (a parameter, a constant). It is followed as far as it goes, and every
-        // key found on the way is checked. What it cannot follow (a state, a
-        // field or the result of a call, which here hold text or numbers) stays
-        // a leaf, as any nested value did before: only the body itself must be
-        // followed to the end.
-        if (value.isIdentifier()) out.keys.push(...keysOf(value, depth + 1, seen).keys);
-        else followLiteral(value);
-        // A token under another name: `{ auth: user.token }`, `{ auth: token }`.
+        followNested(value);
+        // A token or a username under another name: `{ auth: user.token }`,
+        // `{ author: user.username }`; or the whole user, token included:
+        // `{ profile: user }`.
         const valueName = value.isIdentifier()
           ? value.node.name
           : isMember(value)
             ? propName(value)
             : null;
-        if (valueName && /token/i.test(valueName) && !isTokenKey(key))
-          out.keys.push({ key: `${key}: ${textOf(value)}`, at: loc(prop) });
+        const named =
+          (/token/i.test(valueName) && !isTokenKey(key)) ||
+          /user$/i.test(valueName) ||
+          (/^username$/i.test(valueName) && !isUsernameKey(key));
+        if (valueName && named) out.keys.push({ key: `${key}: ${textOf(value)}`, at: loc(prop) });
       }
     } else if (expr.isArrayExpression()) {
       for (const element of expr.get('elements')) {
@@ -600,6 +638,7 @@ function analyze(sources) {
       if (expr.node.name === 'undefined') return out;
       const binding = expr.scope.getBinding(expr.node.name);
       if (!binding) fail(`${expr.node.name} is not declared in the file`);
+      else if (previousStates.has(binding)) return out;
       else if (binding.kind === 'param') {
         const position = paramPosition(binding);
         if (!position) fail(`parameter pattern of ${expr.node.name} cannot be followed`);
@@ -635,7 +674,7 @@ function analyze(sources) {
             if (key === null)
               out.problems.push(`${loc(parent)}: computed key added to ${expr.node.name}`);
             else out.keys.push({ key, at: loc(parent) });
-            followLiteral(parent.parentPath.get('right'));
+            followNested(parent.parentPath.get('right'));
           } else if (
             isCallOf(parent, 'Object', 'assign') &&
             r.listKey === 'arguments' &&
@@ -646,13 +685,22 @@ function analyze(sources) {
         }
       } else if (stateOf(binding, expr.node.name)) {
         // A React state: `const [x, setX] = useState(init)`. Its values are the
-        // initial one and those given to the setter.
+        // initial one and those given to the setter; a lazy initializer or an
+        // updater `(prev) => …` gives what it returns.
         const { init, setter } = stateOf(binding, expr.node.name);
-        const values = [init, ...setterArguments(setter)];
-        for (const value of values) {
+        const uses = setterUses(setter, depth);
+        out.problems.push(...uses.problems);
+        for (const value of [init, ...uses.values]) {
           if (!value?.node) continue;
-          if (value.isFunction()) fail(`state ${expr.node.name} set by a function`);
-          else follow(value);
+          if (!value.isFunction()) {
+            follow(value);
+            continue;
+          }
+          const [previous] = value.get('params');
+          if (previous?.isIdentifier()) {
+            previousStates.add(value.scope.getBinding(previous.node.name));
+          } else if (previous) fail(`updater of ${expr.node.name} with a parameter pattern`);
+          for (const returned of returnsOf(value)) follow(returned);
         }
       } else fail(`${expr.node.name} (${binding.kind}) cannot be followed`);
     } else if (expr.isLogicalExpression()) {
@@ -813,7 +861,7 @@ describe('session token in the Authorization header only', () => {
   });
 
   it('sends no username in the body of an authenticated call', () => {
-    expect(keyLabels(fetchKeys(authCalls), (key) => key === 'username')).toEqual([]);
+    expect(keyLabels(fetchKeys(authCalls), isUsernameKey)).toEqual([]);
   });
 
   it('writes the Bearer scheme in the helper only', () => {
@@ -831,8 +879,8 @@ describe('the analysis behind the guard', () => {
   const HELPER = 'export const jsonAuthHeaders = (t) => t;\nexport const authHeaders = (t) => t;\n';
   const authOf = (sources) =>
     analyze({ 'modules/authHeaders.js': HELPER, ...sources }).fetches.filter((f) => f.auth);
-  const usernamesIn = (sources) =>
-    keyLabels(fetchKeys(authOf(sources)), (key) => key === 'username');
+  const usernamesIn = (sources) => keyLabels(fetchKeys(authOf(sources)), isUsernameKey);
+  const tokensIn = (sources) => keyLabels(fetchKeys(authOf(sources)), isTokenKey);
   const problemsIn = (sources) => authOf(sources).flatMap((f) => f.problems);
 
   const wrapper = `${API}export const add = async (token, body) =>\n  fetch(\`\${addressIp}/inventory\`, { method: 'POST', headers: jsonAuthHeaders(token), body: JSON.stringify(body) });\n`;
@@ -891,6 +939,50 @@ describe('the analysis behind the guard', () => {
     ]);
     // A leaf it cannot follow (a parameter field, a call) is not a problem.
     expect(problemsIn(sources)).toEqual([]);
+  });
+
+  // Reviews of the fix/019-authheader-nested ship: a state set by an updater
+  // or by a child component, and a setter handed where it cannot be followed.
+  it('follows a state through its updaters and a setter passed as a prop', () => {
+    const put = `${API}export async function put({ token, updates }) {\n  return fetch(\`\${addressIp}/users/profile\`, { method: 'PUT', headers: jsonAuthHeaders(token), body: JSON.stringify(updates) });\n}\n`;
+    const sources = {
+      'modules/api.js': put,
+      'components/List.js':
+        "export default function List({ items, setItems }) {\n  setItems([...items, { username: 'child' }]);\n}\n",
+      'components/Form.js':
+        "import { useState } from 'react';\nimport { put } from '../modules/api';\nimport List from './List';\nexport default function Form({ token }) {\n  const [picked, setPicked] = useState(() => ({ username: 'lazy' }));\n  setPicked((prev) => ({ ...prev, username: 'updater' }));\n  const [items, setItems] = useState([]);\n  put({ token, updates: { picked, items } });\n  return <List items={items} setItems={setItems} />;\n}\n",
+    };
+    expect(usernamesIn(sources).sort()).toEqual([
+      'components/Form.js:5: username',
+      'components/Form.js:6: username',
+      'components/List.js:2: username',
+    ]);
+
+    // As the body itself, a state whose setter goes to a component outside the
+    // app (`onChangeText`) cannot be followed.
+    const box = {
+      'modules/api.js': put,
+      'components/Box.js':
+        "import { useState } from 'react';\nimport { TextInput } from 'react-native';\nimport { put } from '../modules/api';\nexport default function Box({ token }) {\n  const [draft, setDraft] = useState({});\n  put({ token, updates: draft });\n  return <TextInput onChangeText={setDraft} />;\n}\n",
+    };
+    expect(problemsIn(box)).toEqual([
+      'components/Box.js:7: component of prop onChangeText not found in the app',
+    ]);
+  });
+
+  it('reads a value by its name and both sides of a nested ?? or ? :', () => {
+    const sources = {
+      'modules/api.js': `${API}export async function put({ token, updates }) {\n  return fetch(\`\${addressIp}/users/profile\`, { method: 'PUT', headers: jsonAuthHeaders(token), body: JSON.stringify(updates) });\n}\n`,
+      'components/C.js':
+        "import { put } from '../modules/api';\nexport default function C({ token, user, ok, payload }) {\n  put({\n    token,\n    updates: {\n      profile: user,\n      author: user.username,\n      data: ok ? { username: 'a' } : null,\n      location: payload ?? { username: 'b' },\n    },\n  });\n}\n",
+    };
+    expect(usernamesIn(sources).sort()).toEqual([
+      'components/C.js:7: author: user.username',
+      'components/C.js:8: username',
+      'components/C.js:9: username',
+    ]);
+    // The whole user carries its token.
+    expect(tokensIn(sources)).toEqual(['components/C.js:6: profile: user']);
   });
 
   it('follows a useMemo-returned function and a destructured parameter', () => {
