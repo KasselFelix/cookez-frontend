@@ -516,6 +516,28 @@ function analyze(sources) {
     return {};
   };
 
+  // `const [name, setName] = useState(init)`: the initial value and the setter.
+  const stateOf = (binding, name) => {
+    const declarator = binding.path;
+    if (!declarator.isVariableDeclarator()) return null;
+    const id = declarator.get('id');
+    const init = declarator.get('init');
+    if (!id.isArrayPattern() || !init.isCallExpression() || calleeName(init) !== 'useState') {
+      return null;
+    }
+    const [value, setter] = id.get('elements');
+    if (!value?.isIdentifier({ name })) return null;
+    return { init: init.get('arguments')[0], setter: setter?.isIdentifier() ? setter : null };
+  };
+  // First argument of every call to the setter.
+  const setterArguments = (setter) => {
+    if (!setter) return [];
+    const binding = setter.scope.getBinding(setter.node.name);
+    return (binding?.referencePaths ?? [])
+      .filter((r) => r.parentPath.isCallExpression() && r.key === 'callee')
+      .map((r) => r.parentPath.get('arguments')[0]);
+  };
+
   /** Keys a value can carry (nested ones too), and what could not be followed. */
   const keysOf = (expr, depth = 0, seen = new Set()) => {
     const out = { keys: [], problems: [] };
@@ -553,7 +575,14 @@ function analyze(sources) {
         out.keys.push({ key, at: loc(prop) });
         if (!prop.isObjectProperty()) continue;
         const value = prop.get('value');
-        followLiteral(value);
+        // A value held in a variable can carry keys too: `{ location: payload }`
+        // (a parameter, a constant). It is followed as far as it goes, and every
+        // key found on the way is checked. What it cannot follow (a state, a
+        // field or the result of a call, which here hold text or numbers) stays
+        // a leaf, as any nested value did before: only the body itself must be
+        // followed to the end.
+        if (value.isIdentifier()) out.keys.push(...keysOf(value, depth + 1, seen).keys);
+        else followLiteral(value);
         // A token under another name: `{ auth: user.token }`, `{ auth: token }`.
         const valueName = value.isIdentifier()
           ? value.node.name
@@ -614,6 +643,16 @@ function analyze(sources) {
           ) {
             for (const arg of parent.get('arguments').slice(1)) follow(arg);
           }
+        }
+      } else if (stateOf(binding, expr.node.name)) {
+        // A React state: `const [x, setX] = useState(init)`. Its values are the
+        // initial one and those given to the setter.
+        const { init, setter } = stateOf(binding, expr.node.name);
+        const values = [init, ...setterArguments(setter)];
+        for (const value of values) {
+          if (!value?.node) continue;
+          if (value.isFunction()) fail(`state ${expr.node.name} set by a function`);
+          else follow(value);
         }
       } else fail(`${expr.node.name} (${binding.kind}) cannot be followed`);
     } else if (expr.isLogicalExpression()) {
@@ -834,6 +873,24 @@ describe('the analysis behind the guard', () => {
       'components/Other.js:2: username',
       'components/Sheet.js:3: username',
     ]);
+  });
+
+  // Security review of the cookez-frontend#25 ship: `{ location: payload }`
+  // left the guard green with a username in `payload`.
+  it('follows a value held in a variable inside a body: parameter or constant', () => {
+    const sources = {
+      'modules/api.js': `${API}export async function put({ token, updates }) {\n  return fetch(\`\${addressIp}/users/profile\`, { method: 'PUT', headers: jsonAuthHeaders(token), body: JSON.stringify(updates) });\n}\n`,
+      'components/Toggle.js':
+        "import { useState } from 'react';\nimport { put } from '../modules/api';\nexport default function Toggle({ token, name, state }) {\n  const persist = (payload) => put({ token, updates: { location: payload } });\n  persist({ consent: false, username: name });\n  const extra = { username: 'u' };\n  const [picked, setPicked] = useState({ username: 'a' });\n  setPicked({ username: 'b' });\n  setPicked((prev) => prev);\n  put({ token, updates: { data: extra, picked, label: name.trim(), value: state.value } });\n}\n",
+    };
+    expect(usernamesIn(sources).sort()).toEqual([
+      'components/Toggle.js:5: username',
+      'components/Toggle.js:6: username',
+      'components/Toggle.js:7: username',
+      'components/Toggle.js:8: username',
+    ]);
+    // A leaf it cannot follow (a parameter field, a call) is not a problem.
+    expect(problemsIn(sources)).toEqual([]);
   });
 
   it('follows a useMemo-returned function and a destructured parameter', () => {
