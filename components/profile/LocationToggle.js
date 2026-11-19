@@ -10,8 +10,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Switch, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
-import addressIp from '../../modules/addressIp';
-import { jsonAuthHeaders } from '../../modules/authHeaders';
+import { putUserProfile } from '../../modules/recipesApi';
 import { updateUserInStore } from '../../reducers/user';
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
@@ -43,12 +42,7 @@ export default function LocationToggle() {
   const persist = async (payload) => {
     setIsWorking(true);
     try {
-      const res = await fetch(`${addressIp}/users/profile`, {
-        method: 'PUT',
-        headers: jsonAuthHeaders(user.token),
-        body: JSON.stringify({ location: payload }),
-      });
-      const data = await res.json();
+      const data = await putUserProfile({ token: user.token, updates: { location: payload } });
       if (data.result) {
         // Backend now returns `{ result, updated }` with only the changed
         // fields (post-normalisation), so we can dispatch it as-is.

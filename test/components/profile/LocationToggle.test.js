@@ -1,7 +1,7 @@
 // LocationToggle (plan 020): its messages are toasts, not alerts — an info
 // when location is off or refused, an error when saving fails.
 import React from 'react';
-import { fireEvent, screen } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 import { renderWithProviders } from '../../helpers/renderWithProviders';
 import { mockFetchError, mockFetchJsonAlways } from '../../mocks/api';
@@ -56,6 +56,48 @@ describe('LocationToggle', () => {
     fireEvent(screen.getByRole('switch'), 'valueChange', false);
 
     expect(await screen.findByText('Network error. Please try again.')).toBeTruthy();
+  });
+});
+
+// Plan 019: the save goes through putUserProfile (modules/recipesApi.js).
+describe('LocationToggle, saved', () => {
+  it('sends consent=false by PUT /users/profile and stores the diff', async () => {
+    mockFetchJsonAlways({ result: true, updated: { location: { consent: false } } });
+    const { store } = render(true);
+
+    fireEvent(screen.getByRole('switch'), 'valueChange', false);
+
+    await waitFor(() => expect(store.getState().user.value.location.consent).toBe(false));
+    const [url, init] = global.fetch.mock.calls[0];
+    expect(url).toBe('https://api.invalid/users/profile');
+    expect(init.method).toBe('PUT');
+    expect(init.headers.Authorization).toBe('Bearer tok');
+    expect(JSON.parse(init.body)).toEqual({ location: { consent: false } });
+  });
+
+  it('sends the position with consent=true when enabled, and stores the diff', async () => {
+    Location.hasServicesEnabledAsync.mockResolvedValue(true);
+    Location.requestForegroundPermissionsAsync.mockResolvedValue({ status: 'granted' });
+    Location.getCurrentPositionAsync.mockResolvedValue({
+      coords: { latitude: 48.8566, longitude: 2.3522 },
+    });
+    const location = { consent: true, coords: { lat: 48.8566, lng: 2.3522 } };
+    mockFetchJsonAlways({ result: true, updated: { location } });
+    const { store } = render(false);
+
+    fireEvent(screen.getByRole('switch'), 'valueChange', true);
+
+    await waitFor(() => expect(store.getState().user.value.location.consent).toBe(true));
+    expect(store.getState().user.value.location.coords).toEqual({ lat: 48.8566, lng: 2.3522 });
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    const [url, init] = global.fetch.mock.calls[0];
+    expect(url).toBe('https://api.invalid/users/profile');
+    expect(init.method).toBe('PUT');
+    expect(init.headers.Authorization).toBe('Bearer tok');
+    expect(JSON.parse(init.body)).toEqual({
+      location: { coords: { lat: 48.8566, lng: 2.3522 }, consent: true },
+    });
+    expect(screen.queryByTestId('toast')).toBeNull();
   });
 });
 

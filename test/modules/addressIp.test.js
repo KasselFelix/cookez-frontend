@@ -45,17 +45,70 @@ describe('modules/addressIp', () => {
 describe('metro.config.js', () => {
   jest.mock('expo/metro-config', () => ({ getDefaultConfig: () => ({ resolver: {} }) }));
 
+  // A failed assertion must not leave a console spy behind.
+  afterEach(() => jest.restoreAllMocks());
+
   it.each([[undefined], [''], ['   ']])('refuses to start without the variable (%p)', (value) => {
     const printed = jest.spyOn(console, 'error').mockImplementation(() => {});
     setApiUrl(value);
     expect(() => load('../../metro.config')).toThrow(/EXPO_PUBLIC_API_URL/);
     // Printed too, since Metro's import() retry hides the error on Windows.
     expect(printed).toHaveBeenCalledWith(expect.stringMatching(/^EXPO_PUBLIC_API_URL is not set/));
-    printed.mockRestore();
   });
 
   it('returns the Expo default config when the variable is set', () => {
+    jest.spyOn(console, 'log').mockImplementation(() => {});
     setApiUrl('https://api.invalid');
     expect(load('../../metro.config')).toEqual({ resolver: {} });
+  });
+
+  // Plan 019, "Ensuite": the guard checks only that the variable is there, and
+  // the front's local env file targets production. Metro now prints the URL it
+  // bundles, and warns when that URL is the production API.
+  describe('prints the API URL it bundles', () => {
+    const run = (value) => {
+      const logged = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const warned = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      setApiUrl(value);
+      load('../../metro.config');
+      return { logged, warned };
+    };
+
+    it('prints the trimmed URL, without a warning for a non-production API', () => {
+      const { logged, warned } = run('  http://10.0.2.2:3000 ');
+      expect(logged).toHaveBeenCalledWith('Metro: EXPO_PUBLIC_API_URL = http://10.0.2.2:3000');
+      expect(warned).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['https://cookez-backend.vercel.app'],
+      ['https://cookez-backend.vercel.app/'],
+      ['HTTPS://Cookez-Backend.Vercel.App'],
+      ['https://cookez-backend.vercel.app./'],
+    ])('warns when the URL is the production API (%p)', (value) => {
+      const { logged, warned } = run(value);
+      expect(logged).toHaveBeenCalledWith(`Metro: EXPO_PUBLIC_API_URL = ${value}`);
+      expect(warned).toHaveBeenCalledWith(expect.stringMatching(/^!! PRODUCTION API/));
+    });
+
+    // Code review of the ship: a log must not carry credentials or a secret
+    // query, even if the URL holds one.
+    it.each([
+      ['https://user:secret@api.example.com/v1', 'https://api.example.com/v1'],
+      ['https://api.example.com/v1?key=secret#frag', 'https://api.example.com/v1'],
+    ])('prints %p without its credentials, query or fragment', (value, printed) => {
+      const { logged } = run(value);
+      expect(logged).toHaveBeenCalledWith(`Metro: EXPO_PUBLIC_API_URL = ${printed}`);
+      expect(JSON.stringify(logged.mock.calls)).not.toMatch(/secret|user|frag/);
+    });
+
+    it.each([
+      ['https://cookez-backend.vercel.app.evil.com'],
+      ['https://my-cookez-backend.vercel.app'],
+      ['not a url'],
+    ])('does not warn for another host or an invalid URL (%p)', (value) => {
+      const { warned } = run(value);
+      expect(warned).not.toHaveBeenCalled();
+    });
   });
 });
