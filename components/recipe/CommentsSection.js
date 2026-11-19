@@ -62,11 +62,9 @@ export default function CommentsSection({ recipeId, onPromptCompose }) {
               // "Encountered two children with the same key (undefined-undefined)".
               key={c._id ? String(c._id) : `comment-fallback-${i}`}
               recipeId={recipeId}
+              // Votes in either shape: CommentCard reads them through
+              // modules/commentVotes.
               {...c}
-              up={c.up ?? []}
-              down={c.down ?? []}
-              usersAlreadyUpVoted={c.usersAlreadyUpVoted ?? []}
-              usersAlreadyDownVoted={c.usersAlreadyDownVoted ?? []}
             />
           ))}
         </View>

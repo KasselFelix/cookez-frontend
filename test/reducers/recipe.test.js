@@ -3,6 +3,7 @@
 // search. Each writer touches only its own list.
 
 import reducer, {
+  addCommentToRecipe,
   addRecipe,
   clearRecipes,
   removeRecipe,
@@ -11,6 +12,7 @@ import reducer, {
   setCatalogRecipes,
   setRecipeDetail,
   setResultRecipes,
+  updateCommentVotes,
   updateRecipeVote,
 } from '../../reducers/recipe';
 
@@ -139,5 +141,57 @@ describe('recipe slice', () => {
   it('selectors return the same array while nothing changed', () => {
     const state = reducer(initial, setCatalogRecipes(catalog));
     expect(selectCatalogRecipes(asRoot(state))).toBe(selectCatalogRecipes(asRoot(state)));
+  });
+});
+
+// Plan 021: a comment keeps its counts only, from either backend shape.
+describe('recipe slice comment votes', () => {
+  const oldComment = {
+    _id: 'k1',
+    username: 'chef',
+    message: 'Great',
+    up: ['u1'],
+    down: [],
+    usersAlreadyUpVoted: ['alex'],
+    usersAlreadyDownVoted: [],
+  };
+  const withComment = (comment) =>
+    reducer(initial, setCatalogRecipes([{ _id: 'c1', name: 'Golompke', comments: [comment] }]));
+  const commentOf = (state) => state.value[0].comments[0];
+
+  it.each([
+    ['new shape', { _id: 'k1', upCount: 2, downCount: 1 }],
+    ['old shape', { _id: 'k1', up: ['u1', 'u2'], down: ['u3'], usersAlreadyUpVoted: ['a', 'b'] }],
+  ])('updateCommentVotes stores the counts of the %s, without voter lists', (label, voted) => {
+    const state = reducer(
+      withComment(oldComment),
+      updateCommentVotes({ recipeId: 'c1', commentId: 'k1', comment: voted }),
+    );
+    expect(commentOf(state)).toEqual({
+      _id: 'k1',
+      username: 'chef',
+      message: 'Great',
+      upCount: 2,
+      downCount: 1,
+    });
+  });
+
+  it('updateCommentVotes leaves the other comments alone', () => {
+    let state = reducer(
+      initial,
+      setCatalogRecipes([{ _id: 'c1', comments: [oldComment, { _id: 'k2', upCount: 4 }] }]),
+    );
+    state = reducer(
+      state,
+      updateCommentVotes({ recipeId: 'c1', commentId: 'k1', comment: { upCount: 0 } }),
+    );
+    expect(state.value[0].comments[1]).toEqual({ _id: 'k2', upCount: 4 });
+  });
+
+  it('addCommentToRecipe stores the comment as sent, without voter lists', () => {
+    let state = reducer(initial, setCatalogRecipes([{ _id: 'c1', comments: [] }]));
+    const fresh = { _id: 'k3', username: 'alex', message: 'Yum', upCount: 0, downCount: 0 };
+    state = reducer(state, addCommentToRecipe({ recipeId: 'c1', comment: fresh }));
+    expect(commentOf(state)).toEqual(fresh);
   });
 });

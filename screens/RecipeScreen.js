@@ -18,9 +18,10 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { setRecipeDetail, updateRecipeVote } from '../reducers/recipe';
-import { toggleFavorite } from '../reducers/user';
+import { setRecipeVote, toggleFavorite } from '../reducers/user';
 // MODULES
 import addressIp from '../modules/addressIp';
+import { userRecipeVote } from '../modules/commentVotes';
 import { enterApp, exitToHome } from '../modules/sessionNavigation';
 import { jsonAuthHeaders } from '../modules/authHeaders';
 import { recordRecipeView } from '../modules/session';
@@ -235,6 +236,7 @@ export default function RecipeScreen({ route, navigation }) {
               votes: data.votes,
             }),
           );
+          dispatch(setRecipeVote({ recipeId: selectedRecipeId, note }));
           closeVoteModal();
         }
       } catch (err) {
@@ -256,14 +258,11 @@ export default function RecipeScreen({ route, navigation }) {
 
   const handleVote = () => {
     if (!requireAuth('vote')) return;
-    // Pré-remplit les étoiles avec le vote précédent de l'user pour cette
-    // recette (si existant). Le schéma stocke `{ user: ObjectId, note }`,
-    // donc on compare par ID (string) plutôt que par username. Le guard
-    // `skipNextVoteFetch` évite que le seed re-déclenche un POST inutile
-    // via le useEffect [starNote].
-    const myId = user?._id ? String(user._id) : null;
-    const previous = myId ? recipe?.votes?.find((v) => String(v.user) === myId) : null;
-    const previousNote = previous?.note ?? 0;
+    // Pre-fills the stars with the user's previous note: user.recipeVotes,
+    // or votes[].user while the backend still sends it (plan 021). The
+    // `skipNextVoteFetch` guard keeps the seed from sending a POST through
+    // the [starNote] effect.
+    const previousNote = userRecipeVote(recipe, user) ?? 0;
     if (previousNote !== starNote) {
       skipNextVoteFetch.current = true;
       setStarNote(previousNote);
@@ -438,6 +437,7 @@ export default function RecipeScreen({ route, navigation }) {
         onPress={() => setStarNote(i + 1)}
         accessibilityRole="button"
         accessibilityLabel={`Rate ${i + 1} out of 5`}
+        accessibilityState={{ selected: i < starNote }}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
         <FontAwesome

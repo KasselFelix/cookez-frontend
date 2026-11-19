@@ -18,6 +18,25 @@ export const userSlice = createSlice({
     removeUserToStore: (state, action) => {
       state.value = { username: null, token: null };
     },
+    // The user's own votes (plan 021), kept up to date after each vote. A
+    // removed vote is written as null, never by deleting the key: a missing
+    // key means "unknown" and falls back to the old comment and recipe fields.
+    setCommentVote: (state, action) => {
+      const { commentId, vote } = action.payload ?? {};
+      if (commentId == null) return;
+      if (typeof state.value.commentVotes !== 'object' || state.value.commentVotes === null) {
+        state.value.commentVotes = {};
+      }
+      state.value.commentVotes[String(commentId)] = vote === 'up' || vote === 'down' ? vote : null;
+    },
+    setRecipeVote: (state, action) => {
+      const { recipeId, note } = action.payload ?? {};
+      if (recipeId == null) return;
+      if (typeof state.value.recipeVotes !== 'object' || state.value.recipeVotes === null) {
+        state.value.recipeVotes = {};
+      }
+      state.value.recipeVotes[String(recipeId)] = Number.isFinite(note) ? note : null;
+    },
     addFavorite: (state, action) => {
       state.value.favorites.push(action.payload);
     },
@@ -41,6 +60,8 @@ export const {
   addUserToStore,
   updateUserInStore,
   removeUserToStore,
+  setCommentVote,
+  setRecipeVote,
   addFavorite,
   removeFavorite,
   toggleFavorite,

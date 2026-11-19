@@ -13,7 +13,9 @@ import CommentCard from './recipe/CommentCard';
  * Prefer importing `components/recipe/CommentCard` directly in new code.
  *
  * Accepted props (all optional, all forwarded to CommentCard):
- *   _id, username, message, date, up, down, usersAlreadyUpVoted, usersAlreadyDownVoted
+ *   _id, username, message, date, and the votes in either shape read by
+ *   modules/commentVotes (upCount, downCount, or the old up, down,
+ *   usersAlreadyUpVoted, usersAlreadyDownVoted)
  */
 export default function Comments(props) {
   const {
@@ -30,13 +32,5 @@ export default function Comments(props) {
     ...rest
   } = props;
 
-  return (
-    <CommentCard
-      {...rest}
-      up={rest.up ?? []}
-      down={rest.down ?? []}
-      usersAlreadyUpVoted={rest.usersAlreadyUpVoted ?? []}
-      usersAlreadyDownVoted={rest.usersAlreadyDownVoted ?? []}
-    />
-  );
+  return <CommentCard {...rest} />;
 }

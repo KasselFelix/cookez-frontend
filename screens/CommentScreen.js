@@ -27,6 +27,7 @@ import Animated, {
 
 import addressIp from '../modules/addressIp';
 import { authHeaders, jsonAuthHeaders } from '../modules/authHeaders';
+import { commentCounts } from '../modules/commentVotes';
 import css from '../styles/Global';
 import useTabBarHeight from '../hooks/useTabBarHeight';
 import UserCommentCard from '../components/recipe/UserCommentCard';
@@ -125,7 +126,7 @@ export default function CommentScreen({ navigation }) {
   const sortedComments = useMemo(() => {
     const list = [...comments];
     if (sort === SORT_LIKED) {
-      list.sort((a, b) => (b?.up?.length ?? 0) - (a?.up?.length ?? 0));
+      list.sort((a, b) => commentCounts(b).up - commentCounts(a).up);
     } else {
       list.sort((a, b) => {
         const da = a?.date ? new Date(a.date).getTime() : 0;
@@ -231,7 +232,7 @@ export default function CommentScreen({ navigation }) {
             totalComments: Math.max(0, (prev.totalComments ?? 0) - 1),
             totalLikesReceived: Math.max(
               0,
-              (prev.totalLikesReceived ?? 0) - (comment.up?.length ?? 0),
+              (prev.totalLikesReceived ?? 0) - commentCounts(comment).up,
             ),
           }));
           dispatch(
