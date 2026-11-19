@@ -89,5 +89,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
-
-export { InventoryEmptyState };

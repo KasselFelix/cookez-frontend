@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect, beforeEach, afterEach */
 // Plan 015 (S5): a photo goes to POST /vision/analyze with the session token in
 // the header; the answer codes become statuses the scan slice understands.
 import { analyzePhoto, analyzePhotoWithRetry } from '../../modules/visionApi';

@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 // Plan 017, points 1 and 26 — the recipe slice keeps one table of known
 // recipes and two lists of ids: the Dashboard catalog and the ResultScreen
 // search. Each writer touches only its own list.

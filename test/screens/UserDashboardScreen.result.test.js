@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect, beforeEach, afterEach */
 // Plan 017, point 1 — back from ResultScreen (Android back gesture), the
 // Dashboard showed "No recipe yet" and stayed there: ResultScreen had replaced
 // the shared recipe list with its search results. The Dashboard keeps its

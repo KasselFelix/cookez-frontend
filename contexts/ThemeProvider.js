@@ -83,5 +83,3 @@ export function useThemeControls() {
   const { themeKey, setTheme } = useContext(ThemeContext);
   return { themeKey, setTheme };
 }
-
-export default ThemeProvider;

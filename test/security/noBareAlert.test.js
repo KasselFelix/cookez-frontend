@@ -1,4 +1,3 @@
-/* global describe, it, expect, __dirname */
 // Plan 020: a simple message never opens a system dialog. `alert(text)` shows
 // a dialog titled "Alert" (react-native/Libraries/Core/setUpAlert.js), which
 // worries users. Messages go through useToast() or InlineMessage; Alert.alert

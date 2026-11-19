@@ -70,5 +70,3 @@ const styles = StyleSheet.create({
     width: 1,
   },
 });
-
-export { ProfileStatsRow };

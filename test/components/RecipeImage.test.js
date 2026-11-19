@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 import React from 'react';
 import { fireEvent, screen } from '@testing-library/react-native';
 

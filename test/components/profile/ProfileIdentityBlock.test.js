@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 // Plan 017, step 9: the diet pill of the profile reads `dietRestrictions[]`
 // (written by DietMultiSelect), falls back to the legacy `settings.diet`
 // string, and goes through i18n.

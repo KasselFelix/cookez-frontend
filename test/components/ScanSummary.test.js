@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect */
 // Plan 015: Recap shows the analyses still running, the failed ones, and sends an
 // unknown name back to Kickoff's search.
 import { fireEvent, screen } from '@testing-library/react-native';

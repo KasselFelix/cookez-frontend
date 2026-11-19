@@ -1,4 +1,3 @@
-/* global describe, it, expect, jest, beforeEach, afterEach */
 // Plan 019, steps 3.1 and 3.2: publishing a recipe.
 // - The name placed in the upload URL is encoded: a `?`, `#` or `/` in the
 //   recipe name no longer cuts the path (the server cleans the name itself).

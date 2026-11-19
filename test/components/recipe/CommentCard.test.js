@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 // Plan 019, step 3.1 (audit 2.15): a comment vote sends the comment id only.
 // The backend reads the voter from the token in the Authorization header.
 import React from 'react';

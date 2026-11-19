@@ -1,4 +1,3 @@
-/* global describe, it, expect, jest */
 // Plan 017, step 9: emptying the list must not bring back the legacy
 // single `settings.diet`, which readDietRestrictions falls back to.
 import React from 'react';

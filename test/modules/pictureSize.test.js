@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 // Plan 015: photos of about 1024 px on the long side, not the full sensor.
 import { pickPictureSize } from '../../modules/pictureSize';
 

@@ -74,9 +74,11 @@ module.exports = defineConfig([
   },
   {
     // Jest globals (describe, it, expect, jest…) for the test files and their
-    // helpers, so the lint hook and `yarn lint` see the same errors.
+    // helpers, so the lint hook and `yarn lint` see the same errors. Node ones
+    // too (__dirname…): Jest runs the tests in Node. No `/* global */` comment
+    // is needed in a test file.
     files: ['test/**/*.js', '**/__tests__/**/*.js', '**/*.test.js'],
-    languageOptions: { globals: { ...globals.jest } },
+    languageOptions: { globals: { ...globals.node, ...globals.jest } },
   },
   cookezRules,
 ]);

@@ -1,4 +1,3 @@
-/* global describe, it, expect, jest */
 // Plan 017, step 2: RecipeScreen shows the same thing whatever screen opened
 // it. A recipe from the Dashboard (/recipes/all), the profile or CommentScreen
 // lacks its populated ingredients and comments: the screen loads

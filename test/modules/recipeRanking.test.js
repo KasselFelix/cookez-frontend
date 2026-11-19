@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 import { bayesianScores, rankByPreparationTime, rankRecipes } from '../../modules/recipeRanking';
 
 const votes = (...notes) => notes.map((note, i) => ({ username: `u${i}`, note }));

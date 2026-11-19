@@ -40,5 +40,3 @@ export function makeUserState(overrides = {}) {
 export function makeLoggedOutUserState() {
   return { value: { username: null, token: null } };
 }
-
-export default makeUserState;

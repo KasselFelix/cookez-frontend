@@ -53,8 +53,6 @@ export default function TagPreferencesEditor({ variant, value = [], onChange, sh
   );
 }
 
-export { TagPreferencesEditor };
-
 const styles = StyleSheet.create({
   wrap: {},
   helper: { fontSize: 13, marginBottom: 12 },

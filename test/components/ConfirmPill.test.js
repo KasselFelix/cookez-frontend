@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 // Plan 015: a scanned ingredient the analysis was unsure of carries a "To confirm"
 // pill; tapping it accepts the ingredient.
 import React from 'react';

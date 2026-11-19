@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 // ResultScreen cards: what a recipe of POST /recipes/result shows, and what
 // stays hidden when the data is missing ("0 min", "votes: 0").
 import { toResultCard } from '../../modules/resultCard';

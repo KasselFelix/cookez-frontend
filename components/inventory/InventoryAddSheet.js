@@ -482,5 +482,3 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
   },
 });
-
-export { InventoryAddSheet };

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { useDispatch } from 'react-redux';
 
 import { useTheme } from '../../contexts/ThemeProvider';
-import { useT } from '../../i18n/useT';
+import useT from '../../i18n/useT';
 import { useToast } from '../../contexts/ToastProvider';
 import { setPicture } from '../../reducers/picture';
 

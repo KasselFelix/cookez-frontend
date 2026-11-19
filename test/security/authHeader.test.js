@@ -1,4 +1,3 @@
-/* global describe, it, expect, __dirname */
 // Plan 016, PR 3: the session token travels in the Authorization header only.
 // Every call to an authenticated route builds its headers with
 // modules/authHeaders.js, and no body carries a token. Plan 019, step 3.1: no
