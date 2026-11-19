@@ -1,4 +1,5 @@
 import { createSelector, createSlice } from '@reduxjs/toolkit';
+import { commentCounts } from '../modules/commentVotes';
 
 // One table of every recipe the app knows (`value`, looked up by _id by
 // RecipeScreen, the comments and Favorites), plus the order of the two lists
@@ -113,14 +114,8 @@ export const recipeSlice = createSlice({
     },
     addCommentToRecipe: (state, action) => {
       const { recipeId, comment } = action.payload;
-      // Defensive empty-array init — guarantees no undefined errors in UI
-      const safeComment = {
-        ...comment,
-        up: comment.up ?? [],
-        down: comment.down ?? [],
-        usersAlreadyUpVoted: comment.usersAlreadyUpVoted ?? [],
-        usersAlreadyDownVoted: comment.usersAlreadyDownVoted ?? [],
-      };
+      // Stored as sent: modules/commentVotes reads the counts of either shape.
+      const safeComment = { ...comment };
       state.value = state.value.map((r) => {
         if (r._id !== recipeId) return r;
         // Dedup by _id: if a comment with this _id already exists, skip the push.
@@ -133,21 +128,20 @@ export const recipeSlice = createSlice({
         return { ...r, comments: [...(r.comments || []), safeComment] };
       });
     },
+    // `comment` is the comment of a POST /comments/upvote|downvote response,
+    // in either shape (plan 021). The comment keeps its counts only: the
+    // user's own vote lives in state.user.value.commentVotes, so the voter
+    // lists of the old shape are dropped.
     updateCommentVotes: (state, action) => {
-      const { recipeId, commentId, up, down, usersAlreadyUpVoted, usersAlreadyDownVoted } =
-        action.payload;
+      const { recipeId, commentId, comment: voted } = action.payload;
+      const { up: upCount, down: downCount } = commentCounts(voted);
 
       state.value = state.value.map((recipe) => {
         if (recipe._id !== recipeId) return recipe;
         const updatedComments = (recipe.comments || []).map((comment) => {
           if (comment._id !== commentId) return comment;
-          return {
-            ...comment,
-            up: up ?? [],
-            down: down ?? [],
-            usersAlreadyUpVoted: usersAlreadyUpVoted ?? [],
-            usersAlreadyDownVoted: usersAlreadyDownVoted ?? [],
-          };
+          const { up, down, usersAlreadyUpVoted, usersAlreadyDownVoted, ...rest } = comment;
+          return { ...rest, upCount, downCount };
         });
         return { ...recipe, comments: updatedComments };
       });

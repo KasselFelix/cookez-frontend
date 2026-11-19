@@ -109,6 +109,42 @@ describe('CommentScreen writes', () => {
     expect(screen.queryByTestId('comment-edit-error')).toBeNull();
   });
 
+  // Plan 021: the like count comes from upCount, or from up[] while the
+  // backend still sends it.
+  it.each([
+    ['new shape', { upCount: 1 }, { upCount: 5 }],
+    ['old shape', { up: ['u1'] }, { up: ['u1', 'u2', 'u3', 'u4', 'u5'] }],
+  ])('Most Liked sorts by the like count of the %s', async (label, fewer, more) => {
+    global.fetch.mockImplementation(() =>
+      Promise.resolve(
+        makeResponse({
+          result: true,
+          commentsByAuthor: [
+            { ...comment, _id: 'c1', message: 'Older, more liked', date: '2026-10-01', ...more },
+            { ...comment, _id: 'c2', message: 'Newer, less liked', date: '2026-11-01', ...fewer },
+          ],
+          stats: { totalComments: 2, totalLikesReceived: 6 },
+        }),
+      ),
+    );
+    renderWithProviders(<CommentScreen navigation={nav} />, {
+      withNavigation: false,
+      preloadedState: {
+        user: makeUserState({ username: 'testuser' }),
+        locale: { value: { lang: 'en' } },
+      },
+    });
+    const messages = () => screen.getAllByText(/liked$/).map((node) => node.props.children);
+
+    await screen.findByText('Older, more liked');
+    expect(messages()).toEqual(['Newer, less liked', 'Older, more liked']);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Sort by Most Liked' }));
+
+    expect(messages()).toEqual(['Older, more liked', 'Newer, less liked']);
+    expect(screen.getByLabelText('5 upvotes')).toBeTruthy();
+  });
+
   it('delete: keeps the confirmation dialog and shows a failure in a toast', async () => {
     const alert = jest.spyOn(Alert, 'alert').mockImplementation((title, msg, buttons) => {
       buttons?.find((b) => b.text === 'Delete')?.onPress?.();

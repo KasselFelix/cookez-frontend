@@ -7,7 +7,9 @@ import moment from 'moment';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import addressIp from '../../modules/addressIp';
 import { jsonAuthHeaders } from '../../modules/authHeaders';
+import { commentCounts, userCommentVote, voteFromResponse } from '../../modules/commentVotes';
 import { updateCommentVotes } from '../../reducers/recipe';
+import { setCommentVote } from '../../reducers/user';
 import { useAuthGate } from '../../contexts/AuthGateProvider';
 import css from '../../styles/Global';
 
@@ -19,7 +21,9 @@ const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
  * source of truth). Owns ONE piece of local UI state (the auth-popover trigger).
  *
  * Props (shape from API/Redux comment object):
- *  _id, username, message, date, up[], down[], usersAlreadyUpVoted[], usersAlreadyDownVoted[]
+ *  _id, username, message, date, and the votes in either shape read by
+ *  modules/commentVotes: upCount and downCount, or the old up[], down[],
+ *  usersAlreadyUpVoted[] and usersAlreadyDownVoted[].
  */
 export default function CommentCard({
   _id,
@@ -27,25 +31,24 @@ export default function CommentCard({
   username,
   message,
   date,
-  up = [],
-  down = [],
-  usersAlreadyUpVoted = [],
-  usersAlreadyDownVoted = [],
+  upCount,
+  downCount,
+  up,
+  down,
+  usersAlreadyUpVoted,
+  usersAlreadyDownVoted,
 }) {
   const user = useSelector((state) => state.user.value);
   const dispatch = useDispatch();
   const { requireAuth } = useAuthGate();
 
-  // Derived vote state — pure projection of props
-  const alreadyUp = useMemo(
-    () => usersAlreadyUpVoted.includes(user.username),
-    [usersAlreadyUpVoted, user.username],
-  );
-  const alreadyDown = useMemo(
-    () => usersAlreadyDownVoted.includes(user.username),
-    [usersAlreadyDownVoted, user.username],
-  );
-  const score = (up?.length ?? 0) - (down?.length ?? 0);
+  // Derived vote state — pure projection of props and of the user's votes
+  const comment = { _id, upCount, downCount, up, down, usersAlreadyUpVoted, usersAlreadyDownVoted };
+  const counts = commentCounts(comment);
+  const myVote = userCommentVote(comment, user);
+  const alreadyUp = myVote === 'up';
+  const alreadyDown = myVote === 'down';
+  const score = counts.up - counts.down;
 
   const relativeDate = useMemo(() => {
     if (!date) return '';
@@ -71,17 +74,9 @@ export default function CommentCard({
   };
 
   const syncVoteToRedux = (data) => {
+    dispatch(setCommentVote({ commentId: _id, vote: voteFromResponse(data) }));
     if (!recipeId || !data?.comment) return;
-    dispatch(
-      updateCommentVotes({
-        recipeId,
-        commentId: _id,
-        up: data.comment.up,
-        down: data.comment.down,
-        usersAlreadyUpVoted: data.comment.usersAlreadyUpVoted,
-        usersAlreadyDownVoted: data.comment.usersAlreadyDownVoted,
-      }),
-    );
+    dispatch(updateCommentVotes({ recipeId, commentId: _id, comment: data.comment }));
   };
 
   const handleUp = async () => {
@@ -140,7 +135,7 @@ export default function CommentCard({
           onPress={handleUp}
           activeOpacity={0.7}
           accessibilityRole="button"
-          accessibilityLabel={`Upvote comment, ${up?.length ?? 0} upvotes`}
+          accessibilityLabel={`Upvote comment, ${counts.up} upvotes`}
           accessibilityState={{ selected: alreadyUp }}
         >
           <FontAwesome
@@ -149,7 +144,7 @@ export default function CommentCard({
             color={alreadyUp ? css.palette.success : css.palette.neutral500}
           />
           <Text style={[styles.votePillText, alreadyUp && styles.votePillTextActiveUp]}>
-            {up?.length ?? 0}
+            {counts.up}
           </Text>
         </AnimatedTouchable>
 
@@ -158,7 +153,7 @@ export default function CommentCard({
           onPress={handleDown}
           activeOpacity={0.7}
           accessibilityRole="button"
-          accessibilityLabel={`Downvote comment, ${down?.length ?? 0} downvotes`}
+          accessibilityLabel={`Downvote comment, ${counts.down} downvotes`}
           accessibilityState={{ selected: alreadyDown }}
         >
           <FontAwesome
@@ -167,7 +162,7 @@ export default function CommentCard({
             color={alreadyDown ? css.palette.error : css.palette.neutral500}
           />
           <Text style={[styles.votePillText, alreadyDown && styles.votePillTextActiveDown]}>
-            {down?.length ?? 0}
+            {counts.down}
           </Text>
         </AnimatedTouchable>
 
