@@ -39,8 +39,12 @@ test/
 ```
 
 A new guard case is seen red on the previous analysis by stashing the helper
-alone: `git stash push -- test/security/helpers/bodyAnalysis.js`, run the test,
-then `git stash pop`.
+alone, before the analysis change is committed:
+`git stash push -- test/security/helpers/bodyAnalysis.js`, run the test, then
+`git stash pop`. Without an uncommitted change, `git stash` saves nothing (and
+`pop` would take an older entry). Once committed:
+`git checkout HEAD~1 -- test/security/helpers/bodyAnalysis.js`, run the test,
+then `git checkout HEAD -- test/security/helpers/bodyAnalysis.js`.
 
 ## Writing a reducer test (cheapest, most stable)
 

@@ -1,6 +1,7 @@
-// The analysis behind test/security/authHeader.test.js, kept apart from the
-// tests so that a new test case can be seen red on the previous analysis
-// (`git stash push -- test/security/helpers/bodyAnalysis.js`).
+// The analysis behind test/security/authHeader.test.js (plan 016, PR 3: token
+// in the Authorization header only; plan 019, step 3.1: no username in an
+// authenticated body), kept apart from the tests so that a new test case can be
+// seen red on the previous analysis (test/README.md says how).
 //
 // The app sources are parsed (@babel/parser) and each fetch body is followed to
 // the object literals it is built from: through variables (their mutations
