@@ -1,4 +1,3 @@
-/* global describe, it, expect, jest, afterEach */
 // Plan 019, step 3.1 (audit 2.15): editing a comment sends the message only,
 // and deleting one sends no body at all. The backend reads the author from the
 // token in the Authorization header.
@@ -29,9 +28,17 @@ const nav = { navigate: jest.fn(), goBack: jest.fn() };
 const mockApi = () =>
   global.fetch.mockImplementation((url, init = {}) => {
     if (!init.method) {
-      return Promise.resolve(makeResponse({ result: true, commentsByAuthor: [comment], stats: { totalComments: 1, totalLikesReceived: 0 } }));
+      return Promise.resolve(
+        makeResponse({
+          result: true,
+          commentsByAuthor: [comment],
+          stats: { totalComments: 1, totalLikesReceived: 0 },
+        }),
+      );
     }
-    return Promise.resolve(makeResponse({ result: true, comment: { ...comment, message: 'Even better' } }));
+    return Promise.resolve(
+      makeResponse({ result: true, comment: { ...comment, message: 'Even better' } }),
+    );
   });
 
 const writeCalls = () => global.fetch.mock.calls.filter(([, init]) => init?.method);
@@ -40,7 +47,10 @@ const renderScreen = async () => {
   mockApi();
   renderWithProviders(<CommentScreen navigation={nav} />, {
     withNavigation: false,
-    preloadedState: { user: makeUserState({ username: 'testuser' }), locale: { value: { lang: 'en' } } },
+    preloadedState: {
+      user: makeUserState({ username: 'testuser' }),
+      locale: { value: { lang: 'en' } },
+    },
   });
   await screen.findByText('Tasty bowl');
 };
@@ -79,5 +89,75 @@ describe('CommentScreen writes', () => {
     expect(init.body).toBeUndefined();
     expect(init.headers).toEqual({ Authorization: `Bearer ${TOKEN}` });
     await waitFor(() => expect(screen.queryByText('Tasty bowl')).toBeNull());
+  });
+
+  it('edit: shows a failed save inside the modal, cleared by typing', async () => {
+    await renderScreen();
+    global.fetch.mockImplementation((url, init = {}) =>
+      init.method
+        ? Promise.reject(new Error('Network request failed'))
+        : Promise.resolve(makeResponse({ result: true })),
+    );
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    fireEvent.press(screen.getByRole('button', { name: 'Edit comment' }));
+    fireEvent.changeText(screen.getByLabelText('Edit comment message'), 'Even better');
+    fireEvent.press(screen.getByRole('button', { name: 'Save edited comment' }));
+
+    expect(await screen.findByText('Network error: your changes were not saved.')).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText('Edit comment message'), 'Even better!');
+    expect(screen.queryByTestId('comment-edit-error')).toBeNull();
+  });
+
+  // Plan 021: the like count comes from upCount, or from up[] while the
+  // backend still sends it.
+  it.each([
+    ['new shape', { upCount: 1 }, { upCount: 5 }],
+    ['old shape', { up: ['u1'] }, { up: ['u1', 'u2', 'u3', 'u4', 'u5'] }],
+  ])('Most Liked sorts by the like count of the %s', async (label, fewer, more) => {
+    global.fetch.mockImplementation(() =>
+      Promise.resolve(
+        makeResponse({
+          result: true,
+          commentsByAuthor: [
+            { ...comment, _id: 'c1', message: 'Older, more liked', date: '2026-10-01', ...more },
+            { ...comment, _id: 'c2', message: 'Newer, less liked', date: '2026-11-01', ...fewer },
+          ],
+          stats: { totalComments: 2, totalLikesReceived: 6 },
+        }),
+      ),
+    );
+    renderWithProviders(<CommentScreen navigation={nav} />, {
+      withNavigation: false,
+      preloadedState: {
+        user: makeUserState({ username: 'testuser' }),
+        locale: { value: { lang: 'en' } },
+      },
+    });
+    const messages = () => screen.getAllByText(/liked$/).map((node) => node.props.children);
+
+    await screen.findByText('Older, more liked');
+    expect(messages()).toEqual(['Newer, less liked', 'Older, more liked']);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Sort by Most Liked' }));
+
+    expect(messages()).toEqual(['Older, more liked', 'Newer, less liked']);
+    expect(screen.getByLabelText('5 upvotes')).toBeTruthy();
+  });
+
+  it('delete: keeps the confirmation dialog and shows a failure in a toast', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation((title, msg, buttons) => {
+      buttons?.find((b) => b.text === 'Delete')?.onPress?.();
+    });
+    await renderScreen();
+    global.fetch.mockImplementation(() =>
+      Promise.resolve(makeResponse({ result: false, error: 'Not your comment' })),
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Delete comment' }));
+
+    expect(alert).toHaveBeenCalledWith('Delete review?', expect.any(String), expect.any(Array));
+    expect(await screen.findByTestId('toast')).toHaveTextContent('Not your comment');
+    expect(screen.getByText('Tasty bowl')).toBeTruthy();
   });
 });

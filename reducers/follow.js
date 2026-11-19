@@ -55,11 +55,6 @@ const followSlice = createSlice({
   },
 });
 
-export const {
-  setFollowing,
-  setFollowOptimistic,
-  commitFollow,
-  clearFollow,
-} = followSlice.actions;
+export const { setFollowing, setFollowOptimistic, commitFollow, clearFollow } = followSlice.actions;
 
 export default followSlice.reducer;

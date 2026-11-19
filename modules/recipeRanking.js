@@ -29,12 +29,16 @@ export function bayesianScores(recipes, m = 3) {
       const v = r.votes?.length ?? 0;
       const R = recipeAvgNote(r.votes);
       return [r, v + m === 0 ? 0 : (v / (v + m)) * R + (m / (v + m)) * C];
-    })
+    }),
   );
 }
 
 // Same rule as the server within a match tier: fewer words, then fewer letters.
-const fold = (text) => String(text ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const fold = (text) =>
+  String(text ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '');
 const byShortness = (a, b) => {
   const fa = fold(a?.name);
   const fb = fold(b?.name);
@@ -43,7 +47,8 @@ const byShortness = (a, b) => {
 };
 
 const byName = (a, b) =>
-  collator.compare(a?.name ?? '', b?.name ?? '') || String(a?._id ?? '').localeCompare(String(b?._id ?? ''));
+  collator.compare(a?.name ?? '', b?.name ?? '') ||
+  String(a?._id ?? '').localeCompare(String(b?._id ?? ''));
 
 /**
  * @param {object[]} recipes
@@ -58,7 +63,7 @@ export function rankRecipes(recipes, { searching = false } = {}) {
       (searching ? rank(a) - rank(b) : 0) ||
       scores.get(b) - scores.get(a) ||
       (searching ? byShortness(a, b) : 0) ||
-      byName(a, b)
+      byName(a, b),
   );
 }
 
@@ -69,6 +74,6 @@ export function rankRecipes(recipes, { searching = false } = {}) {
  */
 export function rankByPreparationTime(recipes) {
   return [...recipes].sort(
-    (a, b) => (a.preparationTime ?? Infinity) - (b.preparationTime ?? Infinity) || byName(a, b)
+    (a, b) => (a.preparationTime ?? Infinity) - (b.preparationTime ?? Infinity) || byName(a, b),
   );
 }

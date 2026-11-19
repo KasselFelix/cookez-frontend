@@ -1,0 +1,29 @@
+# Add recipe screen of the test account, in the five themes (or THEME): the form, then the
+# unit list (OptionPicker) open over it.
+appId: com.v2.cookez.dev
+---
+- runFlow: ../common/relaunch.yaml
+- runFlow: ../common/login.yaml
+- tapOn:
+    id: tabbar-AddRecipe
+- extendedWaitUntil:
+    visible:
+      id: addRecipe-card
+    timeout: 20000
+- waitForAnimationToEnd
+- runFlow:
+    file: ../common/capture.yaml
+    env:
+      SCREEN: addRecipe
+- tapOn:
+    id: addRecipe-unit
+- extendedWaitUntil:
+    visible: tbsp
+    timeout: 10000
+- waitForAnimationToEnd
+- runFlow:
+    file: ../common/capture.yaml
+    env:
+      SCREEN: addRecipe-unitSheet
+- tapOn: g
+- waitForAnimationToEnd

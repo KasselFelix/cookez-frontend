@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect, beforeEach */
 // Plan 015: SNAP needs an account; a photo is sent to POST /vision/analyze as soon
 // as it is taken, at about 1024 px, and its slot says it is being analysed.
 import React from 'react';
@@ -36,7 +35,7 @@ const renderKickoff = (user, state = {}) =>
     <AuthGateProvider>
       <KickoffScreen navigation={navigation} />
     </AuthGateProvider>,
-    { preloadedState: { user, ...state } }
+    { preloadedState: { user, ...state } },
   );
 
 const pendingFetch = () => new Promise(() => {});
@@ -54,7 +53,9 @@ describe('KickoffScreen scan', () => {
   it('asks a guest to create an account instead of taking the photo', async () => {
     renderKickoff(makeLoggedOutUserState());
     fireEvent.press(await screen.findByTestId('kickoff-snap'));
-    expect(await screen.findByText('Create a free account to recognise ingredients from your photos.')).toBeTruthy();
+    expect(
+      await screen.findByText('Create a free account to recognise ingredients from your photos.'),
+    ).toBeTruthy();
     expect(mockCamera.takePictureAsync).not.toHaveBeenCalled();
     expect(global.fetch.mock.calls.some(([url]) => String(url).includes('/vision/'))).toBe(false);
   });
@@ -77,28 +78,30 @@ describe('KickoffScreen scan', () => {
   });
 
   it('opens the search pre-filled with a name the analysis did not recognize', async () => {
-    renderKickoff(makeUserState(), { scan: { value: { photos: [], unmatched: ['yuzu kosho'], pendingSearch: null } } });
+    renderKickoff(makeUserState(), {
+      scan: { value: { photos: [], unmatched: ['yuzu kosho'], pendingSearch: null } },
+    });
     fireEvent.press(await screen.findByLabelText('Search for yuzu kosho'));
     expect((await screen.findByTestId('kickoff-search-input')).props.value).toBe('yuzu kosho');
     expect(screen.queryByLabelText('Search for yuzu kosho')).toBeNull();
   });
 
   it('opens the search asked by Recap for an unknown name', async () => {
-    renderKickoff(makeUserState(), { scan: { value: { photos: [], unmatched: [], pendingSearch: 'yuzu kosho' } } });
+    renderKickoff(makeUserState(), {
+      scan: { value: { photos: [], unmatched: [], pendingSearch: 'yuzu kosho' } },
+    });
     expect((await screen.findByTestId('kickoff-search-input')).props.value).toBe('yuzu kosho');
   });
 
   it('keeps the screen usable when the camera fails to take the photo', async () => {
-    const savedAlert = global.alert;
-    const alert = jest.fn();
-    global.alert = alert;
     mockCamera.takePictureAsync.mockRejectedValueOnce(new Error('Camera is not running'));
     renderKickoff(makeUserState());
     await act(async () => {
       fireEvent.press(await screen.findByTestId('kickoff-snap'));
     });
-    await waitFor(() => expect(alert).toHaveBeenCalled());
+    expect(await screen.findByTestId('toast')).toHaveTextContent(
+      'The photo could not be taken. Try again.',
+    );
     expect(global.fetch.mock.calls.some(([url]) => String(url).includes('/vision/'))).toBe(false);
-    global.alert = savedAlert;
   });
 });

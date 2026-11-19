@@ -4,7 +4,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   Pressable,
   StyleSheet,
@@ -15,11 +14,11 @@ import {
 import { Check, X } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
-import addressIp from '../../modules/addressIp';
-import { jsonAuthHeaders } from '../../modules/authHeaders';
+import { putUserProfile } from '../../modules/recipesApi';
 import { updateUserInStore } from '../../reducers/user';
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
+import InlineMessage from '../feedback/InlineMessage';
 
 export const NUTRITIONAL_GOALS = ['weight_loss', 'muscle_gain', 'balanced', 'seasonal_local'];
 
@@ -31,43 +30,39 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
 
   const [selected, setSelected] = useState(user?.nutritionalGoal || null);
   const [isSaving, setIsSaving] = useState(false);
+  // Shown inside the modal: a toast would stay hidden under it (plan 020).
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (visible) setSelected(user?.nutritionalGoal || null);
+    if (visible) {
+      setSelected(user?.nutritionalGoal || null);
+      setError('');
+    }
   }, [visible, user?.nutritionalGoal]);
 
   const save = async (goal) => {
     if (!user?.token) return;
     setIsSaving(true);
+    setError('');
     try {
-      const res = await fetch(`${addressIp}/users/profile`, {
-        method: 'PUT',
-        headers: jsonAuthHeaders(user.token),
-        body: JSON.stringify({ nutritionalGoal: goal }),
-      });
-      const data = await res.json();
+      const data = await putUserProfile({ token: user.token, updates: { nutritionalGoal: goal } });
       if (data.result) {
         // Backend now returns `{ result, updated }` with only the changed
         // fields (post-normalisation), so we can dispatch it as-is.
         if (data.updated) dispatch(updateUserInStore(data.updated));
         onClose?.();
       } else {
-        Alert.alert(t('common.error'), data.error || t('common.networkError'));
+        setError(data.error || t('common.networkError'));
       }
     } catch {
-      Alert.alert(t('common.error'), t('common.networkError'));
+      setError(t('common.networkError'));
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable
         style={[styles.overlay, { backgroundColor: css.palette.overlayDark }]}
         onPress={onClose}
@@ -141,12 +136,7 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
                   ]}
                 >
                   {isOn ? (
-                    <View
-                      style={[
-                        styles.radioDot,
-                        { backgroundColor: css.palette.neutral900 },
-                      ]}
-                    />
+                    <View style={[styles.radioDot, { backgroundColor: css.palette.neutral900 }]} />
                   ) : null}
                 </View>
                 <Text
@@ -170,6 +160,11 @@ export default function NutritionalGoalPicker({ visible, onClose }) {
               </TouchableOpacity>
             );
           })}
+          <InlineMessage
+            testID="goal-error"
+            message={error}
+            style={{ marginTop: css.spacing.sm }}
+          />
         </Pressable>
       </Pressable>
     </Modal>
@@ -219,5 +214,3 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
-
-export { NutritionalGoalPicker };

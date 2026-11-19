@@ -18,7 +18,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
-  Alert,
   Animated,
   FlatList,
   Image,
@@ -46,16 +45,12 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import addressIp from '../modules/addressIp';
-import { authHeaders, jsonAuthHeaders } from '../modules/authHeaders';
+import { authHeaders } from '../modules/authHeaders';
 import { availableImages } from '../modules/avatars';
 import { resolveRecipeImageSource } from '../modules/recipeImage';
 import RecipeImage from '../components/recipe/RecipeImage';
-import {
-  addPantryItem,
-  getPantry,
-  removePantryItem,
-  updatePantryItem,
-} from '../modules/pantryApi';
+import { addPantryItem, getPantry, removePantryItem, updatePantryItem } from '../modules/pantryApi';
+import { putUserProfile } from '../modules/recipesApi';
 import {
   addItem,
   removeItem,
@@ -78,6 +73,7 @@ import InventorySummaryRow from '../components/inventory/InventorySummaryRow';
 import { useTheme } from '../contexts/ThemeProvider';
 import useTabBarHeight from '../hooks/useTabBarHeight';
 import useT from '../i18n/useT';
+import { useToast } from '../contexts/ToastProvider';
 import { useResponsive } from '../styles/responsive';
 
 const TAB_KEYS = ['recipes', 'favorites', 'inventory', 'badges'];
@@ -92,7 +88,6 @@ const TAB_ICONS = {
 
 function RecipeTile({ item, css, navigation }) {
   const imageSource = resolveRecipeImageSource(item);
-
 
   // Shadow has to live on the outer wrapper because the TouchableOpacity
   // uses overflow:'hidden' to clip the top-corner of the image — and on iOS,
@@ -109,93 +104,91 @@ function RecipeTile({ item, css, navigation }) {
         },
       ]}
     >
-    <TouchableOpacity
-      style={[
-        styles.tile,
-        {
-          backgroundColor: css.palette.surfaceCard,
-          borderRadius: css.radius.md,
-        },
-      ]}
-      onPress={() => {
-        navigation.navigate('Recipe', {
-          recipe: {
-            _id: item._id,
-            name: item.name,
-            description: item.description,
-            ingredients: item.ingredients,
-            steps: item.steps,
-            votes: item.votes,
-            origin: item.origin,
-            picture: item.picture,
-            date: item.date,
-            preparationTime: item.preparationTime,
-            difficulty: item.difficulty,
+      <TouchableOpacity
+        style={[
+          styles.tile,
+          {
+            backgroundColor: css.palette.surfaceCard,
+            borderRadius: css.radius.md,
           },
-        });
-      }}
-    >
-      <RecipeImage
-        source={imageSource}
-        style={styles.tileImage}
-        iconSize={20}
-        accessibilityLabel={item?.name}
-      />
-      <View style={[styles.tileBody, { padding: css.spacing.sm }]}>
-        <Text
-          style={[
-            styles.tileTitle,
-            {
-              fontFamily: css.typography.fontUI,
-              fontSize: css.typography.h6Size,
-              lineHeight: css.typography.h6Line,
-              color: css.palette.neutral900,
+        ]}
+        onPress={() => {
+          navigation.navigate('Recipe', {
+            recipe: {
+              _id: item._id,
+              name: item.name,
+              description: item.description,
+              ingredients: item.ingredients,
+              steps: item.steps,
+              votes: item.votes,
+              origin: item.origin,
+              picture: item.picture,
+              date: item.date,
+              preparationTime: item.preparationTime,
+              difficulty: item.difficulty,
             },
-          ]}
-          numberOfLines={2}
-        >
-          {item?.name || 'Untitled'}
-        </Text>
-        <View style={styles.tileMetaRow}>
-          <Clock size={12} color={css.palette.neutral500} />
+          });
+        }}
+      >
+        <RecipeImage
+          source={imageSource}
+          style={styles.tileImage}
+          iconSize={20}
+          accessibilityLabel={item?.name}
+        />
+        <View style={[styles.tileBody, { padding: css.spacing.sm }]}>
           <Text
             style={[
-              styles.tileMeta,
+              styles.tileTitle,
               {
                 fontFamily: css.typography.fontUI,
                 fontSize: css.typography.h6Size,
                 lineHeight: css.typography.h6Line,
-                color: css.palette.neutral500,
-                marginLeft: css.spacing.xs,
+                color: css.palette.neutral900,
               },
             ]}
+            numberOfLines={2}
           >
-            {item?.preparationTime ? `${item.preparationTime} min` : '25 min'}
+            {item?.name || 'Untitled'}
           </Text>
-          <Star
-            size={12}
-            color={css.palette.neutral500}
-            style={{ marginLeft: css.spacing.sm }}
-          />
-          <Text
-            style={[
-              styles.tileMeta,
-              {
-                fontFamily: css.typography.fontUI,
-                fontSize: css.typography.h6Size,
-                lineHeight: css.typography.h6Line,
-                color: css.palette.neutral500,
-                marginLeft: css.spacing.xs,
-              },
-            ]}
-          >
-            {Array.isArray(item?.votes) && item.votes.length > 0
-              ? (item.votes.reduce((som, vote) => som + (vote?.note ?? 0), 0) / item.votes.length).toFixed(1)
-              : '0.0'}
-          </Text>
+          <View style={styles.tileMetaRow}>
+            <Clock size={12} color={css.palette.neutral500} />
+            <Text
+              style={[
+                styles.tileMeta,
+                {
+                  fontFamily: css.typography.fontUI,
+                  fontSize: css.typography.h6Size,
+                  lineHeight: css.typography.h6Line,
+                  color: css.palette.neutral500,
+                  marginLeft: css.spacing.xs,
+                },
+              ]}
+            >
+              {item?.preparationTime ? `${item.preparationTime} min` : '25 min'}
+            </Text>
+            <Star size={12} color={css.palette.neutral500} style={{ marginLeft: css.spacing.sm }} />
+            <Text
+              style={[
+                styles.tileMeta,
+                {
+                  fontFamily: css.typography.fontUI,
+                  fontSize: css.typography.h6Size,
+                  lineHeight: css.typography.h6Line,
+                  color: css.palette.neutral500,
+                  marginLeft: css.spacing.xs,
+                },
+              ]}
+            >
+              {Array.isArray(item?.votes) && item.votes.length > 0
+                ? (
+                    item.votes.reduce((som, vote) => som + (vote?.note ?? 0), 0) / item.votes.length
+                  ).toFixed(1)
+                : '0.0'}
+            </Text>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -276,6 +269,15 @@ function TopBarButton({ label, onPress, badge, children, css }) {
 export default function ProfileScreen({ navigation, route }) {
   const css = useTheme();
   const t = useT();
+  // Errors after the avatar modal or the pantry sheet has closed: toasts
+  // (plan 020).
+  const { show: showToast } = useToast();
+  const showPantryError = (titleKey, error) =>
+    showToast(
+      error
+        ? { type: 'error', title: t(titleKey), message: error }
+        : { type: 'error', message: t(titleKey) },
+    );
   const tabBarHeight = useTabBarHeight();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
@@ -431,21 +433,16 @@ export default function ProfileScreen({ navigation, route }) {
   const handleImageChange = async (newImage) => {
     setAvatarModalVisible(false);
     try {
-      const res = await fetch(`${addressIp}/users/profile`, {
-        method: 'PUT',
-        headers: jsonAuthHeaders(user.token),
-        body: JSON.stringify({ image: newImage }),
-      });
-      const data = await res.json();
+      const data = await putUserProfile({ token: user.token, updates: { image: newImage } });
       if (data.result) {
         // Backend now returns `{ result, updated }` with only the changed
         // fields (post-normalisation), so we can dispatch it as-is.
         if (data.updated) dispatch(updateUserInStore(data.updated));
       } else {
-        Alert.alert(t('common.error'), data.error || t('common.networkError'));
+        showToast({ type: 'error', message: data.error || t('common.networkError') });
       }
     } catch {
-      Alert.alert(t('common.error'), t('common.networkError'));
+      showToast({ type: 'error', message: t('common.networkError') });
     }
   };
 
@@ -464,10 +461,7 @@ export default function ProfileScreen({ navigation, route }) {
   const filteredItems = useMemo(() => {
     return pantryItems.filter((it) => {
       if (categoryFilter && it.storageLocation !== categoryFilter) return false;
-      if (
-        debouncedSearch &&
-        !it.ingredient?.name?.toLowerCase().includes(debouncedSearch)
-      ) {
+      if (debouncedSearch && !it.ingredient?.name?.toLowerCase().includes(debouncedSearch)) {
         return false;
       }
       return true;
@@ -526,7 +520,7 @@ export default function ProfileScreen({ navigation, route }) {
     const { ok, error } = await removePantryItem(user.token, id);
     if (!ok) {
       if (previous) dispatch(addItem(previous));
-      Alert.alert(t('profile.inventory.errors.delete_failed'), error || '');
+      showPantryError('profile.inventory.errors.delete_failed', error);
     }
   };
 
@@ -536,11 +530,11 @@ export default function ProfileScreen({ navigation, route }) {
       const { _id } = editing;
       const { ok, data, error } = await updatePantryItem(user.token, _id, payload);
       if (ok && data?.item) dispatch(updateItem({ _id, patch: data.item }));
-      else Alert.alert(t('profile.inventory.errors.update_failed'), error || '');
+      else showPantryError('profile.inventory.errors.update_failed', error);
     } else {
       const { ok, data, error } = await addPantryItem(user.token, payload);
       if (ok && data?.item) dispatch(addItem(data.item));
-      else Alert.alert(t('profile.inventory.errors.add_failed'), error || '');
+      else showPantryError('profile.inventory.errors.add_failed', error);
     }
     setEditing(null);
   };
@@ -824,11 +818,7 @@ export default function ProfileScreen({ navigation, route }) {
   );
 
   const addSheet = (
-    <InventoryAddSheet
-      bottomSheetRef={addSheetRef}
-      initial={editing}
-      onSubmit={handleSubmit}
-    />
+    <InventoryAddSheet bottomSheetRef={addSheetRef} initial={editing} onSubmit={handleSubmit} />
   );
 
   // ---- Unified render -----------------------------------------------------
@@ -857,11 +847,7 @@ export default function ProfileScreen({ navigation, route }) {
           data={isInventory ? filteredItems : []}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
-            <InventoryItemCard
-              item={item}
-              onEdit={openEdit}
-              onDelete={handleDelete}
-            />
+            <InventoryItemCard item={item} onEdit={openEdit} onDelete={handleDelete} />
           )}
           ItemSeparatorComponent={() => <View style={{ height: css.spacing.sm }} />}
           ListHeaderComponent={
@@ -874,11 +860,7 @@ export default function ProfileScreen({ navigation, route }) {
                 <View style={{ paddingTop: css.spacing.md }}>
                   <InventorySummaryRow summary={summary} />
                   <View style={{ height: css.spacing.sm }} />
-                  <InventorySearchBar
-                    value={search}
-                    onChange={setSearch}
-                    onAddPress={openAdd}
-                  />
+                  <InventorySearchBar value={search} onChange={setSearch} onAddPress={openAdd} />
                   <View style={{ height: css.spacing.xs }} />
                   <InventoryFilterChips
                     active={categoryFilter}

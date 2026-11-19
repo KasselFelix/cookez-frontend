@@ -49,15 +49,16 @@ export default function ProfileScreenContainer({
         edges={safeAreaEdges}
       >
         {header}
-        <View style={[styles.staticContent, innerWidthStyle, contentStyle]}>
-          {children}
-        </View>
+        <View style={[styles.staticContent, innerWidthStyle, contentStyle]}>{children}</View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: css.palette.surfaceCard }]} edges={safeAreaEdges}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: css.palette.surfaceCard }]}
+      edges={safeAreaEdges}
+    >
       {header}
       <ScrollView
         style={styles.scroll}
@@ -68,9 +69,7 @@ export default function ProfileScreenContainer({
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.scrollInner, innerWidthStyle, contentStyle]}>
-          {children}
-        </View>
+        <View style={[styles.scrollInner, innerWidthStyle, contentStyle]}>{children}</View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -93,5 +92,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
-export { ProfileScreenContainer };

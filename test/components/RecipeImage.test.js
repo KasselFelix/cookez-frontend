@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 import React from 'react';
 import { fireEvent, screen } from '@testing-library/react-native';
 
@@ -11,7 +10,12 @@ const render = (ui) => renderWithProviders(ui, { withNavigation: false });
 
 describe('RecipeImage', () => {
   it('shows the photo when the source is usable', () => {
-    render(<RecipeImage source={{ uri: 'https://example.com/a.jpg' }} accessibilityLabel="Ratatouille" />);
+    render(
+      <RecipeImage
+        source={{ uri: 'https://example.com/a.jpg' }}
+        accessibilityLabel="Ratatouille"
+      />,
+    );
     expect(screen.getByTestId('recipe-image')).toBeTruthy();
     expect(screen.queryByTestId('recipe-image-placeholder')).toBeNull();
   });

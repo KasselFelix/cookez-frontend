@@ -7,7 +7,7 @@ import { Image } from 'expo-image';
 import { isPlaceholderSource } from '../../modules/recipeImage';
 import RecipeImagePlaceholder from './RecipeImagePlaceholder';
 
-const keyOf = (source) => (typeof source === 'number' ? String(source) : source?.uri ?? '');
+const keyOf = (source) => (typeof source === 'number' ? String(source) : (source?.uri ?? ''));
 
 /**
  * @param {{
@@ -20,7 +20,13 @@ const keyOf = (source) => (typeof source === 'number' ? String(source) : source?
  *   source: usually from `resolveRecipeImageSource`; null, an empty uri or the bundled
  *   placeholder all render the themed placeholder.
  */
-export default function RecipeImage({ source, style, iconSize = 28, accessibilityLabel, testID = 'recipe-image' }) {
+export default function RecipeImage({
+  source,
+  style,
+  iconSize = 28,
+  accessibilityLabel,
+  testID = 'recipe-image',
+}) {
   // Remembers which source failed, so a new source gets its own chance to load.
   const [failedKey, setFailedKey] = useState(null);
   const key = keyOf(source);

@@ -1,4 +1,3 @@
-/* global describe, it, expect, jest, afterEach */
 // Plan 019, step 3.3 (audit 2.17): logging out empties the recipe filters, so
 // the next account on the phone does not inherit the origins, tags and
 // servings the previous one chose.
@@ -7,7 +6,7 @@ import { Alert } from 'react-native';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 import SettingsScreen from '../../screens/SettingsScreen';
-import makeUserState from '../factories/user';
+import { makeUserState } from '../factories/user';
 import { renderWithProviders } from '../helpers/renderWithProviders';
 
 // The Reanimated test mock has no LinearTransition, and these rows are unrelated.
@@ -36,7 +35,9 @@ describe('SettingsScreen, logout', () => {
       fireEvent.press(screen.getByText('Log out'));
     });
 
-    await waitFor(() => expect(navigation.reset).toHaveBeenCalledWith({ index: 0, routes: [{ name: 'Home' }] }));
+    await waitFor(() =>
+      expect(navigation.reset).toHaveBeenCalledWith({ index: 0, routes: [{ name: 'Home' }] }),
+    );
     expect(store.getState().recipeFilters.value).toEqual({
       selectedOrigins: [],
       selectedTags: [],

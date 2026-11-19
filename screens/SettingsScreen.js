@@ -52,10 +52,8 @@ import {
 } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
-import addressIp from '../modules/addressIp';
-import { jsonAuthHeaders } from '../modules/authHeaders';
 import { joinAllergies, splitAllergies } from '../modules/allergenOptions';
-import { patchUserSettings } from '../modules/recipesApi';
+import { patchUserSettings, putUserProfile } from '../modules/recipesApi';
 import { clearCache as clearRecipeCache } from '../modules/recipeCache';
 import { exitToHome } from '../modules/sessionNavigation';
 import { setComments } from '../reducers/comment';
@@ -68,9 +66,7 @@ import { clearNotifications } from '../reducers/notifications';
 import { clearPantry } from '../reducers/pantry';
 import { clearScan } from '../reducers/scan';
 import { removeUserToStore, updateUserInStore } from '../reducers/user';
-import DietMultiSelect, {
-  readDietRestrictions,
-} from '../components/profile/DietMultiSelect';
+import DietMultiSelect, { readDietRestrictions } from '../components/profile/DietMultiSelect';
 import ExpandableSettingsRow from '../components/profile/ExpandableSettingsRow';
 import LanguagePickerSheet from '../components/profile/LanguagePickerSheet';
 import LocationToggle from '../components/profile/LocationToggle';
@@ -83,6 +79,8 @@ import ExcludedIngredientsEditor from '../components/settings/ExcludedIngredient
 import TagPreferencesEditor from '../components/settings/TagPreferencesEditor';
 import { useTheme, useThemeControls } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
+import { useToast } from '../contexts/ToastProvider';
+import InlineMessage from '../components/feedback/InlineMessage';
 
 const ICON_SIZE = 18;
 
@@ -91,14 +89,17 @@ export default function SettingsScreen({ navigation }) {
   const t = useT();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
-  const localeMode = useSelector(
-    (state) => state?.locale?.value?.lang ?? 'system',
-  );
+  const localeMode = useSelector((state) => state?.locale?.value?.lang ?? 'system');
   const { themeKey } = useThemeControls();
 
   const [modalKind, setModalKind] = useState(null);
   const [draft, setDraft] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  // Message shown inside the edit modal (a toast would stay hidden under it):
+  // a save error, or the unrecognized-allergies warning after a save, which
+  // keeps the modal open until "Close" (plan 020).
+  const [modalMessage, setModalMessage] = useState(null);
+  const { show: showToast } = useToast();
 
   // Pickers / sheets visibility.
   const [themeSheetVisible, setThemeSheetVisible] = useState(false);
@@ -111,8 +112,7 @@ export default function SettingsScreen({ navigation }) {
   // here (not in each row) keeps the "only one open at a time" rule
   // trivial without cross-row coordination.
   const [openSection, setOpenSection] = useState(null);
-  const toggleSection = (key) =>
-    setOpenSection((prev) => (prev === key ? null : key));
+  const toggleSection = (key) => setOpenSection((prev) => (prev === key ? null : key));
 
   // Debounced PATCH /users/settings — used by the three preference
   // editors (preferred tags, excluded tags, excluded ingredients). 500ms
@@ -154,36 +154,41 @@ export default function SettingsScreen({ navigation }) {
   const closeModal = () => {
     setModalKind(null);
     setDraft({});
+    setModalMessage(null);
+  };
+
+  // Editing a field clears the modal's message.
+  const editDraft = (update) => {
+    setModalMessage(null);
+    setDraft(update);
   };
 
   // PUT /users/profile: partial update, token in the Authorization header.
   const putUpdate = async (overrides) => {
     setIsSaving(true);
+    setModalMessage(null);
     try {
-      const res = await fetch(`${addressIp}/users/profile`, {
-        method: 'PUT',
-        headers: jsonAuthHeaders(user.token),
-        body: JSON.stringify(overrides),
-      });
-      const data = await res.json();
+      const data = await putUserProfile({ token: user.token, updates: overrides });
       if (data.result) {
         // Backend now returns `{ result, updated }` with only the changed
         // fields (post-normalisation), so we can dispatch it as-is.
         if (data.updated) dispatch(updateUserInStore(data.updated));
-        closeModal();
         if (modalKind === 'allergies' && data.unrecognizedAllergies?.length > 0) {
-          Alert.alert(
-            t('settings.modals.allergiesUnknownTitle'),
-            t('settings.modals.allergiesUnknownMessage', {
+          setModalMessage({
+            type: 'warning',
+            title: t('settings.modals.allergiesUnknownTitle'),
+            text: t('settings.modals.allergiesUnknownMessage', {
               terms: data.unrecognizedAllergies.join(', '),
             }),
-          );
+          });
+        } else {
+          closeModal();
         }
       } else {
-        Alert.alert(t('common.error'), data.error || t('common.networkError'));
+        setModalMessage({ type: 'error', text: data.error || t('common.networkError') });
       }
     } catch {
-      Alert.alert(t('common.error'), t('common.networkError'));
+      setModalMessage({ type: 'error', text: t('common.networkError') });
     } finally {
       setIsSaving(false);
     }
@@ -213,7 +218,7 @@ export default function SettingsScreen({ navigation }) {
       dispatch(resetFilters());
       exitToHome(navigation);
     } catch {
-      Alert.alert(t('common.error'), 'Could not complete logout.');
+      showToast({ type: 'error', message: t('common.logoutFailed') });
     }
   };
 
@@ -242,6 +247,7 @@ export default function SettingsScreen({ navigation }) {
       default:
         return;
     }
+    setModalMessage(null);
     setModalKind(kind);
   };
 
@@ -280,8 +286,9 @@ export default function SettingsScreen({ navigation }) {
       { text: t('common.logoutTitle'), style: 'destructive', onPress: handleLogout },
     ]);
 
+  // Not built yet: an info, not a dialog with a single button.
   const confirmDelete = () =>
-    Alert.alert(t('common.deleteTitle'), t('common.deleteMessage'), [{ text: t('common.ok') }]);
+    showToast({ type: 'info', title: t('common.deleteTitle'), message: t('common.deleteMessage') });
 
   const handleInvite = async () => {
     try {
@@ -300,16 +307,14 @@ export default function SettingsScreen({ navigation }) {
   const dietSummary =
     dietRestrictions.length === 0
       ? t('settings.diets.noneSelected')
-      : dietRestrictions
-          .map((k) => t(`settings.diets.${k}`, { defaultValue: k }))
-          .join(', ');
+      : dietRestrictions.map((k) => t(`settings.diets.${k}`, { defaultValue: k })).join(', ');
 
   const languageLabel =
     localeMode === 'fr'
       ? t('settings.language.french')
       : localeMode === 'en'
-      ? t('settings.language.english')
-      : t('settings.language.system');
+        ? t('settings.language.english')
+        : t('settings.language.system');
 
   const themeLabel = t(`settings.theme.${themeKey}`, { defaultValue: themeKey });
 
@@ -368,7 +373,7 @@ export default function SettingsScreen({ navigation }) {
         icon={<Lock size={ICON_SIZE} color={iconColor} />}
         label={t('settings.account.security')}
         value={t('common.comingSoon')}
-        onPress={() => Alert.alert(t('common.comingSoon'))}
+        onPress={() => showToast({ type: 'info', message: t('common.comingSoon') })}
       />
 
       <SectionHeader css={css}>{t('settings.sections.culinary')}</SectionHeader>
@@ -481,9 +486,7 @@ export default function SettingsScreen({ navigation }) {
             marginRight: 8,
           }}
         >
-          {locationConsent
-            ? t('settings.appPrefs.locationOn')
-            : t('settings.appPrefs.locationOff')}
+          {locationConsent ? t('settings.appPrefs.locationOn') : t('settings.appPrefs.locationOff')}
         </Text>
         <LocationToggle />
       </View>
@@ -491,7 +494,7 @@ export default function SettingsScreen({ navigation }) {
         icon={<Bell size={ICON_SIZE} color={iconColor} />}
         label={t('settings.appPrefs.notifications')}
         value={t('common.comingSoon')}
-        onPress={() => Alert.alert(t('common.comingSoon'))}
+        onPress={() => showToast({ type: 'info', message: t('common.comingSoon') })}
       />
 
       <SectionHeader css={css}>{t('settings.sections.social')}</SectionHeader>
@@ -506,7 +509,7 @@ export default function SettingsScreen({ navigation }) {
         icon={<Info size={ICON_SIZE} color={iconColor} />}
         label={t('settings.about.version')}
         value={t('settings.about.appVersion')}
-        onPress={() => Alert.alert(t('common.comingSoon'))}
+        onPress={() => showToast({ type: 'info', message: t('common.comingSoon') })}
       />
 
       <SectionHeader css={css}>{t('settings.sections.danger')}</SectionHeader>
@@ -529,7 +532,8 @@ export default function SettingsScreen({ navigation }) {
         <EditModal
           schemaKind={modalKind}
           draft={draft}
-          setDraft={setDraft}
+          setDraft={editDraft}
+          message={modalMessage}
           isSaving={isSaving}
           onSave={saveModal}
           onClose={closeModal}
@@ -538,18 +542,12 @@ export default function SettingsScreen({ navigation }) {
         />
       ) : null}
 
-      <ThemePickerSheet
-        visible={themeSheetVisible}
-        onClose={() => setThemeSheetVisible(false)}
-      />
+      <ThemePickerSheet visible={themeSheetVisible} onClose={() => setThemeSheetVisible(false)} />
       <LanguagePickerSheet
         visible={languageSheetVisible}
         onClose={() => setLanguageSheetVisible(false)}
       />
-      <DietMultiSelect
-        visible={dietPickerVisible}
-        onClose={() => setDietPickerVisible(false)}
-      />
+      <DietMultiSelect visible={dietPickerVisible} onClose={() => setDietPickerVisible(false)} />
       <NutritionalGoalPicker
         visible={goalPickerVisible}
         onClose={() => setGoalPickerVisible(false)}
@@ -580,9 +578,11 @@ function SectionHeader({ children, css }) {
   );
 }
 
-function EditModal({ schemaKind, draft, setDraft, isSaving, onSave, onClose, css, t }) {
+function EditModal({ schemaKind, draft, setDraft, message, isSaving, onSave, onClose, css, t }) {
   const schema = useMemo(() => buildSchema(schemaKind, t), [schemaKind, t]);
   if (!schema) return null;
+  // Saved, with a warning to read: only "Close" is left.
+  const savedWithWarning = message?.type === 'warning';
 
   return (
     <Modal transparent animationType="fade" visible onRequestClose={onClose}>
@@ -670,64 +670,68 @@ function EditModal({ schemaKind, draft, setDraft, isSaving, onSave, onClose, css
               </View>
             ))}
           </ScrollView>
+          <InlineMessage
+            testID="settings-modal-message"
+            type={message?.type}
+            title={message?.title}
+            message={message?.text}
+            style={{ marginTop: css.spacing.sm }}
+          />
           <View style={[styles.modalActions, { marginTop: css.spacing.sm }]}>
-            <TouchableOpacity
-              onPress={onClose}
-              style={[
-                styles.modalBtn,
-                {
-                  borderRadius: css.radius.pill,
-                  paddingHorizontal: css.spacing.lg,
-                  paddingVertical: css.spacing.sm,
-                  borderColor: css.palette.neutral300,
-                  borderWidth: 1,
-                  marginLeft: css.spacing.sm,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={t('common.cancel')}
-            >
-              <Text
-                style={{
-                  fontFamily: css.typography.fontUI,
-                  color: css.palette.neutral900,
-                  fontWeight: '500',
-                }}
-              >
-                {t('common.cancel')}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onSave}
-              disabled={isSaving}
-              style={[
-                styles.modalBtn,
-                {
-                  borderRadius: css.radius.pill,
-                  paddingHorizontal: css.spacing.lg,
-                  paddingVertical: css.spacing.sm,
-                  backgroundColor: css.palette.neutral900,
-                  marginLeft: css.spacing.sm,
-                  opacity: isSaving ? 0.6 : 1,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={t('common.save')}
-            >
-              <Text
-                style={{
-                  fontFamily: css.typography.fontUI,
-                  color: css.text.inverse,
-                  fontWeight: '600',
-                }}
-              >
-                {isSaving ? t('common.saving') : t('common.save')}
-              </Text>
-            </TouchableOpacity>
+            {savedWithWarning ? (
+              <ModalButton primary label={t('common.close')} onPress={onClose} css={css} />
+            ) : (
+              <>
+                <ModalButton label={t('common.cancel')} onPress={onClose} css={css} />
+                <ModalButton
+                  primary
+                  label={t('common.save')}
+                  text={isSaving ? t('common.saving') : t('common.save')}
+                  onPress={onSave}
+                  disabled={isSaving}
+                  css={css}
+                />
+              </>
+            )}
           </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
+  );
+}
+
+// Button of the edit modal: primary (filled) or secondary (outlined).
+function ModalButton({ label, text = label, onPress, primary = false, disabled = false, css }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      style={[
+        styles.modalBtn,
+        {
+          borderRadius: css.radius.pill,
+          paddingHorizontal: css.spacing.lg,
+          paddingVertical: css.spacing.sm,
+          marginLeft: css.spacing.sm,
+          opacity: disabled ? 0.6 : 1,
+        },
+        primary
+          ? { backgroundColor: css.palette.neutral900 }
+          : { borderColor: css.palette.neutral300, borderWidth: 1 },
+      ]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <Text
+        style={{
+          fontFamily: css.typography.fontUI,
+          color: primary ? css.text.inverse : css.palette.neutral900,
+          fontWeight: primary ? '600' : '500',
+        }}
+      >
+        {text}
+      </Text>
+    </TouchableOpacity>
   );
 }
 
@@ -740,7 +744,12 @@ function buildSchema(kind, t) {
         fields: [
           { key: 'firstname', label: t('settings.modals.fields.firstname') },
           { key: 'lastname', label: t('settings.modals.fields.lastname') },
-          { key: 'email', label: t('settings.modals.fields.email'), keyboardType: 'email-address', autoCapitalize: 'none' },
+          {
+            key: 'email',
+            label: t('settings.modals.fields.email'),
+            keyboardType: 'email-address',
+            autoCapitalize: 'none',
+          },
           { key: 'age', label: t('settings.modals.fields.age'), keyboardType: 'numeric' },
           { key: 'bio', label: t('settings.modals.fields.bio'), multiline: true },
           { key: 'region', label: t('settings.modals.fields.region') },
@@ -751,7 +760,11 @@ function buildSchema(kind, t) {
       return {
         title: t('settings.modals.householdTitle'),
         fields: [
-          { key: 'householdComposition', label: t('settings.modals.householdLabel'), keyboardType: 'numeric' },
+          {
+            key: 'householdComposition',
+            label: t('settings.modals.householdLabel'),
+            keyboardType: 'numeric',
+          },
         ],
       };
     case 'allergies':

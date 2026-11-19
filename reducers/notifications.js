@@ -6,10 +6,10 @@ import { createSlice } from '@reduxjs/toolkit';
 //   consistent with `user`, `recipe`, `comment`, …
 const initialState = {
   value: {
-    items: [],          // Notification[] (newest first)
+    items: [], // Notification[] (newest first)
     unread: 0,
-    lastFetched: null,  // ISO string of the last successful fetch
-    hasMore: true,      // pagination cursor exhausted?
+    lastFetched: null, // ISO string of the last successful fetch
+    hasMore: true, // pagination cursor exhausted?
   },
 };
 

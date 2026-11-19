@@ -18,7 +18,10 @@ describe('authHeaders (plan 016, PR 3)', () => {
 
 describe('jsonAuthHeaders', () => {
   it('adds the JSON Content-Type to the Authorization header', () => {
-    expect(jsonAuthHeaders('abc')).toEqual({ 'Content-Type': 'application/json', Authorization: 'Bearer abc' });
+    expect(jsonAuthHeaders('abc')).toEqual({
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer abc',
+    });
   });
 
   it('keeps the JSON Content-Type for a guest call', () => {

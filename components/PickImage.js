@@ -14,11 +14,13 @@ const pickFromGallery = () =>
     quality: 1,
   });
 
-/** Picks the recipe photo from the gallery; needs the recipe name first. */
-export default function PickImage({ name }) {
+/** Picks the recipe photo from the gallery; needs the recipe name first
+ * (`onNameMissing` is called without it). */
+export default function PickImage({ name, onNameMissing }) {
   return (
     <PhotoSourceButton
       name={name}
+      onNameMissing={onNameMissing}
       Icon={ImagePlus}
       a11yKey="addRecipe.pickImageA11y"
       permissionKey="addRecipe.galleryPermission"

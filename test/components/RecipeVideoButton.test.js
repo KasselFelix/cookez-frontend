@@ -14,9 +14,7 @@ import RecipeVideoButton from '../../components/recipe/RecipeVideoButton';
 
 describe('RecipeVideoButton', () => {
   beforeEach(() => {
-    jest
-      .spyOn(Linking, 'openURL')
-      .mockImplementation(() => Promise.resolve());
+    jest.spyOn(Linking, 'openURL').mockImplementation(() => Promise.resolve());
   });
 
   afterEach(() => {
@@ -24,43 +22,36 @@ describe('RecipeVideoButton', () => {
   });
 
   it('renders a button when a videoUrl is present', () => {
-    renderWithProviders(
-      <RecipeVideoButton videoUrl="https://youtu.be/abc" />,
-      { withNavigation: false },
-    );
+    renderWithProviders(<RecipeVideoButton videoUrl="https://youtu.be/abc" />, {
+      withNavigation: false,
+    });
     expect(screen.getByRole('link')).toBeTruthy();
   });
 
   it('renders nothing when videoUrl is null', () => {
-    const { toJSON } = renderWithProviders(
-      <RecipeVideoButton videoUrl={null} />,
-      { withNavigation: false },
-    );
-    expect(toJSON()).toBeNull();
+    renderWithProviders(<RecipeVideoButton videoUrl={null} />, { withNavigation: false });
+    // The harness also draws an empty toast host: assert on the button.
+    expect(screen.queryByRole('link')).toBeNull();
   });
 
   it('renders nothing when videoUrl is empty/whitespace', () => {
-    const { toJSON } = renderWithProviders(
-      <RecipeVideoButton videoUrl="   " />,
-      { withNavigation: false },
-    );
-    expect(toJSON()).toBeNull();
+    renderWithProviders(<RecipeVideoButton videoUrl="   " />, { withNavigation: false });
+    // The harness also draws an empty toast host: assert on the button.
+    expect(screen.queryByRole('link')).toBeNull();
   });
 
   it('opens the URL via Linking on press', () => {
-    renderWithProviders(
-      <RecipeVideoButton videoUrl="https://youtu.be/abc" />,
-      { withNavigation: false },
-    );
+    renderWithProviders(<RecipeVideoButton videoUrl="https://youtu.be/abc" />, {
+      withNavigation: false,
+    });
     fireEvent.press(screen.getByRole('link'));
     expect(Linking.openURL).toHaveBeenCalledWith('https://youtu.be/abc');
   });
 
   it('exposes an accessibility label', () => {
-    renderWithProviders(
-      <RecipeVideoButton videoUrl="https://youtu.be/abc" />,
-      { withNavigation: false },
-    );
+    renderWithProviders(<RecipeVideoButton videoUrl="https://youtu.be/abc" />, {
+      withNavigation: false,
+    });
     const node = screen.getByRole('link');
     expect(node.props.accessibilityLabel).toBeTruthy();
   });

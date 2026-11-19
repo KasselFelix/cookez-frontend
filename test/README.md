@@ -34,7 +34,17 @@ test/
   reducers/pantry.test.js        # reference: pure reducer unit test
   components/renderWithProviders.test.js  # reference: component render via harness
   hooks/useT.test.js             # reference: hook test with preloaded locale
+  security/authHeader.test.js    # static guard: token and username out of request bodies
+  security/helpers/bodyAnalysis.js  # its analysis (AST), apart from the tests
 ```
+
+A new guard case is seen red on the previous analysis by stashing the helper
+alone, before the analysis change is committed:
+`git stash push -- test/security/helpers/bodyAnalysis.js`, run the test, then
+`git stash pop`. Without an uncommitted change, `git stash` saves nothing (and
+`pop` would take an older entry). Once committed:
+`git checkout HEAD~1 -- test/security/helpers/bodyAnalysis.js`, run the test,
+then `git checkout HEAD -- test/security/helpers/bodyAnalysis.js`.
 
 ## Writing a reducer test (cheapest, most stable)
 
@@ -70,11 +80,11 @@ expect(screen.getByText('alex')).toBeTruthy();
 
 `renderWithProviders(ui, options)` options:
 
-| option | default | meaning |
-| --- | --- | --- |
-| `preloadedState` | `undefined` | partial state keyed by slice name (`{ value: ... }`) |
-| `store` | built from `preloadedState` | pass an existing store to dispatch + assert re-renders |
-| `withNavigation` | `true` | wrap in `NavigationContainer`; set `false` for pure presentational components |
+| option           | default                     | meaning                                                                       |
+| ---------------- | --------------------------- | ----------------------------------------------------------------------------- |
+| `preloadedState` | `undefined`                 | partial state keyed by slice name (`{ value: ... }`)                          |
+| `store`          | built from `preloadedState` | pass an existing store to dispatch + assert re-renders                        |
+| `withNavigation` | `true`                      | wrap in `NavigationContainer`; set `false` for pure presentational components |
 
 It returns RTL's render result plus the `store`, so you can
 `store.dispatch(...)` and `store.getState()` in assertions.
@@ -90,7 +100,10 @@ Provider), seed `locale` via `preloadedState`, and read the output from the
 tree.
 
 ```js
-function Probe({ k }) { const t = useT(); return <Text testID="out">{t(k)}</Text>; }
+function Probe({ k }) {
+  const t = useT();
+  return <Text testID="out">{t(k)}</Text>;
+}
 
 renderWithProviders(<Probe k="common.save" />, {
   withNavigation: false,
@@ -119,6 +132,24 @@ mockFetchError(); // next fetch rejects → exercise the error path
 
 Helpers: `mockFetchJson`, `mockFetchJsonAlways`, `mockFetchSequence`,
 `mockFetchError`, `makeResponse`.
+
+## Animations (Reanimated mock)
+
+The Reanimated mock in `test/setup.js` ends every `withTiming` / `withSpring`
+at once and runs its end callback right away. To test a race with a running
+animation (a tap during a fade-out), hold the end callbacks with
+`test/helpers/animations.js`:
+
+```js
+import { finishAnimations, holdAnimations } from '../helpers/animations';
+
+holdAnimations(); // end callbacks wait
+fireEvent.press(closeButton); // the fade-out stays running
+// ...act and assert while it runs...
+act(() => finishAnimations()); // the end callbacks run now
+```
+
+The hold is cleared after each test. Example: `test/contexts/ToastProvider.test.js`.
 
 `addressIp` reads `process.env.EXPO_PUBLIC_API_URL` and throws without it:
 there is no fallback to the Vercel URL. `test/setupEnv.js` (Jest

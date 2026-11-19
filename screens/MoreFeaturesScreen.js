@@ -1,56 +1,57 @@
-import { StyleSheet, View, Text } from 'react-native'
-import React from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import css from "../styles/Global"
-import buttonStyles from "../styles/Button";
-import MyButton from "../components/MyButton";
-import MySmallButton from "../components/MySmallButton";
-import LottieView from "lottie-react-native";
+import { StyleSheet, View, Text } from 'react-native';
+import React from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import css from '../styles/Global';
+import buttonStyles from '../styles/Button';
+import MyButton from '../components/MyButton';
+import MySmallButton from '../components/MySmallButton';
+import LottieView from 'lottie-react-native';
 
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome } from '@expo/vector-icons';
 
-export default function MoreFeaturesScreen({navigation}) {
-
+export default function MoreFeaturesScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <MySmallButton
           dataFlow={() => navigation.goBack()}
-          text={<FontAwesome name="angle-double-left" size={30} color={"white"} />}
+          text={<FontAwesome name="angle-double-left" size={30} color={'white'} />}
           buttonType={buttonStyles.buttonSmall}
         />
         <View style={styles.btnEmpty}></View>
       </View>
-      <LottieView style={styles.lottieAnim} source={require("../assets/animation/Animation - 1723426951688.json")}
-      autoPlay
-      loop
+      <LottieView
+        style={styles.lottieAnim}
+        source={require('../assets/animation/Animation - 1723426951688.json')}
+        autoPlay
+        loop
       />
-    <View style={styles.featuresContainer}>
-    <Text style={styles.title}>To fully enjoy all features, create your account now</Text>
-      <Text style={styles.feature}>Like</Text>
-      <Text style={styles.feature}>Comment</Text>
-      <Text style={styles.feature}>Vote</Text>
-      <Text style={styles.feature}>Create Recipes</Text>
-      <Text style={styles.feature}>Save Preferences</Text>
-    </View>
+      <View style={styles.featuresContainer}>
+        <Text style={styles.title}>To fully enjoy all features, create your account now</Text>
+        <Text style={styles.feature}>Like</Text>
+        <Text style={styles.feature}>Comment</Text>
+        <Text style={styles.feature}>Vote</Text>
+        <Text style={styles.feature}>Create Recipes</Text>
+        <Text style={styles.feature}>Save Preferences</Text>
+      </View>
       <View style={styles.buttonsContainer}>
         <View style={styles.buttons}>
           <MyButton
-            dataFlow={() => navigation.navigate("Login")}
-            text={"SIGN-UP"}
+            dataFlow={() => navigation.navigate('Login')}
+            text={'SIGN-UP'}
             buttonType={buttonStyles.buttonTwo}
           />
         </View>
         <View style={styles.buttons}>
           <MyButton
-            dataFlow={() => navigation.navigate("Home")}
-            text={"SKIP"}
+            dataFlow={() => navigation.navigate('Home')}
+            text={'SKIP'}
             buttonType={buttonStyles.buttonTwo}
           />
         </View>
       </View>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -77,9 +78,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 
-  lottieAnim:{
-    flex:0,
-    justifyContent:'center',
+  lottieAnim: {
+    flex: 0,
+    justifyContent: 'center',
     alignItems: 'center',
     width: '75%',
     height: '40%',
@@ -104,16 +105,15 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 
-  buttons:{
-    margin:6,
+  buttons: {
+    margin: 6,
   },
 
-  animationContainer:{
-    height:'70%',
-		width:'90%',
-		marginBottom:10,
-		borderRadius: 40,
-		overflow: "hidden",
+  animationContainer: {
+    height: '70%',
+    width: '90%',
+    marginBottom: 10,
+    borderRadius: 40,
+    overflow: 'hidden',
   },
-  
-})
+});

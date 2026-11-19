@@ -7,7 +7,7 @@ import { createSlice } from '@reduxjs/toolkit';
 //   convention shared with `user`, `recipe`, `notifications`, etc.
 const initialState = {
   value: {
-    items: [],     // PantryItem[] — populated docs from /inventory
+    items: [], // PantryItem[] — populated docs from /inventory
     loading: false,
     error: null,
   },
@@ -40,7 +40,8 @@ export const pantrySlice = createSlice({
       // (plan 013). The new item goes to its place, not to the top.
       const name = item.ingredient?.name ?? '';
       const at = state.value.items.findIndex(
-        (x) => (x.ingredient?.name ?? '').localeCompare(name, undefined, { sensitivity: 'base' }) > 0,
+        (x) =>
+          (x.ingredient?.name ?? '').localeCompare(name, undefined, { sensitivity: 'base' }) > 0,
       );
       if (at < 0) state.value.items.push(item);
       else state.value.items.splice(at, 0, item);
@@ -79,14 +80,7 @@ export const pantrySlice = createSlice({
   },
 });
 
-export const {
-  setPantry,
-  addItem,
-  updateItem,
-  removeItem,
-  setLoading,
-  setError,
-  clearPantry,
-} = pantrySlice.actions;
+export const { setPantry, addItem, updateItem, removeItem, setLoading, setError, clearPantry } =
+  pantrySlice.actions;
 
 export default pantrySlice.reducer;

@@ -149,22 +149,11 @@ export default function RecapScreen({ navigation }) {
   }, [showScrollHint, hintY, hintOpacity]);
 
   return (
-    <SafeAreaView
-      style={[
-        styles.container,
-        { backgroundColor: css.flow.background },
-      ]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: css.flow.background }]}>
       <View style={styles.header}>
         <MySmallButton
           dataFlow={() => navigation.navigate('Kickoff')}
-          text={
-            <FontAwesome
-              name="angle-double-left"
-              size={30}
-              color={css.flow.actionText}
-            />
-          }
+          text={<FontAwesome name="angle-double-left" size={30} color={css.flow.actionText} />}
           buttonType={[buttonStyles.buttonSmall, { backgroundColor: css.flow.actionBg }]}
         />
         <Text
@@ -175,9 +164,7 @@ export default function RecapScreen({ navigation }) {
           }}
           accessibilityRole="header"
         >
-          {ingredients.length === 1
-            ? t('recap.ingredient')
-            : t('recap.ingredients')}
+          {ingredients.length === 1 ? t('recap.ingredient') : t('recap.ingredients')}
         </Text>
         <Popover
           placement="floating"
@@ -192,13 +179,7 @@ export default function RecapScreen({ navigation }) {
             <TouchableOpacity accessibilityLabel={t('recap.confirmClear')}>
               <MySmallButton
                 dataFlow={() => setShowPopover(true)}
-                text={
-                  <FontAwesome
-                    name="times"
-                    size={25}
-                    color={css.flow.clearIcon}
-                  />
-                }
+                text={<FontAwesome name="times" size={25} color={css.flow.clearIcon} />}
                 buttonType={[buttonStyles.buttonSmall, { backgroundColor: css.flow.actionBg }]}
               />
             </TouchableOpacity>
@@ -213,39 +194,23 @@ export default function RecapScreen({ navigation }) {
                 textAlign: 'center',
               }}
             >
-              {ingredients.length > 0
-                ? t('recap.confirmClear')
-                : t('recap.noIngredients')}
+              {ingredients.length > 0 ? t('recap.confirmClear') : t('recap.noIngredients')}
             </Text>
             {ingredients.length > 0 && (
               <View style={styles.removeBtnRow}>
                 <TouchableOpacity
                   onPress={() => setShowPopover(false)}
                   accessibilityLabel={t('common.cancel')}
-                  style={[
-                    styles.popoverBtn,
-                    { backgroundColor: css.flow.stepperBg },
-                  ]}
+                  style={[styles.popoverBtn, { backgroundColor: css.flow.stepperBg }]}
                 >
-                  <FontAwesome
-                    name="times"
-                    size={22}
-                    color={css.palette.error}
-                  />
+                  <FontAwesome name="times" size={22} color={css.palette.error} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleClearAll}
                   accessibilityLabel={t('common.yes')}
-                  style={[
-                    styles.popoverBtn,
-                    { backgroundColor: css.flow.stepperBg },
-                  ]}
+                  style={[styles.popoverBtn, { backgroundColor: css.flow.stepperBg }]}
                 >
-                  <FontAwesome
-                    name="check"
-                    size={22}
-                    color={css.palette.success}
-                  />
+                  <FontAwesome name="check" size={22} color={css.palette.success} />
                 </TouchableOpacity>
               </View>
             )}
@@ -262,11 +227,7 @@ export default function RecapScreen({ navigation }) {
         <SectionHeading css={css}>{t('recap.step1')}</SectionHeading>
         <ScanSummary onSearch={() => navigation.goBack()} />
         {ingredients.length === 0 ? (
-          <Animatable.View
-            animation="slideInDown"
-            duration={700}
-            style={styles.emptyBlock}
-          >
+          <Animatable.View animation="slideInDown" duration={700} style={styles.emptyBlock}>
             <Text
               style={{
                 color: css.palette.neutral700,
@@ -304,9 +265,7 @@ export default function RecapScreen({ navigation }) {
                 const h = e.nativeEvent.layout.height;
                 setScrollState((s) => ({ ...s, visibleH: h }));
               }}
-              onContentSizeChange={(_w, h) =>
-                setScrollState((s) => ({ ...s, contentH: h }))
-              }
+              onContentSizeChange={(_w, h) => setScrollState((s) => ({ ...s, contentH: h }))}
               onScroll={(e) => {
                 const y = e.nativeEvent.contentOffset.y;
                 setScrollState((s) => ({ ...s, scrollY: y }));
@@ -321,9 +280,7 @@ export default function RecapScreen({ navigation }) {
             </ScrollView>
             {showScrollHint && (
               <TouchableOpacity
-                onPress={() =>
-                  galleryScrollRef.current?.scrollToEnd({ animated: true })
-                }
+                onPress={() => galleryScrollRef.current?.scrollToEnd({ animated: true })}
                 accessibilityRole="button"
                 accessibilityLabel={t('recap.scrollMore')}
                 hitSlop={10}
@@ -335,11 +292,7 @@ export default function RecapScreen({ navigation }) {
                     opacity: hintOpacity,
                   }}
                 >
-                  <FontAwesome
-                    name="angle-double-down"
-                    size={28}
-                    color={css.palette.primary800}
-                  />
+                  <FontAwesome name="angle-double-down" size={28} color={css.palette.primary800} />
                 </Animated.View>
               </TouchableOpacity>
             )}
@@ -347,16 +300,13 @@ export default function RecapScreen({ navigation }) {
         )}
 
         {/* Step 2 — Origin (multi-select cuisine filter) */}
-        <SectionHeading css={css}>{`${t('recap.step2')} 🌍`}</SectionHeading>
+        <SectionHeading css={css}>{t('recap.step2')}</SectionHeading>
         <View style={styles.filterRow}>
-          <OriginPicker
-            value={filters.selectedOrigins}
-            onChange={(v) => dispatch(setOrigins(v))}
-          />
+          <OriginPicker value={filters.selectedOrigins} onChange={(v) => dispatch(setOrigins(v))} />
         </View>
 
         {/* Step 3 — Servings */}
-        <SectionHeading css={css}>{`${t('recap.step3')} 👨‍👩‍👧‍👦`}</SectionHeading>
+        <SectionHeading css={css}>{t('recap.step3')}</SectionHeading>
         <View style={styles.filterRow}>
           <ServingsStepper
             value={filters.currentServings}
@@ -367,12 +317,17 @@ export default function RecapScreen({ navigation }) {
         </View>
 
         {/* Step 4 — Tags */}
-        <SectionHeading css={css}>{`${t('recap.step4')} 🏷️`}</SectionHeading>
+        <SectionHeading css={css}>{t('recap.step4')}</SectionHeading>
         <View style={styles.filterRow}>
           <TagsMultiSelect
             value={filters.selectedTags}
             onToggle={(tag) => dispatch(toggleTag(tag))}
-            colors={{ bg: css.flow.tagBg, ink: css.flow.tagInk, idleBg: css.flow.tagIdleBg, idleInk: css.flow.tagIdleInk }}
+            colors={{
+              bg: css.flow.tagBg,
+              ink: css.flow.tagInk,
+              idleBg: css.flow.tagIdleBg,
+              idleInk: css.flow.tagIdleInk,
+            }}
           />
         </View>
       </ScrollView>

@@ -33,9 +33,9 @@ const DRAG_DISMISS_THRESHOLD = 100;
 const DRAG_VELOCITY_THRESHOLD = 0.5;
 
 const OPTIONS = [
-  { key: 'system',  labelKey: 'settings.language.system' },
-  { key: 'en',      labelKey: 'settings.language.english' },
-  { key: 'fr',      labelKey: 'settings.language.french' },
+  { key: 'system', labelKey: 'settings.language.system' },
+  { key: 'en', labelKey: 'settings.language.english' },
+  { key: 'fr', labelKey: 'settings.language.french' },
 ];
 
 export default function LanguagePickerSheet({ visible, onClose }) {
@@ -124,7 +124,7 @@ export default function LanguagePickerSheet({ visible, onClose }) {
           }).start();
         },
       }),
-    [onClose, sheetTranslateY]
+    [onClose, sheetTranslateY],
   );
 
   const handlePick = async (key) => {
@@ -271,5 +271,3 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
 });
-
-export { LanguagePickerSheet };

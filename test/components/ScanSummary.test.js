@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect */
 // Plan 015: Recap shows the analyses still running, the failed ones, and sends an
 // unknown name back to Kickoff's search.
 import { fireEvent, screen } from '@testing-library/react-native';
@@ -39,7 +38,10 @@ describe('ScanSummary', () => {
     });
     fireEvent.press(screen.getByLabelText('Search for yuzu kosho'));
     expect(onSearch).toHaveBeenCalled();
-    expect(store.getState().scan.value).toMatchObject({ unmatched: ['pitaya'], pendingSearch: 'yuzu kosho' });
+    expect(store.getState().scan.value).toMatchObject({
+      unmatched: ['pitaya'],
+      pendingSearch: 'yuzu kosho',
+    });
 
     fireEvent.press(screen.getByLabelText('Dismiss pitaya'));
     expect(store.getState().scan.value.unmatched).toEqual([]);

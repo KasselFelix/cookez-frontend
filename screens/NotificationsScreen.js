@@ -186,10 +186,7 @@ export default function NotificationsScreen({ navigation }) {
       onPress={() => handleDelete(notif)}
       accessibilityRole="button"
       accessibilityLabel={t('notifications.deleteAction')}
-      style={[
-        styles.swipeAction,
-        { backgroundColor: css.palette.error },
-      ]}
+      style={[styles.swipeAction, { backgroundColor: css.palette.error }]}
     >
       <Trash2 size={22} color={css.palette.white} />
     </TouchableOpacity>
@@ -226,12 +223,7 @@ export default function NotificationsScreen({ navigation }) {
       overshootRight={false}
       friction={2}
     >
-      <NotificationRow
-        notif={item}
-        onPress={() => handleTap(item)}
-        css={css}
-        t={t}
-      />
+      <NotificationRow notif={item} onPress={() => handleTap(item)} css={css} t={t} />
     </Swipeable>
   );
 
@@ -261,15 +253,13 @@ export default function NotificationsScreen({ navigation }) {
               },
             ]}
           >
-            <Text style={{ color: css.palette.white, fontWeight: '600' }}>
-              {t('common.retry')}
-            </Text>
+            <Text style={{ color: css.palette.white, fontWeight: '600' }}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
       );
     }
     return (
-      <View style={[styles.center,{ backgroundColor: css.palette.surface }]}>
+      <View style={[styles.center, { backgroundColor: css.palette.surface }]}>
         <Text style={{ color: css.palette.neutral500, textAlign: 'center' }}>
           {t('notifications.empty')}
         </Text>
@@ -365,8 +355,7 @@ function NotificationRow({ notif, onPress, css, t }) {
   // notifications. Pre-compute everything once so the JSX stays flat.
   const isExpiry = notif.type === 'expiry_warning';
   const photoUrl = isExpiry ? notif.ingredient?.photoUrl : null;
-  const ingredientName =
-    notif.ingredient?.name || t('notifications.expiryWarningFallbackName');
+  const ingredientName = notif.ingredient?.name || t('notifications.expiryWarningFallbackName');
   const days =
     isExpiry && notif.expiryDate
       ? Math.max(0, Math.ceil((new Date(notif.expiryDate) - Date.now()) / 86400000))
@@ -389,8 +378,7 @@ function NotificationRow({ notif, onPress, css, t }) {
       ? { uri: notif.recipe.image }
       : null;
   const avatarSource = getAvatarSource(notif.actor?.image);
-  const hasIngredientPhoto =
-    typeof photoUrl === 'string' && photoUrl.startsWith('http');
+  const hasIngredientPhoto = typeof photoUrl === 'string' && photoUrl.startsWith('http');
 
   return (
     <TouchableOpacity
@@ -411,10 +399,7 @@ function NotificationRow({ notif, onPress, css, t }) {
         hasIngredientPhoto ? (
           <Image
             source={{ uri: photoUrl }}
-            style={[
-              styles.avatar,
-              { backgroundColor: css.palette.neutral200, borderRadius: 22 },
-            ]}
+            style={[styles.avatar, { backgroundColor: css.palette.neutral200, borderRadius: 22 }]}
             accessibilityIgnoresInvertColors
           />
         ) : (
@@ -474,12 +459,7 @@ function NotificationRow({ notif, onPress, css, t }) {
         />
       ) : null}
       {!notif.read ? (
-        <View
-          style={[
-            styles.unreadDot,
-            { backgroundColor: css.palette.primary500 },
-          ]}
-        />
+        <View style={[styles.unreadDot, { backgroundColor: css.palette.primary500 }]} />
       ) : null}
     </TouchableOpacity>
   );

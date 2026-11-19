@@ -2,11 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { FontAwesome } from '@expo/vector-icons';
-import Animated, {
-  useAnimatedStyle,
-  interpolate,
-  Extrapolation,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import css from '../../styles/Global';
 
@@ -30,13 +26,13 @@ export default function StickyHeader({ scrollY, title, onBack, onHome }) {
       scrollY.value,
       [HEADER_FADE_START, HEADER_FADE_END],
       [0, 1],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
     const translateY = interpolate(
       scrollY.value,
       [HEADER_FADE_START, HEADER_FADE_END],
       [-8, 0],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
     return {
       opacity,

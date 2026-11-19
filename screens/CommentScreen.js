@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -33,9 +27,13 @@ import Animated, {
 
 import addressIp from '../modules/addressIp';
 import { authHeaders, jsonAuthHeaders } from '../modules/authHeaders';
+import { commentCounts } from '../modules/commentVotes';
 import css from '../styles/Global';
 import useTabBarHeight from '../hooks/useTabBarHeight';
 import UserCommentCard from '../components/recipe/UserCommentCard';
+import InlineMessage from '../components/feedback/InlineMessage';
+import { useToast } from '../contexts/ToastProvider';
+import useT from '../i18n/useT';
 import {
   deleteComment as deleteCommentAction,
   updateCommentMessage as updateCommentMessageAction,
@@ -62,6 +60,8 @@ export default function CommentScreen({ navigation }) {
   const recipesInStore = useSelector((state) => state.recipe.value);
   const dispatch = useDispatch();
   const tabBarHeight = useTabBarHeight();
+  const t = useT();
+  const { show: showToast } = useToast();
 
   const [comments, setComments] = useState([]);
   const [stats, setStats] = useState({ totalComments: 0, totalLikesReceived: 0 });
@@ -71,9 +71,11 @@ export default function CommentScreen({ navigation }) {
   const [sort, setSort] = useState(SORT_RECENT);
 
   // Edit modal state
-  const [editing, setEditing] = useState(null);          // the comment being edited
+  const [editing, setEditing] = useState(null); // the comment being edited
   const [editDraft, setEditDraft] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
+  // Shown inside the edit modal: a toast would stay hidden under it (plan 020).
+  const [editError, setEditError] = useState('');
 
   // Deduplicated cache of recipe lookups for the JSX render path.
   const recipesById = useMemo(() => {
@@ -97,9 +99,7 @@ export default function CommentScreen({ navigation }) {
       const data = await res.json();
       if (data.result) {
         setComments(Array.isArray(data.commentsByAuthor) ? data.commentsByAuthor : []);
-        setStats(
-          data.stats || { totalComments: 0, totalLikesReceived: 0 }
-        );
+        setStats(data.stats || { totalComments: 0, totalLikesReceived: 0 });
       } else {
         setError(data.error || 'Could not load your comments.');
       }
@@ -126,7 +126,7 @@ export default function CommentScreen({ navigation }) {
   const sortedComments = useMemo(() => {
     const list = [...comments];
     if (sort === SORT_LIKED) {
-      list.sort((a, b) => (b?.up?.length ?? 0) - (a?.up?.length ?? 0));
+      list.sort((a, b) => commentCounts(b).up - commentCounts(a).up);
     } else {
       list.sort((a, b) => {
         const da = a?.date ? new Date(a.date).getTime() : 0;
@@ -147,24 +147,32 @@ export default function CommentScreen({ navigation }) {
       const recipe = fullRecipe || comment?.recipe || {};
       navigation.navigate('Recipe', { recipe });
     },
-    [navigation, recipesById]
+    [navigation, recipesById],
   );
 
   const handleStartEdit = useCallback((comment) => {
     setEditing(comment);
     setEditDraft(comment?.message ?? '');
+    setEditError('');
+  }, []);
+
+  // Typing again clears the last error.
+  const handleChangeDraft = useCallback((value) => {
+    setEditDraft(value);
+    setEditError('');
   }, []);
 
   const handleCancelEdit = useCallback(() => {
     setEditing(null);
     setEditDraft('');
+    setEditError('');
   }, []);
 
   const handleSaveEdit = useCallback(async () => {
     if (!editing?._id) return;
     const trimmed = editDraft.trim();
     if (!trimmed) {
-      Alert.alert('Empty message', 'Your review can\'t be empty.');
+      setEditError(t('commentScreen.emptyMessage'));
       return;
     }
     if (trimmed === editing.message) {
@@ -172,24 +180,20 @@ export default function CommentScreen({ navigation }) {
       return;
     }
     setSavingEdit(true);
+    setEditError('');
     try {
-      const res = await fetch(
-        `${addressIp}/comments/update/${editing._id}`,
-        {
-          method: 'PUT',
-          headers: jsonAuthHeaders(user.token),
-          body: JSON.stringify({ message: trimmed }),
-        }
-      );
+      const res = await fetch(`${addressIp}/comments/update/${editing._id}`, {
+        method: 'PUT',
+        headers: jsonAuthHeaders(user.token),
+        body: JSON.stringify({ message: trimmed }),
+      });
       const data = await res.json();
       if (data.result) {
         // Local list (this screen's state)
         setComments((prev) =>
           prev.map((c) =>
-            c._id === editing._id
-              ? { ...c, message: data.comment?.message ?? trimmed }
-              : c
-          )
+            c._id === editing._id ? { ...c, message: data.comment?.message ?? trimmed } : c,
+          ),
         );
         // Redux (so RecipeScreen reflects the change)
         dispatch(
@@ -197,34 +201,29 @@ export default function CommentScreen({ navigation }) {
             recipeId: editing.recipe?._id,
             commentId: editing._id,
             message: data.comment?.message ?? trimmed,
-          })
+          }),
         );
-        Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Success
-        ).catch(() => {});
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
         handleCancelEdit();
       } else {
-        Alert.alert('Update failed', data.error || 'Try again later.');
+        setEditError(data.error || t('commentScreen.updateFailed'));
       }
     } catch (err) {
       console.error('Edit comment failed', err);
-      Alert.alert('Network error', 'Could not save your changes.');
+      setEditError(t('commentScreen.saveNetworkError'));
     } finally {
       setSavingEdit(false);
     }
-  }, [editing, editDraft, user?.token, dispatch, handleCancelEdit]);
+  }, [editing, editDraft, user?.token, dispatch, handleCancelEdit, t]);
 
   const performDelete = useCallback(
     async (comment) => {
       if (!comment?._id) return;
       try {
-        const res = await fetch(
-          `${addressIp}/comments/delete/${comment._id}`,
-          {
-            method: 'DELETE',
-            headers: authHeaders(user.token),
-          }
-        );
+        const res = await fetch(`${addressIp}/comments/delete/${comment._id}`, {
+          method: 'DELETE',
+          headers: authHeaders(user.token),
+        });
         const data = await res.json();
         if (data.result) {
           // Optimistic local removal
@@ -233,45 +232,40 @@ export default function CommentScreen({ navigation }) {
             totalComments: Math.max(0, (prev.totalComments ?? 0) - 1),
             totalLikesReceived: Math.max(
               0,
-              (prev.totalLikesReceived ?? 0) - (comment.up?.length ?? 0)
+              (prev.totalLikesReceived ?? 0) - commentCounts(comment).up,
             ),
           }));
           dispatch(
             deleteCommentAction({
               recipeId: comment.recipe?._id,
               commentId: comment._id,
-            })
+            }),
           );
-          Haptics.notificationAsync(
-            Haptics.NotificationFeedbackType.Success
-          ).catch(() => {});
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
         } else {
-          Alert.alert('Delete failed', data.error || 'Try again later.');
+          showToast({ type: 'error', message: data.error || t('commentScreen.deleteFailed') });
         }
       } catch (err) {
         console.error('Delete comment failed', err);
-        Alert.alert('Network error', 'Could not delete the comment.');
+        showToast({ type: 'error', message: t('commentScreen.deleteNetworkError') });
       }
     },
-    [user?.token, dispatch]
+    [user?.token, dispatch, showToast, t],
   );
 
   const handleRequestDelete = useCallback(
     (comment) => {
-      Alert.alert(
-        'Delete review?',
-        'This will permanently remove your review from the recipe.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Delete',
-            style: 'destructive',
-            onPress: () => performDelete(comment),
-          },
-        ]
-      );
+      // A real choice: the one dialog kept on this screen (plan 020).
+      Alert.alert(t('commentScreen.deleteTitle'), t('commentScreen.deleteMessage'), [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('commentScreen.delete'),
+          style: 'destructive',
+          onPress: () => performDelete(comment),
+        },
+      ]);
     },
-    [performDelete]
+    [performDelete, t],
   );
 
   const renderItem = useCallback(
@@ -283,12 +277,12 @@ export default function CommentScreen({ navigation }) {
         onDelete={() => handleRequestDelete(item)}
       />
     ),
-    [handleOpenRecipe, handleStartEdit, handleRequestDelete]
+    [handleOpenRecipe, handleStartEdit, handleRequestDelete],
   );
 
   const keyExtractor = useCallback(
     (item, i) => (item?._id ? String(item._id) : `fallback-${i}`),
-    []
+    [],
   );
 
   return (
@@ -309,18 +303,13 @@ export default function CommentScreen({ navigation }) {
             accessibilityLabel="Go back"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <FontAwesome
-              name="angle-left"
-              size={28}
-              color={css.palette.white}
-            />
+            <FontAwesome name="angle-left" size={28} color={css.palette.white} />
           </TouchableOpacity>
           <Text style={styles.heroEyebrow}>Contribution Hub</Text>
           <View style={styles.backButton} />
         </View>
         <Text style={styles.heroTitle}>
-          You shared {stats.totalComments ?? 0}{' '}
-          {stats.totalComments === 1 ? 'review' : 'reviews'}
+          You shared {stats.totalComments ?? 0} {stats.totalComments === 1 ? 'review' : 'reviews'}
         </Text>
         <Text style={styles.heroSubtitle}>
           and earned {stats.totalLikesReceived ?? 0}{' '}
@@ -347,11 +336,7 @@ export default function CommentScreen({ navigation }) {
         <SkeletonList />
       ) : error ? (
         <View style={styles.centeredState}>
-          <FontAwesome
-            name="exclamation-circle"
-            size={32}
-            color={css.palette.error}
-          />
+          <FontAwesome name="exclamation-circle" size={32} color={css.palette.error} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             onPress={() => {
@@ -391,12 +376,7 @@ export default function CommentScreen({ navigation }) {
       )}
 
       {/* EDIT MODAL ------------------------------------------------ */}
-      <Modal
-        visible={!!editing}
-        transparent
-        animationType="fade"
-        onRequestClose={handleCancelEdit}
-      >
+      <Modal visible={!!editing} transparent animationType="fade" onRequestClose={handleCancelEdit}>
         <TouchableWithoutFeedback onPress={handleCancelEdit}>
           <View style={styles.modalBackdrop}>
             <TouchableWithoutFeedback>
@@ -412,7 +392,7 @@ export default function CommentScreen({ navigation }) {
                   <TextInput
                     style={styles.modalInput}
                     value={editDraft}
-                    onChangeText={setEditDraft}
+                    onChangeText={handleChangeDraft}
                     multiline
                     maxLength={MAX_MESSAGE_LENGTH}
                     placeholder="Write your review..."
@@ -423,6 +403,11 @@ export default function CommentScreen({ navigation }) {
                   <Text style={styles.modalCounter}>
                     {editDraft.length}/{MAX_MESSAGE_LENGTH}
                   </Text>
+                  <InlineMessage
+                    testID="comment-edit-error"
+                    message={editError}
+                    style={styles.modalError}
+                  />
                   <View style={styles.modalActions}>
                     <TouchableOpacity
                       style={[styles.modalButton, styles.modalCancel]}
@@ -445,10 +430,7 @@ export default function CommentScreen({ navigation }) {
                       accessibilityLabel="Save edited comment"
                     >
                       {savingEdit ? (
-                        <ActivityIndicator
-                          size="small"
-                          color={css.palette.white}
-                        />
+                        <ActivityIndicator size="small" color={css.palette.white} />
                       ) : (
                         <Text style={styles.modalSaveText}>Save</Text>
                       )}
@@ -477,14 +459,7 @@ function SortPill({ label, active, onPress }) {
       accessibilityLabel={`Sort by ${label}`}
       hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
     >
-      <Text
-        style={[
-          styles.sortPillText,
-          active && styles.sortPillTextActive,
-        ]}
-      >
-        {label}
-      </Text>
+      <Text style={[styles.sortPillText, active && styles.sortPillTextActive]}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -496,11 +471,7 @@ function SortPill({ label, active, onPress }) {
 function SkeletonList() {
   const opacity = useSharedValue(0.4);
   useEffect(() => {
-    opacity.value = withRepeat(
-      withTiming(0.85, { duration: 800 }),
-      -1,
-      true
-    );
+    opacity.value = withRepeat(withTiming(0.85, { duration: 800 }), -1, true);
   }, [opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
@@ -527,11 +498,7 @@ function SkeletonList() {
 function EmptyState({ onCta }) {
   return (
     <View style={styles.centeredState}>
-      <FontAwesome
-        name="comment-o"
-        size={56}
-        color={css.palette.neutral300}
-      />
+      <FontAwesome name="comment-o" size={56} color={css.palette.neutral300} />
       <Text style={styles.emptyTitle}>No reviews yet</Text>
       <Text style={styles.emptyBody}>
         Cook something, share what you thought — your reviews live here.
@@ -772,6 +739,9 @@ const styles = StyleSheet.create({
     color: css.palette.neutral500,
     textAlign: 'right',
     marginTop: css.spacing.xs,
+  },
+  modalError: {
+    marginTop: 8,
   },
   modalActions: {
     flexDirection: 'row',

@@ -7,14 +7,14 @@
 // Personal info modal so this surface stays uncluttered.
 
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Switch, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Switch, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
-import addressIp from '../../modules/addressIp';
-import { jsonAuthHeaders } from '../../modules/authHeaders';
+import { putUserProfile } from '../../modules/recipesApi';
 import { updateUserInStore } from '../../reducers/user';
 import { useTheme } from '../../contexts/ThemeProvider';
 import useT from '../../i18n/useT';
+import { useToast } from '../../contexts/ToastProvider';
 
 // We import lazily inside the handler so the component still mounts
 // even if expo-location isn't installed yet (the dependency is part
@@ -32,28 +32,28 @@ export default function LocationToggle() {
   const t = useT();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.value);
+  // Non-blocking messages (plan 020): a Settings row, no modal above it.
+  const { show } = useToast();
   const consent = !!user?.location?.consent;
 
   const [isWorking, setIsWorking] = useState(false);
 
+  // Returns whether the server saved it; a failure already showed its toast.
   const persist = async (payload) => {
     setIsWorking(true);
     try {
-      const res = await fetch(`${addressIp}/users/profile`, {
-        method: 'PUT',
-        headers: jsonAuthHeaders(user.token),
-        body: JSON.stringify({ location: payload }),
-      });
-      const data = await res.json();
+      const data = await putUserProfile({ token: user.token, updates: { location: payload } });
       if (data.result) {
         // Backend now returns `{ result, updated }` with only the changed
         // fields (post-normalisation), so we can dispatch it as-is.
         if (data.updated) dispatch(updateUserInStore(data.updated));
-      } else {
-        Alert.alert(t('common.error'), data.error || t('common.networkError'));
+        return true;
       }
+      show({ type: 'error', message: data.error || t('common.networkError') });
+      return false;
     } catch {
-      Alert.alert(t('common.error'), t('common.networkError'));
+      show({ type: 'error', message: t('common.networkError') });
+      return false;
     } finally {
       setIsWorking(false);
     }
@@ -70,10 +70,11 @@ export default function LocationToggle() {
     }
 
     if (!Location) {
-      Alert.alert(
-        t('settings.location.errorTitle'),
-        'expo-location is not installed.',
-      );
+      show({
+        type: 'error',
+        title: t('settings.location.errorTitle'),
+        message: t('settings.location.errorMessage'),
+      });
       return;
     }
 
@@ -86,20 +87,23 @@ export default function LocationToggle() {
       // We surface a dedicated message instead of the generic error.
       const servicesOn = await Location.hasServicesEnabledAsync();
       if (!servicesOn) {
-        Alert.alert(
-          t('settings.location.servicesDisabledTitle'),
-          t('settings.location.servicesDisabledMessage'),
-        );
+        show({
+          type: 'info',
+          title: t('settings.location.servicesDisabledTitle'),
+          message: t('settings.location.servicesDisabledMessage'),
+        });
         return;
       }
 
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        await persist({ consent: false });
-        Alert.alert(
-          t('settings.location.deniedTitle'),
-          t('settings.location.deniedMessage'),
-        );
+        // One toast at a time: a failed save keeps its error toast.
+        if (!(await persist({ consent: false }))) return;
+        show({
+          type: 'info',
+          title: t('settings.location.deniedTitle'),
+          message: t('settings.location.deniedMessage'),
+        });
         return;
       }
 
@@ -111,9 +115,7 @@ export default function LocationToggle() {
       try {
         pos = await Promise.race([
           Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('TIMEOUT')), 10000),
-          ),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000)),
         ]);
       } catch (err) {
         // 3) Fallback on timeout — try the OS cache. If we get something
@@ -128,10 +130,11 @@ export default function LocationToggle() {
             });
             return;
           }
-          Alert.alert(
-            t('settings.location.errorTitle'),
-            t('settings.location.timeoutMessage'),
-          );
+          show({
+            type: 'error',
+            title: t('settings.location.errorTitle'),
+            message: t('settings.location.timeoutMessage'),
+          });
           return;
         }
         throw err;
@@ -142,10 +145,11 @@ export default function LocationToggle() {
         consent: true,
       });
     } catch {
-      Alert.alert(
-        t('settings.location.errorTitle'),
-        t('settings.location.errorMessage'),
-      );
+      show({
+        type: 'error',
+        title: t('settings.location.errorTitle'),
+        message: t('settings.location.errorMessage'),
+      });
     } finally {
       setIsWorking(false);
     }
@@ -153,9 +157,7 @@ export default function LocationToggle() {
 
   return (
     <View style={styles.wrap}>
-      {isWorking ? (
-        <ActivityIndicator size="small" color={css.palette.neutral900} />
-      ) : null}
+      {isWorking ? <ActivityIndicator size="small" color={css.palette.neutral900} /> : null}
       <Switch
         value={consent}
         onValueChange={handleToggle}
@@ -178,5 +180,3 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 });
-
-export { LocationToggle };

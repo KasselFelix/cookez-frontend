@@ -25,17 +25,20 @@ export default function SettingsRow({ icon, label, value, onPress, danger = fals
       accessibilityRole="button"
       accessibilityLabel={label}
       hitSlop={4}
-      style={({ pressed }) => 
-        [[styles.row, 
-        { backgroundColor: css.palette.surfaceCard,borderBottomColor: css.palette.neutral200, }], 
-        pressed && { backgroundColor: css.palette.neutral100 }]}
+      style={({ pressed }) => [
+        [
+          styles.row,
+          { backgroundColor: css.palette.surfaceCard, borderBottomColor: css.palette.neutral200 },
+        ],
+        pressed && { backgroundColor: css.palette.neutral100 },
+      ]}
     >
       <View style={styles.iconWrap}>{icon}</View>
       <Text style={[styles.label, { color: labelColor }]} numberOfLines={1}>
         {label}
       </Text>
       {value ? (
-        <Text style={[styles.value,{ color: css.palette.neutral500 }]} numberOfLines={1}>
+        <Text style={[styles.value, { color: css.palette.neutral500 }]} numberOfLines={1}>
           {value}
         </Text>
       ) : null}
@@ -78,5 +81,3 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
-
-export { SettingsRow };

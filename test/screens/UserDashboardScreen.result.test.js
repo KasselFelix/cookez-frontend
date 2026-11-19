@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect, beforeEach, afterEach */
 // Plan 017, point 1 — back from ResultScreen (Android back gesture), the
 // Dashboard showed "No recipe yet" and stayed there: ResultScreen had replaced
 // the shared recipe list with its search results. The Dashboard keeps its
@@ -15,7 +14,14 @@ jest.mock('../../hooks/useTabBarHeight', () => ({ __esModule: true, default: () 
 import UserDashboardScreen from '../../screens/UserDashboardScreen';
 
 const recipe = (id, name) => ({
-  _id: id, name, votes: [], tags: [], origin: [], comments: [], ingredients: [], imageUrl: null,
+  _id: id,
+  name,
+  votes: [],
+  tags: [],
+  origin: [],
+  comments: [],
+  ingredients: [],
+  imageUrl: null,
 });
 const CATALOG = [recipe('c1', 'Golompke'), recipe('c2', 'Tarte Tatin')];
 
@@ -24,7 +30,9 @@ let allAnswer;
 
 beforeEach(() => {
   allAnswer = () => json({ result: true, recipes: CATALOG });
-  global.fetch = jest.fn((url) => (url.includes('/recipes/all') ? allAnswer() : json({ result: false })));
+  global.fetch = jest.fn((url) =>
+    url.includes('/recipes/all') ? allAnswer() : json({ result: false }),
+  );
 });
 
 afterEach(() => {
@@ -37,7 +45,9 @@ const renderScreen = (recipeState) =>
   });
 
 const shownRecipes = () =>
-  screen.queryAllByLabelText(/^View recipe: /).map((node) => node.props.accessibilityLabel.replace('View recipe: ', ''));
+  screen
+    .queryAllByLabelText(/^View recipe: /)
+    .map((node) => node.props.accessibilityLabel.replace('View recipe: ', ''));
 
 describe('UserDashboardScreen and ResultScreen (plan 017, point 1)', () => {
   it('keeps the catalog when a search returns no recipe', async () => {
@@ -45,7 +55,9 @@ describe('UserDashboardScreen and ResultScreen (plan 017, point 1)', () => {
     expect(await screen.findByLabelText('View recipe: Golompke')).toBeTruthy();
 
     // ResultScreen, still mounted above the Dashboard, stores an empty search.
-    await act(async () => { store.dispatch(setResultRecipes([])); });
+    await act(async () => {
+      store.dispatch(setResultRecipes([]));
+    });
 
     expect(shownRecipes().sort()).toEqual(['Golompke', 'Tarte Tatin']);
     expect(screen.queryByText('No recipes yet')).toBeNull();
@@ -55,7 +67,9 @@ describe('UserDashboardScreen and ResultScreen (plan 017, point 1)', () => {
     const { store } = renderScreen(makeRecipeState(CATALOG));
     await screen.findByLabelText('View recipe: Golompke');
 
-    await act(async () => { store.dispatch(setResultRecipes([recipe('r1', 'Apple Salad')])); });
+    await act(async () => {
+      store.dispatch(setResultRecipes([recipe('r1', 'Apple Salad')]));
+    });
 
     expect(shownRecipes().sort()).toEqual(['Golompke', 'Tarte Tatin']);
   });

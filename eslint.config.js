@@ -33,11 +33,13 @@ const cookezRules = {
         paths: [
           {
             name: 'lucide-react-native',
-            message: "Importe chaque icône à part : import Check from 'lucide-react-native/icons/check' (D17).",
+            message:
+              "Importe chaque icône à part : import Check from 'lucide-react-native/icons/check' (D17).",
           },
           {
             name: 'lucide-react-native/icons',
-            message: "Importe chaque icône à part : import Check from 'lucide-react-native/icons/check' (D17).",
+            message:
+              "Importe chaque icône à part : import Check from 'lucide-react-native/icons/check' (D17).",
           },
           { name: '@expo/vector-icons', message: 'Icônes : Lucide seul (D17).' },
           { name: 'react-native-animatable', message: 'Animations : Reanimated 4.' },
@@ -72,9 +74,11 @@ module.exports = defineConfig([
   },
   {
     // Jest globals (describe, it, expect, jest…) for the test files and their
-    // helpers, so the lint hook and `yarn lint` see the same errors.
+    // helpers, so the lint hook and `yarn lint` see the same errors. Node ones
+    // too (__dirname…): Jest runs the tests in Node. No `/* global */` comment
+    // is needed in a test file.
     files: ['test/**/*.js', '**/__tests__/**/*.js', '**/*.test.js'],
-    languageOptions: { globals: { ...globals.jest } },
+    languageOptions: { globals: { ...globals.node, ...globals.jest } },
   },
   cookezRules,
 ]);

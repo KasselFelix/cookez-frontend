@@ -66,12 +66,7 @@ export default function InventorySummaryRow({ summary }) {
   ];
 
   return (
-    <View
-      style={[
-        styles.grid,
-        { gap: css.spacing.sm, paddingHorizontal: css.spacing.md },
-      ]}
-    >
+    <View style={[styles.grid, { gap: css.spacing.sm, paddingHorizontal: css.spacing.md }]}>
       {cards.map((c) => (
         <View
           key={c.key}
@@ -102,5 +97,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
-
-export { InventorySummaryRow };

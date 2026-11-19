@@ -1,15 +1,10 @@
 import React, { useRef, useCallback } from 'react';
-import {
-  Animated,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 import RecipeImage from './RecipeImage';
 import imageRecipe from '../../modules/images';
+import { commentCounts } from '../../modules/commentVotes';
 import css from '../../styles/Global';
 
 /**
@@ -20,7 +15,7 @@ import css from '../../styles/Global';
  * actions without leaving the list.
  *
  * Props:
- *   comment   { _id, message, up[], recipe: { _id, name, image }, ... }
+ *   comment   { _id, message, upCount (or the old up[]), recipe: { _id, name, image }, ... }
  *   onPress   () => void   — invoked when the row body is tapped (parent navigates)
  *   onEdit    () => void   — invoked from the swipe Edit action
  *   onDelete  () => void   — invoked from the swipe Delete action
@@ -39,7 +34,7 @@ function resolveSource(image) {
 function UserCommentCard({ comment, onPress, onEdit, onDelete }) {
   const swipeRef = useRef(null);
   const recipe = comment?.recipe ?? {};
-  const upCount = comment?.up?.length ?? 0;
+  const upCount = commentCounts(comment).up;
   const source = resolveSource(recipe.image);
 
   // Renders the right-side action drawer revealed on left-swipe.
@@ -53,9 +48,7 @@ function UserCommentCard({ comment, onPress, onEdit, onDelete }) {
         extrapolate: 'clamp',
       });
       return (
-        <Animated.View
-          style={[styles.actionsRow, { transform: [{ translateX }] }]}
-        >
+        <Animated.View style={[styles.actionsRow, { transform: [{ translateX }] }]}>
           <TouchableOpacity
             style={[styles.actionButton, styles.editAction]}
             onPress={() => {
@@ -85,7 +78,7 @@ function UserCommentCard({ comment, onPress, onEdit, onDelete }) {
         </Animated.View>
       );
     },
-    [onEdit, onDelete]
+    [onEdit, onDelete],
   );
 
   return (
@@ -116,15 +109,8 @@ function UserCommentCard({ comment, onPress, onEdit, onDelete }) {
           </Text>
         </View>
 
-        <View
-          style={styles.scorePill}
-          accessibilityLabel={`${upCount} upvotes`}
-        >
-          <FontAwesome
-            name="thumbs-up"
-            size={12}
-            color={css.palette.primary800}
-          />
+        <View style={styles.scorePill} accessibilityLabel={`${upCount} upvotes`}>
+          <FontAwesome name="thumbs-up" size={12} color={css.palette.primary800} />
           <Text style={styles.scoreText}>{upCount}</Text>
         </View>
       </TouchableOpacity>
@@ -141,7 +127,7 @@ export default React.memo(UserCommentCard, (prev, next) => {
   return (
     a._id === b._id &&
     a.message === b.message &&
-    (a.up?.length ?? 0) === (b.up?.length ?? 0) &&
+    commentCounts(a).up === commentCounts(b).up &&
     a.recipe?._id === b.recipe?._id &&
     a.recipe?.name === b.recipe?.name &&
     a.recipe?.image === b.recipe?.image

@@ -1,7 +1,7 @@
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome } from '@expo/vector-icons';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useTheme } from "../contexts/ThemeProvider";
-import useT from "../i18n/useT";
+import { useTheme } from '../contexts/ThemeProvider';
+import useT from '../i18n/useT';
 import MatchBadge from './result/MatchBadge';
 import SeasonalBadge from './result/SeasonalBadge';
 import { flagForOriginName } from '../modules/countries';
@@ -61,11 +61,16 @@ export default function Recipe(props) {
   const hasPrepTime = props.preparationTime != null;
 
   return (
-    <View style={[styles.shadowWrap, { backgroundColor: css.palette.surfaceCard }, css.shadow.heavy,
-      Platform.select({
-        ios: { shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.12, shadowRadius: 8 },
-        android: {},
-      })]}
+    <View
+      style={[
+        styles.shadowWrap,
+        { backgroundColor: css.palette.surfaceCard },
+        css.shadow.heavy,
+        Platform.select({
+          ios: { shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.12, shadowRadius: 8 },
+          android: {},
+        }),
+      ]}
     >
       <TouchableOpacity
         testID="recipe-card"
@@ -73,7 +78,9 @@ export default function Recipe(props) {
         activeOpacity={0.9}
         accessibilityRole="button"
         accessibilityLabel={props.name}
-        onPress={() => openRecipe(props.navigation, props, { fromRecipeSearch: props.fromRecipeSearch === true })}
+        onPress={() =>
+          openRecipe(props.navigation, props, { fromRecipeSearch: props.fromRecipeSearch === true })
+        }
       >
         <View style={styles.nameContainer}>
           <Text style={styles.name}>{props.name}</Text>

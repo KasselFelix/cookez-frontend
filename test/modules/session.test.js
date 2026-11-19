@@ -1,10 +1,8 @@
-/* global jest, describe, it, expect, beforeEach, afterEach */
 // Plan 010 (S6): the session token goes in the Authorization header only, and the
 // auto-login forgets a stored token on a 401 only.
 import { fetchSessionUser, recordRecipeView } from '../../modules/session';
 
-const respond = (status, body) =>
-  Promise.resolve({ status, json: () => Promise.resolve(body) });
+const respond = (status, body) => Promise.resolve({ status, json: () => Promise.resolve(body) });
 
 beforeEach(() => {
   global.fetch = jest.fn();
@@ -40,7 +38,10 @@ describe('fetchSessionUser', () => {
   it.each([
     ['a server failure', () => respond(500, { result: false, error: 'Internal server error' })],
     ['a backend without the route', () => respond(404, {})],
-    ['a non-JSON error page', () => Promise.resolve({ status: 502, json: () => Promise.reject(new Error('html')) })],
+    [
+      'a non-JSON error page',
+      () => Promise.resolve({ status: 502, json: () => Promise.reject(new Error('html')) }),
+    ],
     ['a network failure', () => Promise.reject(new Error('offline'))],
   ])('keeps the token on %s', async (_label, reply) => {
     global.fetch.mockImplementation(reply);

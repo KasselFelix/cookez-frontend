@@ -9,6 +9,10 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Root import like the other Lucide files: lucide-react-native 1.14 exports no
+// per-icon path (plan 018, step 3).
+import { ChefHat } from 'lucide-react-native';
+
 import { useTheme, useThemeControls } from '../contexts/ThemeProvider';
 import useT from '../i18n/useT';
 import { THEME_KEYS } from '../styles/themes';
@@ -29,6 +33,9 @@ import StaleCacheBanner from '../components/result/StaleCacheBanner';
 import NutritionPill from '../components/recipe/NutritionPill';
 import NutritionSheet from '../components/recipe/NutritionSheet';
 import ThemePickerSheet from '../components/profile/ThemePickerSheet';
+import Toast from '../components/feedback/Toast';
+import InlineMessage from '../components/feedback/InlineMessage';
+import { useToast } from '../contexts/ToastProvider';
 import TestScreen from './TestScreen';
 
 const SAMPLE_RECIPE = {
@@ -84,10 +91,18 @@ function Swatch({ name, color }) {
       <View
         style={[
           styles.swatchColor,
-          { backgroundColor: color, borderRadius: css.radius.sm, borderColor: css.palette.neutral300 },
+          {
+            backgroundColor: color,
+            borderRadius: css.radius.sm,
+            borderColor: css.palette.neutral300,
+          },
         ]}
       />
-      <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: css.typography.captionSize, color: css.palette.neutral700 }}>
+      <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        style={{ fontSize: css.typography.captionSize, color: css.palette.neutral700 }}
+      >
         {name}
       </Text>
     </View>
@@ -104,12 +119,18 @@ export default function DevGalleryScreen() {
   const [themeSheetVisible, setThemeSheetVisible] = useState(false);
   const [search, setSearch] = useState('');
   const [chipActive, setChipActive] = useState(true);
+  const { show: showToast } = useToast();
 
-  const colors = Object.entries(css.palette).filter(([, value]) => typeof value === 'string' && value.startsWith('#'));
+  const colors = Object.entries(css.palette).filter(
+    ([, value]) => typeof value === 'string' && value.startsWith('#'),
+  );
   const caption = { fontSize: css.typography.captionSize, color: css.palette.neutral700 };
 
   return (
-    <View testID="gallery-screen" style={[styles.root, { backgroundColor: css.palette.background, paddingTop: insets.top }]}>
+    <View
+      testID="gallery-screen"
+      style={[styles.root, { backgroundColor: css.palette.background, paddingTop: insets.top }]}
+    >
       <View style={[styles.themeBar, { gap: css.spacing.xs, padding: css.spacing.sm }]}>
         {THEME_KEYS.map((key) => (
           <PillChip
@@ -125,41 +146,70 @@ export default function DevGalleryScreen() {
 
       <ScrollView
         testID="gallery-scroll"
-        contentContainerStyle={{ padding: css.spacing.md, gap: css.spacing.lg, paddingBottom: insets.bottom + css.spacing.xxl }}
+        contentContainerStyle={{
+          padding: css.spacing.md,
+          gap: css.spacing.lg,
+          paddingBottom: insets.bottom + css.spacing.xxl,
+        }}
       >
         <Text
           testID="gallery-title"
-          style={{ fontFamily: css.typography.fontDisplay, fontSize: css.typography.h1Size, color: css.palette.neutral900 }}
+          style={{
+            fontFamily: css.typography.fontDisplay,
+            fontSize: css.typography.h1Size,
+            color: css.palette.neutral900,
+          }}
         >
           {t('devGallery.title')}
         </Text>
 
         {/* The sandbox comes first: it is what is being iterated on. */}
         <Section id="sandbox" title={t('devGallery.sections.sandbox')}>
-          <View style={[styles.sandboxBox, { borderColor: css.palette.neutral300, borderRadius: css.radius.md }]}>
+          <View
+            style={[
+              styles.sandboxBox,
+              { borderColor: css.palette.neutral300, borderRadius: css.radius.md },
+            ]}
+          >
             <TestScreen />
           </View>
         </Section>
 
         <Section id="tokens" title={t('devGallery.sections.tokens')}>
           <View style={[styles.wrap, { gap: css.spacing.sm }]}>
-            {colors.map(([name, value]) => <Swatch key={name} name={name} color={value} />)}
+            {colors.map(([name, value]) => (
+              <Swatch key={name} name={name} color={value} />
+            ))}
           </View>
           {TYPE_SCALE.map((step) => (
             <Text
               key={step}
-              style={{ fontFamily: css.typography.fontBody, fontSize: css.typography[`${step}Size`], color: css.palette.neutral900 }}
+              style={{
+                fontFamily: css.typography.fontBody,
+                fontSize: css.typography[`${step}Size`],
+                color: css.palette.neutral900,
+              }}
             >
               {`${step} · ${css.typography[`${step}Size`]}`}
             </Text>
           ))}
           <View style={[styles.wrap, { gap: css.spacing.sm }]}>
-            {Object.entries(css.radius).filter(([name]) => name !== 'camera').map(([name, value]) => (
-              <View key={name} style={styles.swatch}>
-                <View style={[styles.radiusBox, { borderRadius: Math.min(value, 28), backgroundColor: css.palette.primary800 }]} />
-                <Text style={caption}>{`${name} ${value}`}</Text>
-              </View>
-            ))}
+            {Object.entries(css.radius)
+              .filter(([name]) => name !== 'camera')
+              .map(([name, value]) => (
+                <View key={name} style={styles.swatch}>
+                  <View
+                    style={[
+                      styles.radiusBox,
+                      {
+                        borderRadius: Math.min(value, 28),
+                        backgroundColor: css.palette.primary800,
+                      },
+                    ]}
+                  />
+                  <Text style={caption}>{`${name} ${value}`}</Text>
+                </View>
+              ))}
           </View>
         </Section>
 
@@ -171,17 +221,18 @@ export default function DevGalleryScreen() {
 
         <Section id="chips" title={t('devGallery.sections.chips')}>
           <View style={[styles.wrap, { gap: css.spacing.sm }]}>
-            <PillChip active={chipActive} onPress={() => setChipActive(!chipActive)}>Active</PillChip>
-            <PillChip active={!chipActive} onPress={() => setChipActive(!chipActive)}>Inactive</PillChip>
+            <PillChip active={chipActive} onPress={() => setChipActive(!chipActive)}>
+              Active
+            </PillChip>
+            <PillChip active={!chipActive} onPress={() => setChipActive(!chipActive)}>
+              Inactive
+            </PillChip>
             <MatchBadge ratio={85} />
             <MatchBadge ratio={55} />
             <MatchBadge ratio={20} />
             <SeasonalBadge />
           </View>
-          <BadgeCircle
-            icon={<Text style={{ fontSize: css.typography.h4Size }}>🍳</Text>}
-            label="Badge"
-          />
+          <BadgeCircle icon={<ChefHat size={20} color={css.palette.primary800} />} label="Badge" />
         </Section>
 
         <Section id="cards" title={t('devGallery.sections.cards')}>
@@ -194,20 +245,62 @@ export default function DevGalleryScreen() {
         </Section>
 
         <Section id="states" title={t('devGallery.sections.states')}>
+          {/* Messages of plan 020: three static toasts, an inline message, and a
+              real toast, animated at the top of the screen. */}
+          <View testID="gallery-feedback" style={{ gap: css.spacing.sm }}>
+            <Toast
+              type="success"
+              message={t('devGallery.samples.toastSuccess')}
+              onClose={() => {}}
+            />
+            <Toast type="info" message={t('devGallery.samples.toastInfo')} onClose={() => {}} />
+            <Toast
+              type="error"
+              title={t('devGallery.samples.toastErrorTitle')}
+              message={t('devGallery.samples.toastError')}
+              onClose={() => {}}
+            />
+            <InlineMessage message={t('devGallery.samples.inlineError')} />
+            <MyButton
+              dataFlow={() =>
+                showToast({ type: 'info', message: t('devGallery.samples.toastInfo') })
+              }
+              text={t('devGallery.showToast')}
+              buttonType={buttonStyles.buttonTwo}
+            />
+          </View>
           <StaleCacheBanner />
-          <View style={[styles.stateBox, { borderColor: css.palette.neutral300, borderRadius: css.radius.md }]}>
+          <View
+            style={[
+              styles.stateBox,
+              { borderColor: css.palette.neutral300, borderRadius: css.radius.md },
+            ]}
+          >
             <InventoryEmptyState onAdd={() => {}} />
           </View>
-          <View style={[styles.stateBox, { borderColor: css.palette.neutral300, borderRadius: css.radius.md }]}>
+          <View
+            style={[
+              styles.stateBox,
+              { borderColor: css.palette.neutral300, borderRadius: css.radius.md },
+            ]}
+          >
             <ErrorScreen onRetry={() => {}} />
           </View>
-          <View style={[styles.stateBox, { borderColor: css.palette.neutral300, borderRadius: css.radius.md }]}>
+          <View
+            style={[
+              styles.stateBox,
+              { borderColor: css.palette.neutral300, borderRadius: css.radius.md },
+            ]}
+          >
             <OfflineScreen onRetry={() => {}} />
           </View>
         </Section>
 
         <Section id="nutrition" title={t('devGallery.sections.nutrition')}>
-          <NutritionPill caloriesPerServing={SAMPLE_NUTRITION.calories} onPress={() => nutritionSheetRef.current?.snapToIndex(0)} />
+          <NutritionPill
+            caloriesPerServing={SAMPLE_NUTRITION.calories}
+            onPress={() => nutritionSheetRef.current?.snapToIndex(0)}
+          />
         </Section>
 
         <Section id="sheets" title={t('devGallery.sections.sheets')}>
@@ -222,7 +315,6 @@ export default function DevGalleryScreen() {
             buttonType={buttonStyles.buttonTwo}
           />
         </Section>
-
       </ScrollView>
 
       <NutritionSheet ref={nutritionSheetRef} nutritionPerServing={SAMPLE_NUTRITION} />

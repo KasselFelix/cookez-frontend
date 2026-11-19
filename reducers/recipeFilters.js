@@ -14,12 +14,12 @@ import { createSlice } from '@reduxjs/toolkit';
 //                          "no override" with a sentinel like 0.
 const initialState = {
   value: {
-    selectedOrigins: [],    // string[] — multi-select country origins
-    selectedTags: [],       // string[] (multi-select)
-    currentServings: 1,     // number — default 1 so the stepper never shows
-                            // "-" or null in guest mode. The backend still
-                            // treats this as "manual" if it differs from the
-                            // user's saved householdComposition.
+    selectedOrigins: [], // string[] — multi-select country origins
+    selectedTags: [], // string[] (multi-select)
+    currentServings: 1, // number — default 1 so the stepper never shows
+    // "-" or null in guest mode. The backend still
+    // treats this as "manual" if it differs from the
+    // user's saved householdComposition.
   },
 };
 

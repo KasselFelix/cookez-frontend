@@ -15,7 +15,9 @@ export default function DevThemeLink() {
       const themeKey = parseDevThemeUrl(url);
       if (themeKey) setTheme(themeKey);
     };
-    Linking.getInitialURL().then(apply).catch(() => {});
+    Linking.getInitialURL()
+      .then(apply)
+      .catch(() => {});
     const subscription = Linking.addEventListener('url', ({ url }) => apply(url));
     return () => subscription.remove();
   }, [setTheme]);

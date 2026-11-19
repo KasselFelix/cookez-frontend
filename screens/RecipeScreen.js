@@ -12,18 +12,16 @@ import {
   View,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import Animated, {
-  useAnimatedScrollHandler,
-  useSharedValue,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { setRecipeDetail, updateRecipeVote } from '../reducers/recipe';
-import { toggleFavorite } from '../reducers/user';
+import { setRecipeVote, toggleFavorite } from '../reducers/user';
 // MODULES
 import addressIp from '../modules/addressIp';
+import { userRecipeVote } from '../modules/commentVotes';
 import { enterApp, exitToHome } from '../modules/sessionNavigation';
 import { jsonAuthHeaders } from '../modules/authHeaders';
 import { recordRecipeView } from '../modules/session';
@@ -79,9 +77,8 @@ export default function RecipeScreen({ route, navigation }) {
 
   // Always read recipe from Redux — guarantees comments stay in sync after add/vote
   const recipe = useSelector(
-    (state) =>
-      state.recipe.value.find((r) => r._id === selectedRecipeId) ?? navRecipe,
-    shallowEqual
+    (state) => state.recipe.value.find((r) => r._id === selectedRecipeId) ?? navRecipe,
+    shallowEqual,
   );
 
   const user = useSelector((state) => state.user.value);
@@ -137,11 +134,9 @@ export default function RecipeScreen({ route, navigation }) {
   //   3. Fallback : `recipe.servings` (auteur) puis 1
   // Le seed est lu une seule fois (initializer de useState), donc les
   // changements futurs de Redux ne re-rendent pas ce screen.
-  const userServings = useSelector(
-    (state) => state.recipeFilters?.value?.currentServings ?? null
-  );
+  const userServings = useSelector((state) => state.recipeFilters?.value?.currentServings ?? null);
   const householdComposition = useSelector(
-    (state) => state.user?.value?.settings?.householdComposition ?? null
+    (state) => state.user?.value?.settings?.householdComposition ?? null,
   );
   // Capture la source du seed initial — utilisé pour afficher le badge
   // "Ajusté pour votre foyer (×N)" quand le seed vient de HH. Source figée
@@ -197,9 +192,7 @@ export default function RecipeScreen({ route, navigation }) {
       useNativeDriver: true,
     }).start();
     if (animatableModalRef.current) {
-      animatableModalRef.current
-        .animate('slideOutUp', 425)
-        .then(() => setVoteModalVisible(false));
+      animatableModalRef.current.animate('slideOutUp', 425).then(() => setVoteModalVisible(false));
     } else {
       setVoteModalVisible(false);
     }
@@ -230,29 +223,27 @@ export default function RecipeScreen({ route, navigation }) {
     async (note) => {
       if (!user.token || !selectedRecipeId) return;
       try {
-        const response = await fetch(
-          `${addressIp}/recipes/vote/${selectedRecipeId}`,
-          {
-            method: 'POST',
-            headers: jsonAuthHeaders(user.token),
-            body: JSON.stringify({ note }),
-          }
-        );
+        const response = await fetch(`${addressIp}/recipes/vote/${selectedRecipeId}`, {
+          method: 'POST',
+          headers: jsonAuthHeaders(user.token),
+          body: JSON.stringify({ note }),
+        });
         const data = await response.json();
         if (data.result) {
           dispatch(
             updateRecipeVote({
               _id: selectedRecipeId,
               votes: data.votes,
-            })
+            }),
           );
+          dispatch(setRecipeVote({ recipeId: selectedRecipeId, note }));
           closeVoteModal();
         }
       } catch (err) {
         console.error('Vote failed', err);
       }
     },
-    [user.token, selectedRecipeId, dispatch, closeVoteModal]
+    [user.token, selectedRecipeId, dispatch, closeVoteModal],
   );
 
   useEffect(() => {
@@ -267,16 +258,11 @@ export default function RecipeScreen({ route, navigation }) {
 
   const handleVote = () => {
     if (!requireAuth('vote')) return;
-    // Pré-remplit les étoiles avec le vote précédent de l'user pour cette
-    // recette (si existant). Le schéma stocke `{ user: ObjectId, note }`,
-    // donc on compare par ID (string) plutôt que par username. Le guard
-    // `skipNextVoteFetch` évite que le seed re-déclenche un POST inutile
-    // via le useEffect [starNote].
-    const myId = user?._id ? String(user._id) : null;
-    const previous = myId
-      ? recipe?.votes?.find((v) => String(v.user) === myId)
-      : null;
-    const previousNote = previous?.note ?? 0;
+    // Pre-fills the stars with the user's previous note: user.recipeVotes,
+    // or votes[].user while the backend still sends it (plan 021). The
+    // `skipNextVoteFetch` guard keeps the seed from sending a POST through
+    // the [starNote] effect.
+    const previousNote = userRecipeVote(recipe, user) ?? 0;
     if (previousNote !== starNote) {
       skipNextVoteFetch.current = true;
       setStarNote(previousNote);
@@ -324,7 +310,7 @@ export default function RecipeScreen({ route, navigation }) {
         pressBehavior="close"
       />
     ),
-    []
+    [],
   );
 
   const onRefresh = useCallback(() => {
@@ -367,17 +353,12 @@ export default function RecipeScreen({ route, navigation }) {
         });
         const ownedQty = Number(owned?.data?.g_per_serving) || 0;
         const ownedUnit = owned?.data?.unit || owned?.data?.defaultUnit || baseUnit;
-        const possessedBase = owned
-          ? convertToBaseUnit(ownedQty, ownedUnit, refW)
-          : 0;
+        const possessedBase = owned ? convertToBaseUnit(ownedQty, ownedUnit, refW) : 0;
 
         const missingBase = Math.max(0, requiredBase - possessedBase);
         if (missingBase <= 0) return null;
 
-        const percentOwned = Math.min(
-          100,
-          Math.round((possessedBase / requiredBase) * 100)
-        );
+        const percentOwned = Math.min(100, Math.round((possessedBase / requiredBase) * 100));
         const isUnitBased = ri.unit === 'unit';
 
         return {
@@ -419,10 +400,7 @@ export default function RecipeScreen({ route, navigation }) {
 
   // Scaling local — basé sur `servings` (state local), pas Redux.
   // Les ingrédients sont stockés à `recipe.servings` (default auteur).
-  const servingsRatio =
-    recipe.servings && recipe.servings > 0
-      ? servings / recipe.servings
-      : 1;
+  const servingsRatio = recipe.servings && recipe.servings > 0 ? servings / recipe.servings : 1;
   const scaledIngredients = (recipe.ingredients || []).map((ing) => {
     const raw = (ing.quantity || 0) * servingsRatio;
     // Passe defaultUnit pour que `9 tsp farine` → `45g` (pas `45ml`).
@@ -440,9 +418,10 @@ export default function RecipeScreen({ route, navigation }) {
   // Pinned iteration order (backend may not freeze object key order)
   const orderedNutrition = recipe.nutritionPerServing
     ? Object.fromEntries(
-        NUTRITION_ORDER.filter(
-          (k) => recipe.nutritionPerServing[k] != null
-        ).map((k) => [k, recipe.nutritionPerServing[k]])
+        NUTRITION_ORDER.filter((k) => recipe.nutritionPerServing[k] != null).map((k) => [
+          k,
+          recipe.nutritionPerServing[k],
+        ]),
       )
     : null;
 
@@ -458,6 +437,7 @@ export default function RecipeScreen({ route, navigation }) {
         onPress={() => setStarNote(i + 1)}
         accessibilityRole="button"
         accessibilityLabel={`Rate ${i + 1} out of 5`}
+        accessibilityState={{ selected: i < starNote }}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
         <FontAwesome
@@ -466,7 +446,7 @@ export default function RecipeScreen({ route, navigation }) {
           color={i < starNote ? css.palette.primary500 : css.palette.neutral300}
           style={styles.voteStar}
         />
-      </TouchableOpacity>
+      </TouchableOpacity>,
     );
   }
 
@@ -478,9 +458,7 @@ export default function RecipeScreen({ route, navigation }) {
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
           <HeroImageParallax scrollY={scrollY} source={heroSource} />
 
@@ -495,11 +473,7 @@ export default function RecipeScreen({ route, navigation }) {
             <View style={styles.metaRow}>
               {recipe.preparationTime != null && (
                 <View style={styles.metaPill}>
-                  <FontAwesome
-                    name="clock-o"
-                    size={14}
-                    color={css.palette.primary800}
-                  />
+                  <FontAwesome name="clock-o" size={14} color={css.palette.primary800} />
                   <Text style={styles.metaPillText}>
                     {t('recipe.meta.minutes', { count: recipe.preparationTime })}
                   </Text>
@@ -507,11 +481,7 @@ export default function RecipeScreen({ route, navigation }) {
               )}
               {recipe.difficulty != null && (
                 <View style={styles.metaPill}>
-                  <FontAwesome
-                    name="signal"
-                    size={14}
-                    color={css.palette.primary800}
-                  />
+                  <FontAwesome name="signal" size={14} color={css.palette.primary800} />
                   <Text style={styles.metaPillText}>
                     {t('recipe.meta.difficulty', { value: recipe.difficulty })}
                   </Text>
@@ -577,7 +547,8 @@ export default function RecipeScreen({ route, navigation }) {
                   style={styles.body}
                   accessibilityLabel={`${ing.displayQuantity}${ing.displayUnit} ${ing.displayName}`}
                 >
-                  •  {ing.displayQuantity}{ing.displayUnit} {ing.displayName}
+                  • {ing.displayQuantity}
+                  {ing.displayUnit} {ing.displayName}
                 </Text>
               ))}
             </Animatable.View>
@@ -596,10 +567,7 @@ export default function RecipeScreen({ route, navigation }) {
             </Animatable.View>
 
             {/* Comments — Redux source of truth */}
-            <CommentsSection
-              recipeId={selectedRecipeId}
-              onPromptCompose={openComposer}
-            />
+            <CommentsSection recipeId={selectedRecipeId} onPromptCompose={openComposer} />
           </View>
         </Animated.ScrollView>
 
@@ -607,11 +575,7 @@ export default function RecipeScreen({ route, navigation }) {
           scrollY={scrollY}
           title={recipe.name}
           onBack={() => navigation.goBack()}
-          onHome={
-            user.token
-              ? () => enterApp(navigation)
-              : () => exitToHome(navigation)
-          }
+          onHome={user.token ? () => enterApp(navigation) : () => exitToHome(navigation)}
         />
 
         <FloatingFAB onPress={openComposer} />
@@ -653,10 +617,7 @@ export default function RecipeScreen({ route, navigation }) {
           </Pressable>
         </Modal>
 
-        <NutritionSheet
-          ref={nutritionSheetRef}
-          nutritionPerServing={orderedNutrition}
-        />
+        <NutritionSheet ref={nutritionSheetRef} nutritionPerServing={orderedNutrition} />
 
         <BottomSheet
           ref={bottomSheetRef}

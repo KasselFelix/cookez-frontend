@@ -89,7 +89,7 @@ export default function TagsMultiSelect({
         }),
         Animated.timing(sheetTranslateY, {
           toValue: SCREEN_HEIGHT,
-          duration: 150,//315,
+          duration: 150, //315,
           useNativeDriver: true,
         }),
       ]).start(({ finished }) => {
@@ -204,11 +204,7 @@ export default function TagsMultiSelect({
                 accessibilityRole="button"
                 accessibilityLabel={t('common.close')}
               >
-                <FontAwesome
-                  name="times"
-                  size={20}
-                  color={css.palette.neutral700}
-                />
+                <FontAwesome name="times" size={20} color={css.palette.neutral700} />
               </Pressable>
             </View>
 

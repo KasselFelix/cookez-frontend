@@ -13,11 +13,13 @@ const takeWithCamera = () =>
     quality: 1,
   });
 
-/** Takes the recipe photo with the camera; needs the recipe name first. */
-export default function TakePhoto({ name }) {
+/** Takes the recipe photo with the camera; needs the recipe name first
+ * (`onNameMissing` is called without it). */
+export default function TakePhoto({ name, onNameMissing }) {
   return (
     <PhotoSourceButton
       name={name}
+      onNameMissing={onNameMissing}
       Icon={Camera}
       a11yKey="addRecipe.takePhotoA11y"
       permissionKey="addRecipe.cameraPermission"

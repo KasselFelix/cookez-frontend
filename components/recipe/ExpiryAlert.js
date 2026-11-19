@@ -40,11 +40,7 @@ export default function ExpiryAlert({ ingredients = [] }) {
       ]}
       accessibilityRole="alert"
     >
-      <FontAwesome
-        name="exclamation-triangle"
-        size={18}
-        color={css.palette.accent500}
-      />
+      <FontAwesome name="exclamation-triangle" size={18} color={css.palette.accent500} />
       <View style={styles.body}>
         <Text
           style={[

@@ -16,32 +16,32 @@
 //     lavender something to breathe against. Editorial, never garish.
 //   - Shadows: tinted with deep aubergine for that "watercolor depth."
 // ─────────────────────────────────────────────
- 
+
 import css from '../Global';
- 
+
 const palette = {
   ...css.palette,
- 
+
   // Surfaces — dusty lavender dominates
-  background:  '#c7b8e8', // dominant dusty lavender
-  surface:     '#dccff0', // medium lavender — section backgrounds
+  background: '#c7b8e8', // dominant dusty lavender
+  surface: '#dccff0', // medium lavender — section backgrounds
   surfaceCard: '#f0eaf7', // soft lavender-white — cards
-  overlay:     'rgba(44,30,62,0.55)',
-  overlayLight:'rgba(255,255,255,0.5)',
+  overlay: 'rgba(44,30,62,0.55)',
+  overlayLight: 'rgba(255,255,255,0.5)',
   overlayDark: 'rgba(44,30,62,0.65)',
- 
+
   // Deep amethyst primaries — refined authority for CTAs
   primary800: '#6b5a9c',
   primary700: '#7a6cae',
   primary600: '#8a7cbb',
   primary500: '#6b5a9c',
- 
+
   // Soft cream accent — complementary warmth
   accent500: '#f5dfb8',
   accent400: '#f9e8cc',
   accent300: '#fcefdb',
   accent200: '#fef6eb',
- 
+
   // Aubergine-tinted neutrals — paint feel
   neutral900: '#2c1e3e', // deep aubergine — primary text
   neutral700: '#4d3d65',
@@ -50,63 +50,63 @@ const palette = {
   neutral200: '#d3cbe0',
   neutral100: '#ebe5f0',
 };
- 
+
 const card = {
   ...css.card,
-  bg:      palette.surfaceCard,
-  tagBg:   '#dccff0',
+  bg: palette.surfaceCard,
+  tagBg: '#dccff0',
   tagText: palette.primary800,
 };
- 
+
 const input = {
   ...css.input,
-  bg:               palette.surfaceCard,
-  borderColor:      palette.neutral300,
+  bg: palette.surfaceCard,
+  borderColor: palette.neutral300,
   borderColorFocus: palette.primary500,
-  textColor:        palette.neutral900,
+  textColor: palette.neutral900,
   placeholderColor: palette.neutral500,
-  labelColor:       palette.neutral700,
+  labelColor: palette.neutral700,
 };
- 
+
 const tabBar = {
   ...css.tabBar,
-  backgroundColor:   'rgba(199,184,232,0.92)',
-  activeTintColor:   palette.primary800,
+  backgroundColor: 'rgba(199,184,232,0.92)',
+  activeTintColor: palette.primary800,
   inactiveTintColor: palette.neutral500,
-  indicatorBg:       '#dccff0',
+  indicatorBg: '#dccff0',
 };
- 
+
 const button = {
   ...css.button,
-  primaryBg:           palette.primary800,
-  primaryBorderColor:  palette.primary800,
-  primaryText:         css.palette.white,
+  primaryBg: palette.primary800,
+  primaryBorderColor: palette.primary800,
+  primaryText: css.palette.white,
   // Soft cream accent — complementary warm tone
-  accentBg:            palette.accent500,
-  accentText:          palette.neutral900,
-  ghostText:           palette.primary800,
-  ghostBorderColor:    palette.primary800,
-  disabledBg:          palette.neutral200,
-  disabledText:        palette.neutral500,
+  accentBg: palette.accent500,
+  accentText: palette.neutral900,
+  ghostText: palette.primary800,
+  ghostBorderColor: palette.primary800,
+  disabledBg: palette.neutral200,
+  disabledText: palette.neutral500,
   disabledBorderColor: palette.neutral200,
 };
 
 const pill = {
   ...css.pill,
-  bgNeutral:   palette.neutral100, // #ebe5f0 — pale aubergine-tinted, on-mood
-  bgSelected:  palette.primary800,
+  bgNeutral: palette.neutral100, // #ebe5f0 — pale aubergine-tinted, on-mood
+  bgSelected: palette.primary800,
   textNeutral: palette.primary800,
 };
- 
+
 // Shadows tinted with deep aubergine — watercolor depth
 const shadow = {
   ...css.shadow,
-  sm:   { ...css.shadow.sm,   shadowColor: '#2c1e3e' },
-  md:   { ...css.shadow.md,   shadowColor: '#2c1e3e' },
-  lg:   { ...css.shadow.lg,   shadowColor: '#2c1e3e' },
+  sm: { ...css.shadow.sm, shadowColor: '#2c1e3e' },
+  md: { ...css.shadow.md, shadowColor: '#2c1e3e' },
+  lg: { ...css.shadow.lg, shadowColor: '#2c1e3e' },
   card: { ...css.shadow.card, shadowColor: '#2c1e3e' },
 };
- 
+
 const gradient = {
   ...css.gradient,
   hero: {
@@ -118,56 +118,56 @@ const gradient = {
     locations: [0.3, 1],
   },
 };
- 
+
 const glassmorphism = {
   ...css.glassmorphism,
   backgroundColor: 'rgba(220,207,240,0.88)',
-  borderColor:     'rgba(255,255,255,0.4)',
+  borderColor: 'rgba(255,255,255,0.4)',
 };
- 
+
 // ─── Semantic layer remap ───
 const text = {
-  primary:   palette.neutral900,  // deep aubergine
+  primary: palette.neutral900, // deep aubergine
   secondary: palette.neutral700,
-  muted:     palette.neutral500,
-  inverse:   css.palette.white,
-  accent:    palette.primary800,
-  success:   palette.success,
-  error:     palette.error,
-  warning:   palette.warning,
+  muted: palette.neutral500,
+  inverse: css.palette.white,
+  accent: palette.primary800,
+  success: palette.success,
+  error: palette.error,
+  warning: palette.warning,
 };
- 
+
 const border = {
-  subtle:  palette.neutral200,
+  subtle: palette.neutral200,
   default: palette.neutral300,
-  focus:   palette.primary500,
-  error:   palette.error,
+  focus: palette.primary500,
+  error: palette.error,
 };
- 
+
 const surface = {
-  base:    palette.background,
-  raised:  palette.surface,
-  card:    palette.surfaceCard,
+  base: palette.background,
+  raised: palette.surface,
+  card: palette.surfaceCard,
   overlay: palette.overlay,
-  glass:   'rgba(220,207,240,0.88)',
+  glass: 'rgba(220,207,240,0.88)',
 };
- 
+
 const elevation = {
-  flat:     shadow.none,
-  raised:   shadow.sm,
-  card:     shadow.card,
+  flat: shadow.none,
+  raised: shadow.sm,
+  card: shadow.card,
   floating: shadow.md,
-  modal:    shadow.lg,
+  modal: shadow.lg,
 };
- 
+
 // Result screen: the Home tab color, meter in the theme's darkest ink.
 const result = {
   ...css.result,
   background: palette.surface,
-  card:       palette.surfaceCard,
-  ink:        palette.neutral900,
-  muted:      palette.neutral700,
-  meterFill:  palette.neutral900,
+  card: palette.surfaceCard,
+  ink: palette.neutral900,
+  muted: palette.neutral700,
+  meterFill: palette.neutral900,
   meterTrack: palette.surface,
 };
 
@@ -175,38 +175,38 @@ const result = {
 // theme's darkest ink with its accent (7.5:1 or more).
 const flow = {
   ...css.flow,
-  background:   palette.surface,
-  label:        palette.neutral700,
-  chipText:     palette.neutral900,
-  chipBorder:   palette.primary800,
-  placeholder:  'rgba(44,30,62,0.3)',                // neutral900 at 30%
-  cardIcon:     palette.primary900,
-  actionBg:     palette.neutral900,
-  actionIcon:   palette.accent500,
-  actionText:   palette.accent500,
-  clearIcon:    palette.error,               // 3.8:1 or more on actionBg
-  shutterBg:    palette.neutral900,          // same ink as + and »
-  shutterRing:  palette.accent500,
-  confirmBg:    palette.surfaceCard,         // soft theme white, theme ink
-  confirmBorder:palette.primary800,
-  confirmText:  palette.neutral900,
+  background: palette.surface,
+  label: palette.neutral700,
+  chipText: palette.neutral900,
+  chipBorder: palette.primary800,
+  placeholder: 'rgba(44,30,62,0.3)', // neutral900 at 30%
+  cardIcon: palette.primary900,
+  actionBg: palette.neutral900,
+  actionIcon: palette.accent500,
+  actionText: palette.accent500,
+  clearIcon: palette.error, // 3.8:1 or more on actionBg
+  shutterBg: palette.neutral900, // same ink as + and »
+  shutterRing: palette.accent500,
+  confirmBg: palette.surfaceCard, // soft theme white, theme ink
+  confirmBorder: palette.primary800,
+  confirmText: palette.neutral900,
   // Search modal: the page background, theme cards, picked rows like the buttons.
-  modalBg:          palette.surface,
-  modalField:       palette.surfaceCard,
-  modalInk:         palette.neutral900,
-  modalMuted:       palette.neutral700,
-  modalClear:       palette.neutral700,
-  modalSelectedBg:  palette.neutral900,
+  modalBg: palette.surface,
+  modalField: palette.surfaceCard,
+  modalInk: palette.neutral900,
+  modalMuted: palette.neutral700,
+  modalClear: palette.neutral700,
+  modalSelectedBg: palette.neutral900,
   modalSelectedInk: palette.accent500,
-  modalSelectedText:palette.accent500,
+  modalSelectedText: palette.accent500,
   // Recap filters like the action buttons; idle tags on the page color.
-  stepperBg:        palette.neutral900,
-  stepperInk:       palette.accent500,
-  tagBg:            palette.neutral900,
-  tagInk:           palette.accent500,
-  tagIdleBg:        palette.surface,
-  tagIdleInk:       palette.neutral900,
-  selectedBg:   palette.neutral900,
+  stepperBg: palette.neutral900,
+  stepperInk: palette.accent500,
+  tagBg: palette.neutral900,
+  tagInk: palette.accent500,
+  tagIdleBg: palette.surface,
+  tagIdleInk: palette.neutral900,
+  selectedBg: palette.neutral900,
   selectedText: palette.accent500,
 };
 
@@ -214,7 +214,7 @@ const pastelLavender = {
   ...css,
   key: 'pastelLavender',
   mood: 'refined, painted, spring-afternoon — for delicate dishes, desserts, editorial content',
- 
+
   palette,
   card,
   input,
@@ -226,12 +226,12 @@ const pastelLavender = {
   shadow,
   gradient,
   glassmorphism,
- 
+
   // Semantic layer
   text,
   border,
   surface,
   elevation,
 };
- 
+
 export default pastelLavender;

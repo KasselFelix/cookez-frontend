@@ -1,4 +1,4 @@
-import { useCallback,useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { LogBox, View } from 'react-native';
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -17,15 +17,15 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 
 // NAVIGATION
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // NAVIGATION — custom tab bar (Direction A: floating glass capsule)
 import FloatingTabBar from './components/navigation/FloatingTabBar';
 
 // STORE
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore } from '@reduxjs/toolkit';
 import { Provider, useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import addressIp from './modules/addressIp';
@@ -34,40 +34,41 @@ import { addUserToStore } from './reducers/user';
 import { setCatalogRecipes } from './reducers/recipe';
 import { setLocale } from './reducers/locale';
 import { setupI18n } from './i18n';
-import ThemeProvider from './contexts/ThemeProvider';
+import { ThemeProvider } from './contexts/ThemeProvider';
 import AuthGateProvider from './contexts/AuthGateProvider';
+import ToastProvider from './contexts/ToastProvider';
 
 // SCREENS
-import AddRecipeScreen from "./screens/AddRecipeScreen";
-import CommentScreen from "./screens/CommentScreen";
-import FavoriteScreen from "./screens/FavoriteScreen";
-import HomeScreen from "./screens/HomeScreen";
-import KickoffScreen from "./screens/KickoffScreen";
-import LoadingScreen from "./screens/LoadingScreen";
-import LoginScreen from "./screens/LoginScreen";
-import MessageScreen from "./screens/MessageScreen";
-import MoreFeaturesScreen from "./screens/MoreFeaturesScreen";
-import NotificationsScreen from "./screens/NotificationsScreen";
-import ProfileScreen from "./screens/ProfileScreen";
-import PublicProfileScreen from "./screens/PublicProfileScreen";
-import RecapScreen from "./screens/RecapScreen";
-import RecipeScreen from "./screens/RecipeScreen";
-import ResultScreen from "./screens/ResultScreen";
-import SettingsScreen from "./screens/SettingsScreen";
-import UserDashboardScreen from "./screens/UserDashboardScreen";
+import AddRecipeScreen from './screens/AddRecipeScreen';
+import CommentScreen from './screens/CommentScreen';
+import FavoriteScreen from './screens/FavoriteScreen';
+import HomeScreen from './screens/HomeScreen';
+import KickoffScreen from './screens/KickoffScreen';
+import LoadingScreen from './screens/LoadingScreen';
+import LoginScreen from './screens/LoginScreen';
+import MessageScreen from './screens/MessageScreen';
+import MoreFeaturesScreen from './screens/MoreFeaturesScreen';
+import NotificationsScreen from './screens/NotificationsScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import PublicProfileScreen from './screens/PublicProfileScreen';
+import RecapScreen from './screens/RecapScreen';
+import RecipeScreen from './screens/RecipeScreen';
+import ResultScreen from './screens/ResultScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import UserDashboardScreen from './screens/UserDashboardScreen';
 
 // REDUCERS
 import appConfig from './reducers/appConfig';
 import comment from './reducers/comment';
 import follow from './reducers/follow';
-import ingredient from "./reducers/ingredient";
+import ingredient from './reducers/ingredient';
 import locale from './reducers/locale';
 import notifications from './reducers/notifications';
 import pantry from './reducers/pantry';
 import scan from './reducers/scan';
-import picture from "./reducers/picture";
+import picture from './reducers/picture';
 import recipe from './reducers/recipe';
-import recipeFilters from "./reducers/recipeFilters";
+import recipeFilters from './reducers/recipeFilters';
 import user from './reducers/user';
 
 // Development-only modules: required under __DEV__ so release bundles drop them entirely.
@@ -103,7 +104,6 @@ const store = configureStore({
   },
 });
 
-
 const TabNavigator = () => {
   return (
     <Tab.Navigator
@@ -111,15 +111,19 @@ const TabNavigator = () => {
       screenOptions={{ headerShown: false }}
     >
       <Tab.Screen name="UserDashboard" component={UserDashboardScreen} />
-      <Tab.Screen name="Kickoff"       component={KickoffScreen} options={{ tabBarStyle: { display: 'none' } }} />
-      <Tab.Screen name="AddRecipe"     component={AddRecipeScreen} />
-      <Tab.Screen name="Comment"       component={CommentScreen} />
-      <Tab.Screen name="Profile"       component={ProfileScreen} />
+      <Tab.Screen
+        name="Kickoff"
+        component={KickoffScreen}
+        options={{ tabBarStyle: { display: 'none' } }}
+      />
+      <Tab.Screen name="AddRecipe" component={AddRecipeScreen} />
+      <Tab.Screen name="Comment" component={CommentScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 };
 
-const AppContent = ({ onLayout}) => {
+const AppContent = ({ onLayout }) => {
   const dispatch = useDispatch();
   useEffect(() => {
     const checkToken = async () => {
@@ -136,7 +140,6 @@ const AppContent = ({ onLayout}) => {
         }
       }
     };
-
 
     const loadAllRecipes = async () => {
       try {
@@ -170,33 +173,34 @@ const AppContent = ({ onLayout}) => {
     <View style={{ flex: 1 }} onLayout={onLayout}>
       <ThemeProvider>
         {__DEV__ && <DevThemeLink />}
-        <NavigationContainer>
-          <AuthGateProvider>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="Home"          component={HomeScreen} />
-              <Stack.Screen name="TabNavigator"  component={TabNavigator} />
-              <Stack.Screen name="Favorite"      component={FavoriteScreen} />
-              <Stack.Screen name="Login"         component={LoginScreen} />
-              <Stack.Screen name="Kickoff"       component={KickoffScreen} />
-              <Stack.Screen name="Recap"         component={RecapScreen} />
-              <Stack.Screen name="Loading"       component={LoadingScreen} />
-              <Stack.Screen name="Result"        component={ResultScreen} />
-              <Stack.Screen name="Recipe"        component={RecipeScreen} />
-              <Stack.Screen name="MoreFeatures"  component={MoreFeaturesScreen} />
-              <Stack.Screen name="UserDashboard" component={UserDashboardScreen} />
-              <Stack.Screen name="Settings"      component={SettingsScreen} />
-              <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
-              <Stack.Screen name="Notifications" component={NotificationsScreen} />
-              <Stack.Screen name="Message"       component={MessageScreen} />
-              {__DEV__ && <Stack.Screen name="DevGallery" component={DevGalleryScreen} />}
-            </Stack.Navigator>
-          </AuthGateProvider>
-        </NavigationContainer>
+        <ToastProvider>
+          <NavigationContainer>
+            <AuthGateProvider>
+              <Stack.Navigator screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="Home" component={HomeScreen} />
+                <Stack.Screen name="TabNavigator" component={TabNavigator} />
+                <Stack.Screen name="Favorite" component={FavoriteScreen} />
+                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="Kickoff" component={KickoffScreen} />
+                <Stack.Screen name="Recap" component={RecapScreen} />
+                <Stack.Screen name="Loading" component={LoadingScreen} />
+                <Stack.Screen name="Result" component={ResultScreen} />
+                <Stack.Screen name="Recipe" component={RecipeScreen} />
+                <Stack.Screen name="MoreFeatures" component={MoreFeaturesScreen} />
+                <Stack.Screen name="UserDashboard" component={UserDashboardScreen} />
+                <Stack.Screen name="Settings" component={SettingsScreen} />
+                <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
+                <Stack.Screen name="Notifications" component={NotificationsScreen} />
+                <Stack.Screen name="Message" component={MessageScreen} />
+                {__DEV__ && <Stack.Screen name="DevGallery" component={DevGalleryScreen} />}
+              </Stack.Navigator>
+            </AuthGateProvider>
+          </NavigationContainer>
+        </ToastProvider>
       </ThemeProvider>
     </View>
   );
 };
-
 
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({
@@ -223,7 +227,7 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <Provider store={store}>
-          <AppContent onLayout={onLayoutRootView}/>
+          <AppContent onLayout={onLayoutRootView} />
         </Provider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

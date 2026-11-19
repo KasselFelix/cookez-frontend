@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect */
 // HomeScreen (SNAP / CONNECT) is the start screen only: once signed in, the
 // back gesture must never return to it, so entering the app resets the root
 // stack instead of pushing the tabs over HomeScreen.

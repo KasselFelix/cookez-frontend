@@ -14,7 +14,11 @@ import useT from '../../i18n/useT';
  * @param {{ iconSize?: number, style?: any, testID?: string }} props
  *   iconSize: icon size in points (the medallion is twice as large).
  */
-export default function RecipeImagePlaceholder({ iconSize = 40, style, testID = 'recipe-image-placeholder' }) {
+export default function RecipeImagePlaceholder({
+  iconSize = 40,
+  style,
+  testID = 'recipe-image-placeholder',
+}) {
   const css = useTheme();
   const t = useT();
 

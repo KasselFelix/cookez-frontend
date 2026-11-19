@@ -66,7 +66,8 @@ export default function ShoppingList({ items = [] }) {
                   },
                 ]}
               >
-                {value}{unit} {it.name}
+                {value}
+                {unit} {it.name}
               </Text>
               <Text style={[styles.subtitle, { color: css.palette.neutral700 }]}>
                 {t('recipe.shopping.percentOwned', { ratio: it.percentOwned })}

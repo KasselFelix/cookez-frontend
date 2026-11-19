@@ -13,9 +13,7 @@ export default function SeasonalBadge() {
   const t = useT();
 
   return (
-    <View
-      style={[styles.pill, { backgroundColor: css.palette.success || '#2E8B57' }]}
-    >
+    <View style={[styles.pill, { backgroundColor: css.palette.success || '#2E8B57' }]}>
       <FontAwesome name="leaf" size={12} color="white" />
       <Text style={styles.text}>{t('result.seasonalBadge.label')}</Text>
     </View>

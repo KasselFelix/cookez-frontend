@@ -37,11 +37,7 @@ import { FontAwesome } from '@expo/vector-icons';
 // forgiving). Wrapping the modal content in a local GestureHandlerRootView
 // gives RNGH a touch surface to listen on, and pairing the RNGH FlatList
 // with the RNGH TouchableOpacity keeps the gesture pipeline uniform.
-import {
-  FlatList,
-  GestureHandlerRootView,
-  TouchableOpacity,
-} from 'react-native-gesture-handler';
+import { FlatList, GestureHandlerRootView, TouchableOpacity } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
@@ -58,8 +54,8 @@ import {
 // nav bar / gesture area. Combined with statusBarTranslucent on the Modal
 // below, this guarantees the sheet covers the full physical screen.
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
-const CLOSE_THRESHOLD = 100;  // downward drag past this → close
-const EXPAND_THRESHOLD = 50;  // upward drag past this → snap to expanded
+const CLOSE_THRESHOLD = 100; // downward drag past this → close
+const EXPAND_THRESHOLD = 50; // upward drag past this → snap to expanded
 const COLLAPSE_THRESHOLD = 50; // downward drag from expanded → snap back to collapsed
 // Hard ceiling so the sheet never reaches the very top — leaves room for the
 // screen's status bar / back-button row.
@@ -70,9 +66,7 @@ export default function OriginPicker({ value, onChange }) {
   const css = useTheme();
   const t = useT();
   const insets = useSafeAreaInsets();
-  const localeMode = useSelector(
-    (state) => state?.locale?.value?.lang ?? 'system',
-  );
+  const localeMode = useSelector((state) => state?.locale?.value?.lang ?? 'system');
   const isFrench = localeMode === 'fr';
 
   const [open, setOpen] = useState(false);
@@ -122,7 +116,7 @@ export default function OriginPicker({ value, onChange }) {
       }),
       Animated.timing(backdropOpacity, {
         toValue: 1,
-        duration: 425,//425
+        duration: 425, //425
         useNativeDriver: true,
       }),
     ]).start();
@@ -254,9 +248,7 @@ export default function OriginPicker({ value, onChange }) {
     if (!query) return sorted;
     const q = query.toLowerCase();
     return sorted.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.nameFr.toLowerCase().includes(q),
+      (c) => c.name.toLowerCase().includes(q) || c.nameFr.toLowerCase().includes(q),
     );
   }, [query, isFrench]);
 
@@ -276,11 +268,12 @@ export default function OriginPicker({ value, onChange }) {
 
   const clearAll = () => onChange?.([]);
 
-  const triggerLabel = selected.length === 0
-    ? t('recipe.filters.origin.placeholder')
-    : selected
-        .map((s) => `${flagForOriginName(s)} ${localizedCountryName(s, localeMode)}`)
-        .join(', ');
+  const triggerLabel =
+    selected.length === 0
+      ? t('recipe.filters.origin.placeholder')
+      : selected
+          .map((s) => `${flagForOriginName(s)} ${localizedCountryName(s, localeMode)}`)
+          .join(', ');
 
   return (
     <>
@@ -332,40 +325,40 @@ export default function OriginPicker({ value, onChange }) {
         onRequestClose={closeSheet}
       >
         <GestureHandlerRootView style={{ flex: 1 }}>
-        {/* Backdrop dim — opacity driven by a dedicated timing animation
+          {/* Backdrop dim — opacity driven by a dedicated timing animation
             (425ms) instead of interpolating translateY. Decoupling the two
             lets the fade keep its own tempo regardless of how fast the
             sheet spring resolves, and matches the TagsMultiSelect feel.
             During drag-down before the close threshold, the backdrop
             stays at full opacity (no flicker); once `closeSheet()` fires,
             backdrop and sheet fade out in parallel. */}
-        <Animated.View
-          style={[
-            styles.overlay,
-            {
-              backgroundColor: css.palette.overlayDark,
-              opacity: backdropOpacity,
-            },
-          ]}
-        >
           <Animated.View
             style={[
-              styles.sheet,
+              styles.overlay,
               {
-                top: topOffset,
-                // Height extends from the LOWEST possible top (collapsed) all
-                // the way past the screen bottom, *including* the system
-                // navigation bar / home indicator (insets.bottom). This way
-                // transform translateY never reveals a gap below, and the
-                // sheet always covers the sticky "Recipes >>" CTA on
-                // RecapScreen — even on devices with a tall gesture bar.
-                height: SCREEN_HEIGHT - EXPANDED_TOP + insets.bottom + 60,
-                backgroundColor: css.palette.surfaceCard,
-                transform: [{ translateY }],
+                backgroundColor: css.palette.overlayDark,
+                opacity: backdropOpacity,
               },
             ]}
           >
-            {/* No KeyboardAvoidingView here — the sheet is anchored at the
+            <Animated.View
+              style={[
+                styles.sheet,
+                {
+                  top: topOffset,
+                  // Height extends from the LOWEST possible top (collapsed) all
+                  // the way past the screen bottom, *including* the system
+                  // navigation bar / home indicator (insets.bottom). This way
+                  // transform translateY never reveals a gap below, and the
+                  // sheet always covers the sticky "Recipes >>" CTA on
+                  // RecapScreen — even on devices with a tall gesture bar.
+                  height: SCREEN_HEIGHT - EXPANDED_TOP + insets.bottom + 60,
+                  backgroundColor: css.palette.surfaceCard,
+                  transform: [{ translateY }],
+                },
+              ]}
+            >
+              {/* No KeyboardAvoidingView here — the sheet is anchored at the
                 top (`topOffset`) and grows downward, so the iOS keyboard
                 only ever overlaps the BOTTOM of the FlatList. KAV with
                 behavior="padding" caused a single-tap-loss bug: tapping a
@@ -378,140 +371,132 @@ export default function OriginPicker({ value, onChange }) {
                 stable across the keyboard transition; the FlatList itself
                 handles its overflow scrolling so the bottom rows remain
                 reachable by scrolling. */}
-            <View style={styles.kbAvoid}>
-              {/* Dedicated drag zone: padding around the visual bar so the
+              <View style={styles.kbAvoid}>
+                {/* Dedicated drag zone: padding around the visual bar so the
                   user has a 40px-tall target to grab. */}
-              <View
-                style={styles.dragZone}
-                {...panResponder.panHandlers}
-              >
-                <View
-                  style={[
-                    styles.handle,
-                    { backgroundColor: css.palette.neutral500 },
-                  ]}
-                />
-              </View>
+                <View style={styles.dragZone} {...panResponder.panHandlers}>
+                  <View style={[styles.handle, { backgroundColor: css.palette.neutral500 }]} />
+                </View>
 
-              <View style={[styles.sheetHeader, { paddingHorizontal: css.spacing.md }]}>
-                <Text
-                  style={{
-                    fontFamily: css.typography.fontHeading,
-                    fontSize: css.typography.h3Size,
-                    color: css.palette.neutral900,
-                  }}
-                >
-                  {t('recipe.filters.origin.title')}
-                </Text>
-                {selected.length > 0 && (
-                  <Pressable
-                    onPress={clearAll}
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('recipe.filters.origin.clear')}
-                  >
-                    <Text
-                      style={{
-                        color: css.palette.primary800,
-                        fontFamily: css.typography.fontUI,
-                        fontSize: css.typography.bodySmSize,
-                      }}
-                    >
-                      {t('recipe.filters.origin.clear')}
-                    </Text>
-                  </Pressable>
-                )}
-              </View>
-
-              <View style={{ paddingHorizontal: css.spacing.md, flex: 1 }}>
-                <TextInput
-                  ref={searchInputRef}
-                  value={query}
-                  onChangeText={setQuery}
-                  placeholder={t('recipe.filters.origin.searchPlaceholder')}
-                  placeholderTextColor={css.palette.neutral500}
-                  accessibilityLabel={t('recipe.filters.origin.searchPlaceholder')}
-                  style={[
-                    styles.search,
-                    {
-                      borderColor: css.input.borderColor,
+                <View style={[styles.sheetHeader, { paddingHorizontal: css.spacing.md }]}>
+                  <Text
+                    style={{
+                      fontFamily: css.typography.fontHeading,
+                      fontSize: css.typography.h3Size,
                       color: css.palette.neutral900,
-                      fontFamily: css.typography.fontBody,
-                      fontSize: css.typography.bodySize,
-                      borderRadius: css.radius.md,
-                      marginBottom: css.spacing.md,
-                    },
-                  ]}
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                />
-
-                <FlatList
-                  data={filtered}
-                  keyExtractor={(item) => item.code}
-                  // `"always"` lets every tap reach the row's `onPress` even
-                  // when the keyboard is up, AND keeps the keyboard open
-                  // across selections — exactly the desired UX. Earlier
-                  // attempts with `"handled"` had the keyboard's auto-
-                  // dismiss racing with the tap propagation (the system
-                  // ate the first tap, the user had to tap twice). With
-                  // `"always"`, the system never steals the tap.
-                  keyboardShouldPersistTaps="always"
-                  contentContainerStyle={{ paddingBottom: 16 }}
-                  renderItem={({ item }) => {
-                    const isSelected = selectedSet.has(item.name);
-                    const display = isFrench ? item.nameFr : item.name;
-                    return (
-                      <TouchableOpacity
-                        // `onPress` (not `onPressIn`) — onPressIn fires at
-                        // touch-DOWN which makes scroll-start gestures look
-                        // like selections. `onPress` waits until the user
-                        // actually completes a tap (no scroll detected),
-                        // matching standard list-selector behaviour.
-                        onPress={() => toggle(item.name)}
-                        activeOpacity={0.8}
-                        accessibilityRole="button"
-                        accessibilityState={{ selected: isSelected }}
-                        style={[
-                          styles.row,
-                          {
-                            // Same picked-row colors as the Kickoff search
-                            // modal, so the sheet follows every theme.
-                            backgroundColor: isSelected
-                              ? css.flow.modalSelectedBg
-                              : 'transparent',
-                            borderRadius: css.radius.sm,
-                          },
-                        ]}
+                    }}
+                  >
+                    {t('recipe.filters.origin.title')}
+                  </Text>
+                  {selected.length > 0 && (
+                    <Pressable
+                      onPress={clearAll}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('recipe.filters.origin.clear')}
+                    >
+                      <Text
+                        style={{
+                          color: css.palette.primary800,
+                          fontFamily: css.typography.fontUI,
+                          fontSize: css.typography.bodySmSize,
+                        }}
                       >
-                        <Text style={styles.flag}>{flagEmoji(item.code)}</Text>
-                        <Text
-                          style={{
-                            flex: 1,
-                            color: isSelected
-                              ? css.flow.modalSelectedText
-                              : css.palette.neutral900,
-                            fontFamily: css.typography.fontUI,
-                            fontSize: css.typography.bodySize,
-                          }}
+                        {t('recipe.filters.origin.clear')}
+                      </Text>
+                    </Pressable>
+                  )}
+                </View>
+
+                <View style={{ paddingHorizontal: css.spacing.md, flex: 1 }}>
+                  <TextInput
+                    ref={searchInputRef}
+                    value={query}
+                    onChangeText={setQuery}
+                    placeholder={t('recipe.filters.origin.searchPlaceholder')}
+                    placeholderTextColor={css.palette.neutral500}
+                    accessibilityLabel={t('recipe.filters.origin.searchPlaceholder')}
+                    style={[
+                      styles.search,
+                      {
+                        borderColor: css.input.borderColor,
+                        color: css.palette.neutral900,
+                        fontFamily: css.typography.fontBody,
+                        fontSize: css.typography.bodySize,
+                        borderRadius: css.radius.md,
+                        marginBottom: css.spacing.md,
+                      },
+                    ]}
+                    autoCorrect={false}
+                    autoCapitalize="none"
+                  />
+
+                  <FlatList
+                    data={filtered}
+                    keyExtractor={(item) => item.code}
+                    // `"always"` lets every tap reach the row's `onPress` even
+                    // when the keyboard is up, AND keeps the keyboard open
+                    // across selections — exactly the desired UX. Earlier
+                    // attempts with `"handled"` had the keyboard's auto-
+                    // dismiss racing with the tap propagation (the system
+                    // ate the first tap, the user had to tap twice). With
+                    // `"always"`, the system never steals the tap.
+                    keyboardShouldPersistTaps="always"
+                    contentContainerStyle={{ paddingBottom: 16 }}
+                    renderItem={({ item }) => {
+                      const isSelected = selectedSet.has(item.name);
+                      const display = isFrench ? item.nameFr : item.name;
+                      return (
+                        <TouchableOpacity
+                          // `onPress` (not `onPressIn`) — onPressIn fires at
+                          // touch-DOWN which makes scroll-start gestures look
+                          // like selections. `onPress` waits until the user
+                          // actually completes a tap (no scroll detected),
+                          // matching standard list-selector behaviour.
+                          onPress={() => toggle(item.name)}
+                          activeOpacity={0.8}
+                          accessibilityRole="button"
+                          accessibilityState={{ selected: isSelected }}
+                          style={[
+                            styles.row,
+                            {
+                              // Same picked-row colors as the Kickoff search
+                              // modal, so the sheet follows every theme.
+                              backgroundColor: isSelected
+                                ? css.flow.modalSelectedBg
+                                : 'transparent',
+                              borderRadius: css.radius.sm,
+                            },
+                          ]}
                         >
-                          {display}
-                        </Text>
-                        {isSelected && (
-                          <FontAwesome
-                            name="check"
-                            size={16}
-                            color={css.flow.modalSelectedText}
-                          />
-                        )}
-                      </TouchableOpacity>
-                    );
-                  }}
-                />
+                          <Text style={styles.flag}>{flagEmoji(item.code)}</Text>
+                          <Text
+                            style={{
+                              flex: 1,
+                              color: isSelected
+                                ? css.flow.modalSelectedText
+                                : css.palette.neutral900,
+                              fontFamily: css.typography.fontUI,
+                              fontSize: css.typography.bodySize,
+                            }}
+                          >
+                            {display}
+                          </Text>
+                          {isSelected && (
+                            <FontAwesome
+                              name="check"
+                              size={16}
+                              color={css.flow.modalSelectedText}
+                            />
+                          )}
+                        </TouchableOpacity>
+                      );
+                    }}
+                  />
+                </View>
               </View>
-            </View>
+            </Animated.View>
           </Animated.View>
-        </Animated.View>
         </GestureHandlerRootView>
       </Modal>
     </>

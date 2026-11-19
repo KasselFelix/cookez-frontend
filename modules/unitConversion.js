@@ -19,10 +19,14 @@ export const BASIC_INGREDIENTS = ['salt', 'sugar', 'pepper', 'oil', 'water', 'fl
 // pluriels EN). Mirror exact du backend pour matcher BASIC_INGREDIENTS.
 export const normalize = (str) => {
   if (!str) return '';
-  return str.trim().toLowerCase()
+  return str
+    .trim()
+    .toLowerCase()
     .replace(/\b(large|small|organic|clove|fresh|cloves|clove of)\b/gi, '')
-    .replace(/es$/, '').replace(/([^e])s$/, '$1')
-    .replace(/\s+/g, ' ').trim();
+    .replace(/es$/, '')
+    .replace(/([^e])s$/, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
 };
 
 // Convertit n'importe quelle unité culinaire vers l'unité de base (g, ml,
@@ -37,8 +41,7 @@ export const convertToBaseUnit = (quantity, unit, referenceWeight = 1) => {
 
   // Lowercase + drop accents (é → e) pour matcher 'pincée' / 'pincee'.
   // [̀-ͯ] = combining diacritical marks (laissés après NFD)
-  const u = unit.toLowerCase().trim()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const u = unit.toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
   let r = Number(quantity) || 0;
 

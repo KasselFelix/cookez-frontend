@@ -35,7 +35,11 @@ export default function useRecentlyViewed(token) {
     if (request === requestRef.current) setRecentlyViewed(recipes);
   }, [token]);
 
-  useFocusEffect(useCallback(() => { fetchRecentlyViewed(); }, [fetchRecentlyViewed]));
+  useFocusEffect(
+    useCallback(() => {
+      fetchRecentlyViewed();
+    }, [fetchRecentlyViewed]),
+  );
 
   return recentlyViewed;
 }

@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect, beforeEach, afterEach */
 // Plan 015 (A2, A3): Kickoff and Recap show the same image for an ingredient.
 // The hook writes the catalog photo into the ingredient slice; Recap renders
 // that `photo`, as Kickoff does, and the app never calls Pexels itself.
@@ -26,7 +25,7 @@ function Probe() {
 beforeEach(() => {
   resetIngredientPhotoCache();
   global.fetch = jest.fn(() =>
-    Promise.resolve({ json: () => Promise.resolve({ result: true, photoUrl: PHOTO }) })
+    Promise.resolve({ json: () => Promise.resolve({ result: true, photoUrl: PHOTO }) }),
   );
 });
 
@@ -47,7 +46,9 @@ describe('useIngredientPhotos', () => {
   it('keeps a photo that is already loadable, without a request', async () => {
     const { store } = renderWithProviders(<Probe />, {
       withNavigation: false,
-      preloadedState: { ingredient: { value: [picked({ photo: 'https://cdn.example.com/kept.jpg' })] } },
+      preloadedState: {
+        ingredient: { value: [picked({ photo: 'https://cdn.example.com/kept.jpg' })] },
+      },
     });
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(global.fetch).not.toHaveBeenCalled();

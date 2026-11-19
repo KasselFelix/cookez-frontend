@@ -1,11 +1,26 @@
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Image, Modal, Animated, PanResponder, Dimensions } from 'react-native'
-import React, { useState,useEffect,useRef } from 'react'
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  TextInput,
+  Image,
+  Modal,
+  Animated,
+  PanResponder,
+  Dimensions,
+} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { useTheme } from "../contexts/ThemeProvider";
-import useT from "../i18n/useT";
-import { FontAwesome } from "@expo/vector-icons";
-import { Feather } from "@expo/vector-icons";
-import { removeIngredient, updateIngredientQuantity, updateIngredientUnit } from '../reducers/ingredient';
+import { useTheme } from '../contexts/ThemeProvider';
+import useT from '../i18n/useT';
+import { FontAwesome } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
+import {
+  removeIngredient,
+  updateIngredientQuantity,
+  updateIngredientUnit,
+} from '../reducers/ingredient';
 import ConfirmPill from './kickoff/ConfirmPill';
 import RemoveBadge from './kickoff/RemoveBadge';
 
@@ -18,467 +33,509 @@ import RemoveBadge from './kickoff/RemoveBadge';
 // guessing the gram weight — convertToBaseUnit('unit', referenceWeight)
 // multiplies by the Ingredient.quantity reference recorded in the BDD.
 const UNIT_OPTIONS_BY_BASE = {
-    g:    ['g', 'kg', 'mg', 'ml', 'cl', 'dl', 'l', 'tbsp', 'tsp', 'unit'],
-    ml:   ['ml', 'cl', 'dl', 'l', 'g', 'kg', 'mg', 'tbsp', 'tsp', 'unit'],
-    unit: ['unit'],
+  g: ['g', 'kg', 'mg', 'ml', 'cl', 'dl', 'l', 'tbsp', 'tsp', 'unit'],
+  ml: ['ml', 'cl', 'dl', 'l', 'g', 'kg', 'mg', 'tbsp', 'tsp', 'unit'],
+  unit: ['unit'],
 };
 
 const { width } = Dimensions.get('window');
 
-export default function Recap( props ) {
-    // The canonical quantity lives in Redux (`data.g_per_serving`), so
-    // navigating away from RecapScreen and back preserves the override.
-    // Local state mirrors Redux for fluid typing — `updateIngredientQuantity`
-    // is dispatched on every change with the parsed numeric value.
-    const [grammes, setGrammes] = useState(
-        props.data.g_per_serving != null ? String(props.data.g_per_serving) : ''
+export default function Recap(props) {
+  // The canonical quantity lives in Redux (`data.g_per_serving`), so
+  // navigating away from RecapScreen and back preserves the override.
+  // Local state mirrors Redux for fluid typing — `updateIngredientQuantity`
+  // is dispatched on every change with the parsed numeric value.
+  const [grammes, setGrammes] = useState(
+    props.data.g_per_serving != null ? String(props.data.g_per_serving) : '',
+  );
+  const [modalVisible, setModalVisible] = useState(false);
+  const [unitModalVisible, setUnitModalVisible] = useState(false);
+
+  const dispatch = useDispatch();
+  const css = useTheme();
+  const t = useT();
+  const styles = makeStyles(css);
+
+  const baseUnit = props.data.defaultUnit || 'g';
+  const unitOptions = UNIT_OPTIONS_BY_BASE[baseUnit] || ['g'];
+  const currentUnit = props.data.unit || baseUnit;
+  const isUnitEditable = unitOptions.length > 1;
+
+  const handleQuantityChange = (value) => {
+    // Strip non-digit characters defensively, then mirror to Redux.
+    // Empty string is allowed in local state (mid-edit) but is stored
+    // as 0 in Redux so the recipe-result query still has a number.
+    const cleaned = value.replace(/[^0-9]/g, '');
+    setGrammes(cleaned);
+    dispatch(
+      updateIngredientQuantity({
+        display_name: props.data.display_name,
+        quantity: cleaned === '' ? 0 : Number(cleaned),
+      }),
     );
-    const [modalVisible, setModalVisible] = useState(false);
-    const [unitModalVisible, setUnitModalVisible] = useState(false);
+  };
 
-    const dispatch = useDispatch()
-    const css = useTheme();
-    const t = useT();
-    const styles = makeStyles(css);
+  const handleUnitPick = (u) => {
+    setUnitModalVisible(false);
+    dispatch(
+      updateIngredientUnit({
+        display_name: props.data.display_name,
+        unit: u,
+      }),
+    );
+  };
 
-    const baseUnit = props.data.defaultUnit || 'g';
-    const unitOptions = UNIT_OPTIONS_BY_BASE[baseUnit] || ['g'];
-    const currentUnit = props.data.unit || baseUnit;
-    const isUnitEditable = unitOptions.length > 1;
+  // --- SWIPE ---
+  // On utilise des Animated.Value persistantes
+  const pan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+  const opacity = useRef(new Animated.Value(1)).current;
 
-    const handleQuantityChange = (value) => {
-        // Strip non-digit characters defensively, then mirror to Redux.
-        // Empty string is allowed in local state (mid-edit) but is stored
-        // as 0 in Redux so the recipe-result query still has a number.
-        const cleaned = value.replace(/[^0-9]/g, '');
-        setGrammes(cleaned);
-        dispatch(updateIngredientQuantity({
-            display_name: props.data.display_name,
-            quantity: cleaned === '' ? 0 : Number(cleaned),
-        }));
-    };
+  // IMPORTANT : Réinitialiser la position si l'ingrédient change
+  // (évite que le suivant hérite de la position "éjectée")
+  useEffect(() => {
+    pan.setValue({ x: 0, y: 0 });
+    opacity.setValue(1);
+  }, [props.data.display_name]);
 
-    const handleUnitPick = (u) => {
-        setUnitModalVisible(false);
-        dispatch(updateIngredientUnit({
-            display_name: props.data.display_name,
-            unit: u,
-        }));
-    };
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        const { dx, dy } = gestureState;
+        // On n'active le swipe QUE si :
+        // - Le mouvement horizontal est supérieur à 20px
+        // - le mouvement horizontal est nettement plus fort que le vertical (évite les conflits au scroll)
+        return Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy);
+      },
 
-    // --- SWIPE ---
-    // On utilise des Animated.Value persistantes
-    const pan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
-    const opacity = useRef(new Animated.Value(1)).current;
+      onPanResponderTerminationRequest: () => false, // Garde le contrôle même si le système veut l'arrêter
 
-    // IMPORTANT : Réinitialiser la position si l'ingrédient change 
-    // (évite que le suivant hérite de la position "éjectée")
-    useEffect(() => {
-        pan.setValue({ x: 0, y: 0 });
-        opacity.setValue(1);
-    }, [props.data.display_name]);
+      onPanResponderMove: (evt, gestureState) => {
+        // On ne bouge le composant que si on est vraiment dans un geste horizontal
+        pan.x.setValue(gestureState.dx);
+        // Effet visuel : plus on glisse, plus ça devient transparent
+        const newOpacity = 1 - Math.abs(gestureState.dx) / (width * 0.7);
+        opacity.setValue(newOpacity);
+      },
 
-    const panResponder = useRef(
-        PanResponder.create({
-            onMoveShouldSetPanResponder: (evt, gestureState) => {
-                const { dx, dy } = gestureState;
-              // On n'active le swipe QUE si :
-              // - Le mouvement horizontal est supérieur à 20px
-              // - le mouvement horizontal est nettement plus fort que le vertical (évite les conflits au scroll)
-              return Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy);
-            },
+      onPanResponderRelease: (evt, gestureState) => {
+        // 50% de la largeur de l'écran suffit pour supprimer
+        if (Math.abs(gestureState.dx) > width * 0.5) {
+          // Suppression confirmée
+          Animated.parallel([
+            Animated.timing(pan.x, {
+              toValue: gestureState.dx > 0 ? width : -width,
+              duration: 200,
+              useNativeDriver: false,
+            }),
+            Animated.timing(opacity, {
+              toValue: 0,
+              duration: 200,
+              useNativeDriver: false,
+            }),
+          ]).start(() => {
+            dispatch(removeIngredient(props));
+          });
+        } else {
+          // Retour à la normale avec un effet "ressort" plus ferme
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            friction: 7, // Plus c'est haut, moins ça rebondit
+            tension: 40,
+            useNativeDriver: false,
+          }).start();
 
-            onPanResponderTerminationRequest: () => false, // Garde le contrôle même si le système veut l'arrêter
-
-            onPanResponderMove: (evt, gestureState) => {
-              // On ne bouge le composant que si on est vraiment dans un geste horizontal
-              pan.x.setValue(gestureState.dx);
-               // Effet visuel : plus on glisse, plus ça devient transparent
-              const newOpacity = 1 - Math.abs(gestureState.dx) / (width * 0.7);
-              opacity.setValue(newOpacity);
-            },
-    
-            onPanResponderRelease: (evt, gestureState) => {
-            // 50% de la largeur de l'écran suffit pour supprimer
-            if (Math.abs(gestureState.dx) > width * 0.5) {
-                // Suppression confirmée
-                Animated.parallel([
-                    Animated.timing(pan.x, {
-                        toValue: gestureState.dx > 0 ? width : -width,
-                        duration: 200,
-                        useNativeDriver: false,
-                    }),
-                    Animated.timing(opacity, {
-                        toValue: 0,
-                        duration: 200,
-                        useNativeDriver: false,
-                    })
-                ]).start(() => {
-                    dispatch(removeIngredient(props));
-                });
-            } else {
-                // Retour à la normale avec un effet "ressort" plus ferme
-                Animated.spring(pan, {
-                    toValue: { x: 0, y: 0 },
-                    friction: 7, // Plus c'est haut, moins ça rebondit
-                    tension: 40,
-                    useNativeDriver: false,
-                }).start();
-                
-                Animated.timing(opacity, {
-                    toValue: 1,
-                    duration: 150,
-                    useNativeDriver: false,
-                }).start();
-            }
-        },
-        
-        // Sécurité : si le geste est interrompu par le système (appel, notification)
-        onPanResponderTerminate: () => {
-            Animated.spring(pan, {
-                toValue: { x: 0, y: 0 },
-                useNativeDriver: false,
-            }).start();
-            opacity.setValue(1);
+          Animated.timing(opacity, {
+            toValue: 1,
+            duration: 150,
+            useNativeDriver: false,
+          }).start();
         }
-        })
-    ).current;
+      },
 
-    
-    return (
-      <Animated.View
-            {...panResponder.panHandlers}
-            style={[
-                styles.ingredientContainer,
-                {
-                    transform: [{ translateX: pan.x }],
-                    opacity: opacity
-                }
-            ]}>
-          <View style={styles.photoContainer}>
-            <RemoveBadge
-              onPress={() => dispatch(removeIngredient(props))}
-              accessibilityLabel={t('kickoff.selected.removeA11y', { name: props.data.display_name })}
-              style={styles.deleteIcon}
+      // Sécurité : si le geste est interrompu par le système (appel, notification)
+      onPanResponderTerminate: () => {
+        Animated.spring(pan, {
+          toValue: { x: 0, y: 0 },
+          useNativeDriver: false,
+        }).start();
+        opacity.setValue(1);
+      },
+    }),
+  ).current;
+
+  return (
+    <Animated.View
+      {...panResponder.panHandlers}
+      style={[
+        styles.ingredientContainer,
+        {
+          transform: [{ translateX: pan.x }],
+          opacity: opacity,
+        },
+      ]}
+    >
+      <View style={styles.photoContainer}>
+        <RemoveBadge
+          onPress={() => dispatch(removeIngredient(props))}
+          accessibilityLabel={t('kickoff.selected.removeA11y', { name: props.data.display_name })}
+          style={styles.deleteIcon}
+        />
+        <View>
+          {/* Same image as Kickoff: `photo` of the ingredient slice (plan 015) */}
+          {props.photo ? (
+            <Image
+              source={{ uri: props.photo }}
+              style={styles.image}
+              alt={props.data.display_name}
+              accessibilityLabel={props.data.display_name}
+              testID="recap-ingredient-photo"
             />
-            <View>
-               {/* Same image as Kickoff: `photo` of the ingredient slice (plan 015) */}
-               {props.photo ? (
-                      <Image source={{ uri: props.photo }} style={styles.image} alt={props.data.display_name} accessibilityLabel={props.data.display_name} testID="recap-ingredient-photo"/>
-                    ) : (
-                      <View style={styles.image} />
-                    )}
-               {props.data.toConfirm && (
-                 <View style={styles.confirmOnPhoto}>
-                   <ConfirmPill name={props.data.display_name} />
-                 </View>
-               )}
+          ) : (
+            <View style={styles.image} />
+          )}
+          {props.data.toConfirm && (
+            <View style={styles.confirmOnPhoto}>
+              <ConfirmPill name={props.data.display_name} />
             </View>
-          </View>
-          <View style={styles.ingredientNameContainter}>
-            <Text style={styles.ingredientName}>{props.data.display_name}</Text>
-          </View>
-          <View style={styles.infoGramsContainer}>
-            <View style={styles.infoGrams}>
-            <TextInput
-              testID="recap-quantity"
-              keyboardType="numeric"
-              maxLength={5}
-              value={grammes}
-              onChangeText={handleQuantityChange}
-              style={styles.qtyInput}
-              selectTextOnFocus
-              accessibilityLabel={`Quantity for ${props.data.display_name}`}
-            />
-            {isUnitEditable ? (
-              <TouchableOpacity
-                onPress={() => setUnitModalVisible(true)}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={`Change unit (current: ${currentUnit})`}
-                style={styles.unitTrigger}
-              >
-                <Text style={styles.qtyUnit}>{currentUnit}</Text>
-                <FontAwesome name="caret-down" size={12} color={css.palette.black} style={{ marginLeft: 2 }} />
-              </TouchableOpacity>
-            ) : (
+          )}
+        </View>
+      </View>
+      <View style={styles.ingredientNameContainter}>
+        <Text style={styles.ingredientName}>{props.data.display_name}</Text>
+      </View>
+      <View style={styles.infoGramsContainer}>
+        <View style={styles.infoGrams}>
+          <TextInput
+            testID="recap-quantity"
+            keyboardType="numeric"
+            maxLength={5}
+            value={grammes}
+            onChangeText={handleQuantityChange}
+            style={styles.qtyInput}
+            selectTextOnFocus
+            accessibilityLabel={`Quantity for ${props.data.display_name}`}
+          />
+          {isUnitEditable ? (
+            <TouchableOpacity
+              onPress={() => setUnitModalVisible(true)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={`Change unit (current: ${currentUnit})`}
+              style={styles.unitTrigger}
+            >
               <Text style={styles.qtyUnit}>{currentUnit}</Text>
-            )}
+              <FontAwesome
+                name="caret-down"
+                size={12}
+                color={css.palette.black}
+                style={{ marginLeft: 2 }}
+              />
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.qtyUnit}>{currentUnit}</Text>
+          )}
+        </View>
+      </View>
+      <View style={styles.infoBtn}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => {
+            setModalVisible(true);
+          }}
+        >
+          <Feather name="info" size={24} color={css.flow.cardIcon} />
+        </TouchableOpacity>
+      </View>
+      <Modal visible={modalVisible} animationtType="fade" transparent>
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <View style={styles.deleteIconModal}>
+              <Text style={styles.titleText}> {props.data.display_name}/100g</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <FontAwesome name="times" size={25} color={css.palette.error} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.aLineContainer}>
+              <Text style={styles.modalText}>● </Text>
+              <Text style={styles.text}> Calories:</Text>
+              <Text style={styles.modalText}>{props.data.nutrition?.calories_100g ?? 0}</Text>
+            </View>
+            <View style={styles.aLineContainer}>
+              <Text style={styles.modalText}>● </Text>
+              <Text style={styles.text}> Sugars:</Text>
+              <Text style={styles.modalText}>
+                {props.data.nutrition?.sugars_100g != null
+                  ? Number.parseFloat(props.data.nutrition.sugars_100g).toFixed(2)
+                  : 0}
+              </Text>
+            </View>
+            <View style={styles.aLineContainer}>
+              <Text style={styles.modalText}>● </Text>
+              <Text style={styles.text}> Proteins:</Text>
+              <Text style={styles.modalText}>
+                {props.data.nutrition?.proteins_100g != null
+                  ? Number.parseFloat(props.data.nutrition.proteins_100g).toFixed(2)
+                  : 0}
+              </Text>
+            </View>
+            <View style={styles.aLineContainer}>
+              <Text style={styles.modalText}>● </Text>
+              <Text style={styles.text}> Fat:</Text>
+              <Text style={styles.modalText}>
+                {props.data.nutrition?.fat_100g != null
+                  ? Number.parseFloat(props.data.nutrition.fat_100g).toFixed(2)
+                  : 0}
+              </Text>
+            </View>
+            <View style={styles.aLineContainer}>
+              <Text style={styles.modalText}>● </Text>
+              <Text style={styles.text}> Fibers:</Text>
+              <Text style={styles.modalText}>
+                {props.data.nutrition?.fibers_100g != null
+                  ? Number.parseFloat(props.data.nutrition.fibers_100g).toFixed(2)
+                  : 0}
+              </Text>
             </View>
           </View>
-          <View style={styles.infoBtn}>
-            <TouchableOpacity activeOpacity={0.5} onPress={() => { setModalVisible(true) }} >
-                <Feather name="info" size={24} color={css.flow.cardIcon}/>
-            </TouchableOpacity>
+        </View>
+      </Modal>
+      <Modal
+        visible={unitModalVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setUnitModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.unitBackdrop}
+          activeOpacity={1}
+          onPress={() => setUnitModalVisible(false)}
+        >
+          <View style={styles.unitSheet}>
+            <Text style={styles.unitSheetTitle}>{props.data.display_name}</Text>
+            {unitOptions.map((u) => {
+              const active = u === currentUnit;
+              return (
+                <TouchableOpacity
+                  key={u}
+                  onPress={() => handleUnitPick(u)}
+                  style={[styles.unitRow, active && styles.unitRowActive]}
+                  accessibilityRole="button"
+                >
+                  <Text style={[styles.unitRowText, active && styles.unitRowTextActive]}>{u}</Text>
+                  {active && <FontAwesome name="check" size={16} color={css.flow.selectedText} />}
+                </TouchableOpacity>
+              );
+            })}
           </View>
-          <Modal visible={modalVisible} animationtType="fade" transparent>
-              <View style={styles.modalBackground}>
-                <View style={styles.modalContainer}>
-                      <View style={styles.deleteIconModal}>
-                        <Text style={styles.titleText}> {props.data.display_name}/100g</Text>
-                        <TouchableOpacity onPress={() => setModalVisible(false)}>
-                          <FontAwesome name='times' size={25} color={css.palette.error}  />
-                        </TouchableOpacity>
-                      </View>
-                      <View style={styles.aLineContainer}>
-                        <Text style={styles.modalText}>● </Text>
-                        <Text style={styles.text}> Calories:</Text>
-                        <Text style={styles.modalText}>{props.data.nutrition?.calories_100g ?? 0}</Text>
-                      </View>
-                      <View style={styles.aLineContainer}>
-                        <Text style={styles.modalText}>● </Text>
-                        <Text style={styles.text}> Sugars:</Text>
-                        <Text style={styles.modalText}>{props.data.nutrition?.sugars_100g != null ? Number.parseFloat(props.data.nutrition.sugars_100g).toFixed(2) : 0}</Text>
-                      </View>
-                      <View style={styles.aLineContainer}>
-                        <Text style={styles.modalText}>● </Text>
-                        <Text style={styles.text}> Proteins:</Text>
-                        <Text style={styles.modalText}>{props.data.nutrition?.proteins_100g != null ? Number.parseFloat(props.data.nutrition.proteins_100g).toFixed(2) : 0}</Text>
-                      </View>
-                      <View style={styles.aLineContainer}>
-                        <Text style={styles.modalText}>● </Text>
-                        <Text style={styles.text}> Fat:</Text>
-                        <Text style={styles.modalText}>{props.data.nutrition?.fat_100g != null ? Number.parseFloat(props.data.nutrition.fat_100g).toFixed(2) : 0}</Text>
-                      </View>
-                      <View style={styles.aLineContainer}>
-                        <Text style={styles.modalText}>● </Text>
-                        <Text style={styles.text}> Fibers:</Text>
-                        <Text style={styles.modalText}>{props.data.nutrition?.fibers_100g != null ? Number.parseFloat(props.data.nutrition.fibers_100g).toFixed(2) : 0}</Text>
-                      </View>
-                </View>
-              </View>
-          </Modal>
-          <Modal visible={unitModalVisible} animationType="fade" transparent onRequestClose={() => setUnitModalVisible(false)}>
-              <TouchableOpacity
-                style={styles.unitBackdrop}
-                activeOpacity={1}
-                onPress={() => setUnitModalVisible(false)}
-              >
-                <View style={styles.unitSheet}>
-                  <Text style={styles.unitSheetTitle}>{props.data.display_name}</Text>
-                  {unitOptions.map((u) => {
-                    const active = u === currentUnit;
-                    return (
-                      <TouchableOpacity
-                        key={u}
-                        onPress={() => handleUnitPick(u)}
-                        style={[styles.unitRow, active && styles.unitRowActive]}
-                        accessibilityRole="button"
-                      >
-                        <Text style={[styles.unitRowText, active && styles.unitRowTextActive]}>{u}</Text>
-                        {active && <FontAwesome name="check" size={16} color={css.flow.selectedText} />}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </TouchableOpacity>
-          </Modal>
-      </Animated.View>
-    )
+        </TouchableOpacity>
+      </Modal>
+    </Animated.View>
+  );
 }
 
 // Built from the active theme (useTheme) in the component. The ingredient card
 // is a fixed pair, accent500 with black text, readable in every theme.
-const makeStyles = (css) => StyleSheet.create({
+const makeStyles = (css) =>
+  StyleSheet.create({
     ingredientContainer: {
-        marginVertical: 5,
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexDirection: 'row',
-        width: 330,
-        borderRadius: 10,
-        backgroundColor: css.palette.accent500,
-        ...css.shadow.heavy,
-      },
-    
-      photoContainer: {
-        alignItems: 'flex-start',
-      },
-      
-      // "To confirm" of a scanned ingredient (plan 015), over the photo's foot
-      // so the narrow name column keeps one line.
-      confirmOnPhoto: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        bottom: 6,
-        alignItems: 'center',
-        zIndex: 1,
-      },
+      marginVertical: 5,
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexDirection: 'row',
+      width: 330,
+      borderRadius: 10,
+      backgroundColor: css.palette.accent500,
+      ...css.shadow.heavy,
+    },
 
-      deleteIcon: {
-        position: 'absolute',
-        top: css.spacing.xs,
-        right: css.spacing.xs,
-        zIndex: 2,
-      },
-    
-      image: {
-        width: 90,
-        height: 95,
-        //borderRadius:10,
-        //borderTopEndRadius:10,
-        //borderBottomLeftRadius:10,
-        //borderTopEndRadius:10,
-        borderBottomLeftRadius:10,
-        borderTopLeftRadius:10,
-        // marginLeft: '4%',
-      },
-    
-      ingredientNameContainter: {
-        justifyContent: 'center',
-        width: 70,
-        height: 80,
-        fontWeight: 'bold',
-      },
+    photoContainer: {
+      alignItems: 'flex-start',
+    },
 
-      ingredientName: {
-        fontWeight: 'bold',
-        color: css.palette.black,
-      },
+    // "To confirm" of a scanned ingredient (plan 015), over the photo's foot
+    // so the narrow name column keeps one line.
+    confirmOnPhoto: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 6,
+      alignItems: 'center',
+      zIndex: 1,
+    },
 
-      infoGramsContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        //backgroundColor: 'red',
-        width: 80,
-        height: 30,
-        backgroundColor: css.palette.white,
-        borderRadius: 80,
-        paddingRight: 5,
-      },
+    deleteIcon: {
+      position: 'absolute',
+      top: css.spacing.xs,
+      right: css.spacing.xs,
+      zIndex: 2,
+    },
 
-      infoGrams: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderBottomWidth: 2,
-        borderStyle: 'dashed',
-        borderColor: css.palette.black,
-        width: 60,
-        marginBottom: 3,
-      },
+    image: {
+      width: 90,
+      height: 95,
+      //borderRadius:10,
+      //borderTopEndRadius:10,
+      //borderBottomLeftRadius:10,
+      //borderTopEndRadius:10,
+      borderBottomLeftRadius: 10,
+      borderTopLeftRadius: 10,
+      // marginLeft: '4%',
+    },
 
-      qtyInput: {
-        color: css.palette.black,
-        fontSize: 14,
-        paddingVertical: 0,
-        minWidth: 32,
-        textAlign: 'center',
-      },
+    ingredientNameContainter: {
+      justifyContent: 'center',
+      width: 70,
+      height: 80,
+      fontWeight: 'bold',
+    },
 
-      qtyUnit: {
-        color: css.palette.black,
-        fontSize: 14,
-        marginLeft: 2,
-      },
+    ingredientName: {
+      fontWeight: 'bold',
+      color: css.palette.black,
+    },
 
-      unitTrigger: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 2,
-      },
+    infoGramsContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      //backgroundColor: 'red',
+      width: 80,
+      height: 30,
+      backgroundColor: css.palette.white,
+      borderRadius: 80,
+      paddingRight: 5,
+    },
 
-      unitBackdrop: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        justifyContent: 'center',
-        alignItems: 'center',
-      },
+    infoGrams: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderBottomWidth: 2,
+      borderStyle: 'dashed',
+      borderColor: css.palette.black,
+      width: 60,
+      marginBottom: 3,
+    },
 
-      unitSheet: {
-        backgroundColor: css.palette.surfaceCard,
-        borderRadius: css.radius.lg,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        width: 240,
-        ...css.shadow.md,
-      },
+    qtyInput: {
+      color: css.palette.black,
+      fontSize: 14,
+      paddingVertical: 0,
+      minWidth: 32,
+      textAlign: 'center',
+    },
 
-      unitSheetTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        marginBottom: 8,
-        textAlign: 'center',
-        color: css.palette.neutral900,
-      },
+    qtyUnit: {
+      color: css.palette.black,
+      fontSize: 14,
+      marginLeft: 2,
+    },
 
-      unitRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        borderRadius: 8,
-        marginVertical: 2,
-      },
+    unitTrigger: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 2,
+    },
 
-      unitRowActive: {
-        backgroundColor: css.flow.selectedBg,
-      },
+    unitBackdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
 
-      unitRowText: {
-        fontSize: 15,
-        color: css.palette.neutral900,
-      },
+    unitSheet: {
+      backgroundColor: css.palette.surfaceCard,
+      borderRadius: css.radius.lg,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      width: 240,
+      ...css.shadow.md,
+    },
 
-      unitRowTextActive: {
-        color: css.flow.selectedText,
-        fontWeight: '600',
-      },
+    unitSheetTitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      marginBottom: 8,
+      textAlign: 'center',
+      color: css.palette.neutral900,
+    },
 
-      infoBtn: {
-        marginRight: 15,
-        marginLeft: 20
-      },
+    unitRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      borderRadius: 8,
+      marginVertical: 2,
+    },
 
-      modalBackground: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-      },
-    
-      modalContainer: {
-        alignItems: 'center',
-        justifyContent:'space-around',
-        backgroundColor: css.palette.surfaceCard,
-        borderRadius: css.radius.card,
-        height: 310,
-        width:350,
-        ...css.shadow.md,
-      },
+    unitRowActive: {
+      backgroundColor: css.flow.selectedBg,
+    },
 
-      deleteIconModal: {
-        flexDirection:'row',
-        justifyContent:'space-between',
-        alignItems: 'center',
-        width: '80%',
-        height: '10%',
-      },
+    unitRowText: {
+      fontSize: 15,
+      color: css.palette.neutral900,
+    },
 
-      aLineContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: 200,
-        height: '10%',
-      },
+    unitRowTextActive: {
+      color: css.flow.selectedText,
+      fontWeight: '600',
+    },
 
-      titleText: {
-        marginLeft:'28%',
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: css.palette.neutral900,
-      },
+    infoBtn: {
+      marginRight: 15,
+      marginLeft: 20,
+    },
 
-      text: {
-        fontSize: 18,
-        marginRight: 45,
-        width: 120,
-        color: css.palette.neutral900,
-      },
+    modalBackground: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
 
-      modalText: {
-        color: css.palette.neutral900,
-      },
-})
+    modalContainer: {
+      alignItems: 'center',
+      justifyContent: 'space-around',
+      backgroundColor: css.palette.surfaceCard,
+      borderRadius: css.radius.card,
+      height: 310,
+      width: 350,
+      ...css.shadow.md,
+    },
+
+    deleteIconModal: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      width: '80%',
+      height: '10%',
+    },
+
+    aLineContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      width: 200,
+      height: '10%',
+    },
+
+    titleText: {
+      marginLeft: '28%',
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: css.palette.neutral900,
+    },
+
+    text: {
+      fontSize: 18,
+      marginRight: 45,
+      width: 120,
+      color: css.palette.neutral900,
+    },
+
+    modalText: {
+      color: css.palette.neutral900,
+    },
+  });

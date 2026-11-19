@@ -7,7 +7,9 @@
 const addressIp = process.env.EXPO_PUBLIC_API_URL?.trim();
 
 if (!addressIp) {
-  throw new Error('EXPO_PUBLIC_API_URL is not set: give the API URL in .env or in the environment.');
+  throw new Error(
+    'EXPO_PUBLIC_API_URL is not set: give the API URL in .env or in the environment.',
+  );
 }
 
 export default addressIp;

@@ -60,10 +60,7 @@ export default function ExpandableSettingsRow({
     transform: [{ rotate: `${rotation.value}deg` }],
   }));
 
-  const valueText =
-    value === undefined || value === null || value === ''
-      ? null
-      : String(value);
+  const valueText = value === undefined || value === null || value === '' ? null : String(value);
 
   return (
     <Animated.View
@@ -137,8 +134,6 @@ export default function ExpandableSettingsRow({
     </Animated.View>
   );
 }
-
-export { ExpandableSettingsRow };
 
 const styles = StyleSheet.create({
   row: {

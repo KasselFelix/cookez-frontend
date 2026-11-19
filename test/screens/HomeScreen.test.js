@@ -13,13 +13,15 @@ const renderScreen = () =>
 
 describe('HomeScreen TEST button', () => {
   const originalDev = global.__DEV__;
-  afterEach(() => { global.__DEV__ = originalDev; });
+  afterEach(() => {
+    global.__DEV__ = originalDev;
+  });
 
   it('is not rendered in production builds (__DEV__ false)', () => {
     global.__DEV__ = false;
     renderScreen();
     expect(screen.queryByText('TEST')).toBeNull();
-    expect(screen.getByText('SNAP 📸')).toBeTruthy();
+    expect(screen.getByText('SNAP')).toBeTruthy();
     expect(screen.getByText('CONNECT')).toBeTruthy();
   });
 
@@ -46,10 +48,12 @@ describe('HomeScreen when signed in', () => {
     const navigation = { navigate: jest.fn(), reset: jest.fn() };
     renderSignedIn(navigation);
     release('home-connect');
-    await waitFor(() => expect(navigation.reset).toHaveBeenCalledWith({
-      index: 0,
-      routes: [{ name: 'TabNavigator', params: { screen: 'UserDashboard' } }],
-    }));
+    await waitFor(() =>
+      expect(navigation.reset).toHaveBeenCalledWith({
+        index: 0,
+        routes: [{ name: 'TabNavigator', params: { screen: 'UserDashboard' } }],
+      }),
+    );
     expect(navigation.navigate).not.toHaveBeenCalled();
   });
 

@@ -35,6 +35,17 @@ import 'react-native-gesture-handler/jestSetup';
 // https://docs.swmansion.com/react-native-reanimated/docs/guides/testing
 // ---------------------------------------------------------------------------
 jest.mock('react-native-reanimated', () => {
+  // Both mocks end an animation at once and run its end callback right away.
+  // A test that races an action against a running animation holds the end
+  // callbacks instead (test/helpers/animations.js): they wait in
+  // global.__reanimatedHeld until finishAnimations().
+  const holdEnd = (animate) => (toValue, config, callback) => {
+    if (callback && global.__reanimatedHeld) {
+      global.__reanimatedHeld.push(callback);
+      return animate(toValue, config);
+    }
+    return animate(toValue, config, callback);
+  };
   try {
     // Preferred: the library's own jest mock (no-op animation drivers).
     // eslint-disable-next-line global-require
@@ -44,6 +55,12 @@ jest.mock('react-native-reanimated', () => {
     if (!Reanimated.useAnimatedScrollHandler) {
       Reanimated.useAnimatedScrollHandler = () => () => {};
     }
+    // Nor the reduced-motion hook ToastProvider reads ("ADD ME IF NEEDED").
+    if (!Reanimated.useReducedMotion) {
+      Reanimated.useReducedMotion = () => false;
+    }
+    Reanimated.withTiming = holdEnd(Reanimated.withTiming);
+    Reanimated.withSpring = holdEnd(Reanimated.withSpring);
     return Reanimated;
   } catch (e) {
     // Fallback: minimal inert mock covering the APIs the app uses.
@@ -65,8 +82,18 @@ jest.mock('react-native-reanimated', () => {
       useDerivedValue: (fn) => ({ value: typeof fn === 'function' ? fn() : undefined }),
       useAnimatedRef: () => ({ current: null }),
       useAnimatedScrollHandler: () => () => {},
-      withTiming: (v) => v,
-      withSpring: (v) => v,
+      useReducedMotion: () => false,
+      // Like the library's own mock: the animation ends at once and its end
+      // callback runs, so a sheet that unmounts after its closing animation
+      // (rule of the front for dark-backdrop modals) unmounts under test too.
+      withTiming: holdEnd((v, _config, callback) => {
+        callback?.(true);
+        return v;
+      }),
+      withSpring: holdEnd((v, _config, callback) => {
+        callback?.(true);
+        return v;
+      }),
       withDelay: (_, v) => v,
       withRepeat: (v) => v,
       withSequence: (...vals) => vals[vals.length - 1],
@@ -87,6 +114,10 @@ jest.mock('react-native-reanimated', () => {
 });
 // Silence the worklets init that reanimated 4 expects on the global.
 global.__reanimatedWorkletInit = () => {};
+// A test that held animation ends never leaks the hold into the next test.
+afterEach(() => {
+  global.__reanimatedHeld = null;
+});
 
 // ---------------------------------------------------------------------------
 // react-native-worklets — reanimated 4 split the worklet runtime out into
@@ -150,8 +181,9 @@ jest.mock('@gorhom/bottom-sheet', () => ({
 // react-native-safe-area-context — official mock: zero insets on a 320×640
 // frame, so useSafeAreaInsets works without a SafeAreaProvider (App.js has one).
 // ---------------------------------------------------------------------------
-jest.mock('react-native-safe-area-context', () =>
-  require('react-native-safe-area-context/jest/mock').default,
+jest.mock(
+  'react-native-safe-area-context',
+  () => require('react-native-safe-area-context/jest/mock').default,
 );
 
 // ---------------------------------------------------------------------------

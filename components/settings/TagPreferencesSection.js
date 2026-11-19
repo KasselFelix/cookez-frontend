@@ -21,9 +21,7 @@ export default function TagPreferencesSection({ variant, value = [], onChange })
   const t = useT();
 
   const titleKey =
-    variant === 'preferred'
-      ? 'settings.preferredTags.title'
-      : 'settings.excludedTags.title';
+    variant === 'preferred' ? 'settings.preferredTags.title' : 'settings.excludedTags.title';
 
   return (
     <View

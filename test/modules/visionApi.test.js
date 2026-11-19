@@ -1,4 +1,3 @@
-/* global jest, describe, it, expect, beforeEach, afterEach */
 // Plan 015 (S5): a photo goes to POST /vision/analyze with the session token in
 // the header; the answer codes become statuses the scan slice understands.
 import { analyzePhoto, analyzePhotoWithRetry } from '../../modules/visionApi';
@@ -13,7 +12,16 @@ const respond = (status, body, headers = {}) =>
 
 const OK_BODY = {
   result: true,
-  ingredients: [{ _id: 'a'.repeat(24), name: 'tomato', photoUrl: null, defaultUnit: 'g', confidence: 'high', confirm: false }],
+  ingredients: [
+    {
+      _id: 'a'.repeat(24),
+      name: 'tomato',
+      photoUrl: null,
+      defaultUnit: 'g',
+      confidence: 'high',
+      confirm: false,
+    },
+  ],
   unmatched: ['yuzu kosho'],
 };
 
@@ -82,7 +90,9 @@ describe('analyzePhotoWithRetry', () => {
   it('gives up after a second busy answer', async () => {
     global.fetch.mockReturnValue(respond(503, {}, { 'Retry-After': '120' }));
     const wait = jest.fn(() => Promise.resolve());
-    expect(await analyzePhotoWithRetry('file:///p.jpg', 't', { wait })).toEqual({ status: 'error' });
+    expect(await analyzePhotoWithRetry('file:///p.jpg', 't', { wait })).toEqual({
+      status: 'error',
+    });
     expect(wait).toHaveBeenCalledWith(30000);
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
@@ -99,14 +109,18 @@ describe('analyzePhotoWithRetry', () => {
   it('turns two network failures into an error', async () => {
     global.fetch.mockReturnValue(Promise.reject(new TypeError('Network request failed')));
     const wait = jest.fn(() => Promise.resolve());
-    expect(await analyzePhotoWithRetry('file:///p.jpg', 't', { wait })).toEqual({ status: 'error' });
+    expect(await analyzePhotoWithRetry('file:///p.jpg', 't', { wait })).toEqual({
+      status: 'error',
+    });
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 
   it('never retries a quota answer', async () => {
     global.fetch.mockReturnValue(respond(429, {}));
     const wait = jest.fn();
-    expect(await analyzePhotoWithRetry('file:///p.jpg', 't', { wait })).toEqual({ status: 'quota' });
+    expect(await analyzePhotoWithRetry('file:///p.jpg', 't', { wait })).toEqual({
+      status: 'quota',
+    });
     expect(wait).not.toHaveBeenCalled();
   });
 });

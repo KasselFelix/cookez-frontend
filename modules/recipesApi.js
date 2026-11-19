@@ -31,13 +31,7 @@ export class ApiError extends Error {
 // straight from the redux `ingredient` slice — which can come in two
 // shapes depending on whether they originated from the pantry (`data.*`
 // snapshot) or were added manually. The optional chains absorb both.
-export async function fetchRecipeResult({
-  token,
-  ingredients,
-  filters,
-  allergy,
-  signal,
-}) {
+export async function fetchRecipeResult({ token, ingredients, filters, allergy, signal }) {
   const payload = {
     ingredients: (ingredients || []).map((i) => ({
       _id: i.data?._id || i._id,
@@ -99,6 +93,18 @@ export async function patchUserSettings({ token, partial }) {
     method: 'PATCH',
     headers: jsonAuthHeaders(token),
     body: JSON.stringify(partial),
+  });
+  return res.json();
+}
+
+// PUT /users/profile — partial update of the profile fields and of
+// `settings`. Returns `{ result, updated, unrecognizedAllergies? }`, or
+// `{ result: false, error }`; callers dispatch `updated` as-is.
+export async function putUserProfile({ token, updates }) {
+  const res = await fetch(`${addressIp}/users/profile`, {
+    method: 'PUT',
+    headers: jsonAuthHeaders(token),
+    body: JSON.stringify(updates),
   });
   return res.json();
 }

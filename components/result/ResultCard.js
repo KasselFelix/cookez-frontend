@@ -41,7 +41,15 @@ function SeasonBadge({ size = 26 }) {
       accessible
       accessibilityLabel={t('result.seasonalBadge.label')}
       testID="result-seasonal"
-      style={[styles.center, { width: size, height: size, borderRadius: css.radius.pill, backgroundColor: css.result.seasonBg }]}
+      style={[
+        styles.center,
+        {
+          width: size,
+          height: size,
+          borderRadius: css.radius.pill,
+          backgroundColor: css.result.seasonBg,
+        },
+      ]}
     >
       <Leaf size={Math.round(size * 0.55)} color={css.result.seasonInk} />
     </View>
@@ -52,7 +60,11 @@ function SeasonBadge({ size = 26 }) {
 function Meta({ card, ink, showOrigin = true }) {
   const css = useTheme();
   const t = useT();
-  const text = { fontFamily: css.typography.fontUI, fontSize: css.typography.captionSize + 1, color: ink };
+  const text = {
+    fontFamily: css.typography.fontUI,
+    fontSize: css.typography.captionSize + 1,
+    color: ink,
+  };
   const origin = showOrigin && card.origins[0];
   return (
     <View style={[styles.row, styles.wrap, { columnGap: css.spacing.md, rowGap: 2 }]}>
@@ -76,7 +88,9 @@ function Meta({ card, ink, showOrigin = true }) {
       {card.rating != null && (
         <View style={[styles.row, { gap: 4 }]}>
           <Star size={14} color={css.palette.accent400} fill={css.palette.accent400} />
-          <Text style={text}>{t('result.card.rating', { value: card.rating, count: card.votes })}</Text>
+          <Text style={text}>
+            {t('result.card.rating', { value: card.rating, count: card.votes })}
+          </Text>
         </View>
       )}
     </View>
@@ -88,16 +102,39 @@ function MatchMeter({ card }) {
   const css = useTheme();
   const t = useT();
   if (card.match == null) return null;
-  const label = card.missing > 0 ? t('result.card.missing', { count: card.missing }) : t('result.card.allOwned');
+  const label =
+    card.missing > 0
+      ? t('result.card.missing', { count: card.missing })
+      : t('result.card.allOwned');
   const caption = { fontFamily: css.typography.fontUI, fontSize: css.typography.captionSize + 1 };
   return (
-    <View style={{ gap: 6 }} accessible accessibilityLabel={`${t('result.matchBadge.a11y', { ratio: card.match })}, ${label}`}>
+    <View
+      style={{ gap: 6 }}
+      accessible
+      accessibilityLabel={`${t('result.matchBadge.a11y', { ratio: card.match })}, ${label}`}
+    >
       <View style={[styles.row, styles.between]}>
-        <Text style={[caption, { color: css.result.ink, fontWeight: '700' }]}>{t('result.matchBadge.label', { ratio: card.match })}</Text>
+        <Text style={[caption, { color: css.result.ink, fontWeight: '700' }]}>
+          {t('result.matchBadge.label', { ratio: card.match })}
+        </Text>
         <Text style={[caption, { color: css.result.muted }]}>{label}</Text>
       </View>
-      <View style={[styles.track, { backgroundColor: css.result.meterTrack, borderRadius: css.radius.pill }]}>
-        <View style={[styles.fill, { width: `${Math.min(100, Math.max(0, card.match))}%`, backgroundColor: css.result.meterFill, borderRadius: css.radius.pill }]} />
+      <View
+        style={[
+          styles.track,
+          { backgroundColor: css.result.meterTrack, borderRadius: css.radius.pill },
+        ]}
+      >
+        <View
+          style={[
+            styles.fill,
+            {
+              width: `${Math.min(100, Math.max(0, card.match))}%`,
+              backgroundColor: css.result.meterFill,
+              borderRadius: css.radius.pill,
+            },
+          ]}
+        />
       </View>
     </View>
   );
@@ -115,7 +152,14 @@ export function ResultHero({ recipe, onPress }) {
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={recipe.name}
-      style={({ pressed }) => [{ backgroundColor: css.result.card, borderRadius: css.radius.card, opacity: pressed ? 0.92 : 1 }, css.shadow.sm]}
+      style={({ pressed }) => [
+        {
+          backgroundColor: css.result.card,
+          borderRadius: css.radius.card,
+          opacity: pressed ? 0.92 : 1,
+        },
+        css.shadow.sm,
+      ]}
     >
       <View style={[styles.hero, topRadius]}>
         <RecipePhoto recipe={recipe} style={styles.fillImage} iconSize={36} />
@@ -125,13 +169,39 @@ export function ResultHero({ recipe, onPress }) {
           style={[StyleSheet.absoluteFill, styles.overlay, { padding: css.spacing.md, gap: 4 }]}
           pointerEvents="none"
         >
-          <Text numberOfLines={2} style={{ fontFamily: css.typography.fontHeading, fontSize: css.typography.h2Size, color: css.palette.white, fontWeight: '700' }}>
+          <Text
+            numberOfLines={2}
+            style={{
+              fontFamily: css.typography.fontHeading,
+              fontSize: css.typography.h2Size,
+              color: css.palette.white,
+              fontWeight: '700',
+            }}
+          >
             {recipe.name}
           </Text>
           <Meta card={card} ink={css.palette.white} />
         </LinearGradient>
-        <View style={[styles.ribbon, { top: css.spacing.sm, left: css.spacing.sm, backgroundColor: css.result.ribbonBg, borderRadius: css.radius.pill, paddingHorizontal: css.spacing.sm }]}>
-          <Text style={{ fontFamily: css.typography.fontUI, fontSize: css.typography.captionSize, color: css.result.ribbonInk, fontWeight: '700' }}>
+        <View
+          style={[
+            styles.ribbon,
+            {
+              top: css.spacing.sm,
+              left: css.spacing.sm,
+              backgroundColor: css.result.ribbonBg,
+              borderRadius: css.radius.pill,
+              paddingHorizontal: css.spacing.sm,
+            },
+          ]}
+        >
+          <Text
+            style={{
+              fontFamily: css.typography.fontUI,
+              fontSize: css.typography.captionSize,
+              color: css.result.ribbonInk,
+              fontWeight: '700',
+            }}
+          >
             {t('result.card.bestMatch')}
           </Text>
         </View>
@@ -162,14 +232,35 @@ export function ResultRow({ recipe, onPress }) {
       accessibilityLabel={recipe.name}
       style={({ pressed }) => [
         styles.row,
-        { backgroundColor: css.result.card, borderRadius: css.radius.lg, padding: css.spacing.sm, gap: css.spacing.md, opacity: pressed ? 0.92 : 1 },
+        {
+          backgroundColor: css.result.card,
+          borderRadius: css.radius.lg,
+          padding: css.spacing.sm,
+          gap: css.spacing.md,
+          opacity: pressed ? 0.92 : 1,
+        },
         css.shadow.sm,
       ]}
     >
-      <RecipePhoto recipe={recipe} style={[styles.thumb, styles.clip, { borderRadius: css.radius.md }]} iconSize={22} />
+      <RecipePhoto
+        recipe={recipe}
+        style={[styles.thumb, styles.clip, { borderRadius: css.radius.md }]}
+        iconSize={22}
+      />
       <View style={[styles.flex, { gap: 6 }]}>
         <View style={[styles.row, { gap: css.spacing.xs }]}>
-          <Text numberOfLines={1} style={[styles.flexShrink, { fontFamily: css.typography.fontHeading, fontSize: css.typography.h4Size, color: css.result.ink, fontWeight: '700' }]}>
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.flexShrink,
+              {
+                fontFamily: css.typography.fontHeading,
+                fontSize: css.typography.h4Size,
+                color: css.result.ink,
+                fontWeight: '700',
+              },
+            ]}
+          >
             {recipe.name}
           </Text>
           {card.seasonal && <SeasonBadge size={22} />}

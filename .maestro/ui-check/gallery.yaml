@@ -13,3 +13,16 @@ appId: com.v2.cookez.dev
     file: ../common/capture.yaml
     env:
       SCREEN: gallery
+# Toasts and inline message of plan 020, further down in the "states" section.
+- scrollUntilVisible:
+    element:
+      id: gallery-feedback
+    direction: DOWN
+    speed: 70
+    visibilityPercentage: 100
+    timeout: 60000
+- waitForAnimationToEnd
+- runFlow:
+    file: ../common/capture.yaml
+    env:
+      SCREEN: gallery-feedback

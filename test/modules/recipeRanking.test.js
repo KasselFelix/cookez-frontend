@@ -1,4 +1,3 @@
-/* global describe, it, expect */
 import { bayesianScores, rankByPreparationTime, rankRecipes } from '../../modules/recipeRanking';
 
 const votes = (...notes) => notes.map((note, i) => ({ username: `u${i}`, note }));
@@ -50,7 +49,11 @@ describe('rankRecipes with a search', () => {
       { _id: '2', name: 'Pad Thai', matchRank: 1, votes: [] },
       { _id: '3', name: 'Pad Thai With Shrimp', matchRank: 1, votes: [] },
     ];
-    expect(names(rankRecipes(list, { searching: true }))).toEqual(['Pad Thai', 'Pad See Ew', 'Pad Thai With Shrimp']);
+    expect(names(rankRecipes(list, { searching: true }))).toEqual([
+      'Pad Thai',
+      'Pad See Ew',
+      'Pad Thai With Shrimp',
+    ]);
   });
 
   it('ignores matchRank when not searching', () => {

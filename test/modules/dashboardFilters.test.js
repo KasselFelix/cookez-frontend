@@ -1,9 +1,19 @@
-/* global describe, it, expect */
 // The Dashboard's Community Favorites filters, moved out of the screen
 // (plan 017, point 1).
-import { applyCategoryFilter, COMMUNITY_LIMIT, selectCommunityRecipes } from '../../modules/dashboardFilters';
+import {
+  applyCategoryFilter,
+  COMMUNITY_LIMIT,
+  selectCommunityRecipes,
+} from '../../modules/dashboardFilters';
 
-const recipe = (id, extra = {}) => ({ _id: id, name: id, votes: [], tags: [], origin: [], ...extra });
+const recipe = (id, extra = {}) => ({
+  _id: id,
+  name: id,
+  votes: [],
+  tags: [],
+  origin: [],
+  ...extra,
+});
 const ids = (recipes) => recipes.map((r) => r._id);
 const noFilter = {
   activeFilter: 'All',

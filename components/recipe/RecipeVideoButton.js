@@ -27,16 +27,12 @@ export default function RecipeVideoButton({ videoUrl }) {
   if (!url) return null;
 
   const youtube = isYouTubeUrl(url);
-  const label = youtube
-    ? t('recipe.video.watchOnYoutube')
-    : t('recipe.video.watch');
+  const label = youtube ? t('recipe.video.watchOnYoutube') : t('recipe.video.watch');
 
   const handlePress = () => {
     // `.catch` so a denied URL scheme (no installed browser) can't crash the
     // screen — same guard as AmazonAffiliateButton.
-    Linking.openURL(url).catch((err) =>
-      console.warn('[RecipeVideoButton] Failed to open:', err),
-    );
+    Linking.openURL(url).catch((err) => console.warn('[RecipeVideoButton] Failed to open:', err));
   };
 
   return (
